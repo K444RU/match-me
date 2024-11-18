@@ -22,6 +22,14 @@ const Login = ({ isLogin = false }) => {
               {isLogin ? 'Log in' : 'Create account'}
             </h2>
             {/* <p className="text-text-500">Enter your login details</p> */}
+            <div className="mb-3 place-items-start">
+                <label className="ml-2" htmlFor="user_name">
+                  Username
+                </label>
+                <div className="rounded-md border border-primary bg-text-100 p-1">
+                  <input id="user_name" className="bg-text-100"></input>
+                </div>
+              </div>
             <div className="mb-6">
               <div className="mb-3 place-items-start">
                 <label className="ml-2" htmlFor="email_address">
@@ -51,14 +59,6 @@ const Login = ({ isLogin = false }) => {
                   <div className="rounded-md border border-primary bg-text-100 p-1">
                     <input id="phone_number" className="bg-text-100"></input>
                   </div>
-                </div>
-              </div>
-              <div className="mb-3 place-items-start">
-                <label className="ml-2" htmlFor="user_name">
-                  Username
-                </label>
-                <div className="rounded-md border border-primary bg-text-100 p-1">
-                  <input id="user_name" className="bg-text-100"></input>
                 </div>
               </div>
             </div>
