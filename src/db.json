@@ -1,0 +1,10 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "admin@kood.tech",
+      "phone": "+372 53414494",
+      "password": "123"
+    }
+  ]
+}
