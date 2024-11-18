@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from "motion/react"
+import MotionSpinner from './motion/MotionSpinner';
 
-const LoginForm = ({ closeOverlay }: { closeOverlay: () => void }) => {
+const LoginForm = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   interface User {
     email: string;
@@ -14,6 +15,7 @@ const LoginForm = ({ closeOverlay }: { closeOverlay: () => void }) => {
 
   const submitForm = (e: any) => {
     e.preventDefault();
+    setLoading(true);
 
     const user: User = {
       email,
@@ -38,22 +40,32 @@ const LoginForm = ({ closeOverlay }: { closeOverlay: () => void }) => {
         password: string;
       }
 
+      // TODO:
+      // Show adequate UI display for incorrect password or username not
+      // found
       const matchedUser = data.find(
         (db_user: db_user) => db_user.email === user.email
       );
+      if(!matchedUser) {
+        setLoading(false);
+        console.error('No user found.')
+        return;
+      }
       if (matchedUser.password === user.password) {
-        closeOverlay();
+        navigate('/chats');
+      } else {
+        console.error('Invalid Password');
       }
       //
 
       // PRODUCTION:
       // We send email and password to backend, if success: true, we return
       // a boolean of true. so if authenticate(user) === true, then login.
-      navigate('/chats')
     } catch (error) {
       console.error('Error fetching data', error);
       throw error;
     }
+    setLoading(false);
   };
 
   return (
@@ -97,7 +109,11 @@ const LoginForm = ({ closeOverlay }: { closeOverlay: () => void }) => {
         type="submit"
         aria-label="Submit form."
       >
-        Register
+        {loading ? (
+          <MotionSpinner/>
+        ) : (
+          'Login'
+        )}
       </button>
     </form>
   );

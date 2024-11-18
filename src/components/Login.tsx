@@ -1,6 +1,7 @@
 import { useState } from "react";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
+import { IoClose } from "react-icons/io5";
 
 
 const Login = ({ isLogin = false }) => {
@@ -24,9 +25,10 @@ const Login = ({ isLogin = false }) => {
             <h2 className="mb-4 text-xl font-semibold">
               {isLogin ? 'Log in' : 'Create account'}
             </h2>
+            <IoClose className="absolute top-4 right-4 bg-primary-300 hover:bg-primary-400 hover:cursor-pointer text-primary-50 h-8 w-8 p-1.5 rounded-3xl" onClick={() => setShowOverlay(false)} />
             {/* <p className="text-text-500">Enter your login details</p> */}
             <div className="mb-6">
-              {isLogin ? <LoginForm closeOverlay={() => setShowOverlay(false)}/> : <RegisterForm closeOverlay={() => setShowOverlay(false)}/>}
+              {isLogin ? <LoginForm/> : <RegisterForm/>}
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
-const RegisterForm = ({ closeOverlay }: { closeOverlay: () => void }) => {
+const RegisterForm = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -45,8 +45,6 @@ const RegisterForm = ({ closeOverlay }: { closeOverlay: () => void }) => {
       console.error('Error registering user:', error);
       return;
     }
-    // redirect here
-    console.log('success.');
     navigate('/finish-profile');
 
     return;
