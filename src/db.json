@@ -1,10 +1,16 @@
 {
   "users": [
     {
-      "id": 1,
+      "id": "1",
       "email": "admin@kood.tech",
       "phone": "+372 53414494",
       "password": "123"
+    },
+    {
+      "id": "8992",
+      "email": "menybobew@mailinator.com",
+      "phone": "Non cillum sed qui a +1 (362) 642-9216",
+      "password": "Aliquid veniam temp"
     }
   ]
 }
