@@ -14,7 +14,7 @@ const Hero = ({
           <p className="my-4 text-xl text-text">{subtitle}</p>
           <div className="flex space-x-2">
             <Login />
-            <button className="rounded-md border-2 border-primary-200 bg-primary-200 px-5 py-2 font-semibold tracking-wide text-text transition-colors duration-300 hover:bg-primary-400 hover:text-text hover:border-primary-400">
+            <button className="rounded-md border-2 border-primary-200 bg-primary-200 px-5 py-2 font-semibold tracking-wide text-text transition-colors duration-300 hover:border-primary-400 hover:bg-primary-400 hover:text-text">
               Learn more
             </button>
           </div>
