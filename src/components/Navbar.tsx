@@ -1,24 +1,27 @@
-import Login from "../components/Login";
+import { Link } from 'react-router-dom';
+import Login from '../components/Login';
 
 const Navbar = () => {
   return (
-    <nav className="bg-primary border-b border-background-500">
-      <div className="mx-auto max-w-7x1 px-2 sm:px-6 lg:px-8">
+    <nav className="fixed w-full border-b border-background-500 bg-primary">
+      <div className="max-w-7x1 mx-auto px-2 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
-          <div className="flex flex-1 items-center justify-center md:items-stretch md:justify-start">
-            <div className="flex flex-shrink-0 items-center mr-4">
-            <h1 className="hidden md:block text-text-50 text-2xl font-bold ml-2">Blind</h1>
-            </div>
+          <div className="flex w-full items-center justify-between">
+            <Link to="/" className="h-full flex items-center justify-center cursor-pointer px-2 md:block">
+              <span className="text-2xl font-bold text-text-50 ">
+                Blind
+              </span>
+            </Link>
             <div className="md:ml-auto">
               <div className="flex space-x-2">
-            <Login isLogin={true} />
+                <Login isLogin={true} />
               </div>
             </div>
           </div>
         </div>
       </div>
     </nav>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;
