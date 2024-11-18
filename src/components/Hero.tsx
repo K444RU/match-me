@@ -1,8 +1,8 @@
 import Login from "./Login";
 
 const Hero = ({
-  title = "Blind",
-  subtitle = "Ready to date differently?"
+  title = "Amazing title",
+  subtitle = "even more amazing subtitle."
 }) => {
   return (
     <section className="bg-background py-20 mb-4">
