@@ -1,11 +1,22 @@
+import { useRef } from 'react';
 import Hero from '../components/Hero';
+import HowItWorksSection from '../sections/HowItWorksSection';
 
 const HomePage = () => {
+  const howItWorksRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToHowItWorks = () => {
+    howItWorksRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <>
-      <Hero title="Blind" subtitle="Ready to date differently?" />
-      <div>How it works</div>
-      <div>Let our algorithm do the work</div>
+      <Hero
+        title="Blind"
+        subtitle="Ready to date differently?"
+        onLearnMore={scrollToHowItWorks}
+      />
+      <HowItWorksSection ref={howItWorksRef} />
     </>
   );
 };
