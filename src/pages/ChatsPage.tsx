@@ -4,10 +4,10 @@ import OpenChat from '../components/OpenChat'
 
 const ChatsPage = () => {
   return (
-    <>
+    <div className="flex w-screen">
       <AllChats />
       <OpenChat />
-    </>
+    </div>
   )
 }
 
