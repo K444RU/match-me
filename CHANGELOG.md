@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.1-alpha.1](https://gitea.kood.tech/karlrometsomelar/match-me/compare/v0.0.1-alpha.0...v0.0.1-alpha.1) (2024-11-19)
+
+
+### Features
+
+* add backend jwt generation and password hashing ([cb3f50b](https://gitea.kood.tech/karlrometsomelar/match-me/commit/cb3f50b8e48da486b386d4e6a707d78fbea2427d))
+
+
+### Bug Fixes
+
+* added postgres and fixed back-end build ([f1bbe8a](https://gitea.kood.tech/karlrometsomelar/match-me/commit/f1bbe8ae6486a086971e551515ddbaf25e3faf63))
+* close overlay after regiter/login ([14f1590](https://gitea.kood.tech/karlrometsomelar/match-me/commit/14f1590b42ce1ef12278783a8cfd345ffd27ecd0))
+
+
+### Housekeeping
+
+* add form_utilities dir for clear structure ([299cfba](https://gitea.kood.tech/karlrometsomelar/match-me/commit/299cfba4eabcfab032cb0a664e0eca6630f98e0a))
+* added inputfield backbone and moving to shared workingspace ([e08c139](https://gitea.kood.tech/karlrometsomelar/match-me/commit/e08c139c69c117aa12ed59067686ce5bcbd1c12f))
+* setup java ([b64678c](https://gitea.kood.tech/karlrometsomelar/match-me/commit/b64678cb618fadf6ba40b88aa67e710b95d073df))
+
+
+### Styling
+
+* run prettier ([b473320](https://gitea.kood.tech/karlrometsomelar/match-me/commit/b473320be67bfcac3571777c52186afbe4b06607))
+
+
+### Refactoring
+
+* setting up chatsPage to get incoming data ([de8ab61](https://gitea.kood.tech/karlrometsomelar/match-me/commit/de8ab61553ac354d8befd2d046df27f29930cb7a))
+
 ## [0.0.1-alpha.0](https://gitea.kood.tech/karlrometsomelar/match-me/compare/v0.0.0...v0.0.1-alpha.0) (2024-11-18)
 
 
