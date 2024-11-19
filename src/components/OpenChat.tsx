@@ -2,7 +2,9 @@ import React from 'react'
 
 const OpenChat = () => {
   return (
-    <div>OpenChat</div>
+    <div className="bg-background-400 w-full">
+      <div className="w-full">Hello!</div>
+      </div>
   )
 }
 
