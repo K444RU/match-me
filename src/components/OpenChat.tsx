@@ -1,11 +1,11 @@
-import React from 'react'
+import React from 'react';
 
 const OpenChat = () => {
   return (
-    <div className="bg-background-400 w-full">
+    <div className="w-full bg-background-400">
       <div className="w-full">Hello!</div>
-      </div>
-  )
-}
+    </div>
+  );
+};
 
-export default OpenChat
+export default OpenChat;

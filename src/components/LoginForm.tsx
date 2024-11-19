@@ -46,9 +46,9 @@ const LoginForm = () => {
       const matchedUser = data.find(
         (db_user: db_user) => db_user.email === user.email
       );
-      if(!matchedUser) {
+      if (!matchedUser) {
         setLoading(false);
-        console.error('No user found.')
+        console.error('No user found.');
         return;
       }
       if (matchedUser.password === user.password) {
@@ -109,11 +109,7 @@ const LoginForm = () => {
         type="submit"
         aria-label="Submit form."
       >
-        {loading ? (
-          <MotionSpinner/>
-        ) : (
-          'Login'
-        )}
+        {loading ? <MotionSpinner /> : 'Login'}
       </button>
     </form>
   );
