@@ -1,4 +1,3 @@
-import React from 'react';
 import { IoSettingsOutline } from 'react-icons/io5';
 import { FaRegUserCircle } from 'react-icons/fa';
 
