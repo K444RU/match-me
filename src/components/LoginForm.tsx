@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MotionSpinner from './motion/MotionSpinner';
 
-const LoginForm = () => {
+const LoginForm = ({ setShowOverlay }: { setShowOverlay: (show: boolean) => void }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -53,6 +53,7 @@ const LoginForm = () => {
       }
       if (matchedUser.password === user.password) {
         navigate('/chats');
+        setShowOverlay(false);
       } else {
         console.error('Invalid Password');
       }
