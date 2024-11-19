@@ -1,7 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
-const RegisterForm = () => {
+const RegisterForm = ({
+  setShowOverlay,
+}: {
+  setShowOverlay: (show: boolean) => void;
+}) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -46,7 +50,7 @@ const RegisterForm = () => {
       return;
     }
     navigate('/finish-profile');
-
+    setShowOverlay(false);
     return;
   };
 
