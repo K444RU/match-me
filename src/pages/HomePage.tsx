@@ -7,7 +7,7 @@ const HomePage = () => {
   const scrollToHowItWorks = () => {
     howItWorksRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-  
+
   return (
     <>
       <Hero

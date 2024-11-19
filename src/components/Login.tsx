@@ -1,15 +1,14 @@
-import { useState } from "react";
-import LoginForm from "./LoginForm";
-import RegisterForm from "./RegisterForm";
-import { IoClose } from "react-icons/io5";
-
+import { useState } from 'react';
+import LoginForm from './LoginForm';
+import RegisterForm from './RegisterForm';
+import { IoClose } from 'react-icons/io5';
 
 const Login = ({ isLogin = false }) => {
   const buttonClass = isLogin
     ? 'bg-primary-50 text-text hover:bg-primary-200 hover:text-text rounded-md px-5 py-2 duration-300 transition-colors font-semibold tracking-wide'
     : 'bg-primary text-background font-semibold tracking-wide transition-colors border-2 border-primary hover:text-primary hover:bg-transparent rounded-md px-5 py-2 duration-300';
 
-    const [showOverlay, setShowOverlay] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(false);
   return (
     <div>
       <button onClick={() => setShowOverlay(true)} className={buttonClass}>
@@ -25,10 +24,13 @@ const Login = ({ isLogin = false }) => {
             <h2 className="mb-4 text-xl font-semibold">
               {isLogin ? 'Log in' : 'Create account'}
             </h2>
-            <IoClose className="absolute top-4 right-4 bg-primary-300 hover:bg-primary-400 hover:cursor-pointer text-primary-50 h-8 w-8 p-1.5 rounded-3xl" onClick={() => setShowOverlay(false)} />
+            <IoClose
+              className="absolute right-4 top-4 h-8 w-8 rounded-3xl bg-primary-300 p-1.5 text-primary-50 hover:cursor-pointer hover:bg-primary-400"
+              onClick={() => setShowOverlay(false)}
+            />
             {/* <p className="text-text-500">Enter your login details</p> */}
             <div className="mb-6">
-              {isLogin ? <LoginForm/> : <RegisterForm/>}
+              {isLogin ? <LoginForm /> : <RegisterForm />}
             </div>
           </div>
         </div>

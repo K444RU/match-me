@@ -1,6 +1,5 @@
-import React from 'react'
-import AllChats from '../components/AllChats'
-import OpenChat from '../components/OpenChat'
+import AllChats from '../components/AllChats';
+import OpenChat from '../components/OpenChat';
 
 const ChatsPage = () => {
   return (
@@ -8,7 +7,7 @@ const ChatsPage = () => {
       <AllChats />
       <OpenChat />
     </div>
-  )
-}
+  );
+};
 
-export default ChatsPage
+export default ChatsPage;
