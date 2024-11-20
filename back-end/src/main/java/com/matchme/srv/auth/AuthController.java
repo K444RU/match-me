@@ -80,7 +80,6 @@ public class AuthController {
     user.setEmail(signUpRequest.getEmail());
     user.setNumber(signUpRequest.getNumber());
     user.setPassword(encoder.encode(signUpRequest.getPassword()));
-
     // Always assign ROLE_USER
     Set<Role> roles = new HashSet<>();
     Role userRole = roleRepository.findByName(ERole.ROLE_USER)
