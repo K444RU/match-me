@@ -37,18 +37,23 @@ public class AuthControllerTest {
   private static final String INVALID_PASSWORD = "test";
   private static final String INVALID_PHONE = "";
 
+  // Runs before running test(s)
   @BeforeEach
   void setup() {
     Role userRole = new Role();
     userRole.setName(ERole.ROLE_USER);
   }
 
+  // Public routes
   @Test
   void shouldReturnPublicContent() throws Exception {
     this.mockMvc.perform(get("/api/test/all")).andDo(print()).andExpect(status().isOk())
         .andExpect(content().string(containsString("Public Content.")));
   }
 
+  // Protected routes
+
+  // Should return 401 because we are not logged in.
   @Test
   void shouldReturnUnauthorized() throws Exception {
     this.mockMvc.perform(get("/api/test/user")).andDo(print()).andExpect(status().isUnauthorized());
@@ -56,23 +61,26 @@ public class AuthControllerTest {
     this.mockMvc.perform(get("/api/test/admin")).andDo(print()).andExpect(status().isUnauthorized());
   }
 
+  // Should return 200 and string "User Content."
   @Test
   void shouldReturnUserContent() throws Exception {
-    // TODO:
+    // TODO: Finish shouldReturnUserContent
     // this.mockMvc.perform(get("/api/test/user")).andDo(print()).andExpect(status().isOk())
     // .andExpect(content().string(containsString("User Content.")));
   }
 
+  // Should return 200 and string "Moderator Content."
   @Test
   void shouldReturnModeratorContent() throws Exception {
-    // TODO:
+    // TODO: Finish shouldReturnModeratorContent
     // this.mockMvc.perform(get("/api/test/mod")).andDo(print()).andExpect(status().isOk())
     // .andExpect(content().string(containsString("Moderator Content.")));
   }
 
+  // Should return 200 and string "Admin Content."
   @Test
   void shouldReturnAdminContent() throws Exception {
-    // TODO:
+    // TODO: Finish shouldReturnAdminContent
     // this.mockMvc.perform(get("/api/test/admin")).andDo(print()).andExpect(status().isOk())
     // .andExpect(content().string(containsString("Admin Content.")));
   }
@@ -83,6 +91,8 @@ public class AuthControllerTest {
     String VALID_PASSWORD = "testtest";
     String VALID_PHONE = "+372 3454443";
 
+    // Successful sign up should return status 200 with
+    // "message": "User registered successfully!"
     SignupRequest signUpRequest = new SignupRequest();
     signUpRequest.setEmail(VALID_EMAIL);
     signUpRequest.setPassword(VALID_PASSWORD);
@@ -93,6 +103,7 @@ public class AuthControllerTest {
         .content(objectMapper.writeValueAsString(signUpRequest)))
         .andExpect(status().isOk());
 
+    // Successful sign in should return status 200 with token, type, id, email and roles
     LoginRequest loginRequest = new LoginRequest();
     loginRequest.setEmail(VALID_EMAIL);
     loginRequest.setPassword(VALID_PASSWORD);
@@ -104,6 +115,7 @@ public class AuthControllerTest {
         .andExpect(jsonPath("$.token").exists());
   }
 
+  // Tests duplicate email
   @Test
   void shouldReturnEmailAlreadyExists() throws Exception {
     String VALID_EMAIL = "emailalreadyexists@test.com";
@@ -126,6 +138,7 @@ public class AuthControllerTest {
         .andExpect(status().isBadRequest()).andExpect(jsonPath("$.message").value("Error: email is already taken!"));
   }
 
+  // Tests the @Email constraint (which seems to be useless since it only checks if @ is present)
   @Test
   void shouldReturnInvalidEmail() throws Exception {
     String VALID_PASSWORD = "testtest";
@@ -142,6 +155,7 @@ public class AuthControllerTest {
         .andExpect(jsonPath("$.email").value("Email must be valid"));
   }
 
+  // Tests the @Password constraint (which checks if the password is between 6 and 40 characters)
   @Test
   void shouldReturnInvalidPassword() throws Exception {
     String VALID_EMAIL = "invalidpassword@test.com";
@@ -158,6 +172,9 @@ public class AuthControllerTest {
         .andExpect(jsonPath("$.password").value("Password must be between 6 and 40 characters"));
   }
 
+  // Tests if the phone number is not empty
+  // TODO: Improve shouldReturnInvalidPhoneNumber
+  // Could add length checking.
   @Test
   void shouldReturnInvalidPhoneNumber() throws Exception {
     String VALID_EMAIL = "invalidphonenumber@test.com";

@@ -28,11 +28,15 @@ public class WebSecurityConfig {
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
 
+    // This bean is used to filter requests and extract JWT tokens from the request headers.
+    // It filters for JWT tokens in the Authorization header.
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
         return new AuthTokenFilter();
     }
 
+    // This bean is used to authenticate users using the user details service and password encoder.
+    // Dao = Database Access Object.
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -53,6 +57,9 @@ public class WebSecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    // .permitAll() allows access to the specified paths without authentication
+    // .authenticated() requires authentication for all other paths
+    // .anyRequest() applies rules to all other paths not specified
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
