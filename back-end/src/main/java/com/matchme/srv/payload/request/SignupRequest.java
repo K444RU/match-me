@@ -1,7 +1,5 @@
 package com.matchme.srv.payload.request;
 
-import java.util.Set;
-
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
