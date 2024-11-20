@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MotionSpinner from './motion/MotionSpinner';
+import InputField from './form_utilities/InputField';
 
 const LoginForm = ({ setShowOverlay }: { setShowOverlay: (show: boolean) => void }) => {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ const LoginForm = ({ setShowOverlay }: { setShowOverlay: (show: boolean) => void
     password: string;
   }
 
-  const submitForm = (e: any) => {
+  const submitForm = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
@@ -22,6 +23,7 @@ const LoginForm = ({ setShowOverlay }: { setShowOverlay: (show: boolean) => void
       password,
     };
 
+    console.log(user);
     authenticate(user);
   };
 
@@ -71,46 +73,30 @@ const LoginForm = ({ setShowOverlay }: { setShowOverlay: (show: boolean) => void
 
   return (
     <form onSubmit={submitForm}>
-      <div className="mb-3 place-items-start">
-        <label className="ml-2" htmlFor="contact_email">
-          Email Address
-        </label>
-        <div className="rounded-md border border-primary bg-text-100 p-1">
-          <input
-            type="email"
-            id="contact_email"
-            name="contact_email"
-            className="bg-text-100"
-            placeholder="Enter email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-      </div>
-      <div className="mb-3 place-items-start">
-        <label className="ml-2" htmlFor="password">
-          Password
-        </label>
-        <div className="rounded-md border border-primary bg-text-100 p-1">
-          <input
-            type="text"
-            id="password"
-            name="password"
-            className="bg-text-100"
-            placeholder="Enter password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-      </div>
+      <InputField
+        label="Email address"
+        type="email"
+        name="contact_email"
+        placeholder="Enter email"
+        value={email}
+        onChange={setEmail}
+        required={true}
+      />
+      <InputField
+        label="Password"
+        type="text"
+        name="password"
+        placeholder="Enter password"
+        value={password}
+        onChange={setPassword}
+        required={true}
+      />
       <button
-        className="rounded-md bg-primary px-5 py-2 text-text hover:bg-primary-200 hover:text-text"
+        className="rounded-md bg-primary px-5 py-2 mt-3 text-text hover:bg-primary-200 hover:text-text"
         type="submit"
         aria-label="Submit form."
       >
-        {loading ? <MotionSpinner /> : 'Login'}
+        {loading ? <MotionSpinner /> : 'Log in'}
       </button>
     </form>
   );
