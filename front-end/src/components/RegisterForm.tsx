@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import InputField from './form_utilities/InputField';
 
 const RegisterForm = ({
   setShowOverlay,
@@ -56,72 +57,43 @@ const RegisterForm = ({
 
   return (
     <form onSubmit={submitForm}>
-      <div className="mb-3 place-items-start">
-        <label className="ml-2" htmlFor="contact_email">
-          Email Address
-        </label>
-        <div className="rounded-md border border-primary bg-text-100 p-1">
-          <input
-            type="email"
-            id="contact_email"
-            name="contact_email"
-            className="bg-text-100"
-            placeholder="Enter email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-      </div>
-      <div className="mb-3 place-items-start">
-        <label className="ml-2" htmlFor="password">
-          Password
-        </label>
-        <div className="rounded-md border border-primary bg-text-100 p-1">
-          <input
-            type="text"
-            id="password"
-            name="password"
-            className="bg-text-100"
-            placeholder="Enter password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-      </div>
+      <InputField
+        label="Email address"
+        type="email"
+        name="contact_email"
+        placeholder="Enter email"
+        value={email}
+        onChange={setEmail}
+        required={true}
+      />
+      <InputField
+        label="Password"
+        type="text"
+        name="password"
+        placeholder="Enter password"
+        value={password}
+        onChange={setPassword}
+        required={true}
+      />
       <div className="mb-3 flex place-items-start space-x-2">
-        <div className="place-items-start">
-          <label className="ml-2" htmlFor="country_code">
-            Country
-          </label>
-          <div className="rounded-md border border-primary bg-text-100 p-1">
-            <input
-              id="country_code"
-              name="country_code"
-              className="w-20 bg-text-100"
-              placeholder="+372"
-              value={countryCode}
-              onChange={(e) => setCountryCode(e.target.value)}
-            ></input>
-          </div>
-        </div>
-        <div className="place-items-start">
-          <label className="ml-2" htmlFor="contact_phone">
-            Phone number
-          </label>
-          <div className="rounded-md border border-primary bg-text-100 p-1">
-            <input
-              type="tel"
-              id="contact_phone"
-              name="contact_phone"
-              className="bg-text-100"
-              placeholder="Enter phone number"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-          </div>
-        </div>
+        <InputField className="w-20"
+        label="Country"
+        type="text"
+        name="country_code"
+        placeholder="+372"
+        value={countryCode}
+        onChange={setCountryCode}
+        required={true}
+        />
+        <InputField
+        label="Phone number"
+        type="text"
+        name="contact_phone"
+        placeholder="Enter phone number"
+        value={phone}
+        onChange={setPhone}
+        required={true}
+        />
       </div>
       <button
         className="rounded-md bg-primary px-5 py-2 text-text hover:bg-primary-200 hover:text-text"

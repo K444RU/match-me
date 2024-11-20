@@ -8,6 +8,7 @@ import MainLayout from './layout/MainLayout';
 import HomePage from './pages/HomePage';
 import ChatsPage from './pages/ChatsPage';
 
+
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<MainLayout />}>
