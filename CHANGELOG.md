@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.1-alpha.2](https://gitea.kood.tech/karlrometsomelar/match-me/compare/v0.0.1-alpha.1...v0.0.1-alpha.2) (2024-11-21)
+
+
+### Features
+
+* add exception handler ([63aca75](https://gitea.kood.tech/karlrometsomelar/match-me/commit/63aca7596de0f9a4f8357b32ba48fb170398a013))
+* add unit testing ([8d9c78f](https://gitea.kood.tech/karlrometsomelar/match-me/commit/8d9c78f32dcc96c3de549b382599e5d240d7619b))
+
+
+### Bug Fixes
+
+* back-end now throws 401 or 403 for prot. routes ([1787873](https://gitea.kood.tech/karlrometsomelar/match-me/commit/1787873c54c7a7f49de72eee1f0d8f817b19cf22))
+
+
+### Housekeeping
+
+* add devtools dependency for live reload ([1394dc3](https://gitea.kood.tech/karlrometsomelar/match-me/commit/1394dc329bb6d330359e60362654ee30442e5d98))
+* add unit testing ([9b30e49](https://gitea.kood.tech/karlrometsomelar/match-me/commit/9b30e49009e5442bd28a7e59e144eb856c61147f))
+
+
+### Documentation
+
+* add explaining comments, TODOs ([6a68d35](https://gitea.kood.tech/karlrometsomelar/match-me/commit/6a68d3549c449bad07489c1520c853c3abbe7e78))
+
+
+### Refactoring
+
+* add lombok ([3d0ce46](https://gitea.kood.tech/karlrometsomelar/match-me/commit/3d0ce46dfbd3269772d23515b4a39c442bdb7ed2))
+* Separated Inputfield component from forms ([898d8a5](https://gitea.kood.tech/karlrometsomelar/match-me/commit/898d8a56a372874e8bb7c4e56eb375d711f602e4))
+
 ## [0.0.1-alpha.1](https://gitea.kood.tech/karlrometsomelar/match-me/compare/v0.0.1-alpha.0...v0.0.1-alpha.1) (2024-11-19)
 
 
