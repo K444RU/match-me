@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import InputField from '../../../components/ui/InputField';
 import MotionSpinner from '@animations/MotionSpinner';
-import axios from 'axios';
 import FormResponse from './FormResponse';
+import {register} from '@services/AuthService'
 
 const RegisterForm = () => {
   const [email, setEmail] = useState('admin@kood.tech');
@@ -14,27 +14,11 @@ const RegisterForm = () => {
   const [resSubtitle, setResSubtitle] = useState('');
   const [resState, setResState] = useState<'error' | 'success'>('error');
 
-  interface User {
-    email: string;
-    phone: string;
-    password: string;
-  }
   const submitForm = (e: any) => {
     e.preventDefault();
     setLoading(true);
 
-    const newUser: User = {
-      email,
-      phone: `${countryCode} ${phone}`,
-      password,
-    };
-
-    axios
-      .post('/api/auth/signup', {
-        email: newUser.email,
-        number: newUser.phone,
-        password: newUser.password,
-      })
+    register(email, phone, password)
       .then((res) => {
         // TODO: Don't redirect on register & wait for email verify.
         // This current approach would cause a unnecessary

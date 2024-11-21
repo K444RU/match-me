@@ -18,6 +18,7 @@ export default defineConfig({
       { find: '@', replacement: '/src' },
       { find: '@animations', replacement: '/src/components/animations' },
       { find: '@features', replacement: '/src/features' },
+      { find: '@services', replacement: '/src/services' },
     ],
    },
 });

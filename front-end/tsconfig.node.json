@@ -24,7 +24,8 @@
     "paths": {
       "@/*": ["src/*"],
       "@features/*": ["src/features/*"],
-      "@animations/*": ["src/components/animations/*"]
+      "@animations/*": ["src/components/animations/*"],
+      "@services/*": ["src/services/*"]
     }
   },
   "include": ["vite.config.ts"]
