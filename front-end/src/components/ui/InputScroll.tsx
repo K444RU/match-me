@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 
 type InputScrollProps = {
   label: string;
@@ -10,31 +10,42 @@ type InputScrollProps = {
   onChange: React.Dispatch<React.SetStateAction<string>>;
   required?: boolean;
   className?: string;
-  //OnChange 
+  //OnChange
   //value??
-}
+};
 
-const InputScroll = (
-  {label, name, min, max, step, placeholder, onChange, required, className}: InputScrollProps ) => {
+const InputScroll = ({
+  label,
+  name,
+  min,
+  max,
+  step,
+  placeholder,
+  onChange,
+  required,
+  className,
+}: InputScrollProps) => {
   return (
     <div className={`mb-3 place-items-start ${className}`}>
-      <label className="ml-1" htmlFor={name}>{label}</label>
+      <label className="ml-1" htmlFor={name}>
+        {label}
+      </label>
       <div className="rounded-md border border-primary bg-text-100 p-1">
-        <input 
+        <input
           type="number"
           id={name}
           name={name}
           min={min}
           max={max}
           step={step}
-          className="bg-text-100 w-full"
+          className="w-full bg-text-100"
           placeholder={placeholder}
           onChange={(e) => onChange(e.target.value)}
           required={required}
         />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default InputScroll
+export default InputScroll;

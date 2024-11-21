@@ -30,7 +30,12 @@ const Login = ({ isLogin = false }) => {
               className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
               onClick={() => setShowOverlay(false)}
             ></motion.div>
-            <motion.div initial={{scale: 0.3}} animate={{scale: 1}} exit={{scale: 0}} className="relative z-10 w-full max-w-xs rounded-lg bg-primary-50 p-6 shadow-lg">
+            <motion.div
+              initial={{ scale: 0.3 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0 }}
+              className="relative z-10 w-full max-w-xs rounded-lg bg-primary-50 p-6 shadow-lg"
+            >
               <h2 className="mb-3 w-full text-center text-2xl font-semibold">
                 {isLogin ? 'Log in' : 'Create account'}
               </h2>

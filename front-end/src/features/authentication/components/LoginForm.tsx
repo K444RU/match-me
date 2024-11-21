@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MotionSpinner from '@animations/MotionSpinner';
 import InputField from '../../../components/ui/InputField';
-import {login} from '@services/AuthService'
+import { login } from '@services/AuthService';
 import FormResponse from './FormResponse';
 
 const LoginForm = ({
@@ -22,27 +22,27 @@ const LoginForm = ({
     setLoading(true);
 
     login(email, password)
-    .then((res) => {
-      if (res.data.token) {
-        localStorage.setItem('user', JSON.stringify(res.data));
-      }
-      console.log(res);
-      navigate('/chats');
-      setShowOverlay(false);
-    })
-    .catch((err) => {
-      if (err.response && err.response.status === 401) {
-        setResTitle('Wrong Credentials');
-        setResSubtitle('Invalid username or password');
-      } else {
-        setResTitle('Something went wrong...');
-        setResSubtitle('Please contact support.');
-      }
-      console.error('Error logging in:', err);
-    })
-    .finally(() => {
-      setLoading(false);
-    });
+      .then((res) => {
+        if (res.data.token) {
+          localStorage.setItem('user', JSON.stringify(res.data));
+        }
+        console.log(res);
+        navigate('/chats');
+        setShowOverlay(false);
+      })
+      .catch((err) => {
+        if (err.response && err.response.status === 401) {
+          setResTitle('Wrong Credentials');
+          setResSubtitle('Invalid username or password');
+        } else {
+          setResTitle('Something went wrong...');
+          setResSubtitle('Please contact support.');
+        }
+        console.error('Error logging in:', err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   return (
