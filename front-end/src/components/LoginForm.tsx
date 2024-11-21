@@ -2,12 +2,20 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MotionSpinner from './motion/MotionSpinner';
 import InputField from './form_utilities/InputField';
+import axios from 'axios';
+import FormResponse from './form_utilities/FormResponse';
 
-const LoginForm = ({ setShowOverlay }: { setShowOverlay: (show: boolean) => void }) => {
+const LoginForm = ({
+  setShowOverlay,
+}: {
+  setShowOverlay: (show: boolean) => void;
+}) => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@kood.tech');
+  const [password, setPassword] = useState('123456');
   const [loading, setLoading] = useState(false);
+  const [resTitle, setResTitle] = useState('');
+  const [resSubtitle, setResSubtitle] = useState('');
 
   interface User {
     email: string;
@@ -23,80 +31,64 @@ const LoginForm = ({ setShowOverlay }: { setShowOverlay: (show: boolean) => void
       password,
     };
 
-    console.log(user);
-    authenticate(user);
-  };
-
-  const authenticate = async (user: User) => {
-    try {
-      const res = await fetch('/api/users?');
-      const data = await res.json();
-      // TEMP:
-      // we send username and password, use that on serverside to find user
-      // and match password, but here we must temporarily find on client-side
-      interface db_user {
-        id: number;
-        username: string;
-        email: string;
-        phone: string;
-        password: string;
-      }
-
-      // TODO:
-      // Show adequate UI display for incorrect password or username not
-      // found
-      const matchedUser = data.find(
-        (db_user: db_user) => db_user.email === user.email
-      );
-      if (!matchedUser) {
-        setLoading(false);
-        console.error('No user found.');
-        return;
-      }
-      if (matchedUser.password === user.password) {
+    axios
+      .post('/api/auth/signin', {
+        email: user.email,
+        password: user.password,
+      })
+      .then((res) => {
+        if (res.data.token) {
+          localStorage.setItem('user', JSON.stringify(res.data));
+        }
+        console.log(res);
         navigate('/chats');
         setShowOverlay(false);
-      } else {
-        console.error('Invalid Password');
-      }
-      //
-
-      // PRODUCTION:
-      // We send email and password to backend, if success: true, we return
-      // a boolean of true. so if authenticate(user) === true, then login.
-    } catch (error) {
-      console.error('Error fetching data', error);
-      throw error;
-    }
-    setLoading(false);
+      })
+      .catch((err) => {
+        if (err.response.status === 401) {
+          setResTitle('Wrong Credentials');
+          setResSubtitle('Invalid username or password');
+        } else {
+          setResTitle('Something went wrong...');
+          setResSubtitle('Please contact support.');
+        }
+        console.error('Error logging in:', err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   return (
-    <form onSubmit={submitForm}>
+    <form onSubmit={submitForm} className='flex flex-col gap-3 items-center'>
+      {resTitle && resSubtitle && (
+        <FormResponse title={resTitle} subtitle={resSubtitle} />
+      )}
       <InputField
-        label="Email address"
+        // label="Email address"
         type="email"
         name="contact_email"
-        placeholder="Enter email"
+        placeholder="Email"
         value={email}
         onChange={setEmail}
         required={true}
       />
       <InputField
-        label="Password"
+        // label="Password"
         type="text"
         name="password"
-        placeholder="Enter password"
+        placeholder="Password"
         value={password}
         onChange={setPassword}
         required={true}
       />
       <button
-        className="rounded-md bg-primary px-5 py-2 mt-3 text-text hover:bg-primary-200 hover:text-text"
+        className="rounded-md bg-primary px-5 py-2 text-text hover:bg-primary-200 hover:text-text self-start w-full font-semibold tracking-wide transition-colors flex justify-center gap-2 items-center"
         type="submit"
         aria-label="Submit form."
       >
-        {loading ? <MotionSpinner /> : 'Log in'}
+        <span>Login</span>
+        {loading && <MotionSpinner/>}
       </button>
     </form>
   );
