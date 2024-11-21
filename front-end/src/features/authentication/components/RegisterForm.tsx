@@ -1,16 +1,10 @@
-import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import InputField from './form_utilities/InputField';
-import MotionSpinner from './motion/MotionSpinner';
+import InputField from '../../../components/ui/InputField';
+import MotionSpinner from '@animations/MotionSpinner';
 import axios from 'axios';
-import FormResponse from './form_utilities/FormResponse';
+import FormResponse from './FormResponse';
 
-const RegisterForm = ({
-  setShowOverlay,
-}: {
-  setShowOverlay: (show: boolean) => void;
-}) => {
-  const navigate = useNavigate();
+const RegisterForm = () => {
   const [email, setEmail] = useState('admin@kood.tech');
   const [phone, setPhone] = useState('5341449');
   const [countryCode, setCountryCode] = useState('+372');

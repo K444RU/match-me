@@ -1,4 +1,4 @@
-import Login from './PopUpForm';
+import Login from '@/components/ui/PopUpForm';
 
 const Hero = ({
   title = 'Amazing title',

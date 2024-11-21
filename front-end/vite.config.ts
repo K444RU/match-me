@@ -13,4 +13,11 @@ export default defineConfig({
         // rewrite: (path) => path.replace(/^\/api/, '')
       }}
   },
+  resolve: {
+    alias: [
+      { find: '@', replacement: '/src' },
+      { find: '@animations', replacement: '/src/components/animations' },
+      { find: '@features', replacement: '/src/features' },
+    ],
+   },
 });

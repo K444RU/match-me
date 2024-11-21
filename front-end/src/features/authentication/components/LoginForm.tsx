@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import MotionSpinner from './motion/MotionSpinner';
-import InputField from './form_utilities/InputField';
+import MotionSpinner from '@animations/MotionSpinner';
+import InputField from '../../../components/ui/InputField';
 import axios from 'axios';
-import FormResponse from './form_utilities/FormResponse';
+import FormResponse from './FormResponse';
 
 const LoginForm = ({
   setShowOverlay,
@@ -60,7 +60,7 @@ const LoginForm = ({
   };
 
   return (
-    <form onSubmit={submitForm} className='flex flex-col gap-3 items-center'>
+    <form onSubmit={submitForm} className="flex flex-col items-center gap-3">
       {resTitle && resSubtitle && (
         <FormResponse title={resTitle} subtitle={resSubtitle} />
       )}
@@ -83,12 +83,12 @@ const LoginForm = ({
         required={true}
       />
       <button
-        className="rounded-md bg-primary px-5 py-2 text-text hover:bg-primary-200 hover:text-text self-start w-full font-semibold tracking-wide transition-colors flex justify-center gap-2 items-center"
+        className="flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
         type="submit"
         aria-label="Submit form."
       >
         <span>Login</span>
-        {loading && <MotionSpinner/>}
+        {loading && <MotionSpinner />}
       </button>
     </form>
   );
