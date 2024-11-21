@@ -2,7 +2,7 @@ import { useState } from 'react';
 import InputField from '../../../components/ui/InputField';
 import MotionSpinner from '@animations/MotionSpinner';
 import FormResponse from './FormResponse';
-import {register} from '@services/AuthService'
+import { register } from '@services/AuthService';
 
 const RegisterForm = () => {
   const [email, setEmail] = useState('admin@kood.tech');
