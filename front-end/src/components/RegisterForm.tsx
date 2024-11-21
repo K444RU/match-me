@@ -27,6 +27,8 @@ const RegisterForm = ({
       password,
     };
 
+    console.log(newUser);
+
     registerUser(newUser);
   };
 
@@ -77,22 +79,22 @@ const RegisterForm = ({
       />
       <div className="mb-3 flex place-items-start space-x-2">
         <InputField className="w-20"
-        label="Country"
-        type="text"
-        name="country_code"
-        placeholder="+372"
-        value={countryCode}
-        onChange={setCountryCode}
-        required={true}
+          label="Country"
+          type="text"
+          name="country_code"
+          placeholder="+372"
+          value={countryCode}
+          onChange={setCountryCode}
+          required={true}
         />
         <InputField
-        label="Phone number"
-        type="text"
-        name="contact_phone"
-        placeholder="Enter phone number"
-        value={phone}
-        onChange={setPhone}
-        required={true}
+          label="Phone number"
+          type="text"
+          name="contact_phone"
+          placeholder="Enter phone number"
+          value={phone}
+          onChange={setPhone}
+          required={true}
         />
       </div>
       <button
