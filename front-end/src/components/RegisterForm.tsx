@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import InputField from './form_utilities/InputField';
+import MotionSpinner from './motion/MotionSpinner';
+import axios from 'axios';
 
 const RegisterForm = ({
   setShowOverlay,
@@ -8,10 +10,11 @@ const RegisterForm = ({
   setShowOverlay: (show: boolean) => void;
 }) => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [countryCode, setCountryCode] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@kood.tech');
+  const [phone, setPhone] = useState('5341449');
+  const [countryCode, setCountryCode] = useState('+372');
+  const [password, setPassword] = useState('123456');
+  const [loading, setLoading] = useState(false);
 
   interface User {
     email: string;
@@ -20,6 +23,7 @@ const RegisterForm = ({
   }
   const submitForm = (e: any) => {
     e.preventDefault();
+    setLoading(true);
 
     const newUser: User = {
       email,
@@ -27,34 +31,21 @@ const RegisterForm = ({
       password,
     };
 
-    console.log(newUser);
-
-    registerUser(newUser);
-  };
-
-  // TODO:
-  // Will have to rethink error logic here once backend server implemented.
-  const registerUser = async (newUser: User) => {
-    try {
-      const res = await fetch('/api/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newUser),
-      });
-      if (!res.ok) {
-        console.error('Error registering user:', res);
-        return;
-      }
+    axios.post('/api/auth/signup', {
+      email: newUser.email,
+      number: newUser.phone,
+      password: newUser.password,
+    })
+    .then((res) => {
+      navigate('/finish-profile');
+      setShowOverlay(false);
       console.log(res);
-    } catch (error) {
-      console.error('Error registering user:', error);
-      return;
-    }
-    navigate('/finish-profile');
-    setShowOverlay(false);
-    return;
+    })
+    .catch((err) => {
+      console.error('Error registering user:', err);
+    }).finally(() => {
+      setLoading(false);
+    });
   };
 
   return (
@@ -98,11 +89,12 @@ const RegisterForm = ({
         />
       </div>
       <button
-        className="rounded-md bg-primary px-5 py-2 text-text hover:bg-primary-200 hover:text-text"
+        className="rounded-md bg-primary px-5 py-2 text-text hover:bg-primary-200 hover:text-text flex items-center justify-center min-w-[120px]"
         type="submit"
         aria-label="Submit form and close overlay."
       >
-        Register
+        <span className={loading ? 'mr-2' : ''}>Register</span>
+        {loading && <MotionSpinner/>}
       </button>
     </form>
   );
