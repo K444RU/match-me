@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import Login from './PopUpForm';
+import Login from './ui/PopUpForm';
 
 const Navbar = () => {
   return (

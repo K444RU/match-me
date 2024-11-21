@@ -1,6 +1,6 @@
 import { useRef } from 'react';
-import Hero from '../components/Hero';
-import HowItWorksSection from '../sections/HowItWorksSection';
+import Hero from './sections/Hero';
+import HowItWorksSection from './sections/HowItWorksSection';
 const HomePage = () => {
   const howItWorksRef = useRef<HTMLDivElement>(null);
 
