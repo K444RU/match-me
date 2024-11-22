@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.1-alpha.3](https://gitea.kood.tech/karlrometsomelar/match-me/compare/v0.0.1-alpha.2...v0.0.1-alpha.3) (2024-11-22)
+
+
+### Features
+
+* add dynamic FormResponse state ([e303c01](https://gitea.kood.tech/karlrometsomelar/match-me/commit/e303c01902f1e39b798c6edde223a503db59e5a6))
+* add FormResponse component for authentication ([0445584](https://gitea.kood.tech/karlrometsomelar/match-me/commit/04455849f8877ad5494587c5d811f3e1e73c68ea))
+* add InputScroll.tsx ([0f72305](https://gitea.kood.tech/karlrometsomelar/match-me/commit/0f72305eaf4d7b760a9e939de92a2f01223b78d1))
+* add proper auth w/ java backend w/ axios ([4b94480](https://gitea.kood.tech/karlrometsomelar/match-me/commit/4b94480f661d106f22ad622f8e1e879317809152))
+* add user property activity ([c473df1](https://gitea.kood.tech/karlrometsomelar/match-me/commit/c473df1dfc0f4545fc2c546df9151bb417602444))
+
+
+### Styling
+
+* add jumptotop animation & state ([b2ff085](https://gitea.kood.tech/karlrometsomelar/match-me/commit/b2ff08588942d25c910c532135588e3f30800587))
+* run prettier ([e960b9f](https://gitea.kood.tech/karlrometsomelar/match-me/commit/e960b9f46ac7775cf18ede4635bd3ba346bdada7))
+
+
+### Refactoring
+
+* add AuthService & [@service](https://gitea.kood.tech/service) ([7694480](https://gitea.kood.tech/karlrometsomelar/match-me/commit/7694480e57f0e35f11ee1eb331ac93e3d67d22cf))
+* big restructure of project ([0258c00](https://gitea.kood.tech/karlrometsomelar/match-me/commit/0258c0076d22fbc782cc142f4e5348f4b2cd9310))
+* connect front-end registration w backend ([5cf12f0](https://gitea.kood.tech/karlrometsomelar/match-me/commit/5cf12f0b26deb46279d88dee0f5cfb3fdb50ada4))
+* modify InputField ([a33a1a3](https://gitea.kood.tech/karlrometsomelar/match-me/commit/a33a1a304ce25e27d5d49f7ef77127ed1520e799))
+* Rename Login.tsx to PopUpForm.tsx ([ce30a0f](https://gitea.kood.tech/karlrometsomelar/match-me/commit/ce30a0f3576d5e4961d172f975c8326e2b71cb3a))
+
 ## [0.0.1-alpha.2](https://gitea.kood.tech/karlrometsomelar/match-me/compare/v0.0.1-alpha.1...v0.0.1-alpha.2) (2024-11-21)
 
 
