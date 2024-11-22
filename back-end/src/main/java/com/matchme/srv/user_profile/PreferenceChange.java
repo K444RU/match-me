@@ -1,7 +1,6 @@
-package com.matchme.srv.states;
+package com.matchme.srv.user_profile;
 
 import java.security.Timestamp;
-import java.sql.Connection;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -18,25 +17,28 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "connection_log")
-public class ConnectionState {
+@Table(name = "user_preference_changes")
+public class PreferenceChange {
   
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue( strategy = GenerationType.IDENTITY) 
   private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "connection_id")
   @NotNull
-  private Connection connection;
+  @JoinColumn(name = "user_preferences_id")
+  private UserPreferences userPreferences;
 
   @Enumerated(EnumType.STRING)
-  private ConnectionType type;
+  private PreferenceChangeType type;
 
   @NotNull
   private Timestamp timestamp;
 
-  public enum ConnectionType {
-    SEEN, OPENED_PROFILE, JUST_FRIENDS, MAYBE_MORE, INTERESTED, CLOSED
+  @NotNull 
+  private String newState; 
+
+  public enum PreferenceChangeType {
+    GENDER, AGE_MIN, AGE_MAX, DISTANCE, BLIND //maybe blind shouldn't be here? 
   }
 }

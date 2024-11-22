@@ -2,7 +2,6 @@ package com.matchme.srv.user_messages;
 
 import java.security.Timestamp;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -13,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
@@ -25,13 +25,14 @@ public class MessageEvent {
   private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "message_id", nullable = false)
+  @NotNull
+  @JoinColumn(name = "message_id")
   private UserMessage message;
 
   @Enumerated(EnumType.STRING)
   private MessageEventType type; 
 
-  @Column(nullable = false)
+  @NotNull
   private Timestamp timestamp;
 
   public enum MessageEventType {
