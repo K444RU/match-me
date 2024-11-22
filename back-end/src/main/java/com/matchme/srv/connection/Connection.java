@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.matchme.srv.states.ConnectionState;
 import com.matchme.srv.user.User;
+import com.matchme.srv.user_messages.UserMessage;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -33,6 +34,9 @@ public class Connection {
 
   @OneToMany(mappedBy = "connection", cascade = CascadeType.ALL)
   private Set<ConnectionState> connectionStates = new HashSet<>();
+
+  @OneToMany(mappedBy = "connection", cascade = CascadeType.ALL) 
+  private Set<UserMessage> userMessages;
 
   // Somewhere or in an added relationship, also ELO scores should be encoded...
 
