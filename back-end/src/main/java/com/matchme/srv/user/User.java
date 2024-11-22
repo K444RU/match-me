@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.matchme.srv.ActivityLog.ActivityLog;
 import com.matchme.srv.Role.Role;
+import com.matchme.srv.user_profile.UserProfile;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -16,6 +17,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
@@ -55,4 +57,8 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<ActivityLog> activity;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_profile_id", nullable = false)
+    private UserProfile userProfile;
 }
