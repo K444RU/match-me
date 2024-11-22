@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.1-alpha.4](https://gitea.kood.tech/karlrometsomelar/match-me/compare/v0.0.1-alpha.3...v0.0.1-alpha.4) (2024-11-22)
+
+
+### Features
+
+* add database entities ([b29395b](https://gitea.kood.tech/karlrometsomelar/match-me/commit/b29395b0a4b685159a6c39fb7bc4e0e6264f49c9))
+* add UserMessages, MessageEvents, MessageEventTypes ([2022775](https://gitea.kood.tech/karlrometsomelar/match-me/commit/202277545bb1c3fd5a267270014589918373293b))
+* add UserProfile and related entities. ([8f5616f](https://gitea.kood.tech/karlrometsomelar/match-me/commit/8f5616fbc933c84f92871c5ed6d862341750a421))
+
 ## [0.0.1-alpha.3](https://gitea.kood.tech/karlrometsomelar/match-me/compare/v0.0.1-alpha.2...v0.0.1-alpha.3) (2024-11-22)
 
 
