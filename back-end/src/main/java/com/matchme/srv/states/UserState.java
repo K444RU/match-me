@@ -1,0 +1,10 @@
+package com.matchme.srv.states;
+
+public enum UserState {
+  ACTIVITY_ACTIVE,
+  ACTIVITY_INACTIVE,
+  ACTIVITY_PENDING,
+  ACTIVITY_SUSPENDED,
+  ACTIVITY_SLEEP,
+  ACTIVITY_DISABLED,
+}
