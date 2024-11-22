@@ -1,0 +1,10 @@
+package com.matchme.srv.EActivity;
+
+public enum EActivity {
+  ACTIVITY_ACTIVE,
+  ACTIVITY_INACTIVE,
+  ACTIVITY_PENDING,
+  ACTIVITY_SUSPENDED,
+  ACTIVITY_SLEEP,
+  ACTIVITY_DISABLED,
+}
