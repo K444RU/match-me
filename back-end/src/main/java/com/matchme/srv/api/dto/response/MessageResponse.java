@@ -1,4 +1,4 @@
-package com.matchme.srv.payload.response;
+package com.matchme.srv.api.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

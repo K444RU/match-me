@@ -3,7 +3,7 @@ package com.matchme.srv.Activity;
 import java.sql.Timestamp;
 import java.util.Set;
 
-import com.matchme.srv.EActivity.EActivity;
+import com.matchme.srv.enums.EActivity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

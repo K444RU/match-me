@@ -1,6 +1,6 @@
 package com.matchme.srv.Role;
 
-import com.matchme.srv.ERole.ERole;
+import com.matchme.srv.enums.ERole;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.matchme.srv.ActivityLog.ActivityLog;
 import com.matchme.srv.Role.Role;
-import com.matchme.srv.user_profile.UserProfile;
+import com.matchme.srv.user.user_profile.UserProfile;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;

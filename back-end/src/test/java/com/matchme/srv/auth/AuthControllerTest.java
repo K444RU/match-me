@@ -18,10 +18,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.matchme.srv.ERole.ERole;
 import com.matchme.srv.Role.Role;
-import com.matchme.srv.payload.request.LoginRequest;
-import com.matchme.srv.payload.request.SignupRequest;
+import com.matchme.srv.api.dto.request.LoginRequest;
+import com.matchme.srv.api.dto.request.SignupRequest;
+import com.matchme.srv.enums.ERole;
 
 @SpringBootTest
 @AutoConfigureMockMvc

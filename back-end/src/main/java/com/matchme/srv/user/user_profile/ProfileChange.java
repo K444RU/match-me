@@ -1,4 +1,4 @@
-package com.matchme.srv.user_profile;
+package com.matchme.srv.user.user_profile;
 
 import java.sql.Timestamp;
 
@@ -17,8 +17,8 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "user_attribute_changes")
-public class AttributeChange {
+@Table(name = "profile_changes")
+public class ProfileChange {
   
   @Id
   @GeneratedValue( strategy = GenerationType.IDENTITY) 
@@ -26,11 +26,11 @@ public class AttributeChange {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @NotNull
-  @JoinColumn(name = "user_attributes_id")
-  private UserPreferences userPreferences;
+  @JoinColumn(name = "user_profile_id")
+  private UserProfile userProfile;
 
   @Enumerated(EnumType.STRING)
-  private PreferenceChangeType type;
+  private ProfileChangeType type;
 
   @NotNull
   private Timestamp timestamp;
@@ -38,7 +38,7 @@ public class AttributeChange {
   @NotNull 
   private String newState; 
 
-  public enum PreferenceChangeType {
-    GENDER, AGE_MIN, AGE_MAX, DISTANCE, BLIND //maybe blind shouldn't be here? 
+  public enum ProfileChangeType {
+    AGE, BIO, PHOTO, INTERESTS // Each profile property should have it's own enum. Attributes too - because pertain changes about self.
   }
 }

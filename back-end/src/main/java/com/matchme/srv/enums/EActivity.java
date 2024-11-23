@@ -1,4 +1,4 @@
-package com.matchme.srv.EActivity;
+package com.matchme.srv.enums;
 
 public enum EActivity {
   ACTIVITY_ACTIVE,

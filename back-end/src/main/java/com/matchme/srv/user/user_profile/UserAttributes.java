@@ -1,4 +1,4 @@
-package com.matchme.srv.user_profile;
+package com.matchme.srv.user.user_profile;
 
 import java.util.Set;
 
@@ -15,8 +15,8 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "user_preferences")
-public class UserPreferences {
+@Table(name = "user_attributes")
+public class UserAttributes {
   
   @Id // need to look into shared id value with user
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,16 +26,15 @@ public class UserPreferences {
   private Gender gender;
 
   @NotNull
-  private Integer age_min;
+  private Integer age;
 
   @NotNull
-  private Integer age_max;
+  private String location; // Need to look into location representation in database
 
   @NotNull
-  private Integer distance;
+  private Integer score; // Maybe not the best place to put it and should be calculated when adding to pool...
 
-  private Integer blind;
+  @OneToMany(mappedBy = "", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  private Set<ProfileChange> attributeChangeLog;
 
-  @OneToMany(mappedBy = "userPreferences", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-  private Set<PreferenceChange> preferenceChangeLog;
 }
