@@ -1,6 +1,6 @@
 package com.matchme.srv.user_messages;
 
-import java.security.Timestamp;
+import java.sql.Timestamp;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

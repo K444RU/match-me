@@ -1,7 +1,7 @@
 package com.matchme.srv.states;
 
-import java.security.Timestamp;
-import java.sql.Connection;
+import java.sql.Timestamp;
+import com.matchme.srv.connection.Connection;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

@@ -1,6 +1,6 @@
 package com.matchme.srv.user_messages;
 
-import java.sql.Connection;
+import com.matchme.srv.connection.Connection;
 import java.util.Set;
 
 import com.matchme.srv.user.User;
