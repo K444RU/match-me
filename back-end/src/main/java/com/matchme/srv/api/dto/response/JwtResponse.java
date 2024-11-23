@@ -1,6 +1,5 @@
 package com.matchme.srv.api.dto.response;
 
-import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,12 +10,12 @@ public class JwtResponse {
   private String type = "Bearer";
   private Long id;
   private String email;
-  private List<String> roles;
+  private String role;
 
-  public JwtResponse(String accessToken, Long id, String email, List<String> roles) {
+  public JwtResponse(String accessToken, Long id, String email, String role) {
     this.token = accessToken;
     this.id = id;
     this.email = email;
-    this.roles = roles;
+    this.role = role;
   }
 }
