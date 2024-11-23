@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.matchme.srv.states.ConnectionState;
 import com.matchme.srv.user.User;
-import com.matchme.srv.user_messages.UserMessage;
+import com.matchme.srv.user.user_messages.UserMessage;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;

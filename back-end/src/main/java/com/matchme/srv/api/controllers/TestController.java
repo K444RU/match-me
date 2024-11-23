@@ -1,4 +1,4 @@
-package com.matchme.srv.test;
+package com.matchme.srv.api.controllers;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;

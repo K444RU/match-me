@@ -1,4 +1,4 @@
-package com.matchme.srv.payload.request;
+package com.matchme.srv.api.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

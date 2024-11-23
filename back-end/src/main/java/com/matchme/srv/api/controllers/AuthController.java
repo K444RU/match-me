@@ -1,4 +1,4 @@
-package com.matchme.srv.auth;
+package com.matchme.srv.api.controllers;
 
 import java.util.HashSet;
 import java.util.List;
@@ -20,16 +20,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.matchme.srv.ERole.ERole;
 import com.matchme.srv.Role.Role;
 import com.matchme.srv.user.User;
-import com.matchme.srv.payload.request.LoginRequest;
-import com.matchme.srv.payload.request.SignupRequest;
-import com.matchme.srv.payload.response.JwtResponse;
-import com.matchme.srv.payload.response.MessageResponse;
 import com.matchme.srv.Role.RoleRepository;
+import com.matchme.srv.api.dto.request.LoginRequest;
+import com.matchme.srv.api.dto.request.SignupRequest;
+import com.matchme.srv.api.dto.response.JwtResponse;
+import com.matchme.srv.api.dto.response.MessageResponse;
+import com.matchme.srv.enums.ERole;
 import com.matchme.srv.user.UserRepository;
-import com.matchme.srv.user_profile.UserProfile;
+import com.matchme.srv.user.user_profile.UserProfile;
 import com.matchme.srv.security.jwt.JwtUtils;
 import com.matchme.srv.security.services.UserDetailsImpl;
 

@@ -1,4 +1,4 @@
-package com.matchme.srv.user_messages;
+package com.matchme.srv.user.user_messages;
 
 import com.matchme.srv.connection.Connection;
 import java.util.Set;

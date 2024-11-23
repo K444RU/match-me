@@ -1,4 +1,4 @@
-package com.matchme.srv.user_messages;
+package com.matchme.srv.user.user_profile;
 
 import java.sql.Timestamp;
 
@@ -17,25 +17,28 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "message_events")
-public class MessageEvent {
+@Table(name = "user_preference_changes")
+public class PreferenceChange {
   
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue( strategy = GenerationType.IDENTITY) 
   private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @NotNull
-  @JoinColumn(name = "message_id")
-  private UserMessage message;
+  @JoinColumn(name = "user_preferences_id")
+  private UserPreferences userPreferences;
 
   @Enumerated(EnumType.STRING)
-  private MessageEventType type; 
+  private PreferenceChangeType type;
 
   @NotNull
   private Timestamp timestamp;
 
-  public enum MessageEventType {
-    SENT, RECEIVED, READ, // REACTIONS - maybe just a couple like iMessages?? 
+  @NotNull 
+  private String newState; 
+
+  public enum PreferenceChangeType {
+    GENDER, AGE_MIN, AGE_MAX, DISTANCE, BLIND //maybe blind shouldn't be here? 
   }
 }

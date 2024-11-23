@@ -1,4 +1,4 @@
-package com.matchme.srv.user_profile;
+package com.matchme.srv.user.user_profile;
 
 public enum Gender {
   MAN,
