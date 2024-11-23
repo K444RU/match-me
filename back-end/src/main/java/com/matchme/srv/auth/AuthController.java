@@ -29,6 +29,7 @@ import com.matchme.srv.payload.response.JwtResponse;
 import com.matchme.srv.payload.response.MessageResponse;
 import com.matchme.srv.Role.RoleRepository;
 import com.matchme.srv.user.UserRepository;
+import com.matchme.srv.user_profile.UserProfile;
 import com.matchme.srv.security.jwt.JwtUtils;
 import com.matchme.srv.security.services.UserDetailsImpl;
 
@@ -80,6 +81,12 @@ public class AuthController {
     user.setEmail(signUpRequest.getEmail());
     user.setNumber(signUpRequest.getNumber());
     user.setPassword(encoder.encode(signUpRequest.getPassword()));
+    
+    // Create userprofile since it's a one-to-one relationship and we can't make a new user without it
+    UserProfile userProfile = new UserProfile();
+    user.setUserProfile(userProfile);
+    // userProfile.setUser(user); might be required, works for now without...  
+    
     // Always assign ROLE_USER
     Set<Role> roles = new HashSet<>();
     Role userRole = roleRepository.findByName(ERole.ROLE_USER)
