@@ -7,7 +7,7 @@ type InputSelectProps = {
   className?: string;
 }
 
-const InputSelect = (
+const InputSelect5 = (
   {
     label,
     options,
@@ -24,9 +24,9 @@ const InputSelect = (
 
 
   return (
-    <div className={`w-auto text-text ${className ? className : ''}`}>
-      <h2 className="pl-1 font-bold">{label}</h2>
-      <div className="flex flex-row h-10 bg-primary-50 rounded-md border-2 border-accent cursor-pointer">
+    <div className={`w-fit text-text mb-3 ${className ? className : ''}`}>
+      <h2 className="pl-1 font-semibold">{label}</h2>
+      <div className="flex flex-row h-10 mt-1 bg-primary-50 rounded-md border-2 border-accent cursor-pointer">
       {options.map((option: any) => (
          <div 
           key={option} 
@@ -37,4 +37,4 @@ const InputSelect = (
   )
 }
 
-export default InputSelect
+export default InputSelect5

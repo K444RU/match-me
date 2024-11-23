@@ -1,12 +1,15 @@
 import React, { useState } from 'react'
 import InputField from '../components/ui/InputField'
-import InputSelect from '../components/ui/InputSelect'
+import InputSelect5 from '../components/ui/InputSelect5'
+import InputScroll from '../components/ui/InputScroll'
+import UserPreferences from '../components/ui/UserPreferences'
 
 const SettingsPage = () => {
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [gender, setGender] = useState('');
+  const [age, setAge] = useState('');
 
   const submitForm = (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,13 +17,15 @@ const SettingsPage = () => {
     const user = {
       firstName,
       lastName,
-      gender
+      gender,
+      age
     }
     console.log(user)
   }
 
   return (
     <div className="max-w-[800px] mx-auto pt-24 px-5 h-screen overflow-auto bg-background-200 items-center justify-center">
+      <UserPreferences />
       <form onSubmit={submitForm} className="flex flex-col items-center gap-3">
         <h2>First section</h2>
         <InputField 
@@ -39,10 +44,20 @@ const SettingsPage = () => {
           onChange={setLastName}
           required={true} 
         />
-        <InputSelect 
+        <InputSelect5 
           label="Gender"
           options={["Man", "Woman", "Other"]}
           onChange={setGender}
+        />
+        <InputScroll 
+          label="Age"
+          name="user_age"
+          min="18"
+          max="100"
+          step="1"
+          placeholder="Age"
+          onChange={setAge}
+          required={true}
         />
         <button
         className="flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
