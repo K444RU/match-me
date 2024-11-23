@@ -14,7 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
+// import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
@@ -29,13 +29,17 @@ public class UserProfile {
   @OneToOne(mappedBy = "userProfile", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   private User user;
 
+  // TODO: Find a solution so that we can signup
+  // Temporarily I have commented the @NotNull's out.
+  // Because with the current logic, we would have to set everything up in the initial popup.
+  // Otherwise the notnull's were fucking us.
   @OneToOne(fetch = FetchType.LAZY)
-  @NotNull
+  // @NotNull
   @JoinColumn(name = "user_preferences_id")
   private UserPreferences userPreferences;
 
   @OneToOne
-  @NotNull
+  // @NotNull
   @JoinColumn(name = "user_attributes")
   private UserAttributes userAttributes;
 

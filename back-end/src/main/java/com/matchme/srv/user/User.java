@@ -58,7 +58,8 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<ActivityLog> activity;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    // CascadeType.ALL = when a user is deleted, the associated user profile is also deleted.
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_profile_id", nullable = false)
     private UserProfile userProfile;
 }
