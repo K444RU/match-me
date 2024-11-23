@@ -17,8 +17,8 @@ const UserPreferences = () => {
   }
 
   return (
-    <form onSubmit={submitForm}>
-      <h2 className="font-bold text-text text-xl mb-3">Your preferences</h2>
+    <form onSubmit={submitForm} className="border-b-2 border-accent mb-3">
+      <h2 className="font-bold text-text text-xl mb-3 pl-3 border-b-2 border-accent">Your preferences</h2>
       <InputSelect5 
         label="I'm interested in"
         options={["Men", "Women", "Everyone"]}
@@ -34,7 +34,7 @@ const UserPreferences = () => {
         onChange={setDistance}
       />
       <button
-        className="flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
+        className=" mb-3 flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
         type="submit"
         aria-label="Submit form."
       >

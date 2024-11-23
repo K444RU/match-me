@@ -24,7 +24,7 @@ const InputField = (
   }: InputFieldProps
 ) => {
   return (
-    <div className={`w-full ${className ? className : ''}`}>
+    <div className={`mb-3 ${className ? className : ''}`}>
       {/* <label className="ml-1" htmlFor={`${name}`}>{label}</label> */}
       {/* file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground*/}
       <input

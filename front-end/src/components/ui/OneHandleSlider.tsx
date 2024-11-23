@@ -32,7 +32,7 @@ const OneHandleSlider = (
   }
 
   return (
-    <div className={`w-full mb-3 ${className ? className : ''}`}>
+    <div className={`w-full mb-3 text-text ${className ? className : ''}`}>
       <h2 className="pl-1 font-semibold">{label}</h2>
       <div className="flex gap-4 items-center">
         <input className="w-1/2 rounded-3xl h-4 border border-accent bg-primary-50 appearance-none cursor-pointer"
@@ -53,7 +53,7 @@ const OneHandleSlider = (
           value={displayNumber}
           onChange={(e) => handleSliderMovement(e.target.value)}
           />
-          <p className="text-text text-xl">km</p>
+          <p className="text-text text-xl font-semibold">km</p>
         </div>
       </div>
     </div>
