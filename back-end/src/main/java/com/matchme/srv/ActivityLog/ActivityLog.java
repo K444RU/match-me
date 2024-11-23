@@ -1,6 +1,6 @@
 package com.matchme.srv.ActivityLog;
 
-import java.security.Timestamp;
+import java.sql.Timestamp;
 
 import com.matchme.srv.user.User;
 

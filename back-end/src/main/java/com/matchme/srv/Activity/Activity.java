@@ -1,6 +1,6 @@
 package com.matchme.srv.Activity;
 
-import java.security.Timestamp;
+import java.sql.Timestamp;
 import java.util.Set;
 
 import com.matchme.srv.EActivity.EActivity;
