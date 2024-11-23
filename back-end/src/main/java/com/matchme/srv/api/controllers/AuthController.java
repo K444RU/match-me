@@ -1,10 +1,5 @@
 package com.matchme.srv.api.controllers;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -63,11 +59,10 @@ public class AuthController {
     String jwt = jwtUtils.generateJwtToken(authentication);
 
     UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-    List<String> roles = userDetails.getAuthorities().stream().map(item -> item.getAuthority())
-        .collect(Collectors.toList());
+    String role = userDetails.getAuthorities().stream().findFirst().map(GrantedAuthority::getAuthority).orElse("");
 
     return ResponseEntity
-        .ok(new JwtResponse(jwt, userDetails.getId(), userDetails.getEmail(), roles));
+        .ok(new JwtResponse(jwt, userDetails.getId(), userDetails.getEmail(), role));
   }
 
   @PostMapping("/signup")
@@ -88,12 +83,10 @@ public class AuthController {
     // userProfile.setUser(user); might be required, works for now without...  
     
     // Always assign ROLE_USER
-    Set<Role> roles = new HashSet<>();
     Role userRole = roleRepository.findByName(ERole.ROLE_USER)
         .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-    roles.add(userRole);
+    user.setRole(userRole);
     
-    user.setRoles(roles);
     userRepository.save(user);
 
     return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
