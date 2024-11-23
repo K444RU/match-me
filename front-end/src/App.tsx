@@ -1,26 +1,13 @@
-import {
-  createBrowserRouter,
-  createRoutesFromElements,
-  Route,
-  RouterProvider,
-} from 'react-router-dom';
-import MainLayout from './layout/MainLayout';
-import HomePage from './pages/HomePage';
-import ChatsPage from './pages/ChatsPage';
-import SettingsPage from './pages/SettingsPage'
-
-const router = createBrowserRouter(
-  createRoutesFromElements(
-    <Route path="/" element={<MainLayout />}>
-      <Route index element={<HomePage />} />
-      <Route path="chats" element={<ChatsPage />} />
-      <Route path="settings" element={<SettingsPage />} />
-    </Route>
-  )
-);
+import { RouterProvider } from 'react-router-dom';
+import { router } from './router/router';
+import { AuthProvider } from './features/authentication/AuthContext';
 
 const App = () => {
-  return <RouterProvider router={router} />;
+  return (
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  );
 };
 
 export default App;

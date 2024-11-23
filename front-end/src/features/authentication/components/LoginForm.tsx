@@ -1,48 +1,50 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import MotionSpinner from '@animations/MotionSpinner';
 import InputField from '../../../components/ui/InputField';
-import { login } from '@services/AuthService';
+import { useAuth } from '@/features/authentication/AuthContext';
 import FormResponse from './FormResponse';
 
-const LoginForm = ({
-  setShowOverlay,
-}: {
-  setShowOverlay: (show: boolean) => void;
-}) => {
+const LoginForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+  const from = location.state?.from?.pathname || '/chats';
   const [email, setEmail] = useState('admin@kood.tech');
   const [password, setPassword] = useState('123456');
   const [loading, setLoading] = useState(false);
   const [resTitle, setResTitle] = useState('');
   const [resSubtitle, setResSubtitle] = useState('');
 
-  const submitForm = (e: React.FormEvent) => {
+  const submitForm = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    console.log('🚀 LoginForm: Submitting with:', { email, password });
 
-    login(email, password)
-      .then((res) => {
-        if (res.data.token) {
-          localStorage.setItem('user', JSON.stringify(res.data));
-        }
-        console.log(res);
-        navigate('/chats');
-        setShowOverlay(false);
-      })
-      .catch((err) => {
-        if (err.response && err.response.status === 401) {
-          setResTitle('Wrong Credentials');
-          setResSubtitle('Invalid username or password');
-        } else {
-          setResTitle('Something went wrong...');
-          setResSubtitle('Please contact support.');
-        }
-        console.error('Error logging in:', err);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    try {
+      const response = await login(email, password);
+      console.log('✅ LoginForm: Login successful:', response);
+      if (response.data.token) {
+        // Send them back to the page they tried to visit when they were
+        // redirected to the login page. Use { replace: true } so we don't create
+        // another entry in the history stack for the login page.  This means that
+        // when they get to the protected page and click the back button, they
+        // won't end up back on the login page, which is also really nice for the
+        // user experience.
+        navigate(from, { replace: true });
+      }
+    } catch (err: any) {
+      console.error('❌ LoginForm: Login failed:', err);
+      if (err?.response?.status === 401) {
+        setResTitle('Invalid Credentials');
+        setResSubtitle('Please check your email and password');
+      } else {
+        setResTitle('Login Failed');
+        setResSubtitle('An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
