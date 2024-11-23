@@ -26,11 +26,11 @@ const InputScroll = ({
   className,
 }: InputScrollProps) => {
   return (
-    <div className={`mb-3 place-items-start ${className}`}>
-      <label className="ml-1" htmlFor={name}>
+    <div className={`mb-3 place-items-start text-text ${className}`}>
+      <label className="ml-1 font-bold" htmlFor={name}>
         {label}
       </label>
-      <div className="rounded-md border border-primary bg-text-100 p-1">
+      <div className="rounded-md border-accent border-2 bg-primary-50 p-1">
         <input
           type="number"
           id={name}
@@ -38,7 +38,7 @@ const InputScroll = ({
           min={min}
           max={max}
           step={step}
-          className="w-full bg-text-100"
+          className="w-full bg-primary-50"
           placeholder={placeholder}
           onChange={(e) => onChange(e.target.value)}
           required={required}
