@@ -48,7 +48,7 @@ const LoginForm = () => {
   };
 
   return (
-    <form onSubmit={submitForm} className="flex flex-col items-center gap-3">
+    <form onSubmit={submitForm} className="flex flex-col items-center gap-2">
       {resTitle && resSubtitle && (
         <FormResponse title={resTitle} subtitle={resSubtitle} />
       )}
@@ -63,7 +63,7 @@ const LoginForm = () => {
       />
       <InputField
         // label="Password"
-        type="text"
+        type="password"
         name="password"
         placeholder="Password"
         value={password}

@@ -63,7 +63,7 @@ const RegisterForm = () => {
   };
 
   return (
-    <form onSubmit={submitForm} className="flex flex-col items-center gap-3">
+    <form onSubmit={submitForm} className="flex flex-col items-center gap-2">
       {resTitle && resSubtitle && (
         <FormResponse
           title={resTitle}
@@ -82,14 +82,14 @@ const RegisterForm = () => {
       />
       <InputField
         // label="Password"
-        type="text"
+        type="password"
         name="password"
         placeholder="Password"
         value={password}
         onChange={setPassword}
         required={true}
       />
-      <div className="flex place-items-start space-x-2">
+      <div className="flex w-full space-x-2">
         <InputField
           className="w-24"
           // label="Country"
