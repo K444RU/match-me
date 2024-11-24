@@ -24,7 +24,7 @@ const InputSelect5 = (
 
 
   return (
-    <div className={`w-fit text-text mb-3 ${className ? className : ''}`}>
+    <div className={`w-fit text-text ${className ? className : ''}`}>
       <h2 className="pl-1 font-semibold">{label}</h2>
       <div className="flex flex-row h-10 mt-1 bg-primary-50 rounded-md border-2 border-accent cursor-pointer">
       {options.map((option: any) => (
