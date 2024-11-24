@@ -12,6 +12,7 @@ import { useAuth } from '@/features/authentication/AuthContext';
 import { useEffect } from 'react';
 import LoginPage from '@/features/authentication/components/LoginPage';
 import RegisterPage from '@/features/authentication/components/RegisterPage';
+import ProfileCompletionPage from '@/pages/profile-completion/ProfileCompletionPage';
 
 const LogoutPage = () => {
   const { user, logout } = useAuth();
@@ -29,6 +30,7 @@ export const routes = createRoutesFromElements(
     {/* Protected Routes */}
     <Route element={<AuthenticationGuard />}>
       <Route path="settings" element={<SettingsPage />} />
+      <Route path="profile-completion" element={<ProfileCompletionPage />} />
       <Route path="chats" element={<ChatsPage />} />
       <Route path="logout" element={<LogoutPage />} />
     </Route>
