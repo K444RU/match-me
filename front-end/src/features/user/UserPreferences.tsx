@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
-import InputSelect5 from './InputSelect5'
-import OneHandleSlider from './OneHandleSlider'
+import InputSelect5 from '../../components/ui/InputSelect5';
+import OneHandleSlider from '../../components/ui/OneHandleSlider'
 
 const UserPreferences = () => {
 
@@ -19,7 +19,7 @@ const UserPreferences = () => {
   return (
     <form onSubmit={submitForm} className="border-b-2 border-accent mb-3">
       <h2 className="font-bold text-text text-xl mb-3 pl-3 border-b-2 border-accent">Your preferences</h2>
-      <InputSelect5 
+      <InputSelect5
         label="I'm interested in"
         options={["Men", "Women", "Everyone"]}
         onChange={setGender}
