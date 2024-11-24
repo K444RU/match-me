@@ -1,5 +1,5 @@
-import UserPreferences from '../components/ui/UserPreferences'
-import UserAttributes from '../components/ui/UserAttributes'
+import UserPreferences from '@features/user/UserPreferences';
+import UserAttributes from '@features/user/UserAttributes';
 
 const SettingsPage = () => {
   return (
