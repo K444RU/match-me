@@ -18,7 +18,10 @@ const Navbar = () => {
             <div className="md:ml-auto">
               <div className="flex space-x-2">
                 {!user ? (
-                  <LinkButton to={'/login'} content={'Log in'} />
+                  <>
+                    <LinkButton to={'/login'} content={'Log in'} />
+                    <LinkButton to={'/register'} content={'Sign Up'} />
+                  </>
                 ) : (
                   <>
                     <LinkButton to={'/chats'} content={'Chats'} />
