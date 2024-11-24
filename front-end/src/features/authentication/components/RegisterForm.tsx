@@ -18,7 +18,7 @@ const RegisterForm = () => {
     e.preventDefault();
     setLoading(true);
 
-    register(email, phone, password)
+    register(email, `${countryCode} ${phone}`, password)
       .then((res) => {
         // TODO: Don't redirect on register & wait for email verify.
         // This current approach would cause a unnecessary
