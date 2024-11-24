@@ -46,7 +46,7 @@ const Login = ({ isLogin = false }) => {
               {/* <p className="text-text-500">Enter your login details</p> */}
               <div>
                 {isLogin ? (
-                  <LoginForm setShowOverlay={setShowOverlay} />
+                  <LoginForm/>
                 ) : (
                   <RegisterForm />
                 )}
