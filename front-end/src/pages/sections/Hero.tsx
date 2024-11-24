@@ -8,10 +8,10 @@ const Hero = ({ onLearnMore }: { onLearnMore: () => void }) => {
     <section className="h-screen bg-background">
       <div className="max-w-8xl mx-auto flex h-full flex-col items-center justify-center gap-4 px-4 py-16 text-center sm:px-6 lg:px-8">
         <h1 className="font-extrabold text-text sm:text-5xl lg:text-8xl">
-          The <span className="text-accent-500">data-driven</span> solution to
+          The <span className="text-accent-500 underline">data-driven</span> solution to
           endless swiping
         </h1>
-        <p className="max-w-7xl text-4xl font-light tracking-tighter text-text">
+        <p className="max-w-7xl text-4xl font-light tracking-tight text-text">
           Get connections with people that actually match your interests. One
           flat rate for everyone - no premium tiers, no pay-to-date schemes.
         </p>
