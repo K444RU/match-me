@@ -12,11 +12,7 @@ const HomePage = () => {
 
   return (
     <>
-      <Hero
-        title="Blind"
-        subtitle="Ready to date differently?"
-        onLearnMore={scrollToHowItWorks}
-      />
+      <Hero onLearnMore={scrollToHowItWorks} />
       <HowItWorksSection ref={howItWorksRef} />
       <JumpToTopButton />
     </>
