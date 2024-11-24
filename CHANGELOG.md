@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.1-alpha.5](https://gitea.kood.tech/karlrometsomelar/match-me/compare/v0.0.1-alpha.4...v0.0.1-alpha.5) (2024-11-24)
+
+
+### Features
+
+* add auth state ([b066027](https://gitea.kood.tech/karlrometsomelar/match-me/commit/b0660273b31bd1883e02b4e789d0f0406fa01d8e))
+* add OneHandleSlider ([6b5ea6d](https://gitea.kood.tech/karlrometsomelar/match-me/commit/6b5ea6d248eab226cfb25094bebac2148aee3c87))
+* add UserAttributes as a settings component. ([13fcfd7](https://gitea.kood.tech/karlrometsomelar/match-me/commit/13fcfd7274958b9a771493ed06d5c081a8fecc24))
+* Link component using button styling ([493cbf7](https://gitea.kood.tech/karlrometsomelar/match-me/commit/493cbf70df0a332e2ed147152c771973e0f2cd2f))
+* navbar use auth state ([2aa7736](https://gitea.kood.tech/karlrometsomelar/match-me/commit/2aa7736f60eaa394f6258cc000716c798ad00f65))
+
+
+### Bug Fixes
+
+* import typos causing mvn run fail... ([5fd9ddb](https://gitea.kood.tech/karlrometsomelar/match-me/commit/5fd9ddb12135644ca04e16a7c860c2847aaaf3b8))
+* signup/new user creation ([8f840ed](https://gitea.kood.tech/karlrometsomelar/match-me/commit/8f840eda444ef5e8540664a52172726fd3c26f20))
+
+
+### Refactoring
+
+* modify user array roles -> string role ([b903f45](https://gitea.kood.tech/karlrometsomelar/match-me/commit/b903f454d039f0775b5313b62e33c30789205597))
+* restructure back-end ([76ddcfc](https://gitea.kood.tech/karlrometsomelar/match-me/commit/76ddcfcc73af7528d18f1361b675347c7f6ebf9b))
+
 ## [0.0.1-alpha.4](https://gitea.kood.tech/karlrometsomelar/match-me/compare/v0.0.1-alpha.3...v0.0.1-alpha.4) (2024-11-22)
 
 
