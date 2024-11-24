@@ -26,7 +26,8 @@
       "@features/*": ["src/features/*"],
       "@animations/*": ["src/components/animations/*"],
       "@services/*": ["src/services/*"],
-      "@assets/*": ["src/assets/*"]
+      "@assets/*": ["src/assets/*"],
+      "@ui/*": ["src/components/ui/*"]
     }
   },
   "include": ["vite.config.ts"]

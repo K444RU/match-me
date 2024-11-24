@@ -20,6 +20,7 @@ export default defineConfig({
       { find: '@features', replacement: '/src/features' },
       { find: '@services', replacement: '/src/services' },
       { find: '@assets', replacement: '/src/assets' },
+      { find: '@ui', replacement: '/src/components/ui' },
     ],
    },
 });
