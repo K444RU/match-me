@@ -2,6 +2,50 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.1-alpha.6](https://gitea.kood.tech/karlrometsomelar/match-me/compare/v0.0.1-alpha.5...v0.0.1-alpha.6) (2024-11-24)
+
+
+### Features
+
+* add button component ([f767b93](https://gitea.kood.tech/karlrometsomelar/match-me/commit/f767b93feac0b54e6228d63559b6b6e29976dac5))
+* add favicon ([2b94c1f](https://gitea.kood.tech/karlrometsomelar/match-me/commit/2b94c1f5a3b8cdac1f951767d420d7f01ac2fd1b))
+* add genders & sexuality list ([f6b9a23](https://gitea.kood.tech/karlrometsomelar/match-me/commit/f6b9a232bf791ba15f63f329dbe4412f826096f2))
+* add option to disabled select component ([d65361c](https://gitea.kood.tech/karlrometsomelar/match-me/commit/d65361c822b8e44aa6f1f4b46253ae49b643286d))
+* add profile-completion ([cac4ef6](https://gitea.kood.tech/karlrometsomelar/match-me/commit/cac4ef640901626b8f1adeacb8a84ebaf2fc85bd))
+* add select component ([c43d6ea](https://gitea.kood.tech/karlrometsomelar/match-me/commit/c43d6ead13c459bf90eae355ce11a31ad5faf8b8))
+* add Sign Up to nav ([8d10666](https://gitea.kood.tech/karlrometsomelar/match-me/commit/8d106665b88378ad6dce30b6b9df2979a2f51f45))
+
+
+### Bug Fixes
+
+* add countryCode to RegForm ([c8f2e07](https://gitea.kood.tech/karlrometsomelar/match-me/commit/c8f2e0759e6f8a2ee529448b7a94a1293e69f332))
+
+
+### Housekeeping
+
+* add [@assets](https://gitea.kood.tech/assets) ([626f366](https://gitea.kood.tech/karlrometsomelar/match-me/commit/626f3664de2761ccada98223e250aeed2fe35ae8))
+* add [@ui](https://gitea.kood.tech/ui) ([dbafaf8](https://gitea.kood.tech/karlrometsomelar/match-me/commit/dbafaf876c0701c399e2d050738a50fc0783ab60))
+* add date-fns ([064d979](https://gitea.kood.tech/karlrometsomelar/match-me/commit/064d9794b3ae07c0369ce058f3e38333df3387c7))
+* add react-daypicker ([0ad0955](https://gitea.kood.tech/karlrometsomelar/match-me/commit/0ad09554a82827d4fc1750e287922e1ca5f7c2cb))
+* remove weird hover effect ([a640c71](https://gitea.kood.tech/karlrometsomelar/match-me/commit/a640c717504226a33f1c42d1cb6136bd695c8876))
+* update import ([3307530](https://gitea.kood.tech/karlrometsomelar/match-me/commit/3307530170400c56770848294a51d7db0d7a68e4))
+
+
+### Styling
+
+* add emphasis on hero ([138672b](https://gitea.kood.tech/karlrometsomelar/match-me/commit/138672b3e797b318e79b277cae2fb1283bd26a67))
+* hero rework again ([ce23bca](https://gitea.kood.tech/karlrometsomelar/match-me/commit/ce23bca7aabad1660614f61b0980abc084be8529))
+* linkbutton gesture effex ([d0c4eb5](https://gitea.kood.tech/karlrometsomelar/match-me/commit/d0c4eb50c8fb8bbfe0179fc39fdc53fa5a808923))
+* modify /register & /login ([4521864](https://gitea.kood.tech/karlrometsomelar/match-me/commit/4521864c6cf78fbaeebd9e6b6d1576977492fa36))
+* modify Hero ([a1a9847](https://gitea.kood.tech/karlrometsomelar/match-me/commit/a1a98471fbe695ca044c3396741b1ecc8ad2fecb))
+* remove mb-3 ([989cf9d](https://gitea.kood.tech/karlrometsomelar/match-me/commit/989cf9d6f1aeacfb0a8f94a432f6314c8b29d28e))
+
+
+### Refactoring
+
+* age -> localdate ([d8a8938](https://gitea.kood.tech/karlrometsomelar/match-me/commit/d8a893858d5a5b6e42e953d53f123b76f9c1a17d))
+* move UserAttr. & Pref. ([b796659](https://gitea.kood.tech/karlrometsomelar/match-me/commit/b796659a777053acd0f66663b6cbb8fd8fac669f))
+
 ## [0.0.1-alpha.5](https://gitea.kood.tech/karlrometsomelar/match-me/compare/v0.0.1-alpha.4...v0.0.1-alpha.5) (2024-11-24)
 
 
