@@ -11,6 +11,7 @@ import { AuthenticationGuard } from './components/AuthenticationGuard';
 import { useAuth } from '@/features/authentication/AuthContext';
 import { useEffect } from 'react';
 import LoginPage from '@/features/authentication/components/LoginPage';
+import RegisterPage from '@/features/authentication/components/RegisterPage';
 
 const LogoutPage = () => {
   const { user, logout } = useAuth();
@@ -35,6 +36,7 @@ export const routes = createRoutesFromElements(
     {/* Login page in case unauthenticated */}
     <Route element={<AuthenticationGuard guardType="unauthenticated" />}>
       <Route path="login" element={<LoginPage />} />
+      <Route path="register" element={<RegisterPage />} />
     </Route>
   </Route>
 );
