@@ -1,5 +1,6 @@
 package com.matchme.srv.user.user_profile;
 
+import java.time.LocalDate;
 import java.util.Set;
 
 import jakarta.persistence.CascadeType;
@@ -26,7 +27,7 @@ public class UserAttributes {
   private Gender gender;
 
   @NotNull
-  private Integer age;
+  private LocalDate birthDate;
 
   @NotNull
   private String location; // Need to look into location representation in database
