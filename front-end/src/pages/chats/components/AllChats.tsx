@@ -1,5 +1,5 @@
-import ChatPreview from '../components/ui/ChatPreview';
-import UserInfo from '../components/ui/UserInfo';
+import ChatPreview from './ChatPreview';
+import UserInfo from './UserInfo';
 
 const AllChats = () => {
   const chats: any = [
