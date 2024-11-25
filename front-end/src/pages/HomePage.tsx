@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import Hero from './sections/Hero';
 import HowItWorksSection from './sections/HowItWorksSection';
-import JumpToTopButton from '../components/ui/JumpToTopButton';
+import JumpToTopButton from '../components/ui/buttons/JumpToTopButton';
 
 const HomePage = () => {
   const howItWorksRef = useRef<HTMLDivElement>(null);

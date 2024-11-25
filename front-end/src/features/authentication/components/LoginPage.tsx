@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/features/authentication/AuthContext';
 import LoginForm from './LoginForm';
+import FormLayout from './FormLayout';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -17,12 +18,11 @@ const LoginPage = () => {
   }, [user, navigate, location]);
 
   return (
-    <div className="flex h-screen items-center justify-center bg-background">
-      <div className="w-full max-w-md rounded-md bg-accent-200 p-6">
-        <h1 className="mb-6 text-center text-3xl font-bold text-text">Login</h1>
+    <>
+      <FormLayout title="Log in">
         <LoginForm />
-      </div>
-    </div>
+      </FormLayout>
+    </>
   );
 };
 

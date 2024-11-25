@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect, ElementRef } from 'react';
-import InputField from '@ui/InputField';
-import InputSelect5 from '@ui/InputSelect5';
+import InputField from '@/components/ui/forms/InputField';
+import InputSelect5 from '@/components/ui/forms/InputSelect5';
 import { genders } from '@assets/genders';
-import Select from '@ui/Select';
+import Select from '@/components/ui/forms/Select';
 import { FaArrowRight } from 'react-icons/fa';
 import { LuCalendar } from 'react-icons/lu';
 import { DayPicker } from 'react-day-picker';
-import Button from '@ui/Button';
+import Button from '@/components/ui/buttons/Button';
 import 'react-day-picker/style.css';
 import { format } from 'date-fns';
 

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import InputField from '../../components/ui/InputField';
-import InputSelect5 from '../../components/ui/InputSelect5';
-import InputScroll from '../../components/ui/InputScroll';
+import InputField from '../../components/ui/forms/InputField';
+import InputSelect5 from '../../components/ui/forms/InputSelect5';
+import InputScroll from '../../components/ui/forms/InputScroll';
 import { genders } from '@/assets/genders';
-import Select from '@/components/ui/Select';
+import Select from '@/components/ui/forms/Select';
 
 const UserAttributes = () => {
   const [firstName, setFirstName] = useState('');
