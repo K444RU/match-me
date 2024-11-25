@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import InputSelect5 from '@/components/ui/InputSelect5';
-import OneHandleSlider from '@/components/ui/OneHandleSlider';
+import InputSelect5 from '@/components/ui/forms/InputSelect5';
+import OneHandleSlider from '@/components/ui/forms/OneHandleSlider';
 import { FaArrowLeft } from 'react-icons/fa';
 
 interface PreferencesProps {

@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useContext, useState } from 'react';
-import AuthService from '@services/AuthService';
+import AuthService from '@/features/authentication/services/AuthService';
 import { AxiosResponse } from 'axios';
 
 interface User {

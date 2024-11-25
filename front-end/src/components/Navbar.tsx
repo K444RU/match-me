@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/features/authentication/AuthContext';
-import LinkButton from './ui/LinkButton';
+import LinkButton from './ui/buttons/LinkButton';
 
 const Navbar = () => {
   const { user } = useAuth();

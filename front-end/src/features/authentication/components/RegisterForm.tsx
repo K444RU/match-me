@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import InputField from '../../../components/ui/InputField';
+import InputField from '../../../components/ui/forms/InputField';
 import MotionSpinner from '@animations/MotionSpinner';
 import FormResponse from './FormResponse';
-import { register } from '@services/AuthService';
+import { register } from '@/features/authentication/services/AuthService';
+import PhoneInput from './PhoneInput';
 
 const RegisterForm = () => {
   const [email, setEmail] = useState('admin@kood.tech');
@@ -90,24 +91,11 @@ const RegisterForm = () => {
         required={true}
       />
       <div className="flex w-full space-x-2">
-        <InputField
-          className="w-24"
-          // label="Country"
-          type="text"
-          name="country_code"
-          placeholder="+372"
-          value={countryCode}
-          onChange={setCountryCode}
-          required={true}
-        />
-        <InputField
-          // label="Phone number"
-          type="text"
-          name="contact_phone"
-          placeholder="Phone"
-          value={phone}
-          onChange={setPhone}
-          required={true}
+        <PhoneInput
+          countryCode={countryCode}
+          phone={phone}
+          onCountryCodeChange={setCountryCode}
+          onPhoneChange={setPhone}
         />
       </div>
       <button

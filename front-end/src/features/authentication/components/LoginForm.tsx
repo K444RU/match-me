@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import MotionSpinner from '@animations/MotionSpinner';
-import InputField from '../../../components/ui/InputField';
+import InputField from '../../../components/ui/forms/InputField';
 import { useAuth } from '@/features/authentication/AuthContext';
 import FormResponse from './FormResponse';
 
