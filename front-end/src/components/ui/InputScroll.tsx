@@ -14,24 +14,23 @@ type InputScrollProps = {
   //value??
 };
 
-const InputScroll = (
-  {
-    label,
-    name,
-    min,
-    max,
-    step,
-    placeholder,
-    onChange,
-    required,
-    className,
-  }: InputScrollProps) => {
+const InputScroll = ({
+  label,
+  name,
+  min,
+  max,
+  step,
+  placeholder,
+  onChange,
+  required,
+  className,
+}: InputScrollProps) => {
   return (
     <div className={`mb-3 place-items-start text-text ${className}`}>
       <label className="pl-1 font-semibold" htmlFor={name}>
         {label}
       </label>
-      <div className="rounded-md border-accent border-2 bg-primary-50 p-1 mt-1">
+      <div className="mt-1 rounded-md border-2 border-accent bg-primary-50 p-1">
         <input
           type="number"
           id={name}

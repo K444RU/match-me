@@ -3,11 +3,11 @@ import UserAttributes from '@features/user/UserAttributes';
 
 const SettingsPage = () => {
   return (
-    <div className="max-w-[800px] mx-auto pt-24 px-5 h-screen overflow-auto bg-background-200 items-center justify-center">
+    <div className="mx-auto h-screen max-w-[800px] items-center justify-center overflow-auto bg-background-200 px-5 pt-24">
       <UserPreferences />
       <UserAttributes />
     </div>
-  )
-}
+  );
+};
 
-export default SettingsPage
+export default SettingsPage;

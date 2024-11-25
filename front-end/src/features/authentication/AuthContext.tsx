@@ -50,12 +50,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const login = async (email: string, password: string) => {
     console.log('🔑 AuthContext: Login attempt with:', { email, password });
-    
+
     try {
       console.log('📡 AuthContext: Calling AuthService.login');
       const response = await AuthService.login(email, password);
       console.log('📥 AuthContext: Received response:', response);
-      
+
       if (response?.data?.token) {
         console.log('🎫 AuthContext: Token found, setting user');
         localStorage.setItem('authToken', JSON.stringify(response.data.token));

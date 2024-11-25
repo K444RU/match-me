@@ -58,7 +58,10 @@ const Preferences: React.FC<PreferencesProps> = ({
         >
           Finish
         </button>
-        <button onClick={onPrevious} className="mb-3 flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text">
+        <button
+          onClick={onPrevious}
+          className="mb-3 flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
+        >
           <FaArrowLeft />
           Back
         </button>
