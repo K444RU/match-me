@@ -4,16 +4,7 @@ import java.util.Set;
 
 import com.matchme.srv.user.User;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 // import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -29,7 +20,7 @@ public class UserProfile {
   @OneToOne(mappedBy = "userProfile", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   private User user;
 
-  // TODO: Find a solution so that we can signup
+  // TODO: Find a solution so that we can signup - I think an easy solution would be to create the profile when we get the email verification token. 
   // Temporarily I have commented the @NotNull's out.
   // Because with the current logic, we would have to set everything up in the initial popup.
   // Otherwise the notnull's were fucking us.
