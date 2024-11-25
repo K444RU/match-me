@@ -5,7 +5,7 @@ import {
 } from 'react-router-dom';
 import MainLayout from '../layout/MainLayout';
 import HomePage from '../pages/HomePage';
-import ChatsPage from '../pages/ChatsPage';
+import ChatsPage from '../pages/chats/ChatsPage';
 import SettingsPage from '../pages/SettingsPage';
 import { AuthenticationGuard } from './components/AuthenticationGuard';
 import { useAuth } from '@/features/authentication/AuthContext';

@@ -1,5 +1,5 @@
-import AllChats from './AllChats';
-import OpenChat from '../components/ui/OpenChat';
+import AllChats from './components/AllChats';
+import OpenChat from './components/OpenChat';
 
 const ChatsPage = () => {
   return (
