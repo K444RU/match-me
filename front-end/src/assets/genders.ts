@@ -154,5 +154,5 @@ export const genders = [
   { label: 'Venngender', value: 'venngender' },
   { label: 'Verangender', value: 'verangender' },
   { label: 'Vibragender', value: 'vibragender' },
-  {label: 'Vocigender', value: 'vocigender'},
+  { label: 'Vocigender', value: 'vocigender' },
 ];

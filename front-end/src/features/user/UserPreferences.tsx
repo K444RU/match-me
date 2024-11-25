@@ -1,30 +1,31 @@
-import React, {useState} from 'react'
+import React, { useState } from 'react';
 import InputSelect5 from '../../components/ui/InputSelect5';
-import OneHandleSlider from '../../components/ui/OneHandleSlider'
+import OneHandleSlider from '../../components/ui/OneHandleSlider';
 
 const UserPreferences = () => {
-
-  const [gender, setGender] = useState('')
-  const [distance, setDistance] = useState('')
+  const [gender, setGender] = useState('');
+  const [distance, setDistance] = useState('');
 
   const submitForm = (e: React.FormEvent) => {
     e.preventDefault();
     const user = {
       gender,
-      distance
-    }
-    console.log(user)
-  }
+      distance,
+    };
+    console.log(user);
+  };
 
   return (
-    <form onSubmit={submitForm} className="border-b-2 border-accent mb-3">
-      <h2 className="font-bold text-text text-xl mb-3 pl-3 border-b-2 border-accent">Your preferences</h2>
+    <form onSubmit={submitForm} className="mb-3 border-b-2 border-accent">
+      <h2 className="mb-3 border-b-2 border-accent pl-3 text-xl font-bold text-text">
+        Your preferences
+      </h2>
       <InputSelect5
         label="I'm interested in"
-        options={["Men", "Women", "Everyone"]}
+        options={['Men', 'Women', 'Everyone']}
         onChange={setGender}
       />
-      <OneHandleSlider 
+      <OneHandleSlider
         name="Distance"
         min="50"
         max="300"
@@ -34,15 +35,14 @@ const UserPreferences = () => {
         onChange={setDistance}
       />
       <button
-        className=" mb-3 flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
+        className="mb-3 flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
         type="submit"
         aria-label="Submit form."
       >
-      <span>Set</span>
+        <span>Set</span>
       </button>
     </form>
+  );
+};
 
-  )
-}
-
-export default UserPreferences
+export default UserPreferences;

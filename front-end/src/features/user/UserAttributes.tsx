@@ -52,9 +52,14 @@ const UserAttributes = () => {
             onChange={setGender}
           />
           {gender === 'Other' && (
-            <Select name='genderOther' options={genders.map(gender => (
-              <option key={gender.value} value={gender.value}>{gender.label}</option>
-            ))}/>
+            <Select
+              name="genderOther"
+              options={genders.map((gender) => (
+                <option key={gender.value} value={gender.value}>
+                  {gender.label}
+                </option>
+              ))}
+            />
           )}
         </div>
         <InputScroll

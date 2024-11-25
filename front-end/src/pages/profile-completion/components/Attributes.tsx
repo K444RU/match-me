@@ -56,8 +56,11 @@ const Attributes: React.FC<AttributeProps> = ({ onNext }) => {
   };
 
   return (
-    <form onSubmit={submitForm} className="w-full max-w-md rounded-lg bg-accent-200 p-6 shadow-md">
-      <h2 className="border-b-2 border-accent text-2xl font-bold text-text text-center">
+    <form
+      onSubmit={submitForm}
+      className="w-full max-w-md rounded-lg bg-accent-200 p-6 shadow-md"
+    >
+      <h2 className="border-b-2 border-accent text-center text-2xl font-bold text-text">
         Personal Information
       </h2>
       <div className="flex flex-col gap-2 py-4">
@@ -106,26 +109,26 @@ const Attributes: React.FC<AttributeProps> = ({ onNext }) => {
         </div>
         <div>
           <div className="flex flex-col justify-between gap-2">
-            <span className="font-semibold pl-1">Date of Birth</span>
-          <Button
-            ref={datePickerBtnRef}
-            onClick={() => {
-              setShowDatePicker(!showDatePicker);
-            }}
-          >
-            {!dob ? (
-              <>
-                <LuCalendar /> Pick a date
-              </>
-            ) : (
-              // TODO: Format to user locale
-              // import { es, ru } from 'date-fns/locale'
-              // { locale: ru }
-              <>
-                <LuCalendar /> {format(dob, 'PPP')}
-              </>
-            )}
-          </Button>
+            <span className="pl-1 font-semibold">Date of Birth</span>
+            <Button
+              ref={datePickerBtnRef}
+              onClick={() => {
+                setShowDatePicker(!showDatePicker);
+              }}
+            >
+              {!dob ? (
+                <>
+                  <LuCalendar /> Pick a date
+                </>
+              ) : (
+                // TODO: Format to user locale
+                // import { es, ru } from 'date-fns/locale'
+                // { locale: ru }
+                <>
+                  <LuCalendar /> {format(dob, 'PPP')}
+                </>
+              )}
+            </Button>
           </div>
           {showDatePicker && (
             <div

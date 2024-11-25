@@ -44,13 +44,7 @@ const Login = ({ isLogin = false }) => {
                 onClick={() => setShowOverlay(false)}
               />
               {/* <p className="text-text-500">Enter your login details</p> */}
-              <div>
-                {isLogin ? (
-                  <LoginForm/>
-                ) : (
-                  <RegisterForm />
-                )}
-              </div>
+              <div>{isLogin ? <LoginForm /> : <RegisterForm />}</div>
             </motion.div>
           </motion.div>
         )}
