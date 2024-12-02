@@ -18,10 +18,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.matchme.srv.Role.Role;
-import com.matchme.srv.api.dto.request.LoginRequest;
-import com.matchme.srv.api.dto.request.SignupRequest;
-import com.matchme.srv.enums.ERole;
+import com.matchme.srv.dto.request.LoginRequestDTO;
+import com.matchme.srv.dto.request.SignupRequestDTO;
+import com.matchme.srv.model.user.Role;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -41,7 +40,7 @@ public class AuthControllerTest {
   @BeforeEach
   void setup() {
     Role userRole = new Role();
-    userRole.setName(ERole.ROLE_USER);
+    userRole.setName(Role.UserRole.ROLE_USER);
   }
 
   // Public routes
@@ -93,7 +92,7 @@ public class AuthControllerTest {
 
     // Successful sign up should return status 200 with
     // "message": "User registered successfully!"
-    SignupRequest signUpRequest = new SignupRequest();
+    SignupRequestDTO signUpRequest = new SignupRequestDTO();
     signUpRequest.setEmail(VALID_EMAIL);
     signUpRequest.setPassword(VALID_PASSWORD);
     signUpRequest.setNumber(VALID_PHONE);
@@ -104,7 +103,7 @@ public class AuthControllerTest {
         .andExpect(status().isOk());
 
     // Successful sign in should return status 200 with token, type, id, email and roles
-    LoginRequest loginRequest = new LoginRequest();
+    LoginRequestDTO loginRequest = new LoginRequestDTO();
     loginRequest.setEmail(VALID_EMAIL);
     loginRequest.setPassword(VALID_PASSWORD);
 
@@ -122,7 +121,7 @@ public class AuthControllerTest {
     String VALID_PASSWORD = "testtest";
     String VALID_PHONE = "+372 4556342";
 
-    SignupRequest signUpRequest = new SignupRequest();
+    SignupRequestDTO signUpRequest = new SignupRequestDTO();
     signUpRequest.setEmail(VALID_EMAIL);
     signUpRequest.setPassword(VALID_PASSWORD);
     signUpRequest.setNumber(VALID_PHONE);
@@ -144,7 +143,7 @@ public class AuthControllerTest {
     String VALID_PASSWORD = "testtest";
     String VALID_PHONE = "+372 3246543";
 
-    SignupRequest signUpRequest = new SignupRequest();
+    SignupRequestDTO signUpRequest = new SignupRequestDTO();
     signUpRequest.setEmail(INVALID_EMAIL);
     signUpRequest.setPassword(VALID_PASSWORD);
     signUpRequest.setNumber(VALID_PHONE);
@@ -161,7 +160,7 @@ public class AuthControllerTest {
     String VALID_EMAIL = "invalidpassword@test.com";
     String VALID_PHONE = "+372 3563443";
 
-    SignupRequest signUpRequest = new SignupRequest();
+    SignupRequestDTO signUpRequest = new SignupRequestDTO();
     signUpRequest.setEmail(VALID_EMAIL);
     signUpRequest.setPassword(INVALID_PASSWORD);
     signUpRequest.setNumber(VALID_PHONE);
@@ -180,7 +179,7 @@ public class AuthControllerTest {
     String VALID_EMAIL = "invalidphonenumber@test.com";
     String VALID_PASSWORD = "testtest";
 
-    SignupRequest signUpRequest = new SignupRequest();
+    SignupRequestDTO signUpRequest = new SignupRequestDTO();
     signUpRequest.setEmail(VALID_EMAIL);
     signUpRequest.setPassword(VALID_PASSWORD);
     signUpRequest.setNumber(INVALID_PHONE);
