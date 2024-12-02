@@ -1,8 +1,9 @@
 package com.matchme.srv.security.services;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,27 +22,32 @@ public class UserDetailsImpl implements UserDetails {
     @JsonIgnore
     private String password;
 
-    private GrantedAuthority authority;
+    private Set<GrantedAuthority> authorities;
 
     public UserDetailsImpl(Long id, String email, String password,
-            GrantedAuthority authority) {
+            Set<GrantedAuthority> authorities) {
         this.id = id;
         this.email = email;
         this.password = password;
-        this.authority = authority;
+        this.authorities = authorities;
     }
     public static UserDetailsImpl build(User user, String password) {
-      GrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().getName().name());
+
+      Set<GrantedAuthority> authorities = user.getRoles()
+          .stream()
+          .map(role -> new SimpleGrantedAuthority(role.getName().name()))
+          .collect(Collectors.toSet());
     
-        return new UserDetailsImpl(user.getId(), 
-                                   user.getEmail(),
-                                   password, 
-                                   authority);
+      return new UserDetailsImpl(
+          user.getId(), 
+          user.getEmail(),
+          password, 
+          authorities);
       }
     
       @Override
       public Collection<? extends GrantedAuthority> getAuthorities() {
-          return Collections.singletonList(authority);
+          return authorities;
       }
     
       public Long getId() {

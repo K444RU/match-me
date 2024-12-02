@@ -21,14 +21,11 @@ import com.matchme.srv.dto.request.LoginRequestDTO;
 import com.matchme.srv.dto.request.SignupRequestDTO;
 import com.matchme.srv.dto.response.JwtResponseDTO;
 import com.matchme.srv.dto.response.MessageResponseDTO;
-import com.matchme.srv.model.user.Role;
-import com.matchme.srv.model.user.User;
-import com.matchme.srv.model.user.UserAuth;
-import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.repository.RoleRepository;
 import com.matchme.srv.repository.UserRepository;
 import com.matchme.srv.security.jwt.JwtUtils;
 import com.matchme.srv.security.services.UserDetailsImpl;
+import com.matchme.srv.service.UserService;
 
 // public Authcontroller(UserService userService) - constructor?
 
@@ -42,6 +39,9 @@ public class AuthController {
 
   @Autowired
   UserRepository userRepository;
+
+  @Autowired
+  UserService userService;
 
   @Autowired
   RoleRepository roleRepository;
@@ -76,30 +76,32 @@ public class AuthController {
 
   @PostMapping("/signup")
   public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequestDTO signUpRequest) {
-    if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-      return ResponseEntity.badRequest().body(new MessageResponseDTO("Error: email is already taken!"));
-    }
+
+    userService.createUser(signUpRequest);
+
+    // if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+    //   return ResponseEntity.badRequest().body(new MessageResponseDTO("Error: email is already taken!"));
+    // }
 
     // Create new user's account
-    User user = new User();
-    UserAuth userAuth = new UserAuth();
-    user.setUserAuth(userAuth);
+    // User user = new User();
+    // UserAuth userAuth = new UserAuth();
+    // user.setUserAuth(userAuth);
 
-    user.setEmail(signUpRequest.getEmail());
-    user.setNumber(signUpRequest.getNumber());
-    userAuth.setPassword(encoder.encode(signUpRequest.getPassword()));
+    // user.setEmail(signUpRequest.getEmail());
+    // user.setNumber(signUpRequest.getNumber());
+    // userAuth.setPassword(encoder.encode(signUpRequest.getPassword()));
     
     // Create userprofile since it's a one-to-one relationship and we can't make a new user without it
-    UserProfile userProfile = new UserProfile();
-    user.setProfile(userProfile);
+    // UserProfile userProfile = new UserProfile();
+    // user.setProfile(userProfile);
     // userProfile.setUser(user); might be required, works for now without...  
     
-    // TODO: Always assign ROLE_USER - make this an array
-    Role userRole = roleRepository.findByName(Role.UserRole.ROLE_USER)
-        .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-    user.setRole(userRole);
+    // Role userRole = roleRepository.findByName(Role.UserRole.ROLE_USER)
+    //     .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+    // user.setRole(userRole);
     
-    userRepository.save(user);
+    // userRepository.save(user);
 
     return ResponseEntity.ok(new MessageResponseDTO("User registered successfully!"));
   }
