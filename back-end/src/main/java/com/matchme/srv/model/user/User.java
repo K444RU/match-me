@@ -30,9 +30,12 @@ public class User {
     @Size(max = 20)
     private String number;
 
-    @NotBlank
-    @Size(max = 120)
-    private String password;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private UserAuth userAuth;
+
+    // @NotBlank
+    // @Size(max = 120)
+    // private String password;
 
     @Enumerated(EnumType.STRING)
     private UserState state;
@@ -65,6 +68,13 @@ public class User {
             score.setUser(this);
         }
         this.score = score;
+    }
+
+    public void setUserAuth(UserAuth userAuth) {
+        if (userAuth != null) {
+            userAuth.setUser(this);
+        }
+        this.userAuth = userAuth;
     }
 
     // Without helper method - inconsistent relationship
