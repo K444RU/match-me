@@ -23,6 +23,7 @@ import com.matchme.srv.dto.response.JwtResponseDTO;
 import com.matchme.srv.dto.response.MessageResponseDTO;
 import com.matchme.srv.model.user.Role;
 import com.matchme.srv.model.user.User;
+import com.matchme.srv.model.user.UserAuth;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.repository.RoleRepository;
 import com.matchme.srv.repository.UserRepository;
@@ -81,9 +82,12 @@ public class AuthController {
 
     // Create new user's account
     User user = new User();
+    UserAuth userAuth = new UserAuth();
+    user.setUserAuth(userAuth);
+
     user.setEmail(signUpRequest.getEmail());
     user.setNumber(signUpRequest.getNumber());
-    user.setPassword(encoder.encode(signUpRequest.getPassword()));
+    userAuth.setPassword(encoder.encode(signUpRequest.getPassword()));
     
     // Create userprofile since it's a one-to-one relationship and we can't make a new user without it
     UserProfile userProfile = new UserProfile();

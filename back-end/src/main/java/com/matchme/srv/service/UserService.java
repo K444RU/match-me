@@ -6,8 +6,10 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.matchme.srv.dto.response.SettingsResponseDTO;
 import com.matchme.srv.model.user.Role;
 import com.matchme.srv.model.user.User;
+import com.matchme.srv.model.user.UserAuth;
 import com.matchme.srv.model.user.UserState;
 import com.matchme.srv.model.user.activity.ActivityLog;
 import com.matchme.srv.model.user.profile.UserProfile;
@@ -16,6 +18,7 @@ import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
 import com.matchme.srv.repository.ActivityLogRepository;
 import com.matchme.srv.repository.RoleRepository;
 import com.matchme.srv.repository.UserAttributesRepository;
+import com.matchme.srv.repository.UserAuthRepository;
 import com.matchme.srv.repository.UserPreferencesRepository;
 import com.matchme.srv.repository.UserProfileRepository;
 import com.matchme.srv.repository.UserRepository;
@@ -29,15 +32,17 @@ public class UserService {
   private final UserPreferencesRepository preferencesRepository;
   private final ActivityLogRepository activityRepository;
   private final RoleRepository roleRepository;
+  private final UserAuthRepository authRepository;
 
   @Autowired
-  public UserService(UserRepository userRepository, UserProfileRepository userProfileRepository, UserAttributesRepository userAttributesRepository, UserPreferencesRepository userPreferencesRepository, ActivityLogRepository activityLogRepository, RoleRepository roleRepository) {
+  public UserService(UserRepository userRepository, UserProfileRepository userProfileRepository, UserAttributesRepository userAttributesRepository, UserPreferencesRepository userPreferencesRepository, ActivityLogRepository activityLogRepository, RoleRepository roleRepository, UserAuthRepository userAuthRepository) {
     this.userRepository = userRepository;
     this.profileRepository = userProfileRepository;
     this.attributesRepository = userAttributesRepository;
     this.preferencesRepository = userPreferencesRepository;
     this.activityRepository = activityLogRepository;
     this.roleRepository = roleRepository;
+    this.authRepository = userAuthRepository;
   }
 
   public ActivityLog createUser(String email) {
@@ -74,7 +79,7 @@ public class UserService {
     User user = possibleUser.get();
 
     user.setNumber(number);
-    user.setPassword(password);
+    //user.setPassword(password);
     user.setState(UserState.NEW);
 
     // Create a new profile and set it to user.
@@ -104,8 +109,24 @@ public class UserService {
 
     UserAttributes attributes = possibleAttributes.get();
 
-    
+
   }
 
+  public SettingsResponseDTO getSettings(Long userId) {
+    
+    Optional<User> possibleUser = userRepository.findById(userId);
+    if (!possibleUser.isPresent()) {
+      // TODO: Throw error
+    }
+    User user = possibleUser.get();
+
+    Optional<UserAuth> possibleAuth = authRepository.findById(userId);
+    if (!possibleAuth.isPresent()) {
+      // TODO: Throw error
+    }
+    UserAuth auth = possibleAuth.get();
+
+    return new SettingsResponseDTO(user.getEmail(), user.getNumber(), auth.getPassword());
+  }
 
 }

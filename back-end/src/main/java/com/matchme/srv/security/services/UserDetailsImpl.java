@@ -30,12 +30,12 @@ public class UserDetailsImpl implements UserDetails {
         this.password = password;
         this.authority = authority;
     }
-    public static UserDetailsImpl build(User user) {
+    public static UserDetailsImpl build(User user, String password) {
       GrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().getName().name());
     
         return new UserDetailsImpl(user.getId(), 
                                    user.getEmail(),
-                                   user.getPassword(), 
+                                   password, 
                                    authority);
       }
     
