@@ -9,10 +9,12 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import lombok.ToString;
 
 @Data
 @Entity
 @Table(name = "user_auth_data")
+@ToString(exclude = "user")
 public class UserAuth {
   
   @Id
@@ -25,5 +27,12 @@ public class UserAuth {
 
   @NotBlank
   private String password; 
+
+  // TODO: WTF, miks Lombok custom constructori lisades ei tööta? 
+  public UserAuth() {}
+
+  public UserAuth(String password) {
+    this.password = password;
+  }
 
 }

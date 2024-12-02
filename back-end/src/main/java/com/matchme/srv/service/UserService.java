@@ -4,8 +4,12 @@ import java.time.Instant;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.matchme.srv.dto.request.SignupRequestDTO;
+import com.matchme.srv.dto.response.MessageResponseDTO;
 import com.matchme.srv.dto.response.SettingsResponseDTO;
 import com.matchme.srv.model.user.Role;
 import com.matchme.srv.model.user.User;
@@ -35,6 +39,9 @@ public class UserService {
   private final UserAuthRepository authRepository;
 
   @Autowired
+  PasswordEncoder encoder;
+
+  @Autowired
   public UserService(UserRepository userRepository, UserProfileRepository userProfileRepository, UserAttributesRepository userAttributesRepository, UserPreferencesRepository userPreferencesRepository, ActivityLogRepository activityLogRepository, RoleRepository roleRepository, UserAuthRepository userAuthRepository) {
     this.userRepository = userRepository;
     this.profileRepository = userProfileRepository;
@@ -45,26 +52,26 @@ public class UserService {
     this.authRepository = userAuthRepository;
   }
 
-  public ActivityLog createUser(String email) {
+  public ActivityLog createUser(SignupRequestDTO signUpRequest) {
     
-    // Create a new user and their profile
-    User newUser = new User();
+    if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+      throw new RuntimeException("Error: Email is already in use!");
+    }
 
-    // Set registration email as User email
-    newUser.setEmail(email);
+    // Create new user (email, status and role)
+    User newUser = new User(signUpRequest.getEmail());
 
-    // Set role as ROLE_USER
-    Role userRole = roleRepository.findByName(Role.UserRole.ROLE_USER)
-      .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-    
-    newUser.setRole(userRole);
-
-    // Set state to UNVERIFIED;
-    newUser.setState(UserState.UNVERIFIED);
+    // Create Auth entity for the user and assign it the given password encoded.
+    UserAuth newAuth = new UserAuth(encoder.encode(signUpRequest.getPassword()));
+    newUser.setUserAuth(newAuth);
 
     User user = userRepository.save(newUser);
 
     ActivityLog newEntry = new ActivityLog(user, ActivityLog.LogType.CREATED, Instant.now());
+
+    System.out.println(newEntry);
+
+    //Send email verification to email
 
     return activityRepository.save(newEntry);
   }

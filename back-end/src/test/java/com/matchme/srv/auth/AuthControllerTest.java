@@ -15,12 +15,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matchme.srv.dto.request.LoginRequestDTO;
 import com.matchme.srv.dto.request.SignupRequestDTO;
 import com.matchme.srv.model.user.Role;
+
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -39,8 +41,9 @@ public class AuthControllerTest {
   // Runs before running test(s)
   @BeforeEach
   void setup() {
-    Role userRole = new Role();
-    userRole.setName(Role.UserRole.ROLE_USER);
+    //Role userRole = 
+    new Role();
+    //userRole.setName(Role.UserRole.ROLE_USER);
   }
 
   // Public routes

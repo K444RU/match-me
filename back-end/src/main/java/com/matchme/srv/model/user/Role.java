@@ -17,7 +17,7 @@ import lombok.Data;
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
@@ -25,5 +25,14 @@ public class Role {
 
     public enum UserRole {
         ROLE_USER, ROLE_MODERATOR, ROLE_ADMIN
+    }
+
+    // Default role is ROLE_USER
+    public Role() {
+        this.name = UserRole.ROLE_USER;
+    }
+
+    public Role(UserRole role) {
+        this.name = role;
     }
 }
