@@ -15,7 +15,7 @@ import lombok.Data;
 @Table(name = "user_profile")
 public class UserProfile {
 
-  @Id // need to look into shared id value with user
+  @Id
   private Long id;
 
   @MapsId
@@ -23,10 +23,6 @@ public class UserProfile {
   @JoinColumn(name = "user_id")
   private User user;
 
-  // TODO: Find a solution so that we can signup - I think an easy solution would be to create the profile when we get the email verification token. 
-  // Temporarily I have commented the @NotNull's out.
-  // Because with the current logic, we would have to set everything up in the initial popup.
-  // Otherwise the notnull's were fucking us.
   @OneToOne(mappedBy = "userProfile", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   // @NotNull
   private UserPreferences preferences;
@@ -38,6 +34,10 @@ public class UserProfile {
   @OneToMany(mappedBy = "userProfile", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   private Set<ProfileChange> profileChangeLog;
   
+  private String firstName;
+
+  private String lastName;
+
   public void setPreferences(UserPreferences preferences) {
     if (preferences != null) {
       preferences.setUserProfile(this);

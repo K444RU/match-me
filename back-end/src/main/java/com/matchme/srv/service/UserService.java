@@ -1,26 +1,26 @@
 package com.matchme.srv.service;
 
-import java.time.Instant;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.matchme.srv.dto.request.SignupRequestDTO;
-import com.matchme.srv.dto.response.MessageResponseDTO;
+import com.matchme.srv.dto.response.AttributesResponseDTO;
+import com.matchme.srv.dto.response.PreferencesResponseDTO;
+import com.matchme.srv.dto.response.ProfileResponseDTO;
 import com.matchme.srv.dto.response.SettingsResponseDTO;
-import com.matchme.srv.model.user.Role;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.UserAuth;
 import com.matchme.srv.model.user.UserState;
 import com.matchme.srv.model.user.activity.ActivityLog;
+import com.matchme.srv.model.user.profile.ProfileChange;
 import com.matchme.srv.model.user.profile.UserProfile;
+import com.matchme.srv.model.user.profile.user_attributes.AttributeChange;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
+import com.matchme.srv.model.user.profile.user_preferences.PreferenceChange;
 import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
-import com.matchme.srv.repository.ActivityLogRepository;
-import com.matchme.srv.repository.RoleRepository;
 import com.matchme.srv.repository.UserAttributesRepository;
 import com.matchme.srv.repository.UserAuthRepository;
 import com.matchme.srv.repository.UserPreferencesRepository;
@@ -34,24 +34,21 @@ public class UserService {
   private final UserProfileRepository profileRepository;
   private final UserAttributesRepository attributesRepository;
   private final UserPreferencesRepository preferencesRepository;
-  private final ActivityLogRepository activityRepository;
-  private final RoleRepository roleRepository;
   private final UserAuthRepository authRepository;
 
   @Autowired
   PasswordEncoder encoder;
 
   @Autowired
-  public UserService(UserRepository userRepository, UserProfileRepository userProfileRepository, UserAttributesRepository userAttributesRepository, UserPreferencesRepository userPreferencesRepository, ActivityLogRepository activityLogRepository, RoleRepository roleRepository, UserAuthRepository userAuthRepository) {
+  public UserService(UserRepository userRepository, UserProfileRepository userProfileRepository, UserAttributesRepository userAttributesRepository, UserPreferencesRepository userPreferencesRepository, UserAuthRepository userAuthRepository) {
     this.userRepository = userRepository;
     this.profileRepository = userProfileRepository;
     this.attributesRepository = userAttributesRepository;
     this.preferencesRepository = userPreferencesRepository;
-    this.activityRepository = activityLogRepository;
-    this.roleRepository = roleRepository;
     this.authRepository = userAuthRepository;
   }
 
+  // Creates User entity and UserAuth entity for user, sends verification e-mail
   public ActivityLog createUser(SignupRequestDTO signUpRequest) {
     
     if (userRepository.existsByEmail(signUpRequest.getEmail())) {
@@ -65,15 +62,47 @@ public class UserService {
     UserAuth newAuth = new UserAuth(encoder.encode(signUpRequest.getPassword()));
     newUser.setUserAuth(newAuth);
 
-    User user = userRepository.save(newUser);
-
-    ActivityLog newEntry = new ActivityLog(user, ActivityLog.LogType.CREATED, Instant.now());
-
+    ActivityLog newEntry = new ActivityLog(newUser, ActivityLog.LogType.CREATED);
+    
+    userRepository.save(newUser);
+    
     System.out.println(newEntry);
 
-    //Send email verification to email
+    //TODO: Send email verification to email
 
-    return activityRepository.save(newEntry);
+    return newEntry;
+  }
+
+  // Verifies e-mail, creates UserProfile, UserAttributes and UserPreferences entities for the user
+  public boolean verifyAccount(Long userId, String verificationCode) {
+
+    //Verify account
+
+    Optional<User> possibleUser = userRepository.findById(userId);
+    if (!possibleUser.isPresent()) {
+      // TODO: Throw an error
+    }
+    User user = possibleUser.get();
+
+
+    UserProfile newProfile = new UserProfile();
+    user.setProfile(newProfile);
+    System.out.println(new ProfileChange(newProfile, ProfileChange.ProfileChangeType.CREATED, null));
+
+    
+    UserAttributes newAttributes = new UserAttributes();
+    newProfile.setAttributes(newAttributes);
+    System.out.println(new AttributeChange(newAttributes, AttributeChange.AttributeChangeType.CREATED, null));
+
+    
+    UserPreferences newPreferences = new UserPreferences();
+    newProfile.setPreferences(newPreferences);
+    System.out.println(new PreferenceChange(newPreferences, PreferenceChange.PreferenceChangeType.CREATED, null));
+
+    // Should cascade everything
+    userRepository.save(user);
+
+    return true;
   }
 
   // Finish setting up account data after verifying email. 
@@ -100,11 +129,11 @@ public class UserService {
     UserPreferences newPreferences = new UserPreferences();
     newProfile.setPreferences(newPreferences);
 
+    ActivityLog newEntry = new ActivityLog(user, ActivityLog.LogType.VERIFIED);
+
     userRepository.save(user);
-
-    ActivityLog newEntry = new ActivityLog(user, ActivityLog.LogType.VERIFIED, Instant.now());
-
-    return activityRepository.save(newEntry);
+    
+    return newEntry;
   }
 
   public void setAttributes(Long userId) {
@@ -114,7 +143,7 @@ public class UserService {
       // TODO: Do something, exception handler
     }
 
-    UserAttributes attributes = possibleAttributes.get();
+    //UserAttributes attributes = possibleAttributes.get();
 
 
   }
@@ -134,6 +163,39 @@ public class UserService {
     UserAuth auth = possibleAuth.get();
 
     return new SettingsResponseDTO(user.getEmail(), user.getNumber(), auth.getPassword());
+  }
+
+  public AttributesResponseDTO getAttributes(Long userId) {
+
+    Optional<UserAttributes> possibleAttributes = attributesRepository.findById(userId);
+    if (!possibleAttributes.isPresent()) {
+      // TODO: Throw error
+    }
+    UserAttributes attributes = possibleAttributes.get();
+
+    return new AttributesResponseDTO(attributes.getGender(), attributes.getBirthDate(), attributes.getLocation());
+  }
+
+  public PreferencesResponseDTO getPreferences(Long userId) {
+
+    Optional<UserPreferences> possiblePreferences = preferencesRepository.findById(userId);
+    if (!possiblePreferences.isPresent()) {
+      // TODO: Throw error
+    }
+    UserPreferences preferences = possiblePreferences.get();
+
+    return new PreferencesResponseDTO(preferences.getGender(), preferences.getAge_min(), preferences.getAge_max(), preferences.getDistance());
+  }
+
+  public ProfileResponseDTO getProfile(Long userId) {
+
+    Optional<UserProfile> possibleProfile = profileRepository.findById(userId);
+    if (!possibleProfile.isPresent()) {
+      // TODO: throw error
+    }
+    UserProfile profile = possibleProfile.get();
+
+    return new ProfileResponseDTO(profile.getFirstName(), profile.getLastName());
   }
 
 }

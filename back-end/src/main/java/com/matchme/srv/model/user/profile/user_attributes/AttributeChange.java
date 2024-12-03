@@ -1,8 +1,6 @@
 package com.matchme.srv.model.user.profile.user_attributes;
 
-import java.sql.Timestamp;
-
-import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
+import java.time.Instant;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -20,18 +18,26 @@ public class AttributeChange {
   @ManyToOne(fetch = FetchType.LAZY)
   @NotNull
   @JoinColumn(name = "user_attributes_id")
-  private UserPreferences userPreferences;
+  private UserAttributes userAttributes;
 
   @Enumerated(EnumType.STRING)
-  private PreferenceChangeType type;
+  private AttributeChangeType type;
 
   @NotNull
-  private Timestamp timestamp;
+  private Instant instant;
 
-  @NotNull 
-  private String newState; 
+  private String content; 
 
-  public enum PreferenceChangeType {
-    GENDER, AGE_MIN, AGE_MAX, DISTANCE, BLIND //maybe blind shouldn't be here? 
+  public enum AttributeChangeType {
+    CREATED, GENDER, BIRTHDATE, LOCATION
+  }
+
+  public AttributeChange() {}
+
+  public AttributeChange(UserAttributes attributes, AttributeChangeType type, String content) {
+    this.userAttributes = attributes;
+    this.type = type;
+    this.content = content;
+    this.instant = Instant.now();
   }
 }

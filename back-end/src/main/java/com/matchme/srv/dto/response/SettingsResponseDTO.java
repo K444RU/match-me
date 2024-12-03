@@ -11,6 +11,8 @@ public class SettingsResponseDTO {
   private String password;
 
 
+  public SettingsResponseDTO() {}
+  
   public SettingsResponseDTO(String email, String number, String password) {
     this.email = email;
     this.number = number;

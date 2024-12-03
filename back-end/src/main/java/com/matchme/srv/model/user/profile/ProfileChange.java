@@ -1,6 +1,6 @@
 package com.matchme.srv.model.user.profile;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -24,12 +24,22 @@ public class ProfileChange {
   private ProfileChangeType type;
 
   @NotNull
-  private Timestamp timestamp;
+  private Instant instant;
 
-  @NotNull 
-  private String newState; 
+  private String content; 
 
   public enum ProfileChangeType {
-    AGE, BIO, PHOTO, INTERESTS // Each profile property should have it's own enum. Attributes too - because pertain changes about self.
+    CREATED, AGE, BIO, PHOTO, INTERESTS // Each profile property should have it's own enum. Attributes too - because pertain changes about self.
   }
+
+  public ProfileChange() {}
+
+  public ProfileChange(UserProfile userProfile, ProfileChangeType type, String content) {
+    this.userProfile = userProfile;
+    this.type = type;
+    this.content = content;
+    this.instant = Instant.now();
+  }
+
+
 }
