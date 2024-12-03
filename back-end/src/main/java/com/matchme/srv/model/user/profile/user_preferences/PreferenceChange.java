@@ -1,6 +1,6 @@
 package com.matchme.srv.model.user.profile.user_preferences;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -24,12 +24,20 @@ public class PreferenceChange {
   private PreferenceChangeType type;
 
   @NotNull
-  private Timestamp timestamp;
+  private Instant instant;
 
-  @NotNull 
-  private String newState; 
+  private String content; 
 
   public enum PreferenceChangeType {
-    GENDER, AGE_MIN, AGE_MAX, DISTANCE, BLIND //maybe blind shouldn't be here? 
+    CREATED, GENDER, AGE_MIN, AGE_MAX, DISTANCE, TOLERANCE //maybe blind shouldn't be here? 
+  }
+
+  public PreferenceChange() {}
+
+  public PreferenceChange(UserPreferences preferences, PreferenceChangeType type, String content) {
+    this.userPreferences = preferences;
+    this.type = type;
+    this.content = content;
+    this.instant = Instant.now();
   }
 }

@@ -33,10 +33,10 @@ public class ActivityLog {
     CREATED, VERIFIED, LOGIN, LOGOUT
   }
   
-  public ActivityLog(User user, LogType logType, Instant instant) {
+  public ActivityLog(User user, LogType logType) {
     this.user = user;
     this.logType = logType;
-    this.instant = instant;
+    this.instant = Instant.now();
   }
 
 }

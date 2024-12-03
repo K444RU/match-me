@@ -9,7 +9,6 @@ import com.matchme.srv.model.user.profile.ProfileChange;
 import com.matchme.srv.model.user.profile.UserProfile;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
@@ -25,16 +24,13 @@ public class UserAttributes {
   @JoinColumn(name = "user_id")
   private UserProfile userProfile;
 
-  @NotNull
   private Gender gender;
 
-  @NotNull
   private LocalDate birthDate;
 
-  @NotNull
   private List<Double> location; //Geohash of 6-7 length
 
-  @OneToMany(mappedBy = "", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = "userAttributes", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   private Set<ProfileChange> attributeChangeLog;
 
 }

@@ -6,7 +6,6 @@ import com.matchme.srv.model.user.profile.Gender;
 import com.matchme.srv.model.user.profile.UserProfile;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
@@ -22,16 +21,16 @@ public class UserPreferences {
   @JoinColumn(name = "user_id")
   private UserProfile userProfile;
 
-  @NotNull
+
   private Gender gender;
 
-  @NotNull
+
   private Integer age_min;
 
-  @NotNull
+
   private Integer age_max;
 
-  @NotNull
+
   private Integer distance;
 
   private Double probabilityTolerance;
