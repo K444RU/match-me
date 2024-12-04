@@ -67,6 +67,7 @@ public class User {
         //this.roles.add();
     }
 
+    // Persistence managers
     public void setProfile(UserProfile profile) {
         if (profile != null) {
             profile.setUser(this);

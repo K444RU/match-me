@@ -3,6 +3,7 @@ package com.matchme.srv.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.matchme.srv.dto.request.SettingsRequestDTO;
 import com.matchme.srv.dto.response.*;
 import com.matchme.srv.service.UserService;
 
@@ -37,6 +38,11 @@ public class UserController {
     boolean verified = userService.verifyAccount(userId, verificationCode);
 
     return ResponseEntity.ok(verified);
+  }
+
+  @PatchMapping("/settings/{userId}")
+  public ResponseEntity<?> updateSettings(@PathVariable Long userId, SettingsRequestDTO request) {
+
   }
 
 }
