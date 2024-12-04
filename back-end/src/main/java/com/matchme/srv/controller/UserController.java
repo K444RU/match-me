@@ -10,7 +10,7 @@ import com.matchme.srv.service.UserService;
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
-  
+
   private UserService userService;
 
   @GetMapping("/settings/{userId}")
@@ -32,7 +32,7 @@ public class UserController {
   }
 
   @PatchMapping("/verify/{userId}")
-  public ResponseEntity<?> verifyAccount(@PathVariable Long userId, @RequestParam String verificationCode) {
+  public ResponseEntity<?> verifyAccount(@PathVariable Long userId, @RequestParam int verificationCode) {
 
     boolean verified = userService.verifyAccount(userId, verificationCode);
 
