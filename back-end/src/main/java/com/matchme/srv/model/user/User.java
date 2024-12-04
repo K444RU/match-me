@@ -43,7 +43,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserState state;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
@@ -64,7 +64,7 @@ public class User {
     public User(String email) {
         this.email = email;
         this.state = UserState.UNVERIFIED;
-        //this.roles.add();
+        this.roles.add(new Role());
     }
 
     // Persistence managers
@@ -98,4 +98,16 @@ public class User {
     // User user = new User();
     // UserProfile profile = new UserProfile();
     // user.setProfile(profile); Sets both user.profile and profile.user
+
+    // // This runs ONLY before first save to database
+    // @PrePersist
+    // protected void onCreate() {
+    //     createdAt = LocalDateTime.now();
+    // }
+
+    // // This runs before EVERY update to database
+    // @PreUpdate
+    // protected void onUpdate() {
+    //     // Handle update logic
+    // }
 }

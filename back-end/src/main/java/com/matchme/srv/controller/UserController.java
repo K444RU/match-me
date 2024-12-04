@@ -1,6 +1,7 @@
 package com.matchme.srv.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.matchme.srv.dto.request.SettingsRequestDTO;
@@ -35,14 +36,15 @@ public class UserController {
   @PatchMapping("/verify/{userId}")
   public ResponseEntity<?> verifyAccount(@PathVariable Long userId, @RequestParam int verificationCode) {
 
-    boolean verified = userService.verifyAccount(userId, verificationCode);
+    userService.verifyAccount(userId, verificationCode);
 
-    return ResponseEntity.ok(verified);
+    return ResponseEntity.ok("User verified successfully.");
   }
 
   @PatchMapping("/settings/{userId}")
-  public ResponseEntity<?> updateSettings(@PathVariable Long userId, SettingsRequestDTO request) {
+  public ResponseEntity<?> updateSettings(@PathVariable Long userId, @Validated @RequestBody SettingsRequestDTO request) {
 
+    return ResponseEntity.ok("Settings updated successfully");
   }
 
 }
