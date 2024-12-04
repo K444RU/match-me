@@ -24,6 +24,7 @@ import com.matchme.srv.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 
 @Service
+// @RequiredArgsConstructor - replaces the constructor?
 public class UserService {
 
   private final UserRepository userRepository;
