@@ -1,5 +1,7 @@
 package com.matchme.srv.model.user;
 
+import java.security.SecureRandom;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -22,11 +24,16 @@ public class UserAuth {
   @NotBlank
   private String password; 
 
+  private Integer recovery;
+
   // TODO: WTF, miks Lombok custom constructori lisades ei tööta? 
   public UserAuth() {}
 
   public UserAuth(String password) {
     this.password = password;
+
+    SecureRandom secureRandom = new SecureRandom();
+    this.recovery = 100000 + secureRandom.nextInt(900000);
   }
 
 }
