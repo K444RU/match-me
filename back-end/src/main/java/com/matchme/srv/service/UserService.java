@@ -6,10 +6,11 @@ import org.springframework.stereotype.Service;
 
 import com.matchme.srv.dto.request.*;
 import com.matchme.srv.dto.response.*;
-
+import com.matchme.srv.model.user.Role;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.UserAuth;
 import com.matchme.srv.model.user.UserStateTypes;
+import com.matchme.srv.model.user.Role.UserRole;
 import com.matchme.srv.model.user.activity.ActivityLog;
 import com.matchme.srv.model.user.activity.ActivityLogType;
 import com.matchme.srv.model.user.profile.ProfileChange;
@@ -42,12 +43,16 @@ public class UserService {
   private final UserStateTypesRepository userStateTypesRepository;
   @Autowired
   PasswordEncoder encoder;
+  @Autowired
+  private RoleRepository roleRepository;
 
   @Autowired
   public UserService(UserRepository userRepository, UserProfileRepository userProfileRepository,
       UserAttributesRepository userAttributesRepository, UserPreferencesRepository userPreferencesRepository,
-      UserAuthRepository userAuthRepository, ActivityLogTypeRepository activityLogTypeRepository, AttributeChangeTypeRepository attributeChangeTypeRepository,
-      PreferenceChangeTypeRepository preferenceChangeTypeRepository, ProfileChangeTypeRepository profileChangeTypeRepository, UserStateTypesRepository userStateTypesRepository) {
+      UserAuthRepository userAuthRepository, ActivityLogTypeRepository activityLogTypeRepository,
+      AttributeChangeTypeRepository attributeChangeTypeRepository,
+      PreferenceChangeTypeRepository preferenceChangeTypeRepository,
+      ProfileChangeTypeRepository profileChangeTypeRepository, UserStateTypesRepository userStateTypesRepository) {
     this.userRepository = userRepository;
     this.profileRepository = userProfileRepository;
     this.attributesRepository = userAttributesRepository;
@@ -60,6 +65,17 @@ public class UserService {
     this.userStateTypesRepository = userStateTypesRepository;
   }
 
+  public Role getDefaultRole() {
+    return roleRepository.findByName(UserRole.ROLE_USER)
+        .orElseThrow(() -> new RuntimeException("Default role not found"));
+  }
+
+  // Required, because we can't fetch default role from repository in entity class
+  public void assignDefaultRole(User user) {
+    Role defaultRole = getDefaultRole();
+    user.setRole(defaultRole);
+  }
+
   // Creates User entity and UserAuth entity for user, sends verification e-mail
   public ActivityLog createUser(SignupRequestDTO signUpRequest) {
 
@@ -70,8 +86,9 @@ public class UserService {
     UserStateTypes state = userStateTypesRepository.findByName("UNVERIFIED")
         .orElseThrow(() -> new RuntimeException("UserState not found"));
 
-    // Create new user (email, status and role) + state
+    // Create new user (email, status) + state
     User newUser = new User(signUpRequest.getEmail(), state);
+    assignDefaultRole(newUser);
 
     // Create Auth entity for the user and assign it the given password encoded.
     UserAuth newAuth = new UserAuth(encoder.encode(signUpRequest.getPassword()));
@@ -114,23 +131,23 @@ public class UserService {
 
     // Create profile entity for user
     UserProfile newProfile = new UserProfile();
-    user.setProfile(newProfile);  
+    user.setProfile(newProfile);
     ProfileChangeType profileType = profileChangeTypeRepository.findByName("CREATED")
-    .orElseThrow(() -> new RuntimeException("Profile Change Type not found"));
+        .orElseThrow(() -> new RuntimeException("Profile Change Type not found"));
     System.out.println(new ProfileChange(newProfile, profileType, null));
 
     // Create attributes entity for user
     UserAttributes newAttributes = new UserAttributes();
     newProfile.setAttributes(newAttributes);
     AttributeChangeType attributeType = attributeChangeTypeRepository.findByName("CREATED")
-    .orElseThrow(() -> new RuntimeException("Type not found"));
+        .orElseThrow(() -> new RuntimeException("Type not found"));
     System.out.println(new AttributeChange(newAttributes, attributeType, null));
 
     // Create preferences entity for user
     UserPreferences newPreferences = new UserPreferences();
     newProfile.setPreferences(newPreferences);
     PreferenceChangeType preferenceChangeType = preferenceChangeTypeRepository.findByName("CREATED")
-    .orElseThrow(() -> new RuntimeException("Preference Change Type not found"));
+        .orElseThrow(() -> new RuntimeException("Preference Change Type not found"));
     System.out.println(new PreferenceChange(newPreferences, preferenceChangeType, null));
 
     // Should cascade everything
