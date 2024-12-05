@@ -2,6 +2,8 @@ package com.matchme.srv.model.user.profile;
 
 import java.time.Instant;
 
+import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -27,6 +29,10 @@ public class ProfileChange {
   private Instant instant;
 
   private String content; 
+
+  @ManyToOne
+  @JoinColumn(name = "user_attributes_id")
+  private UserAttributes userAttributes;
 
   public enum ProfileChangeType {
     CREATED, AGE, BIO, PHOTO, INTERESTS // Each profile property should have it's own enum. Attributes too - because pertain changes about self.
