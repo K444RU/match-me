@@ -11,6 +11,7 @@ public interface UserMapper {
 
   @Mapping(source = "email", target = "email") // source = field from DTO, target 
   User toEntity(LoginRequestDTO loginRequest);
+  
 
   //mapping from specific DTO to Specific entity
 }

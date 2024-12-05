@@ -1,6 +1,7 @@
 package com.matchme.srv.model.user.profile.user_attributes;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -28,7 +29,7 @@ public class UserAttributes {
 
   private LocalDate birthDate;
 
-  private List<Double> location; //Geohash of 6-7 length
+  private List<Double> location = new ArrayList<>(); //Geohash of 6-7 length
 
   @OneToMany(mappedBy = "userAttributes", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   private Set<ProfileChange> attributeChangeLog;
