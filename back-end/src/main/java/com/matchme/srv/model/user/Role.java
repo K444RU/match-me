@@ -23,6 +23,10 @@ public class Role {
     @Column(length = 20, unique = true)
     private UserRole name;
 
+    public enum UserRole {
+        ROLE_USER, ROLE_MODERATOR, ROLE_ADMIN
+    }
+
     // Default role is ROLE_USER
     public Role() {
         this.name = UserRole.ROLE_USER;

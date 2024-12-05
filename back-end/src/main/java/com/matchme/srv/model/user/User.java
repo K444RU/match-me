@@ -67,7 +67,7 @@ public class User {
     public User(String email, UserStateTypes state) {
         this.email = email;
         this.state = state;
-        this.roles.add(new Role());
+        // this.roles.add(new Role()); creates circular dependency (bad)
     }
 
     // Persistence managers
@@ -90,6 +90,10 @@ public class User {
             userAuth.setUser(this);
         }
         this.userAuth = userAuth;
+    }
+
+    public void setRole(Role role) {
+        this.roles.add(role);
     }
 
     // Without helper method - inconsistent relationship
