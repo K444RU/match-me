@@ -5,9 +5,12 @@ import java.util.Set;
 import com.matchme.srv.model.user.profile.Gender;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -26,6 +29,8 @@ public class DatingPool {
 
   private Long myId;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "gender_id")
   private Gender myGender;
 
   private Integer myAge;

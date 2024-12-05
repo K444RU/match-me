@@ -21,7 +21,8 @@ public class UserPreferences {
   @JoinColumn(name = "user_id")
   private UserProfile userProfile;
 
-
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "gender_id")
   private Gender gender;
 
 
