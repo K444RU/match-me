@@ -2,7 +2,6 @@ package com.matchme.srv.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import java.util.List;
 
 import com.matchme.srv.dto.request.UserParametersRequestDTO;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
