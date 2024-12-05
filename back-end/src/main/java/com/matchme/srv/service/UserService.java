@@ -9,14 +9,17 @@ import com.matchme.srv.dto.response.*;
 
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.UserAuth;
-import com.matchme.srv.model.user.UserState;
+import com.matchme.srv.model.user.UserStateTypes;
 import com.matchme.srv.model.user.activity.ActivityLog;
-import com.matchme.srv.model.user.activity.ActivityLog.LogType;
+import com.matchme.srv.model.user.activity.ActivityLogType;
 import com.matchme.srv.model.user.profile.ProfileChange;
+import com.matchme.srv.model.user.profile.ProfileChangeType;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_attributes.AttributeChange;
+import com.matchme.srv.model.user.profile.user_attributes.AttributeChangeType;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
 import com.matchme.srv.model.user.profile.user_preferences.PreferenceChange;
+import com.matchme.srv.model.user.profile.user_preferences.PreferenceChangeType;
 import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
 
 import com.matchme.srv.repository.*;
@@ -32,76 +35,103 @@ public class UserService {
   private final UserAttributesRepository attributesRepository;
   private final UserPreferencesRepository preferencesRepository;
   private final UserAuthRepository authRepository;
-
+  private final ActivityLogTypeRepository activityLogTypeRepository;
+  private final AttributeChangeTypeRepository attributeChangeTypeRepository;
+  private final PreferenceChangeTypeRepository preferenceChangeTypeRepository;
+  private final ProfileChangeTypeRepository profileChangeTypeRepository;
+  private final UserStateTypesRepository userStateTypesRepository;
   @Autowired
   PasswordEncoder encoder;
 
   @Autowired
-  public UserService(UserRepository userRepository, UserProfileRepository userProfileRepository, UserAttributesRepository userAttributesRepository, UserPreferencesRepository userPreferencesRepository, UserAuthRepository userAuthRepository) {
+  public UserService(UserRepository userRepository, UserProfileRepository userProfileRepository,
+      UserAttributesRepository userAttributesRepository, UserPreferencesRepository userPreferencesRepository,
+      UserAuthRepository userAuthRepository, ActivityLogTypeRepository activityLogTypeRepository, AttributeChangeTypeRepository attributeChangeTypeRepository,
+      PreferenceChangeTypeRepository preferenceChangeTypeRepository, ProfileChangeTypeRepository profileChangeTypeRepository, UserStateTypesRepository userStateTypesRepository) {
     this.userRepository = userRepository;
     this.profileRepository = userProfileRepository;
     this.attributesRepository = userAttributesRepository;
     this.preferencesRepository = userPreferencesRepository;
     this.authRepository = userAuthRepository;
+    this.activityLogTypeRepository = activityLogTypeRepository;
+    this.attributeChangeTypeRepository = attributeChangeTypeRepository;
+    this.preferenceChangeTypeRepository = preferenceChangeTypeRepository;
+    this.profileChangeTypeRepository = profileChangeTypeRepository;
+    this.userStateTypesRepository = userStateTypesRepository;
   }
 
   // Creates User entity and UserAuth entity for user, sends verification e-mail
   public ActivityLog createUser(SignupRequestDTO signUpRequest) {
-    
+
     if (userRepository.existsByEmail(signUpRequest.getEmail())) {
       throw new RuntimeException("Error: Email is already in use!");
     }
 
-    // Create new user (email, status and role)
-    User newUser = new User(signUpRequest.getEmail());
+    UserStateTypes state = userStateTypesRepository.findByName("UNVERIFIED")
+        .orElseThrow(() -> new RuntimeException("UserState not found"));
+
+    // Create new user (email, status and role) + state
+    User newUser = new User(signUpRequest.getEmail(), state);
 
     // Create Auth entity for the user and assign it the given password encoded.
     UserAuth newAuth = new UserAuth(encoder.encode(signUpRequest.getPassword()));
     newUser.setUserAuth(newAuth);
 
-    ActivityLog newEntry = new ActivityLog(newUser, ActivityLog.LogType.CREATED);
-    
+    ActivityLogType logType = activityLogTypeRepository.findByName("CREATED")
+        .orElseThrow(() -> new RuntimeException("LogType not found"));
+
+    ActivityLog newEntry = new ActivityLog(newUser, logType);
+
     userRepository.save(newUser);
-    
+
     System.out.println(newEntry);
 
-    //TODO: Send email verification to email
-
+    // TODO: Send email verification to email
 
     return newEntry;
   }
 
-  // Verifies e-mail, creates UserProfile, UserAttributes and UserPreferences entities for the user
+  // Verifies e-mail, creates UserProfile, UserAttributes and UserPreferences
+  // entities for the user
   public boolean verifyAccount(Long userId, int verificationCode) {
 
     // Get user entity
     User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-    // Verify account 
+    // Verify account
     UserAuth auth = user.getUserAuth();
-    
+
     if (auth.getRecovery() == verificationCode) {
-      user.setState(UserState.VERIFIED);
+      user.setState(userStateTypesRepository.findByName("VERIFIED")
+          .orElseThrow(() -> new RuntimeException("UserState not found")));
       auth.setRecovery(null);
-      System.out.println(new ActivityLog(user, LogType.VERIFIED));
+      ActivityLogType logType = activityLogTypeRepository.findByName("VERIFIED")
+          .orElseThrow(() -> new RuntimeException("LogType not found"));
+      System.out.println(new ActivityLog(user, logType));
     } else {
       throw new RuntimeException("Verification code was wrong! Would you like us to generate the code again?");
     }
 
     // Create profile entity for user
     UserProfile newProfile = new UserProfile();
-    user.setProfile(newProfile);
-    System.out.println(new ProfileChange(newProfile, ProfileChange.ProfileChangeType.CREATED, null));
+    user.setProfile(newProfile);  
+    ProfileChangeType profileType = profileChangeTypeRepository.findByName("CREATED")
+    .orElseThrow(() -> new RuntimeException("Profile Change Type not found"));
+    System.out.println(new ProfileChange(newProfile, profileType, null));
 
     // Create attributes entity for user
     UserAttributes newAttributes = new UserAttributes();
     newProfile.setAttributes(newAttributes);
-    System.out.println(new AttributeChange(newAttributes, AttributeChange.AttributeChangeType.CREATED, null));
+    AttributeChangeType attributeType = attributeChangeTypeRepository.findByName("CREATED")
+    .orElseThrow(() -> new RuntimeException("Type not found"));
+    System.out.println(new AttributeChange(newAttributes, attributeType, null));
 
     // Create preferences entity for user
     UserPreferences newPreferences = new UserPreferences();
     newProfile.setPreferences(newPreferences);
-    System.out.println(new PreferenceChange(newPreferences, PreferenceChange.PreferenceChangeType.CREATED, null));
+    PreferenceChangeType preferenceChangeType = preferenceChangeTypeRepository.findByName("CREATED")
+    .orElseThrow(() -> new RuntimeException("Preference Change Type not found"));
+    System.out.println(new PreferenceChange(newPreferences, preferenceChangeType, null));
 
     // Should cascade everything
     userRepository.save(user);
@@ -109,14 +139,15 @@ public class UserService {
     return true;
   }
 
-  // Finish setting up account data after verifying email. 
+  // Finish setting up account data after verifying email.
   public ActivityLog finishSettingUpAccount(Long userId, String number, String password) {
 
     User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found!"));
 
     user.setNumber(number);
-    //user.setPassword(password);
-    user.setState(UserState.NEW);
+    // user.setPassword(password);
+    user.setState(userStateTypesRepository.findByName("NEW")
+        .orElseThrow(() -> new RuntimeException("User state not found")));
 
     // Create a new profile and set it to user.
     UserProfile newProfile = new UserProfile();
@@ -129,22 +160,26 @@ public class UserService {
     UserPreferences newPreferences = new UserPreferences();
     newProfile.setPreferences(newPreferences);
 
-    ActivityLog newEntry = new ActivityLog(user, ActivityLog.LogType.VERIFIED);
+    ActivityLogType activitylogType = activityLogTypeRepository.findByName("VERIFIED")
+        .orElseThrow(() -> new RuntimeException("LogType not found"));
+
+    ActivityLog newEntry = new ActivityLog(user, activitylogType);
 
     userRepository.save(user);
-    
+
     return newEntry;
   }
 
   public void setAttributes(Long userId) {
 
-    UserAttributes attributes = attributesRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("UserAttributes not found!"));
+    UserAttributes attributes = attributesRepository.findById(userId)
+        .orElseThrow(() -> new EntityNotFoundException("UserAttributes not found!"));
 
     attributesRepository.save(attributes);
   }
 
   public SettingsResponseDTO getSettings(Long userId) {
-    
+
     User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found!"));
     UserAuth auth = user.getUserAuth();
 
@@ -153,21 +188,25 @@ public class UserService {
 
   public AttributesResponseDTO getAttributes(Long userId) {
 
-    UserAttributes attributes = attributesRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("UserAttributes not found!"));
+    UserAttributes attributes = attributesRepository.findById(userId)
+        .orElseThrow(() -> new EntityNotFoundException("UserAttributes not found!"));
 
     return new AttributesResponseDTO(attributes.getGender(), attributes.getBirthDate(), attributes.getLocation());
   }
 
   public PreferencesResponseDTO getPreferences(Long userId) {
 
-    UserPreferences preferences = preferencesRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("UserPreferences not found!"));
+    UserPreferences preferences = preferencesRepository.findById(userId)
+        .orElseThrow(() -> new EntityNotFoundException("UserPreferences not found!"));
 
-    return new PreferencesResponseDTO(preferences.getGender(), preferences.getAge_min(), preferences.getAge_max(), preferences.getDistance());
+    return new PreferencesResponseDTO(preferences.getGender(), preferences.getAge_min(), preferences.getAge_max(),
+        preferences.getDistance());
   }
 
   public ProfileResponseDTO getProfile(Long userId) {
 
-    UserProfile profile = profileRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("UserProfile not found!"));
+    UserProfile profile = profileRepository.findById(userId)
+        .orElseThrow(() -> new EntityNotFoundException("UserProfile not found!"));
 
     return new ProfileResponseDTO(profile.getFirstName(), profile.getLastName());
   }

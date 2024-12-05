@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="009" author="liquibase">
+        <insert tableName="user_state_types">
+            <column name="name">UNVERIFIED</column>
+        </insert>
+        <insert tableName="user_state_types">
+            <column name="name">VERIFIED</column>
+        </insert>
+        <insert tableName="user_state_types">
+            <column name="name">NEW</column>
+        </insert>
+        <insert tableName="user_state_types">
+            <column name="name">ACTIVE</column>
+        </insert>
+        <insert tableName="user_state_types">
+            <column name="name">PENDING</column>
+        </insert>
+        <insert tableName="user_state_types">
+            <column name="name">SUSPENDED</column>
+        </insert>
+        <insert tableName="user_state_types">
+            <column name="name">DORMANT</column>
+        </insert>
+        <insert tableName="user_state_types">
+            <column name="name">DISABLED </column>
+        </insert>
+
+    </changeSet>
+</databaseChangeLog>

@@ -22,18 +22,14 @@ public class ActivityLog {
   @NotNull
   private User user;
 
-  @NotNull
-  @Enumerated(EnumType.STRING)
-  private LogType logType;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "activity_log_type_id")
+  private ActivityLogType logType;
 
   @NotNull
   private Instant instant;
-
-  public enum LogType {
-    CREATED, VERIFIED, LOGIN, LOGOUT
-  }
   
-  public ActivityLog(User user, LogType logType) {
+  public ActivityLog(User user, ActivityLogType logType) {
     this.user = user;
     this.logType = logType;
     this.instant = Instant.now();

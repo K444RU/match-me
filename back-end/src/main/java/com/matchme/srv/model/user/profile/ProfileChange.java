@@ -22,7 +22,8 @@ public class ProfileChange {
   @JoinColumn(name = "user_profile_id")
   private UserProfile userProfile;
 
-  @Enumerated(EnumType.STRING)
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "profile_change_type_id")
   private ProfileChangeType type;
 
   @NotNull
@@ -34,9 +35,6 @@ public class ProfileChange {
   @JoinColumn(name = "user_attributes_id")
   private UserAttributes userAttributes;
 
-  public enum ProfileChangeType {
-    CREATED, AGE, BIO, PHOTO, INTERESTS // Each profile property should have it's own enum. Attributes too - because pertain changes about self.
-  }
 
   public ProfileChange() {}
 

@@ -20,13 +20,10 @@ public class MessageEvent {
   @JoinColumn(name = "message_id")
   private UserMessage message;
 
-  @Enumerated(EnumType.STRING)
-  private MessageEventType type; 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "message_event_type_id")
+  private MessageEventType message_event_type;
 
   @NotNull
   private Timestamp timestamp;
-
-  public enum MessageEventType {
-    SENT, RECEIVED, READ, // REACTIONS - maybe just a couple like iMessages?? 
-  }
 }
