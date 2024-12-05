@@ -3,10 +3,12 @@ package com.matchme.srv.model.user;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.matchme.srv.model.user.activity.ActivityLog;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_score.UserScore;
-
+import com.matchme.srv.repository.UserStateTypesRepository;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
@@ -40,8 +42,9 @@ public class User {
     // @Size(max = 120)
     // private String password;
 
-    @Enumerated(EnumType.STRING)
-    private UserState state;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_state_type_id")
+    private UserStateTypes state;
 
     @OneToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
@@ -61,9 +64,9 @@ public class User {
 
     public User() {}
 
-    public User(String email) {
+    public User(String email, UserStateTypes state) {
         this.email = email;
-        this.state = UserState.UNVERIFIED;
+        this.state = state;
         this.roles.add(new Role());
     }
 
