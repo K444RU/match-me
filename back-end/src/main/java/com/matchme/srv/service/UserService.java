@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.matchme.srv.dto.request.*;
 import com.matchme.srv.dto.response.*;
+import com.matchme.srv.exception.DuplicateEmailException;
 import com.matchme.srv.model.user.Role;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.UserAuth;
@@ -80,7 +81,7 @@ public class UserService {
   public ActivityLog createUser(SignupRequestDTO signUpRequest) {
 
     if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-      throw new RuntimeException("Error: Email is already in use!");
+      throw new DuplicateEmailException("Email is already in use!", null);
     }
 
     UserStateTypes state = userStateTypesRepository.findByName("UNVERIFIED")
