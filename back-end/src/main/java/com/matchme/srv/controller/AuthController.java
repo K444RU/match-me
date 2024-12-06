@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.matchme.srv.dto.request.LoginRequestDTO;
 import com.matchme.srv.dto.request.SignupRequestDTO;
 import com.matchme.srv.dto.response.JwtResponseDTO;
-import com.matchme.srv.dto.response.MessageResponseDTO;
 import com.matchme.srv.repository.RoleRepository;
 import com.matchme.srv.repository.UserRepository;
 import com.matchme.srv.security.jwt.JwtUtils;
