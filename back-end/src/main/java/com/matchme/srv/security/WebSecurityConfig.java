@@ -60,6 +60,9 @@ public class WebSecurityConfig {
     // .permitAll() allows access to the specified paths without authentication
     // .authenticated() requires authentication for all other paths
     // .anyRequest() applies rules to all other paths not specified
+    // TODO: Discuss auth required
+    // Genders for example don't necessarily need to be public, they need to be pulled when you login to an unverified account
+    // We can do this by just removing the gender request matcher from csrf
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
