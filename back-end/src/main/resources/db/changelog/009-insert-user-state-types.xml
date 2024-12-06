@@ -28,8 +28,7 @@
             <column name="name">DORMANT</column>
         </insert>
         <insert tableName="user_state_types">
-            <column name="name">DISABLED </column>
+            <column name="name">DISABLED</column>
         </insert>
-
     </changeSet>
 </databaseChangeLog>
