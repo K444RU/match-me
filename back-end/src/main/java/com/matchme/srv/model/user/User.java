@@ -67,6 +67,12 @@ public class User {
         // this.roles.add(new Role()); creates circular dependency (bad)
     }
 
+    public User(String email, String number, UserStateTypes state) {
+        this.email = email;
+        this.number = number;
+        this.state = state;
+    }
+
     // Persistence managers
     public void setProfile(UserProfile profile) {
         if (profile != null) {

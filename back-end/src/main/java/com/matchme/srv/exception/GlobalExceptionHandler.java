@@ -60,7 +60,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DuplicateFieldException.class)
     public ResponseEntity<Map<String, String>> handleDuplicateEmailException(DuplicateFieldException ex) {
         Map<String, String> error = new HashMap<>();
-        error.put("error", ex.getMessage());
+        error.put(ex.getFieldName(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 }

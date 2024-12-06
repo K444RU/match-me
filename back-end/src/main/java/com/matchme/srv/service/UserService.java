@@ -81,14 +81,18 @@ public class UserService {
   public ActivityLog createUser(SignupRequestDTO signUpRequest) {
 
     if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-      throw new DuplicateFieldException("Email is already in use!", null);
+      throw new DuplicateFieldException("email", "Email already exists", null);
+    }
+
+    if (userRepository.existsByNumber(signUpRequest.getNumber())) {
+      throw new DuplicateFieldException("number", "Phone number already exists");
     }
 
     UserStateTypes state = userStateTypesRepository.findByName("UNVERIFIED")
         .orElseThrow(() -> new RuntimeException("UserState not found"));
 
-    // Create new user (email, status) + state
-    User newUser = new User(signUpRequest.getEmail(), state);
+    // Create new user (email, number, status) + state
+    User newUser = new User(signUpRequest.getEmail(), signUpRequest.getNumber(), state);
     assignDefaultRole(newUser);
 
     // Create Auth entity for the user and assign it the given password encoded.
