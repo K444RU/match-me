@@ -17,7 +17,7 @@ public class PreferencesResponseDTO {
   public PreferencesResponseDTO() {}
 
   public PreferencesResponseDTO(Gender gender, Integer min, Integer max, Integer distance) {
-    this.gender = gender.name();
+    this.gender = gender.getName();
     this.age_min = min;
     this.age_max = max;
     this.distance = distance;

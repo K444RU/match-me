@@ -3,12 +3,9 @@ package com.matchme.srv.model.user;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.matchme.srv.model.user.activity.ActivityLog;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_score.UserScore;
-import com.matchme.srv.repository.UserStateTypesRepository;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
