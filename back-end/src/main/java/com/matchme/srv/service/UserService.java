@@ -36,7 +36,6 @@ public class UserService {
   private final UserProfileRepository profileRepository;
   private final UserAttributesRepository attributesRepository;
   private final UserPreferencesRepository preferencesRepository;
-  private final UserAuthRepository authRepository;
   private final ActivityLogTypeRepository activityLogTypeRepository;
   private final AttributeChangeTypeRepository attributeChangeTypeRepository;
   private final PreferenceChangeTypeRepository preferenceChangeTypeRepository;
@@ -58,7 +57,6 @@ public class UserService {
     this.profileRepository = userProfileRepository;
     this.attributesRepository = userAttributesRepository;
     this.preferencesRepository = userPreferencesRepository;
-    this.authRepository = userAuthRepository;
     this.activityLogTypeRepository = activityLogTypeRepository;
     this.attributeChangeTypeRepository = attributeChangeTypeRepository;
     this.preferenceChangeTypeRepository = preferenceChangeTypeRepository;
@@ -81,7 +79,7 @@ public class UserService {
   public ActivityLog createUser(SignupRequestDTO signUpRequest) {
 
     if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-      throw new DuplicateFieldException("email", "Email already exists", null);
+      throw new DuplicateFieldException("email", "Email already exists");
     }
 
     if (userRepository.existsByNumber(signUpRequest.getNumber())) {
