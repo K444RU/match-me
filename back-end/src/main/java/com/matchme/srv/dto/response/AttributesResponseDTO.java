@@ -25,7 +25,7 @@ public class AttributesResponseDTO {
 
 
   public AttributesResponseDTO(Gender gender, LocalDate birthDate, List<Double> location) {
-    this.gender = gender.name();
+    this.gender = gender.getName();
     this.birthDate = birthDate;
     this.location = location;
   }
