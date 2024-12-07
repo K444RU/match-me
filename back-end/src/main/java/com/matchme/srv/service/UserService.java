@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 
 import com.matchme.srv.dto.request.*;
 import com.matchme.srv.dto.response.*;
-
+import com.matchme.srv.mapper.AttributesMapper;
+import com.matchme.srv.mapper.PreferencesMapper;
+import com.matchme.srv.mapper.UserParametersMapper;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.UserAuth;
 import com.matchme.srv.model.user.UserState;
@@ -18,13 +20,14 @@ import com.matchme.srv.model.user.profile.user_attributes.AttributeChange;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
 import com.matchme.srv.model.user.profile.user_preferences.PreferenceChange;
 import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
-
+import com.matchme.srv.model.user.profile.user_score.UserScore;
 import com.matchme.srv.repository.*;
 
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 
 @Service
-// @RequiredArgsConstructor - replaces the constructor?
+@RequiredArgsConstructor
 public class UserService {
 
   private final UserRepository userRepository;
@@ -32,21 +35,14 @@ public class UserService {
   private final UserAttributesRepository attributesRepository;
   private final UserPreferencesRepository preferencesRepository;
   private final UserAuthRepository authRepository;
+  private final AttributesMapper attributesMapper;
+  private final PreferencesMapper preferencesMapper;
+  private final UserScoreRepository scoreRepository;
+  private final UserParametersMapper parametersMapper;
+  private final PasswordEncoder encoder;
 
-  @Autowired
-  PasswordEncoder encoder;
-
-  @Autowired
-  public UserService(UserRepository userRepository, UserProfileRepository userProfileRepository, UserAttributesRepository userAttributesRepository, UserPreferencesRepository userPreferencesRepository, UserAuthRepository userAuthRepository) {
-    this.userRepository = userRepository;
-    this.profileRepository = userProfileRepository;
-    this.attributesRepository = userAttributesRepository;
-    this.preferencesRepository = userPreferencesRepository;
-    this.authRepository = userAuthRepository;
-  }
-
-  // Creates User entity and UserAuth entity for user, sends verification e-mail
-  public ActivityLog createUser(SignupRequestDTO signUpRequest) {
+  // Creates User entity and UserAuth entity for user, sends verification e-mail, returns e-mail
+  public String createUser(SignupRequestDTO signUpRequest) {
     
     if (userRepository.existsByEmail(signUpRequest.getEmail())) {
       throw new RuntimeException("Error: Email is already in use!");
@@ -59,16 +55,13 @@ public class UserService {
     UserAuth newAuth = new UserAuth(encoder.encode(signUpRequest.getPassword()));
     newUser.setUserAuth(newAuth);
 
-    ActivityLog newEntry = new ActivityLog(newUser, ActivityLog.LogType.CREATED);
+    System.out.println(new ActivityLog(newUser, ActivityLog.LogType.CREATED));
     
     userRepository.save(newUser);
-    
-    System.out.println(newEntry);
 
     //TODO: Send email verification to email
 
-
-    return newEntry;
+    return newUser.getEmail();
   }
 
   // Verifies e-mail, creates UserProfile, UserAttributes and UserPreferences entities for the user
@@ -76,10 +69,9 @@ public class UserService {
 
     // Get user entity
     User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
-
-    // Verify account 
-    UserAuth auth = user.getUserAuth();
+    UserAuth auth = user.getUserAuth(); // Load userAuth - (LAZY loading)
     
+    // Verify account 
     if (auth.getRecovery() == verificationCode) {
       user.setState(UserState.VERIFIED);
       auth.setRecovery(null);
@@ -110,59 +102,27 @@ public class UserService {
   }
 
   // Finish setting up account data after verifying email. 
-  public ActivityLog finishSettingUpAccount(Long userId, String number, String password) {
+  public User finishSettingUpAccount(Long userId, UserParametersRequestDTO parameters) {
 
     User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found!"));
+    UserProfile profile = user.getProfile();
+    user.setNumber(parameters.number());
 
-    user.setNumber(number);
-    //user.setPassword(password);
+    UserAttributes attributes = profile.getAttributes();
+    attributesMapper.toEntity(attributes, parameters);
+
+    UserPreferences preferences = profile.getPreferences();
+    preferencesMapper.toEntity(preferences, parameters);
+
+    UserScore newScore = new UserScore();
+    user.setScore(newScore);
+
     user.setState(UserState.NEW);
-
-    // Create a new profile and set it to user.
-    UserProfile newProfile = new UserProfile();
-    user.setProfile(newProfile);
-
-    // Create attributes and preferences entities and set them to profile.
-    UserAttributes newAttributes = new UserAttributes();
-    newProfile.setAttributes(newAttributes);
-
-    UserPreferences newPreferences = new UserPreferences();
-    newProfile.setPreferences(newPreferences);
-
-    ActivityLog newEntry = new ActivityLog(user, ActivityLog.LogType.VERIFIED);
+    System.out.println(new ActivityLog(user, ActivityLog.LogType.STATE_NEW));
 
     userRepository.save(user);
     
-    return newEntry;
-  }
-
-  public void setAttributes(Long userId) {
-
-    UserAttributes attributes = attributesRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("UserAttributes not found!"));
-
-    attributesRepository.save(attributes);
-  }
-
-  public SettingsResponseDTO getSettings(Long userId) {
-    
-    User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found!"));
-    UserAuth auth = user.getUserAuth();
-
-    return new SettingsResponseDTO(user.getEmail(), user.getNumber(), auth.getPassword());
-  }
-
-  public AttributesResponseDTO getAttributes(Long userId) {
-
-    UserAttributes attributes = attributesRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("UserAttributes not found!"));
-
-    return new AttributesResponseDTO(attributes.getGender(), attributes.getBirthDate(), attributes.getLocation());
-  }
-
-  public PreferencesResponseDTO getPreferences(Long userId) {
-
-    UserPreferences preferences = preferencesRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("UserPreferences not found!"));
-
-    return new PreferencesResponseDTO(preferences.getGender(), preferences.getAge_min(), preferences.getAge_max(), preferences.getDistance());
+    return user;
   }
 
   public ProfileResponseDTO getProfile(Long userId) {
@@ -172,4 +132,14 @@ public class UserService {
     return new ProfileResponseDTO(profile.getFirstName(), profile.getLastName());
   }
 
+  public UserParametersResponseDTO getParameters(Long userId) {
+
+    User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found!"));
+    UserAuth auth = user.getUserAuth();
+    UserProfile profile = user.getProfile();
+    UserAttributes attributes = profile.getAttributes();
+    UserPreferences preferences = profile.getPreferences();
+
+    return parametersMapper.toUserParametersDTO(user, attributes, preferences, auth);
+  }
 }
