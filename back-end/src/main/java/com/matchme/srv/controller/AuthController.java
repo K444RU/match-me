@@ -77,7 +77,7 @@ public class AuthController {
   @PostMapping("/signup")
   public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequestDTO signUpRequest) {
 
-    userService.createUser(signUpRequest);
+    String email = userService.createUser(signUpRequest);
 
     // if (userRepository.existsByEmail(signUpRequest.getEmail())) {
     //   return ResponseEntity.badRequest().body(new MessageResponseDTO("Error: email is already taken!"));
@@ -103,6 +103,6 @@ public class AuthController {
     
     // userRepository.save(user);
 
-    return ResponseEntity.ok(new MessageResponseDTO("User registered successfully!"));
+    return ResponseEntity.ok(new MessageResponseDTO("User registered successfully! Account verification e-mail was sent to " + email));
   }
 }

@@ -30,7 +30,7 @@ public class ActivityLog {
   private Instant instant;
 
   public enum LogType {
-    CREATED, VERIFIED, LOGIN, LOGOUT
+    CREATED, VERIFIED, STATE_NEW, LOGIN, LOGOUT
   }
   
   public ActivityLog(User user, LogType logType) {
