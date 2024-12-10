@@ -23,6 +23,7 @@ public class Role {
     @Column(length = 20)
     private UserRole name;
 
+    // TODO: Remove enum
     public enum UserRole {
         ROLE_USER, ROLE_MODERATOR, ROLE_ADMIN
     }
