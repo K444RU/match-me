@@ -1,12 +1,10 @@
-import React from 'react';
-
 type InputFieldProps = {
   // label: string;
   name: string; // [htmlFor, id, name]
   type: string;
   placeholder?: string;
   value: string;
-  onChange: React.Dispatch<React.SetStateAction<string>>;
+  onChange: (value: string) => void;
   required?: boolean;
   className?: string;
 };
