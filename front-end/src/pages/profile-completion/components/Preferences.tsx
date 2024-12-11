@@ -1,73 +1,144 @@
-import React, { useState } from 'react';
-import InputSelect5 from '@/components/ui/forms/InputSelect5';
+import React, {useState} from 'react';
 import OneHandleSlider from '@/components/ui/forms/OneHandleSlider';
-import { FaArrowLeft } from 'react-icons/fa';
+import {FaArrowLeft, FaCheck} from 'react-icons/fa';
+import MultiHandleSlider from '@/components/ui/forms/MultiRangeSlider';
 
-interface PreferencesProps {
-  onPrevious: () => void;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  formData: any;
+interface UnifiedFormData {
+    genderOther: string | null;
+    ageMin: number | null;
+    ageMax: number | null;
+    distance: number | null;
+    probabilityTolerance: number | null;
 }
 
-const Preferences: React.FC<PreferencesProps> = ({
-  onPrevious,
-  onChange,
-  formData,
-}) => {
-  const [gender, setGender] = useState('');
-  const [distance, setDistance] = useState('');
+interface PreferencesProps {
+    onPrevious: () => void;
+    onNext: () => void;
+    formData: UnifiedFormData;
+    loading: boolean;
+    onChange: (name: keyof UnifiedFormData, value: any) => void;
+    genderOptions: { id: number; name: string }[];
+}
 
-  const submitForm = (e: React.FormEvent) => {
-    e.preventDefault();
-    const user = {
-      gender,
-      distance,
+const Preferences: React.FC<PreferencesProps> = ({onPrevious, onNext, formData, loading, onChange, genderOptions}) => {
+    const [error, setError] = useState<string | null>(null);
+
+    const handleValidation = () => {
+        if (!formData.genderOther) {
+            setError('Please select a gender preference.');
+            return false;
+        }
+        if (formData.ageMin! > formData.ageMax!) {
+            setError('Minimum age cannot be greater than maximum age.');
+            return false;
+        }
+        setError(null);
+        return true;
     };
-    console.log(user);
-  };
 
-  return (
-    <form
-      onSubmit={submitForm}
-      className="w-full max-w-md rounded-lg bg-accent-200 p-6 shadow-md"
-    >
-      <h2 className="border-b-2 border-accent text-center text-2xl font-bold text-text">
-        Preferences
-      </h2>
-      <div className="flex flex-col gap-4">
-        <InputSelect5
-          label="I'm interested in"
-          options={['Men', 'Women', 'Everyone']}
-          onChange={setGender}
-        />
-        <OneHandleSlider
-          name="Distance"
-          min="50"
-          max="300"
-          step="10"
-          value="300"
-          label="Maximum distance"
-          onChange={setDistance}
-        />
-      </div>
-      <div className="flex flex-row-reverse gap-2">
-        <button
-          className="mb-3 flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
-          type="submit"
-          aria-label="Submit form."
+    const handleFinish = () => {
+        if (handleValidation()) {
+            onNext();
+        }
+    };
+
+    return (
+        <form
+            onSubmit={(e) => e.preventDefault()}
+            className="w-full max-w-md rounded-lg bg-accent-200 p-6 shadow-md"
         >
-          Finish
-        </button>
-        <button
-          onClick={onPrevious}
-          className="mb-3 flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
-        >
-          <FaArrowLeft />
-          Back
-        </button>
-      </div>
-    </form>
-  );
+            <h2 className="border-b-2 border-accent text-center text-2xl font-bold text-text">
+                Preferences
+            </h2>
+            <div className="flex flex-col gap-4 mt-4">
+                {error && <div className="text-red-500 text-sm">{error}</div>}
+
+                {/* Gender Preference Dropdown */}
+                <div>
+                    <label htmlFor="genderOther" className="mb-1 text-sm font-medium text-gray-700">
+                        Gender Preference
+                    </label>
+                    <select
+                        id="genderOther"
+                        value={formData.genderOther || ''}
+                        onChange={(e) => onChange('genderOther', e.target.value)}
+                        className="w-full rounded-md border border-gray-300 p-2"
+                        required
+                    >
+                        <option value="" disabled>
+                            Select Gender
+                        </option>
+                        {genderOptions.map((gender) => (
+                            <option key={gender.id} value={gender.name}>
+                                {gender.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Distance Slider */}
+                <div>
+                    <OneHandleSlider
+                        name="distance"
+                        min="10"
+                        max="500"
+                        step="10"
+                        value={formData.distance?.toString() || '300'}
+                        label="Maximum distance (km)"
+                        onChange={(value) => onChange('distance', Number(value))}
+                    />
+                </div>
+
+                {/* Age Range Slider */}
+                <div>
+                    <MultiHandleSlider
+                        min={18}
+                        max={120}
+                        minValue={formData.ageMin || 18}
+                        maxValue={formData.ageMax || 120}
+                        label="Preferred Age Range"
+                        onInput={({minValue, maxValue}) => {
+                            onChange('ageMin', minValue);
+                            onChange('ageMax', maxValue);
+                        }}
+                    />
+                </div>
+
+                {/* Probability Tolerance Slider */}
+                <div>
+                    <OneHandleSlider
+                        name="probabilityTolerance"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={formData.probabilityTolerance?.toString() || '0.5'}
+                        label="Probability Tolerance"
+                        onChange={(value) => onChange('probabilityTolerance', Number(value))}
+                    />
+                </div>
+            </div>
+
+            <div className="flex justify-between mt-6">
+                <button
+                    type="button"
+                    onClick={onPrevious}
+                    className="flex items-center gap-2 rounded-md bg-primary px-5 py-2 font-semibold text-text hover:bg-primary-200"
+                >
+                    <FaArrowLeft/> Back
+                </button>
+                <button
+                    type="button"
+                    onClick={handleFinish}
+                    disabled={loading}
+                    className={`flex items-center gap-2 rounded-md px-5 py-2 font-semibold text-text ${
+                        loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-primary-200'
+                    }`}
+                >
+                    {loading ? 'Saving...' : 'Finish'} <FaCheck/>
+                </button>
+            </div>
+        </form>
+    );
 };
 
 export default Preferences;
