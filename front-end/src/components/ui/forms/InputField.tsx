@@ -7,8 +7,8 @@ type InputFieldProps = {
   onChange: (value: string) => void;
   required?: boolean;
   className?: string;
-  onFocus: () => void;
-  onBlur: () => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 };
 
 const InputField = (
@@ -33,7 +33,7 @@ const InputField = (
         type={type}
         id={name}
         name={name}
-        className="focus-visible:ring-ring flex h-10 w-full rounded-md border border-accent bg-primary-50 px-3 py-2 text-base outline-0 ring-accent-500 ring-offset-accent-200 placeholder:text-text-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+        className="focus-visible:ring-ring flex h-10 w-full rounded-md border border-accent  px-3 py-2 text-base outline-0 ring-accent-500 ring-offset-accent-200 placeholder:text-text-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
         placeholder={placeholder}
         required={required}
         value={value}
