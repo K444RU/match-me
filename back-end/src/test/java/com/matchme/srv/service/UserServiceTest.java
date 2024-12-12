@@ -23,9 +23,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.matchme.srv.dto.request.SignupRequestDTO;
 import com.matchme.srv.dto.request.UserParametersRequestDTO;
 import com.matchme.srv.exception.DuplicateFieldException;
+import com.matchme.srv.exception.ResourceNotFoundException;
 import com.matchme.srv.mapper.AttributesMapper;
 import com.matchme.srv.mapper.PreferencesMapper;
 import com.matchme.srv.model.user.User;
+import com.matchme.srv.model.user.UserRoleType;
 import com.matchme.srv.model.user.UserStateTypes;
 import com.matchme.srv.model.user.activity.ActivityLog;
 import com.matchme.srv.model.user.activity.ActivityLogType;
@@ -93,13 +95,39 @@ public class UserServiceTest {
   @Test
   void setUserParameters_Success() {
 
-    var parameters = new UserParametersRequestDTO("test@test.com", "password", "12345678", 1L, "1995-10-10", 2.22, 3.33, 2L, 20, 22, 50, 0.5);
+    var parameters = new UserParametersRequestDTO(
+      "test@test.com",    // String email
+      "password",         // String password
+      "12345678",        // String number
+      "Peeter",          // String firstName
+      "Tamm",            // String lastName
+      "pt_420",          // String alias
+      1L,                // Long gender_self
+      "1995-10-10",      // String birthDate
+      2.22,              // Double longitude
+      3.33,              // Double latitude
+      2L,                // Long gender_other
+      20,                // Integer age_min
+      22,                // Integer age_max
+      50,                // Integer distance
+      0.5                // Double probabilityTolerance
+  );
     var newState = new UserStateTypes();
     var verifiedLogType = new ActivityLogType();
     
+    UserGenderType maleGender = new UserGenderType();
+    maleGender.setId(1L);
+    maleGender.setName("MALE");
+    
+    UserGenderType femaleGender = new UserGenderType();
+    maleGender.setId(2L);
+    maleGender.setName("FEMALE");
+
     when(userRepository.findById(1L)).thenReturn(Optional.of(user));
     when(userStateTypesRepository.findByName("NEW")).thenReturn(Optional.of(newState));
     when(activityLogTypeRepository.findByName("VERIFIED")).thenReturn(Optional.of(verifiedLogType));
+    when(genderRepository.findById(1L)).thenReturn(Optional.of(maleGender));
+    when(genderRepository.findById(2L)).thenReturn(Optional.of(femaleGender));
     
   
     ActivityLog result = userService.setUserParameters(1L, parameters);
@@ -226,12 +254,16 @@ public class UserServiceTest {
     mockLogType.setId(1L);
     mockLogType.setName("CREATED");
 
+    UserRoleType defaultRole = new UserRoleType();
+    defaultRole.setId(1L);
+    defaultRole.setName("ROLE_USER");
 
     when(userRepository.existsByEmail("test@example.com")).thenReturn(false);
     when(userRepository.existsByNumber("+372 55512999")).thenReturn(false);
     when(activityLogTypeRepository.findByName("CREATED")).thenReturn(Optional.of(mockLogType));
     when(userStateTypesRepository.findByName("UNVERIFIED")).thenReturn(Optional.of(mockState));
     when(encoder.encode("password")).thenReturn("encodedPassword");
+    when(roleRepository.findByName("ROLE_USER")).thenReturn(Optional.of(defaultRole));
 
     ActivityLog activityLog = userService.createUser(request);
 
@@ -290,11 +322,15 @@ public class UserServiceTest {
     state.setId(1L);
     state.setName("UNVERIFIED");
 
+    UserRoleType defaultRole = new UserRoleType();
+    defaultRole.setId(1L);
+    defaultRole.setName("ROLE_USER");
+
     when(userRepository.existsByEmail("test@example.com")).thenReturn(false);
     when(userRepository.existsByNumber("+372 55512999")).thenReturn(false);
     when(userStateTypesRepository.findByName("UNVERIFIED")).thenReturn(Optional.of(state));
     when(activityLogTypeRepository.findByName("CREATED")).thenReturn(Optional.empty());
-
+    when(roleRepository.findByName("ROLE_USER")).thenReturn(Optional.of(defaultRole));
 
     RuntimeException exception = assertThrows(
         RuntimeException.class, () -> userService.createUser(request)
