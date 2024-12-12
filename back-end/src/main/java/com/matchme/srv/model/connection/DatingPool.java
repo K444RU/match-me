@@ -2,7 +2,7 @@ package com.matchme.srv.model.connection;
 
 import java.util.Set;
 
-import com.matchme.srv.model.user.profile.Gender;
+import com.matchme.srv.model.user.profile.UserGenderType;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -19,7 +19,7 @@ import lombok.Data;
 @Table(name = "dating_pool")
 public class DatingPool {
   
-  public DatingPool(Long id2, Gender gender, Integer userAge, String geoHash, Integer currentScore2, Set<String> distance2,
+  public DatingPool(Long id2, UserGenderType gender, Integer userAge, String geoHash, Integer currentScore2, Set<String> distance2,
       Integer age_min2, Integer age_max2, Integer blindScore) {
   }
 
@@ -31,7 +31,7 @@ public class DatingPool {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "gender_id")
-  private Gender myGender;
+  private UserGenderType myGender;
 
   private Integer myAge;
 

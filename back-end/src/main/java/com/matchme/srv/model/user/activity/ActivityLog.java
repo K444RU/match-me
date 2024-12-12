@@ -11,6 +11,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "activity_log")
+
 public class ActivityLog {
 
   @Id
@@ -24,15 +25,18 @@ public class ActivityLog {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "activity_log_type_id")
-  private ActivityLogType logType;
+  private ActivityLogType type;
 
   @NotNull
   private Instant instant;
   
   public ActivityLog(User user, ActivityLogType logType) {
     this.user = user;
-    this.logType = logType;
+    this.type = logType;
     this.instant = Instant.now();
   }
 
+  public ActivityLog() {
+
+  }
 }

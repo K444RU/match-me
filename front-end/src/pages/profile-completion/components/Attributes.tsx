@@ -1,162 +1,183 @@
-import React, { useState, useRef, useEffect, ElementRef } from 'react';
+import React, {useState} from 'react';
 import InputField from '@/components/ui/forms/InputField';
-import InputSelect5 from '@/components/ui/forms/InputSelect5';
-import { genders } from '@assets/genders';
-import Select from '@/components/ui/forms/Select';
-import { FaArrowRight } from 'react-icons/fa';
-import { LuCalendar } from 'react-icons/lu';
-import { DayPicker } from 'react-day-picker';
-import Button from '@/components/ui/buttons/Button';
+import {FaArrowRight} from 'react-icons/fa';
 import 'react-day-picker/style.css';
-import { format } from 'date-fns';
+import axios from 'axios';
+import DatePicker from "@ui/forms/DatePicker.tsx";
 
-interface AttributeProps {
-  onNext: () => void;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  formData: any;
+interface UnifiedFormData {
+    gender: string | null;
+    dateOfBirth: string;
+    city: string;
+    latitude: number | null;
+    longitude: number | null;
 }
 
-const Attributes: React.FC<AttributeProps> = ({ onNext }) => {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [gender, setGender] = useState('');
-  const [dob, setDob] = useState<Date | undefined>(undefined);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const datePickerRef = useRef<HTMLDivElement>(null);
-  const datePickerBtnRef = useRef<ElementRef<'button'>>(null);
+interface AttributesProps {
+    onNext: () => void;
+    formData: UnifiedFormData;
+    onChange: (name: keyof UnifiedFormData, value: any) => void;
+    genderOptions: { id: number; name: string }[];
+}
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        datePickerRef.current &&
-        !datePickerRef.current.contains(event.target as Node) &&
-        !datePickerBtnRef.current?.contains(event.target as Node)
-      ) {
-        setShowDatePicker(false);
-      }
+const Attributes: React.FC<AttributesProps> = ({onNext, formData, onChange, genderOptions}) => {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [suggestions, setSuggestions] = useState<string[]>([]);
+
+    const handleCityChange = async (value: string) => {
+        onChange('city', value);
+        setSuggestions([]);
+        setLoading(true);
+
+        if (value.trim().length > 2) {
+            try {
+                const response = await axios.get('https://api.api-ninjas.com/v1/geocoding', {
+                    params: {city: value, country: 'Estonia'},
+                    headers: {'X-Api-Key': 'WQLYVxg0ufojjO+D2zNRxg==yKgUy9J1Vu7Z7KP1'},
+                });
+
+                if (response.data && response.data.length > 0) {
+                    const cities = response.data.map((location: { name: string }) => location.name);
+                    setSuggestions(cities);
+                } else {
+                    console.log('No city suggestions found for:', value);
+                    setSuggestions([]);
+                }
+            } catch (err) {
+                console.error('Error fetching city suggestions:', err);
+                setSuggestions([]);
+            } finally {
+                setLoading(false);
+            }
+        } else {
+            setLoading(false);
+        }
     };
 
-    if (showDatePicker) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
+    const selectCity = async (city: string) => {
+        onChange('city', city);
+        setSuggestions([]);
+        setLoading(true);
 
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+        try {
+            const response = await axios.get('https://api.api-ninjas.com/v1/geocoding', {
+                params: {city, country: 'Estonia'},
+                headers: {'X-Api-Key': 'WQLYVxg0ufojjO+D2zNRxg==yKgUy9J1Vu7Z7KP1'},
+            });
+
+            if (response.data && response.data.length > 0) {
+                const {latitude, longitude} = response.data[0];
+
+                if (latitude && longitude) {
+                    onChange('latitude', latitude);
+                    onChange('longitude', longitude);
+                } else {
+                    console.error('No valid coordinates found in response:', response.data);
+                    setError('Unable to fetch valid coordinates for the selected city.');
+                }
+            } else {
+                console.error('No results returned for city:', city);
+                setError('City not found. Please try another city.');
+            }
+        } catch (err) {
+            console.error('Error fetching city coordinates:', err);
+            setError('Failed to fetch city coordinates. Please try again later.');
+        } finally {
+            setLoading(false);
+        }
     };
-  }, [showDatePicker]);
 
-  const submitForm = (e: React.FormEvent) => {
-    e.preventDefault();
-    const user = {
-      firstName,
-      lastName,
-      gender,
+    const validateAndProceed = () => {
+        if (!formData.gender || !formData.dateOfBirth || !formData.city) {
+            setError('Please fill in all required fields.');
+            return;
+        }
+        setError(null);
+        onNext();
     };
-    console.log(user);
-  };
 
-  return (
-    <form
-      onSubmit={submitForm}
-      className="w-full max-w-md rounded-lg bg-accent-200 p-6 shadow-md"
-    >
-      <h2 className="border-b-2 border-accent text-center text-2xl font-bold text-text">
-        Personal Information
-      </h2>
-      <div className="flex flex-col gap-2 py-4">
-        <div className="flex gap-2">
-          <InputField
-            type="text"
-            name="first_name"
-            placeholder="First name"
-            value={firstName}
-            onChange={setFirstName}
-            required={true}
-          />
-          <InputField
-            type="text"
-            name="last_name"
-            placeholder="Last name"
-            value={lastName}
-            onChange={setLastName}
-            required={true}
-          />
-        </div>
-        <div className="flex items-center justify-start gap-2">
-          <InputSelect5
-            label="Gender"
-            options={['Male', 'Female', 'Other']}
-            onChange={setGender}
-          />
-          <div
-            className={`w-fit place-self-end transition-opacity duration-150 ${gender !== 'Other' ? 'opacity-50' : ''}`}
-          >
-            <Select
-              disabled={gender !== 'Other'}
-              name="genderOther"
-              options={[
-                <option key="default" value="" disabled selected>
-                  Select gender...
-                </option>,
-                ...genders.map((gender) => (
-                  <option key={gender.value} value={gender.value}>
-                    {gender.label}
-                  </option>
-                )),
-              ]}
-            />
-          </div>
-        </div>
-        <div>
-          <div className="flex flex-col justify-between gap-2">
-            <span className="pl-1 font-semibold">Date of Birth</span>
-            <Button
-              ref={datePickerBtnRef}
-              onClick={() => {
-                setShowDatePicker(!showDatePicker);
-              }}
-            >
-              {!dob ? (
-                <>
-                  <LuCalendar /> Pick a date
-                </>
-              ) : (
-                // TODO: Format to user locale
-                // import { es, ru } from 'date-fns/locale'
-                // { locale: ru }
-                <>
-                  <LuCalendar /> {format(dob, 'PPP')}
-                </>
-              )}
-            </Button>
-          </div>
-          {showDatePicker && (
-            <div
-              ref={datePickerRef}
-              className="absolute z-10 mt-1 rounded-md border border-gray-200 bg-white p-2 shadow-lg"
-            >
-              <DayPicker
-                mode="single"
-                selected={dob}
-                onSelect={(date) => {
-                  setDob(date);
-                }}
-                disabled={{ after: new Date() }}
-              />
+    return (
+        <form onSubmit={(e) => e.preventDefault()} className="w-full max-w-md rounded-lg bg-accent-200 p-6 shadow-md">
+            <h2 className="border-b-2 border-accent text-center text-2xl font-bold text-text">
+                Personal Information
+            </h2>
+            <div className="flex flex-col gap-4 py-4">
+                {error && <div className="text-red-500 text-sm">{error}</div>}
+
+                {/* Gender Dropdown */}
+                <div>
+                    <label className="mb-1 text-sm font-medium text-gray-700" htmlFor="gender">
+                        Gender
+                    </label>
+                    <select
+                        id="gender"
+                        name="gender"
+                        value={formData.gender || ''}
+                        onChange={(e) => onChange('gender', e.target.value)}
+                        className="w-full rounded-md border border-gray-300 p-2"
+                        required
+                    >
+                        <option value="" disabled>
+                            Select Gender
+                        </option>
+                        {genderOptions.map((gender) => (
+                            <option key={gender.id} value={gender.name}>
+                                {gender.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Birth Date Picker */}
+                <label className="mb-1 text-sm font-medium text-gray-700" htmlFor="city">
+                    Date of Birth
+                </label>
+                <DatePicker
+                    selectedDate={formData.dateOfBirth ? new Date(formData.dateOfBirth) : undefined}
+                    onDateChange={(dateString) => onChange('dateOfBirth', dateString)}
+                />
+
+                {/* City Input */}
+                <div>
+                    <label className="mb-1 text-sm font-medium text-gray-700" htmlFor="city">
+                        City
+                    </label>
+                    <InputField
+                        type="text"
+                        name="city"
+                        placeholder="Enter your city"
+                        value={formData.city || ''}
+                        onChange={handleCityChange}
+                    />
+                    {suggestions.length > 0 && (
+                        <ul className="bg-white border border-gray-300 rounded-md mt-2">
+                            {suggestions.map((city, index) => (
+                                <li
+                                    key={index}
+                                    className="p-2 cursor-pointer hover:bg-gray-200"
+                                    onClick={() => selectCity(city)}
+                                >
+                                    {city}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
             </div>
-          )}
-        </div>
-      </div>
-      <button
-        className="flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
-        type="submit"
-        aria-label="Continue to next step"
-        onClick={onNext}
-      >
-        Continue <FaArrowRight />
-      </button>
-    </form>
-  );
+
+            <button
+                className={`flex w-full items-center justify-center gap-2 self-start rounded-md px-5 py-2 font-semibold tracking-wide text-text transition-colors ${
+                    loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-primary-200 hover:text-text'
+                }`}
+                type="button"
+                disabled={loading}
+                onClick={validateAndProceed}
+            >
+                {loading ? 'Saving...' : 'Continue'} <FaArrowRight/>
+            </button>
+        </form>
+    );
 };
 
 export default Attributes;

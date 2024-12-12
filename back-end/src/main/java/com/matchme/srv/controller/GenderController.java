@@ -8,18 +8,20 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.matchme.srv.model.user.profile.Gender;
-import com.matchme.srv.repository.GenderRepository;
+import com.matchme.srv.model.user.profile.UserGenderType;
+import com.matchme.srv.repository.UserGenderTypeRepository;
+
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/genders")
 public class GenderController {
+  
   @Autowired
-  private GenderRepository genderRepository;
+  private UserGenderTypeRepository genderRepository;
 
   @GetMapping()
-  public List<Gender> getAllGenders() {
+  public List<UserGenderType> getAllGenders() {
     return genderRepository.findAll();
   }
 
