@@ -2,7 +2,7 @@ package com.matchme.srv.model.user.profile.user_preferences;
 
 import java.util.Set;
 
-import com.matchme.srv.model.user.profile.Gender;
+import com.matchme.srv.model.user.profile.UserGenderType;
 import com.matchme.srv.model.user.profile.UserProfile;
 
 import jakarta.persistence.*;
@@ -23,7 +23,7 @@ public class UserPreferences {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "gender_id")
-  private Gender gender;
+  private UserGenderType gender;
 
 
   private Integer age_min;

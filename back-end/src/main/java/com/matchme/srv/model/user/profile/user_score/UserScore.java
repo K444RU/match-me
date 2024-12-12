@@ -39,4 +39,10 @@ public class UserScore {
   @OneToMany(mappedBy = "userScores", cascade = CascadeType.ALL)
   private Set<ConnectionResult> results;
   
+  public UserScore() {
+    this.currentScore = 1000;
+    this.vibeProbability = 1;
+    this.currentBlind = 1000;
+  }
+
 }

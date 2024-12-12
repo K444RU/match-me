@@ -1,62 +1,68 @@
 package com.matchme.srv.model.user;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.matchme.srv.model.user.activity.ActivityLog;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_score.UserScore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
-@Data
+import java.util.HashSet;
+import java.util.Set;
+
+@Getter
+@Setter
 @Entity
 @Table(name = "users")
-@ToString(exclude = "userAuth")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private Long id;
 
     @NotBlank
     @Size(max = 50)
     @Email
     @Column(unique = true)
+    @ToString.Include
     private String email;
 
-    //@NotBlank
     @Size(max = 20)
     private String number;
 
+    @ToString.Exclude
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private UserAuth userAuth;
 
-    // @NotBlank
-    // @Size(max = 120)
-    // private String password;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_state_type_id")
+    @ToString.Exclude
     private UserStateTypes state;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles = new HashSet<>();
+    @JoinTable(name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @ToString.Exclude
+    private Set<UserRoleType> roles = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
     private Set<ActivityLog> activity;
 
-    // CascadeType.ALL = when a user is deleted, the associated user profile is also deleted.
-    // orphanRemoval = true -> profile is deleted when user is deleted. 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    // @NotNull
+    @ToString.Exclude
     private UserProfile profile;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @ToString.Exclude
     private UserScore score;
 
     public User() {}
@@ -64,7 +70,6 @@ public class User {
     public User(String email, UserStateTypes state) {
         this.email = email;
         this.state = state;
-        // this.roles.add(new Role()); creates circular dependency (bad)
     }
 
     public User(String email, String number, UserStateTypes state) {
@@ -73,7 +78,7 @@ public class User {
         this.state = state;
     }
 
-    // Persistence managers
+    // Helper methods to maintain bidirectional consistency:
     public void setProfile(UserProfile profile) {
         if (profile != null) {
             profile.setUser(this);
@@ -95,29 +100,7 @@ public class User {
         this.userAuth = userAuth;
     }
 
-    public void setRole(Role role) {
+    public void setRole(UserRoleType role) {
         this.roles.add(role);
     }
-
-    // Without helper method - inconsistent relationship
-    // User user = new User();
-    // UserProfile profile = new UserProfile();
-    // user.profile = profile; profile.user is still null! Bad state.
-
-    // With helper method - maintains both sides
-    // User user = new User();
-    // UserProfile profile = new UserProfile();
-    // user.setProfile(profile); Sets both user.profile and profile.user
-
-    // // This runs ONLY before first save to database
-    // @PrePersist
-    // protected void onCreate() {
-    //     createdAt = LocalDateTime.now();
-    // }
-
-    // // This runs before EVERY update to database
-    // @PreUpdate
-    // protected void onUpdate() {
-    //     // Handle update logic
-    // }
 }
