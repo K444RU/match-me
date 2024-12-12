@@ -38,6 +38,8 @@ public class UserProfile {
 
   private String lastName;
 
+  private String alias;
+
   public void setPreferences(UserPreferences preferences) {
     if (preferences != null) {
       preferences.setUserProfile(this);

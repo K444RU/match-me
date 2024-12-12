@@ -174,6 +174,10 @@ public class UserService {
     preferencesMapper.toEntity(preferences, parameters);
     preferences.setGender(getGender(parameters.gender_other()));
 
+    profile.setFirstName(parameters.firstName());
+    profile.setLastName(parameters.lastName());
+    profile.setAlias(parameters.alias());
+
     user.setState(userStateTypesRepository.findByName("NEW")
       .orElseThrow(() -> new RuntimeException("User state not found")));
 
