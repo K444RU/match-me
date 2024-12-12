@@ -3,6 +3,7 @@ import Attributes from './Attributes';
 import Preferences from './Preferences';
 import axios from 'axios';
 import { UnifiedFormData } from '../types/types';
+import { useNavigate } from 'react-router-dom';
 
 const PayloadFormData = (formData: UnifiedFormData) => ({
     first_name: formData.firstName,
@@ -21,6 +22,8 @@ const PayloadFormData = (formData: UnifiedFormData) => ({
 });
 
 const UnifiedForm = () => {
+    const navigate = useNavigate();
+
     const [formData, setFormData] = useState<UnifiedFormData>(() =>
         JSON.parse(localStorage.getItem('profileData') || '{}')
     );
@@ -69,7 +72,7 @@ const UnifiedForm = () => {
                     'Content-Type': 'application/json'
                 }
             });
-            alert('Registration successful!');
+            navigate('/chats');
         } catch (err) {
             console.error('Error during final submission:', err);
             alert('Failed to submit the form. Please try again.');
