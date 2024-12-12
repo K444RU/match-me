@@ -6,6 +6,9 @@ export interface City {
   }
 
 export interface UnifiedFormData {
+  firstName: string | null;
+  lastName: string | null;
+  alias: string | null;
   gender: string | null;
   dateOfBirth: string;
   city: City;

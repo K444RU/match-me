@@ -5,16 +5,19 @@ import axios from 'axios';
 import { UnifiedFormData } from '../types/types';
 
 const PayloadFormData = (formData: UnifiedFormData) => ({
-    gender: formData.gender,
-    birthDate: formData.dateOfBirth,
+    first_name: formData.firstName,
+    last_name: formData.lastName,
+    alias: formData.alias,
+    gender_self: formData.gender,
+    birth_date: formData.dateOfBirth,
     city: formData.city.name,
     latitude: formData.city.latitude,
     longitude: formData.city.longitude,
-    genderOther: formData.genderOther,
-    ageMin: formData.ageMin,
-    ageMax: formData.ageMax,
-    maxDistance: formData.distance,
-    probabilityTolerance: formData.probabilityTolerance,
+    gender_other: formData.genderOther,
+    age_min: formData.ageMin,
+    age_max: formData.ageMax,
+    distance: formData.distance,
+    probability_tolerance: formData.probabilityTolerance,
 });
 
 const UnifiedForm = () => {
@@ -58,8 +61,14 @@ const UnifiedForm = () => {
     const handleFinalSubmit = async () => {
         setLoading(true);
         try {
+            const token = localStorage.getItem('authToken');
             const payload = PayloadFormData(formData);
-            await axios.post('/api/user/complete-registration', payload);
+            await axios.patch('/api/user/complete-registration', payload, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
             alert('Registration successful!');
         } catch (err) {
             console.error('Error during final submission:', err);

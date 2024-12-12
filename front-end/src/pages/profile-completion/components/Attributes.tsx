@@ -27,6 +27,9 @@ const Attributes: React.FC<AttributesProps> = ({
         formData.city?.name || ''
     );
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [firstName, setFirstName] = useState(formData.firstName || '');
+    const [lastName, setLastName] = useState(formData.lastName || '');
+    const [alias, setAlias] = useState(formData.alias || '');
 
     const debouncedCitySearchValue = useDebounce(citySearchValue, 1000);
 
@@ -48,11 +51,16 @@ const Attributes: React.FC<AttributesProps> = ({
             !formData.gender ||
             !formData.dateOfBirth ||
             !formData.city ||
-            !formData.city
+            !firstName ||
+            !lastName ||
+            !alias
         ) {
             setError('Please fill in all required fields.');
             return;
         }
+        onChange('firstName', firstName);
+        onChange('lastName', lastName);
+        onChange('alias', alias);
         setError(null);
         onNext();
     };
@@ -67,6 +75,58 @@ const Attributes: React.FC<AttributesProps> = ({
             </h2>
             <div className="flex flex-col gap-4 py-4">
                 {error && <div className="text-sm text-red-500">{error}</div>}
+
+                {/* Names */}
+                <div className="flex gap-2">
+                    <div className="flex flex-col">
+                        <label
+                            className="mb-1 text-sm font-medium text-gray-700"
+                            htmlFor="city"
+                        >
+                            First name
+                        </label>
+                        <InputField
+                            type="text"
+                            name="firstName"
+                            placeholder="Michael"
+                            value={firstName}
+                            onChange={setFirstName}
+                        />
+                    </div>
+                    <div className="flex flex-col">
+                        <label
+                            className="mb-1 text-sm font-medium text-gray-700"
+                            htmlFor="city"
+                        >
+                            Last name
+                        </label>
+                        <InputField
+                            type="text"
+                            name="lastName"
+                            placeholder="Doorstep"
+                            value={lastName}
+                            onChange={setLastName}
+                        />
+                    </div>
+                </div>
+
+                {/* Alias */}
+                <div className="flex flex-col">
+                    {' '}
+                    <label
+                        className="mb-1 text-sm font-medium text-gray-700"
+                        htmlFor="city"
+                    >
+                        Alias
+                    </label>
+                    <InputField
+                        type="text"
+                        name="alias"
+                        placeholder="Shotgunner404"
+                        value={alias}
+                        onChange={setAlias}
+                    />
+                </div>
 
                 {/* Gender Dropdown */}
                 <div>
@@ -88,7 +148,7 @@ const Attributes: React.FC<AttributesProps> = ({
                             Select Gender
                         </option>
                         {genderOptions.map((gender) => (
-                            <option key={gender.id} value={gender.name}>
+                            <option key={gender.id} value={gender.id}>
                                 {gender.name}
                             </option>
                         ))}
@@ -96,22 +156,24 @@ const Attributes: React.FC<AttributesProps> = ({
                 </div>
 
                 {/* Birth Date Picker */}
-                <label
-                    className="mb-1 text-sm font-medium text-gray-700"
-                    htmlFor="city"
-                >
-                    Date of Birth
-                </label>
-                <DatePicker
-                    selectedDate={
-                        formData.dateOfBirth
-                            ? new Date(formData.dateOfBirth)
-                            : undefined
-                    }
-                    onDateChange={(dateString) =>
-                        onChange('dateOfBirth', dateString)
-                    }
-                />
+                <div className="flex flex-col">
+                    <label
+                        className="mb-1 text-sm font-medium text-gray-700"
+                        htmlFor="city"
+                    >
+                        Date of Birth
+                    </label>
+                    <DatePicker
+                        selectedDate={
+                            formData.dateOfBirth
+                                ? new Date(formData.dateOfBirth)
+                                : undefined
+                        }
+                        onDateChange={(dateString) =>
+                            onChange('dateOfBirth', dateString)
+                        }
+                    />
+                </div>
 
                 {/* City Input */}
                 <div>
