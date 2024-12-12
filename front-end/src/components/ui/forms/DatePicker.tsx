@@ -36,7 +36,8 @@ const DatePicker: React.FC<DatePickerProps> = ({ label, selectedDate, onDateChan
     const handleDateChange = (date: Date | undefined) => {
         if (date) {
             setLocalDate(date);
-            onDateChange(date.toISOString().split('T')[0]);
+            const utcDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+            onDateChange(utcDate.toISOString().split('T')[0]);
         } else {
             setLocalDate(undefined);
             onDateChange('');
