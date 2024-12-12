@@ -1,10 +1,14 @@
 package com.matchme.srv.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.matchme.srv.dto.request.UserParametersRequestDTO;
+import com.matchme.srv.security.services.UserDetailsImpl;
 import com.matchme.srv.service.UserService;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -12,6 +16,7 @@ import com.matchme.srv.service.UserService;
 @RequestMapping("/api/user")
 public class UserController {
 
+  @Autowired
   private UserService userService;
 
   // @GetMapping("/settings/{userId}")
@@ -47,7 +52,10 @@ public class UserController {
   // }
 
   @PatchMapping("/complete-registration")
-  public ResponseEntity<?> setParameters(@PathVariable Long userId, @Validated @RequestBody UserParametersRequestDTO parameters) {
+  public ResponseEntity<?> setParameters(@Validated @RequestBody UserParametersRequestDTO parameters) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+    Long userId = userDetails.getId();
 
     userService.setUserParameters(userId, parameters);
 
