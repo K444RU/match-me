@@ -3,6 +3,7 @@ import OneHandleSlider from '@/components/ui/forms/OneHandleSlider';
 import {FaArrowLeft, FaCheck} from 'react-icons/fa';
 import MultiHandleSlider from '@/components/ui/forms/MultiRangeSlider';
 import { UnifiedFormData } from '../types/types';
+import MotionSpinner from '@/components/animations/MotionSpinner';
 
 interface PreferencesProps {
     onPrevious: () => void;
@@ -127,7 +128,15 @@ const Preferences: React.FC<PreferencesProps> = ({onPrevious, onNext, formData, 
                         loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-primary-200'
                     }`}
                 >
-                    {loading ? 'Saving...' : 'Finish'} <FaCheck/>
+                                    {loading ? (
+                    <>
+                        Saving <MotionSpinner />
+                    </>
+                ) : (
+                    <>
+                        Continue <FaCheck />
+                    </>
+                )}
                 </button>
             </div>
         </form>
