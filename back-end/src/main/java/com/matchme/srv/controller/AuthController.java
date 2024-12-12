@@ -12,7 +12,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,8 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.matchme.srv.dto.request.LoginRequestDTO;
 import com.matchme.srv.dto.request.SignupRequestDTO;
 import com.matchme.srv.dto.response.JwtResponseDTO;
-import com.matchme.srv.repository.RoleRepository;
 import com.matchme.srv.repository.UserRepository;
+import com.matchme.srv.repository.UserRoleTypeRepository;
 import com.matchme.srv.security.jwt.JwtUtils;
 import com.matchme.srv.security.services.UserDetailsImpl;
 import com.matchme.srv.service.UserService;
@@ -44,7 +43,7 @@ public class AuthController {
   UserService userService;
 
   @Autowired
-  RoleRepository roleRepository;
+  UserRoleTypeRepository roleRepository;
 
   @Autowired
   PasswordEncoder encoder;
@@ -52,10 +51,6 @@ public class AuthController {
   @Autowired
   JwtUtils jwtUtils;
 
-  @GetMapping("/login")
-  public String loginPage() {
-    return "login";
-  }
 
   @PostMapping("/signin")
   public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequestDTO loginRequest) {
