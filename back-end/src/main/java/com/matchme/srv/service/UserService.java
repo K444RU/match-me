@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.matchme.srv.dto.request.*;
 import com.matchme.srv.dto.response.*;
 import com.matchme.srv.exception.DuplicateFieldException;
+import com.matchme.srv.exception.ResourceNotFoundException;
 import com.matchme.srv.mapper.AttributesMapper;
 import com.matchme.srv.mapper.PreferencesMapper;
 import com.matchme.srv.mapper.UserParametersMapper;
@@ -54,7 +55,6 @@ public class UserService {
 
   private final PasswordEncoder encoder;
 
-
   public UserRoleType getDefaultRole() {
 
     String defaultRole = "ROLE_USER";
@@ -70,7 +70,8 @@ public class UserService {
   }
 
   public UserGenderType getGender(Long genderId) {
-    UserGenderType gender = genderRepository.findById(genderId).orElseThrow(() -> new RuntimeException("Gender not found!"));
+    UserGenderType gender = genderRepository.findById(genderId)
+        .orElseThrow(() -> new RuntimeException("Gender not found!"));
     return gender;
   }
 
@@ -119,7 +120,7 @@ public class UserService {
     // Get user entity
     User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
     UserAuth auth = user.getUserAuth();
-    
+
     // Verify account
     if (auth.getRecovery() == verificationCode) {
       user.setState(userStateTypesRepository.findByName("VERIFIED")
@@ -163,26 +164,54 @@ public class UserService {
   public ActivityLog setUserParameters(Long userId, UserParametersRequestDTO parameters) {
 
     User user = userRepository.findById(userId)
-      .orElseThrow(() -> new EntityNotFoundException("User not found!"));
+        .orElseThrow(() -> new EntityNotFoundException("User not found!"));
+
     UserProfile profile = user.getProfile();
+    if (profile == null) {
+      profile = new UserProfile();
+      user.setProfile(profile);
+
+      ProfileChangeType profileType = profileChangeTypeRepository.findByName("CREATED")
+          .orElseThrow(() -> new ResourceNotFoundException("Profile Change Type"));
+      new ProfileChange(profile, profileType, null);
+    }
 
     UserAttributes attributes = profile.getAttributes();
+    if (attributes == null) {
+      attributes = new UserAttributes();
+      profile.setAttributes(attributes);
+
+      AttributeChangeType attributeType = attributeChangeTypeRepository.findByName("CREATED")
+          .orElseThrow(() -> new ResourceNotFoundException("Attribute Change Type"));
+      new AttributeChange(attributes, attributeType, null);
+    }
+
+    UserPreferences preferences = profile.getPreferences();
+    if (preferences == null) {
+        preferences = new UserPreferences();
+        profile.setPreferences(preferences);
+        
+        PreferenceChangeType preferenceChangeType = preferenceChangeTypeRepository.findByName("CREATED")
+            .orElseThrow(() -> new ResourceNotFoundException("Preference Change Type"));
+        new PreferenceChange(preferences, preferenceChangeType, null);
+    }
+
     attributesMapper.toEntity(attributes, parameters);
     attributes.setGender(getGender(parameters.gender_self()));
 
-    UserPreferences preferences = profile.getPreferences();
     preferencesMapper.toEntity(preferences, parameters);
     preferences.setGender(getGender(parameters.gender_other()));
 
-    profile.setFirstName(parameters.firstName());
-    profile.setLastName(parameters.lastName());
+    profile.setFirst_name(parameters.first_name());
+    profile.setLast_name(parameters.last_name());
     profile.setAlias(parameters.alias());
+    profile.setCity(parameters.city());
 
     user.setState(userStateTypesRepository.findByName("NEW")
-      .orElseThrow(() -> new RuntimeException("User state not found")));
+        .orElseThrow(() -> new ResourceNotFoundException("User state")));
 
     ActivityLogType activitylogType = activityLogTypeRepository.findByName("VERIFIED")
-      .orElseThrow(() -> new RuntimeException("LogType not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("LogType"));
 
     ActivityLog newEntry = new ActivityLog(user, activitylogType);
 
@@ -205,46 +234,50 @@ public class UserService {
 
     return parametersMapper.toUserParametersDTO(user, attributes, preferences, auth);
   }
-  
 
   // public void setAttributes(Long userId) {
 
-  //   UserAttributes attributes = attributesRepository.findById(userId)
-  //       .orElseThrow(() -> new EntityNotFoundException("UserAttributes not found!"));
+  // UserAttributes attributes = attributesRepository.findById(userId)
+  // .orElseThrow(() -> new EntityNotFoundException("UserAttributes not found!"));
 
-  //   attributesRepository.save(attributes);
+  // attributesRepository.save(attributes);
   // }
 
   // public SettingsResponseDTO getSettings(Long userId) {
 
-  //   User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found!"));
-  //   UserAuth auth = user.getUserAuth();
+  // User user = userRepository.findById(userId).orElseThrow(() -> new
+  // EntityNotFoundException("User not found!"));
+  // UserAuth auth = user.getUserAuth();
 
-  //   return new SettingsResponseDTO(user.getEmail(), user.getNumber(), auth.getPassword());
+  // return new SettingsResponseDTO(user.getEmail(), user.getNumber(),
+  // auth.getPassword());
   // }
 
   // public AttributesResponseDTO getAttributes(Long userId) {
 
-  //   UserAttributes attributes = attributesRepository.findById(userId)
-  //       .orElseThrow(() -> new EntityNotFoundException("UserAttributes not found!"));
+  // UserAttributes attributes = attributesRepository.findById(userId)
+  // .orElseThrow(() -> new EntityNotFoundException("UserAttributes not found!"));
 
-  //   return new AttributesResponseDTO(attributes.getGender(), attributes.getBirthDate(), attributes.getLocation());
+  // return new AttributesResponseDTO(attributes.getGender(),
+  // attributes.getBirthDate(), attributes.getLocation());
   // }
 
   // public PreferencesResponseDTO getPreferences(Long userId) {
 
-  //   UserPreferences preferences = preferencesRepository.findById(userId)
-  //       .orElseThrow(() -> new EntityNotFoundException("UserPreferences not found!"));
+  // UserPreferences preferences = preferencesRepository.findById(userId)
+  // .orElseThrow(() -> new EntityNotFoundException("UserPreferences not
+  // found!"));
 
-  //   return new PreferencesResponseDTO(preferences.getGender(), preferences.getAge_min(), preferences.getAge_max(),
-  //       preferences.getDistance());
+  // return new PreferencesResponseDTO(preferences.getGender(),
+  // preferences.getAge_min(), preferences.getAge_max(),
+  // preferences.getDistance());
   // }
 
   // public ProfileResponseDTO getProfile(Long userId) {
 
-  //   UserProfile profile = profileRepository.findById(userId)
-  //       .orElseThrow(() -> new EntityNotFoundException("UserProfile not found!"));
+  // UserProfile profile = profileRepository.findById(userId)
+  // .orElseThrow(() -> new EntityNotFoundException("UserProfile not found!"));
 
-  //   return new ProfileResponseDTO(profile.getFirstName(), profile.getLastName());
+  // return new ProfileResponseDTO(profile.getFirstName(), profile.getLastName());
   // }
 }
