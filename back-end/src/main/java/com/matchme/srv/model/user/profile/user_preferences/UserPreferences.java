@@ -34,7 +34,7 @@ public class UserPreferences {
 
   private Integer distance;
 
-  private Double probabilityTolerance;
+  private Double probability_tolerance;
 
   @OneToMany(mappedBy = "userPreferences", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   private Set<PreferenceChange> preferenceChangeLog;

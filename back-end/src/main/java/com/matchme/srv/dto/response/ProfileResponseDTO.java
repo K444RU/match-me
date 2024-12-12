@@ -7,15 +7,15 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ProfileResponseDTO {
-  private String firstName;
-  private String lastName;
+  private String first_name;
+  private String last_name;
   // TODO: add fields when they become apparent
 
   public ProfileResponseDTO() {}
 
-  public ProfileResponseDTO(String firstName, String lastName) {
-    this.firstName = firstName;
-    this.lastName = lastName;
+  public ProfileResponseDTO(String first_name, String last_name) {
+    this.first_name = first_name;
+    this.last_name = last_name;
   }
 
 

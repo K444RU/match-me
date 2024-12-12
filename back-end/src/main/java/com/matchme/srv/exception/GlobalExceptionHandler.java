@@ -2,6 +2,7 @@ package com.matchme.srv.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -94,5 +95,14 @@ public class GlobalExceptionHandler {
         Map<String, String> error = new HashMap<>();
         error.put("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+        public ResponseEntity<Map<String, String>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        Map<String, String> error = new HashMap<>();
+        // For dev \/ shows backend shit
+        // error.put("Invalid payload", ex.getMessage());
+        error.put("error", "Please check your input fields.");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 }

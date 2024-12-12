@@ -6,17 +6,16 @@ import jakarta.validation.constraints.Pattern;
 
 public record UserParametersRequestDTO(
 
-  String email, 
-
-  String password, 
-
-  String number,
+  String first_name,
+  String last_name,
+  String alias,
 
   Long gender_self,
 
   @Pattern(regexp="^\\d{4}-\\d{2}-\\d{2}$", message = "Birthday must be in format (YYYY-MM-DD)")
-  String birthDate,
+  String birth_date,
 
+  String city,
   Double longitude,
   Double latitude,
 
@@ -33,5 +32,5 @@ public record UserParametersRequestDTO(
   Integer distance,
 
   // Needs custom validation due to approx. errors
-  Double probabilityTolerance
+  Double probability_tolerance
 ) {}
