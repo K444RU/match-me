@@ -96,14 +96,12 @@ public class UserServiceTest {
   void setUserParameters_Success() {
 
     var parameters = new UserParametersRequestDTO(
-      "test@test.com",    // String email
-      "password",         // String password
-      "12345678",        // String number
       "Peeter",          // String firstName
       "Tamm",            // String lastName
       "pt_420",          // String alias
       1L,                // Long gender_self
       "1995-10-10",      // String birthDate
+      "Tartu",           // String city
       2.22,              // Double longitude
       3.33,              // Double latitude
       2L,                // Long gender_other
