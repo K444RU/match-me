@@ -46,7 +46,7 @@ public class UserController {
   //   return ResponseEntity.ok("Settings updated successfully");
   // }
 
-  @PatchMapping("/settings/setup/{userId}")
+  @PatchMapping("/complete-registration")
   public ResponseEntity<?> setParameters(@PathVariable Long userId, @Validated @RequestBody UserParametersRequestDTO parameters) {
 
     userService.setUserParameters(userId, parameters);

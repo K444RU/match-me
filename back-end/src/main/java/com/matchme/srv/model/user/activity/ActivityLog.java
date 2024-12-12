@@ -11,6 +11,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "activity_log")
+
 public class ActivityLog {
 
   @Id
@@ -35,4 +36,7 @@ public class ActivityLog {
     this.instant = Instant.now();
   }
 
+  public ActivityLog() {
+
+  }
 }
