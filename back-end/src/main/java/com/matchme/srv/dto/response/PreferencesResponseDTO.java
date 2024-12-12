@@ -14,7 +14,7 @@ public class PreferencesResponseDTO {
   private Integer age_min;
   private Integer age_max;
   private Integer distance;
-  private Double probabilityTolerance;
+  private Double probability_tolerance;
 
   public PreferencesResponseDTO() {}
 

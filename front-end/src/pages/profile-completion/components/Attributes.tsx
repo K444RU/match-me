@@ -1,17 +1,12 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import InputField from '@/components/ui/forms/InputField';
-import {FaArrowRight} from 'react-icons/fa';
+import { FaArrowRight } from 'react-icons/fa';
 import 'react-day-picker/style.css';
-import axios from 'axios';
-import DatePicker from "@ui/forms/DatePicker.tsx";
-
-interface UnifiedFormData {
-    gender: string | null;
-    dateOfBirth: string;
-    city: string;
-    latitude: number | null;
-    longitude: number | null;
-}
+import DatePicker from '@ui/forms/DatePicker.tsx';
+import { useDebounce } from '@/hooks/useDebounce';
+import { CitySuggestions } from './CitySuggestions';
+import { City, UnifiedFormData } from '../types/types';
+import MotionSpinner from '@/components/animations/MotionSpinner';
 
 interface AttributesProps {
     onNext: () => void;
@@ -20,94 +15,125 @@ interface AttributesProps {
     genderOptions: { id: number; name: string }[];
 }
 
-const Attributes: React.FC<AttributesProps> = ({onNext, formData, onChange, genderOptions}) => {
+const Attributes: React.FC<AttributesProps> = ({
+    onNext,
+    formData,
+    onChange,
+    genderOptions,
+}) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [citySearchValue, setCitySearchValue] = useState(
+        formData.city?.name || ''
+    );
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [firstName, setFirstName] = useState(formData.firstName || '');
+    const [lastName, setLastName] = useState(formData.lastName || '');
+    const [alias, setAlias] = useState(formData.alias || '');
 
-    const handleCityChange = async (value: string) => {
-        onChange('city', value);
-        setSuggestions([]);
+    const debouncedCitySearchValue = useDebounce(citySearchValue, 1000);
+
+    const handleCitySelect = async (city: City) => {
+        setShowSuggestions(false);
         setLoading(true);
-
-        if (value.trim().length > 2) {
-            try {
-                const response = await axios.get('https://api.api-ninjas.com/v1/geocoding', {
-                    params: {city: value, country: 'Estonia'},
-                    headers: {'X-Api-Key': 'WQLYVxg0ufojjO+D2zNRxg==yKgUy9J1Vu7Z7KP1'},
-                });
-
-                if (response.data && response.data.length > 0) {
-                    const cities = response.data.map((location: { name: string }) => location.name);
-                    setSuggestions(cities);
-                } else {
-                    console.log('No city suggestions found for:', value);
-                    setSuggestions([]);
-                }
-            } catch (err) {
-                console.error('Error fetching city suggestions:', err);
-                setSuggestions([]);
-            } finally {
-                setLoading(false);
-            }
-        } else {
-            setLoading(false);
-        }
+        setCitySearchValue(city.name);
+        onChange('city', city);
+        setLoading(false);
     };
 
-    const selectCity = async (city: string) => {
-        onChange('city', city);
-        setSuggestions([]);
-        setLoading(true);
-
-        try {
-            const response = await axios.get('https://api.api-ninjas.com/v1/geocoding', {
-                params: {city, country: 'Estonia'},
-                headers: {'X-Api-Key': 'WQLYVxg0ufojjO+D2zNRxg==yKgUy9J1Vu7Z7KP1'},
-            });
-
-            if (response.data && response.data.length > 0) {
-                const {latitude, longitude} = response.data[0];
-
-                if (latitude && longitude) {
-                    onChange('latitude', latitude);
-                    onChange('longitude', longitude);
-                } else {
-                    console.error('No valid coordinates found in response:', response.data);
-                    setError('Unable to fetch valid coordinates for the selected city.');
-                }
-            } else {
-                console.error('No results returned for city:', city);
-                setError('City not found. Please try another city.');
-            }
-        } catch (err) {
-            console.error('Error fetching city coordinates:', err);
-            setError('Failed to fetch city coordinates. Please try again later.');
-        } finally {
-            setLoading(false);
-        }
+    const handleCityInputChange = (value: string) => {
+        setCitySearchValue(value);
+        setShowSuggestions(true);
     };
 
     const validateAndProceed = () => {
-        if (!formData.gender || !formData.dateOfBirth || !formData.city) {
+        if (
+            !formData.gender ||
+            !formData.dateOfBirth ||
+            !formData.city ||
+            !firstName ||
+            !lastName ||
+            !alias
+        ) {
             setError('Please fill in all required fields.');
             return;
         }
+        onChange('firstName', firstName);
+        onChange('lastName', lastName);
+        onChange('alias', alias);
         setError(null);
         onNext();
     };
 
     return (
-        <form onSubmit={(e) => e.preventDefault()} className="w-full max-w-md rounded-lg bg-accent-200 p-6 shadow-md">
+        <form
+            onSubmit={(e) => e.preventDefault()}
+            className="w-full max-w-md rounded-lg bg-accent-200 p-6 shadow-md"
+        >
             <h2 className="border-b-2 border-accent text-center text-2xl font-bold text-text">
                 Personal Information
             </h2>
             <div className="flex flex-col gap-4 py-4">
-                {error && <div className="text-red-500 text-sm">{error}</div>}
+                {error && <div className="text-sm text-red-500">{error}</div>}
+
+                {/* Names */}
+                <div className="flex gap-2">
+                    <div className="flex flex-col">
+                        <label
+                            className="mb-1 text-sm font-medium text-gray-700"
+                            htmlFor="city"
+                        >
+                            First name
+                        </label>
+                        <InputField
+                            type="text"
+                            name="firstName"
+                            placeholder="Michael"
+                            value={firstName}
+                            onChange={setFirstName}
+                        />
+                    </div>
+                    <div className="flex flex-col">
+                        <label
+                            className="mb-1 text-sm font-medium text-gray-700"
+                            htmlFor="city"
+                        >
+                            Last name
+                        </label>
+                        <InputField
+                            type="text"
+                            name="lastName"
+                            placeholder="Doorstep"
+                            value={lastName}
+                            onChange={setLastName}
+                        />
+                    </div>
+                </div>
+
+                {/* Alias */}
+                <div className="flex flex-col">
+                    {' '}
+                    <label
+                        className="mb-1 text-sm font-medium text-gray-700"
+                        htmlFor="city"
+                    >
+                        Alias
+                    </label>
+                    <InputField
+                        type="text"
+                        name="alias"
+                        placeholder="Shotgunner404"
+                        value={alias}
+                        onChange={setAlias}
+                    />
+                </div>
 
                 {/* Gender Dropdown */}
                 <div>
-                    <label className="mb-1 text-sm font-medium text-gray-700" htmlFor="gender">
+                    <label
+                        className="mb-1 text-sm font-medium text-gray-700"
+                        htmlFor="gender"
+                    >
                         Gender
                     </label>
                     <select
@@ -122,7 +148,7 @@ const Attributes: React.FC<AttributesProps> = ({onNext, formData, onChange, gend
                             Select Gender
                         </option>
                         {genderOptions.map((gender) => (
-                            <option key={gender.id} value={gender.name}>
+                            <option key={gender.id} value={gender.id}>
                                 {gender.name}
                             </option>
                         ))}
@@ -130,51 +156,76 @@ const Attributes: React.FC<AttributesProps> = ({onNext, formData, onChange, gend
                 </div>
 
                 {/* Birth Date Picker */}
-                <label className="mb-1 text-sm font-medium text-gray-700" htmlFor="city">
-                    Date of Birth
-                </label>
-                <DatePicker
-                    selectedDate={formData.dateOfBirth ? new Date(formData.dateOfBirth) : undefined}
-                    onDateChange={(dateString) => onChange('dateOfBirth', dateString)}
-                />
+                <div className="flex flex-col">
+                    <label
+                        className="mb-1 text-sm font-medium text-gray-700"
+                        htmlFor="city"
+                    >
+                        Date of Birth
+                    </label>
+                    <DatePicker
+                        selectedDate={
+                            formData.dateOfBirth
+                                ? new Date(formData.dateOfBirth)
+                                : undefined
+                        }
+                        onDateChange={(dateString) =>
+                            onChange('dateOfBirth', dateString)
+                        }
+                    />
+                </div>
 
                 {/* City Input */}
                 <div>
-                    <label className="mb-1 text-sm font-medium text-gray-700" htmlFor="city">
+                    <label
+                        className="mb-1 text-sm font-medium text-gray-700"
+                        htmlFor="city"
+                    >
                         City
                     </label>
                     <InputField
                         type="text"
                         name="city"
                         placeholder="Enter your city"
-                        value={formData.city || ''}
-                        onChange={handleCityChange}
+                        value={citySearchValue}
+                        onChange={handleCityInputChange}
+                        onFocus={() => setShowSuggestions(true)}
+                        onBlur={() => {
+                            setTimeout(() => {
+                                setShowSuggestions(false);
+                            }, 200);
+                        }}
                     />
-                    {suggestions.length > 0 && (
-                        <ul className="bg-white border border-gray-300 rounded-md mt-2">
-                            {suggestions.map((city, index) => (
-                                <li
-                                    key={index}
-                                    className="p-2 cursor-pointer hover:bg-gray-200"
-                                    onClick={() => selectCity(city)}
-                                >
-                                    {city}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                    <div
+                        className={`absolute z-10 ${!showSuggestions ? `hidden` : ``}`}
+                    >
+                        <CitySuggestions
+                            searchTerm={debouncedCitySearchValue}
+                            onCitySelect={handleCitySelect}
+                        />
+                    </div>
                 </div>
             </div>
 
             <button
                 className={`flex w-full items-center justify-center gap-2 self-start rounded-md px-5 py-2 font-semibold tracking-wide text-text transition-colors ${
-                    loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-primary-200 hover:text-text'
+                    loading
+                        ? 'cursor-not-allowed bg-gray-400'
+                        : 'bg-primary hover:bg-primary-200 hover:text-text'
                 }`}
                 type="button"
                 disabled={loading}
                 onClick={validateAndProceed}
             >
-                {loading ? 'Saving...' : 'Continue'} <FaArrowRight/>
+                {loading ? (
+                    <>
+                        Saving <MotionSpinner />
+                    </>
+                ) : (
+                    <>
+                        Continue <FaArrowRight />
+                    </>
+                )}
             </button>
         </form>
     );

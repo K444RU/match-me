@@ -34,9 +34,15 @@ public class UserProfile {
   @OneToMany(mappedBy = "userProfile", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   private Set<ProfileChange> profileChangeLog;
   
-  private String firstName;
+  private String first_name;
 
-  private String lastName;
+  private String last_name;
+
+  private String alias;
+
+  private String city;
+  private String latitude;
+  private String longitude;
 
   public void setPreferences(UserPreferences preferences) {
     if (preferences != null) {
