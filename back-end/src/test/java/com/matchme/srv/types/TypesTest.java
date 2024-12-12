@@ -13,21 +13,21 @@ import org.springframework.test.context.ActiveProfiles;
 
 import com.matchme.srv.model.connection.ConnectionType;
 import com.matchme.srv.model.message.MessageEventType;
-import com.matchme.srv.model.user.Role;
+import com.matchme.srv.model.user.UserRoleType;
 import com.matchme.srv.model.user.UserStateTypes;
 import com.matchme.srv.model.user.activity.ActivityLogType;
-import com.matchme.srv.model.user.profile.Gender;
 import com.matchme.srv.model.user.profile.ProfileChangeType;
+import com.matchme.srv.model.user.profile.UserGenderType;
 import com.matchme.srv.model.user.profile.user_attributes.AttributeChangeType;
 import com.matchme.srv.model.user.profile.user_preferences.PreferenceChangeType;
 import com.matchme.srv.repository.ActivityLogTypeRepository;
 import com.matchme.srv.repository.AttributeChangeTypeRepository;
 import com.matchme.srv.repository.ConnectionTypeRepository;
-import com.matchme.srv.repository.GenderRepository;
 import com.matchme.srv.repository.MessageEventTypeRepository;
 import com.matchme.srv.repository.PreferenceChangeTypeRepository;
 import com.matchme.srv.repository.ProfileChangeTypeRepository;
-import com.matchme.srv.repository.RoleRepository;
+import com.matchme.srv.repository.UserGenderTypeRepository;
+import com.matchme.srv.repository.UserRoleTypeRepository;
 import com.matchme.srv.repository.UserStateTypesRepository;
 
 @SpringBootTest
@@ -36,10 +36,10 @@ import com.matchme.srv.repository.UserStateTypesRepository;
 public class TypesTest {
 
     @Autowired
-    private RoleRepository roleRepository;
+    private UserRoleTypeRepository roleRepository;
 
     @Autowired
-    private GenderRepository genderRepository;
+    private UserGenderTypeRepository genderRepository;
 
     @Autowired
     private ConnectionTypeRepository connectionTypeRepository;
@@ -64,7 +64,7 @@ public class TypesTest {
 
     @Test
     void testRolesInitialization() {
-        List<Role> roles = roleRepository.findAll();
+        List<UserRoleType> roles = roleRepository.findAll();
         assertEquals(3, roles.size());
         assertTrue(roles.stream().anyMatch(role -> role.getName().toString().equals("ROLE_USER")));
         assertTrue(roles.stream().anyMatch(role -> role.getName().toString().equals("ROLE_MODERATOR")));
@@ -73,7 +73,7 @@ public class TypesTest {
 
     @Test
     void testGendersInitialization() {
-        List<Gender> genders = genderRepository.findAll();
+        List<UserGenderType> genders = genderRepository.findAll();
         assertEquals(3, genders.size());
         assertTrue(genders.stream().anyMatch(gender -> gender.getName().equals("MALE")));
         assertTrue(genders.stream().anyMatch(gender -> gender.getName().equals("FEMALE")));

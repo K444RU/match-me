@@ -28,16 +28,11 @@ public class User {
     @Column(unique = true)
     private String email;
 
-    //@NotBlank
     @Size(max = 20)
     private String number;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private UserAuth userAuth;
-
-    // @NotBlank
-    // @Size(max = 120)
-    // private String password;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_state_type_id")
@@ -45,7 +40,7 @@ public class User {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles = new HashSet<>();
+    private Set<UserRoleType> roles = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<ActivityLog> activity;
@@ -95,7 +90,7 @@ public class User {
         this.userAuth = userAuth;
     }
 
-    public void setRole(Role role) {
+    public void setRole(UserRoleType role) {
         this.roles.add(role);
     }
 
