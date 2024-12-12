@@ -62,7 +62,7 @@ const Preferences: React.FC<PreferencesProps> = ({onPrevious, onNext, formData, 
                             Select Gender
                         </option>
                         {genderOptions.map((gender) => (
-                            <option key={gender.id} value={gender.name}>
+                            <option key={gender.id} value={gender.id}>
                                 {gender.name}
                             </option>
                         ))}
