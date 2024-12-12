@@ -73,6 +73,7 @@ const UnifiedForm = () => {
                 }
             });
             navigate('/chats');
+            localStorage.removeItem('profileData');
         } catch (err) {
             console.error('Error during final submission:', err);
             alert('Failed to submit the form. Please try again.');
