@@ -7,6 +7,8 @@ type InputFieldProps = {
   onChange: (value: string) => void;
   required?: boolean;
   className?: string;
+  onFocus: () => void;
+  onBlur: () => void;
 };
 
 const InputField = (
@@ -19,6 +21,8 @@ const InputField = (
     onChange,
     required,
     className,
+    onFocus,
+    onBlur,
   }: InputFieldProps
 ) => {
   return (
@@ -34,6 +38,8 @@ const InputField = (
         required={required}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={onFocus}
+        onBlur={onBlur}
       />
     </div>
   );
