@@ -16,7 +16,7 @@ public class AttributesResponseDTO {
   private String gender;
 
   @JsonFormat(pattern = "yyyy-MM-dd")
-  private LocalDate birthDate;
+  private LocalDate birth_date;
 
   // TODO: Figure this out
   private List<Double> location;
@@ -24,9 +24,9 @@ public class AttributesResponseDTO {
   public AttributesResponseDTO() {}
 
 
-  public AttributesResponseDTO(UserGenderType gender, LocalDate birthDate, List<Double> location) {
+  public AttributesResponseDTO(UserGenderType gender, LocalDate birth_date, List<Double> location) {
     this.gender = gender.getName();
-    this.birthDate = birthDate;
+    this.birth_date = birth_date;
     this.location = location;
   }
 

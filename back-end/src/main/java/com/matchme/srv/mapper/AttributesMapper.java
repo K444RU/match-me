@@ -20,7 +20,7 @@ public interface AttributesMapper {
   @Mapping(target = "userProfile", ignore = true)
   @Mapping(target = "attributeChangeLog", ignore = true)
   @Mapping(target = "gender", ignore = true)
-  @Mapping(source = "birthDate", target = "birthDate")
+  @Mapping(source = "birth_date", target = "birth_date")
   @Mapping(target = "location", expression = "java(List.of(parameters.longitude(), parameters.latitude()))")
   UserAttributes toEntity(@MappingTarget UserAttributes entity, UserParametersRequestDTO parameters);
 }
