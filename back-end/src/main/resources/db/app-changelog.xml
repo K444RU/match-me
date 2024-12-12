@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
-    <include file="changelog/001-insert-roles.xml" relativeToChangelogFile="true"/>
+     <include file="changelog/001-insert-roles.xml" relativeToChangelogFile="true"/>
     <include file="changelog/002-insert-genders.xml" relativeToChangelogFile="true"/>
     <include file="changelog/003-insert-connection-types.xml" relativeToChangelogFile="true"/>
     <include file="changelog/004-insert-message-event-types.xml" relativeToChangelogFile="true"/>
@@ -14,6 +14,4 @@
     <include file="changelog/007-insert-preference-change-types.xml" relativeToChangelogFile="true"/>
     <include file="changelog/008-insert-profile-change-types.xml" relativeToChangelogFile="true"/>
     <include file="changelog/009-insert-user-state-types.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/010-rename-roles-table.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/011-rename-gender-table.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

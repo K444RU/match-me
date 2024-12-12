@@ -9,10 +9,10 @@
         <insert tableName="user_gender_types">
             <column name="name">MALE</column>
         </insert>
-        <insert tableName="genders">
+        <insert tableName="user_gender_types">
             <column name="name">FEMALE</column>
         </insert>
-        <insert tableName="genders">
+        <insert tableName="user_gender_types">
             <column name="name">OTHER</column>
         </insert>
     </changeSet>
