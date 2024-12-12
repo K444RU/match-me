@@ -1,27 +1,15 @@
-import {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import Attributes from './Attributes';
 import Preferences from './Preferences';
-import axios from "axios";
-
-interface UnifiedFormData {
-    gender: string | null;
-    dateOfBirth: string;
-    city: string;
-    latitude: number | null;
-    longitude: number | null;
-    genderOther: string | null;
-    ageMin: number | null;
-    ageMax: number | null;
-    distance: number | null;
-    probabilityTolerance: number | null;
-}
+import axios from 'axios';
+import { UnifiedFormData } from '../types/types';
 
 const PayloadFormData = (formData: UnifiedFormData) => ({
     gender: formData.gender,
     birthDate: formData.dateOfBirth,
-    city: formData.city,
-    latitude: formData.latitude,
-    longitude: formData.longitude,
+    city: formData.city.name,
+    latitude: formData.city.latitude,
+    longitude: formData.city.longitude,
     genderOther: formData.genderOther,
     ageMin: formData.ageMin,
     ageMax: formData.ageMax,
@@ -33,7 +21,9 @@ const UnifiedForm = () => {
     const [formData, setFormData] = useState<UnifiedFormData>(() =>
         JSON.parse(localStorage.getItem('profileData') || '{}')
     );
-    const [genderOptions, setGenderOptions] = useState<{ id: number; name: string }[]>([]);
+    const [genderOptions, setGenderOptions] = useState<
+        { id: number; name: string }[]
+    >([]);
     const [step, setStep] = useState(0);
     const [loading, setLoading] = useState(false);
 
@@ -45,8 +35,10 @@ const UnifiedForm = () => {
         const fetchGenders = () => {
             axios
                 .get('/api/genders')
-                .then(response => setGenderOptions(response.data))
-                .catch(err => console.log('Failed to load gender options: ', err));
+                .then((response) => setGenderOptions(response.data))
+                .catch((err) =>
+                    console.log('Failed to load gender options: ', err)
+                );
         };
         fetchGenders();
     }, []);
@@ -60,7 +52,7 @@ const UnifiedForm = () => {
     };
 
     const handleChange = (name: keyof UnifiedFormData, value: any) => {
-        setFormData((prev) => ({...prev, [name]: value}));
+        setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
     const handleFinalSubmit = async () => {

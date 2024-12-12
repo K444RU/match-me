@@ -2,14 +2,7 @@ import React, {useState} from 'react';
 import OneHandleSlider from '@/components/ui/forms/OneHandleSlider';
 import {FaArrowLeft, FaCheck} from 'react-icons/fa';
 import MultiHandleSlider from '@/components/ui/forms/MultiRangeSlider';
-
-interface UnifiedFormData {
-    genderOther: string | null;
-    ageMin: number | null;
-    ageMax: number | null;
-    distance: number | null;
-    probabilityTolerance: number | null;
-}
+import { UnifiedFormData } from '../types/types';
 
 interface PreferencesProps {
     onPrevious: () => void;
