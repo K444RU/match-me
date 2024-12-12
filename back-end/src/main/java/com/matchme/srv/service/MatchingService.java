@@ -46,7 +46,7 @@ public class MatchingService {
     UserScore scores = getUserScores(userId); // currentScore, vibeProbability, currentBlind
 
     // parse users birthdate to correct age.
-    Integer userAge = parseBirthDateToString(attributes.getBirthDate()); // birthdate -> age
+    Integer userAge = parseBirthDateToString(attributes.getBirth_date()); // birthdate -> age
 
     // TODO: Make the location a geohash
     String geoHash = getGeoHash(attributes.getLocation()); // location -> geoHash
@@ -58,7 +58,7 @@ public class MatchingService {
     Integer actualScore = calculateUsersOwnScore(scores.getCurrentScore(), scores.getVibeProbability());
 
     // Calculate minimum score the other user must have
-    Integer blindScore = calculateBlindLowerBound(scores.getCurrentBlind(), preferences.getProbabilityTolerance());
+    Integer blindScore = calculateBlindLowerBound(scores.getCurrentBlind(), preferences.getProbability_tolerance());
 
     //TODO: make a search query in the database 
     Long bestMatchId = getDatingPoolBestMatch();

@@ -29,7 +29,7 @@ public class UserAttributes {
   @JoinColumn(name = "gender_id")
   private UserGenderType gender;
 
-  private LocalDate birthDate;
+  private LocalDate birth_date;
 
   private List<Double> location = new ArrayList<>(); //Geohash of 6-7 length
 

@@ -22,7 +22,7 @@ public interface PreferencesMapper {
   @Mapping(source = "age_min", target = "age_min")
   @Mapping(source = "age_max", target = "age_max")
   @Mapping(source = "distance", target = "distance")
-  @Mapping(source = "probabilityTolerance", target = "probabilityTolerance")
+  @Mapping(source = "probability_tolerance", target = "probability_tolerance")
   UserPreferences toEntity(@MappingTarget UserPreferences entity, UserParametersRequestDTO parameters);
 
   // @Mapping(target = "gender", ignore = true)
