@@ -67,7 +67,7 @@ const UnifiedForm = () => {
         setLoading(true);
         try {
             const payload = PayloadFormData(formData);
-            await axios.post('/api/complete-registration', payload);
+            await axios.post('/api/user/complete-registration', payload);
             alert('Registration successful!');
         } catch (err) {
             console.error('Error during final submission:', err);

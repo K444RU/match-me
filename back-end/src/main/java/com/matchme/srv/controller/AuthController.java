@@ -71,33 +71,33 @@ public class AuthController {
 
   @PostMapping("/signup")
   public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequestDTO signUpRequest) {
-
     userService.createUser(signUpRequest);
-
-    // if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-    //   return ResponseEntity.badRequest().body(new MessageResponseDTO("Error: email is already taken!"));
-    // }
-
-    // Create new user's account
-    // User user = new User();
-    // UserAuth userAuth = new UserAuth();
-    // user.setUserAuth(userAuth);
-
-    // user.setEmail(signUpRequest.getEmail());
-    // user.setNumber(signUpRequest.getNumber());
-    // userAuth.setPassword(encoder.encode(signUpRequest.getPassword()));
-    
-    // Create userprofile since it's a one-to-one relationship and we can't make a new user without it
-    // UserProfile userProfile = new UserProfile();
-    // user.setProfile(userProfile);
-    // userProfile.setUser(user); might be required, works for now without...  
-    
-    // Role userRole = roleRepository.findByName(Role.UserRole.ROLE_USER)
-    //     .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-    // user.setRole(userRole);
-    
-    // userRepository.save(user);
-
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 }
+
+
+
+// if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+//   return ResponseEntity.badRequest().body(new MessageResponseDTO("Error: email is already taken!"));
+// }
+
+// Create new user's account
+// User user = new User();
+// UserAuth userAuth = new UserAuth();
+// user.setUserAuth(userAuth);
+
+// user.setEmail(signUpRequest.getEmail());
+// user.setNumber(signUpRequest.getNumber());
+// userAuth.setPassword(encoder.encode(signUpRequest.getPassword()));
+
+// Create userprofile since it's a one-to-one relationship and we can't make a new user without it
+// UserProfile userProfile = new UserProfile();
+// user.setProfile(userProfile);
+// userProfile.setUser(user); might be required, works for now without...
+
+// Role userRole = roleRepository.findByName(Role.UserRole.ROLE_USER)
+//     .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+// user.setRole(userRole);
+
+// userRepository.save(user);

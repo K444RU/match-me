@@ -1,5 +1,7 @@
 package com.matchme.srv.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +37,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserService {
 
+  private static final Logger log = LoggerFactory.getLogger(UserService.class);
   private final UserRepository userRepository;
   private final UserGenderTypeRepository genderRepository;
   private final UserRoleTypeRepository roleRepository;
@@ -73,6 +76,7 @@ public class UserService {
 
   // Creates User entity and UserAuth entity for user, sends verification e-mail
   public ActivityLog createUser(SignupRequestDTO signUpRequest) {
+    System.out.println("Creating user with email: " + signUpRequest.getEmail());
 
     if (userRepository.existsByEmail(signUpRequest.getEmail())) {
       throw new DuplicateFieldException("email", "Email already exists");
@@ -104,6 +108,7 @@ public class UserService {
 
     // TODO: Send email verification to email
 
+    System.out.println("User created: " + newUser);
     return newEntry;
   }
 

@@ -7,10 +7,15 @@ import PhoneInput from './PhoneInput';
 import {useNavigate} from "react-router-dom";
 
 const RegisterForm = () => {
-    const [email, setEmail] = useState('admin@kood.tech');
-    const [phone, setPhone] = useState('5341449');
+    // const [email, setEmail] = useState('admin@kood.tech');
+    // const [phone, setPhone] = useState('5341449');
+    // const [countryCode, setCountryCode] = useState('+372');
+    // const [password, setPassword] = useState('123456');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [countryCode, setCountryCode] = useState('+372');
-    const [password, setPassword] = useState('123456');
+    const [password, setPassword] = useState('');
+
     const [loading, setLoading] = useState(false);
     const [resTitle, setResTitle] = useState('');
     const [resSubtitle, setResSubtitle] = useState('');
