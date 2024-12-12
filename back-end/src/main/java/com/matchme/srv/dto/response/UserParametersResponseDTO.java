@@ -8,6 +8,10 @@ public record UserParametersResponseDTO(
 
   String number,
 
+  String firstName,
+  String lastName,
+  String alias,
+
   Long gender_self,
 
   String birthDate,

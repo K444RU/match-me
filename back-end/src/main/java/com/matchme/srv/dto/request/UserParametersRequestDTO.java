@@ -12,6 +12,10 @@ public record UserParametersRequestDTO(
 
   String number,
 
+  String firstName,
+  String lastName,
+  String alias,
+
   Long gender_self,
 
   @Pattern(regexp="^\\d{4}-\\d{2}-\\d{2}$", message = "Birthday must be in format (YYYY-MM-DD)")

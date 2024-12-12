@@ -14,6 +14,9 @@ public interface UserParametersMapper {
   
   @Mapping(source = "user.email", target = "email")
   @Mapping(source = "user.number", target = "number")
+  @Mapping(source = "user.profile.firstName", target = "firstName")
+  @Mapping(source = "user.profile.lastName", target = "lastName")
+  @Mapping(source = "user.profile.alias", target = "alias")
   @Mapping(target = "gender_self", expression = "java(userAttributes.getGender().getId())")
   @Mapping(source = "userAttributes.birthDate", target = "birthDate")
   @Mapping(target = "longitude", expression = "java(userAttributes.getLocation() != null ? userAttributes.getLocation().get(0) : null)")
