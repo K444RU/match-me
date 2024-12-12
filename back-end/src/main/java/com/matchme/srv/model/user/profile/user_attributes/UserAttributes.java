@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.matchme.srv.model.user.profile.Gender;
 import com.matchme.srv.model.user.profile.ProfileChange;
+import com.matchme.srv.model.user.profile.UserGenderType;
 import com.matchme.srv.model.user.profile.UserProfile;
 
 import jakarta.persistence.*;
@@ -27,7 +27,7 @@ public class UserAttributes {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "gender_id")
-  private Gender gender;
+  private UserGenderType gender;
 
   private LocalDate birthDate;
 

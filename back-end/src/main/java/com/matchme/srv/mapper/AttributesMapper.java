@@ -2,6 +2,8 @@ package com.matchme.srv.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+
 
 import com.matchme.srv.dto.request.UserParametersRequestDTO;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
@@ -17,8 +19,8 @@ public interface AttributesMapper {
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "userProfile", ignore = true)
   @Mapping(target = "attributeChangeLog", ignore = true)
-  @Mapping(source = "gender_self", target = "gender")
+  @Mapping(target = "gender", ignore = true)
   @Mapping(source = "birthDate", target = "birthDate")
   @Mapping(target = "location", expression = "java(List.of(parameters.longitude(), parameters.latitude()))")
-  UserAttributes toEntity(UserParametersRequestDTO parameters);
+  UserAttributes toEntity(@MappingTarget UserAttributes entity, UserParametersRequestDTO parameters);
 }
