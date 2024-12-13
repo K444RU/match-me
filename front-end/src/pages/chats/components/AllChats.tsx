@@ -18,8 +18,7 @@ const AllChats = () => {
   ];
   return (
     <>
-      <section className="flex h-screen w-1/4 flex-col items-center border-r border-background-500 bg-background">
-        <UserInfo />
+      <section className="flex h-screen flex-col items-center border-r border-background-500 bg-background">
         <div className="w-full overflow-scroll">
           {chats.map((chat: any) => (
             <ChatPreview key={chat.id} chat={chat} />
