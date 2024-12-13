@@ -1,4 +1,6 @@
 import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
+import UserInfo from './UserInfo';
+import AllChats from "./AllChats";
 
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 
@@ -38,6 +40,8 @@ const AppSidebar = () => {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Blind</SidebarGroupLabel>
+          <UserInfo />
+          <AllChats />
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
