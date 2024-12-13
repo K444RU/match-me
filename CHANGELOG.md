@@ -2,6 +2,77 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.1-alpha.7](https://gitea.kood.tech/karlrometsomelar/match-me/compare/v0.0.1-alpha.6...v0.0.1-alpha.7) (2024-12-12)
+
+
+### Features
+
+* add .env, citysuggestions, types, geocoding util ([0958a9f](https://gitea.kood.tech/karlrometsomelar/match-me/commit/0958a9fd1766ba7b13e8a76254c72c00846261a3))
+* add custom exceptions ([7583b0d](https://gitea.kood.tech/karlrometsomelar/match-me/commit/7583b0d4b1d88be72a19fc244d8d5a1cdc85065c))
+* add custom validation logic + filestructure ([84d38bc](https://gitea.kood.tech/karlrometsomelar/match-me/commit/84d38bc6da5ccd3d75b1baf161f63b8e1e90eab8))
+* add duplicate email exception ([3500bfd](https://gitea.kood.tech/karlrometsomelar/match-me/commit/3500bfde45a477ab5ee8fa8106feb409c5df623d))
+* add duplicate number validation ([665214b](https://gitea.kood.tech/karlrometsomelar/match-me/commit/665214b1a0a61f2c9114656b59705d3852a2586a))
+* add endpoints to retrieve entities related to user ([b464d32](https://gitea.kood.tech/karlrometsomelar/match-me/commit/b464d325915dea424f73d76c616fbd3f7467a82d))
+* add firstName, lastName, and alias fields ([be54cce](https://gitea.kood.tech/karlrometsomelar/match-me/commit/be54cce972e6420f2511def48ca0cc9d78985ee9))
+* add insertion for all types ([3b6c93f](https://gitea.kood.tech/karlrometsomelar/match-me/commit/3b6c93f3288f54fc202402726fd90843a7914cd9))
+* add json parse exception ([10374f9](https://gitea.kood.tech/karlrometsomelar/match-me/commit/10374f954d1a5d181330da9cf098109ef3b0d5fd))
+* add onFocus and onBlur props to InputField component ([c244be9](https://gitea.kood.tech/karlrometsomelar/match-me/commit/c244be957a90bdf866354739e7ec434185d9a58a))
+* add types unit tests ([cd86120](https://gitea.kood.tech/karlrometsomelar/match-me/commit/cd86120f4169191f9418b2c7b10735d60eb41239))
+* add useDebounce hook ([a232b52](https://gitea.kood.tech/karlrometsomelar/match-me/commit/a232b527d2fac79744fcf75501f788056b0f9c59))
+* ask firstName,lastName and alias ([5d19ad5](https://gitea.kood.tech/karlrometsomelar/match-me/commit/5d19ad52a5303423dffe2a1ae226408cbe076c5a))
+* integrate liquibase for data insertion ([8b76235](https://gitea.kood.tech/karlrometsomelar/match-me/commit/8b7623596f5c6b806a338949de308137d739bc4c))
+
+
+### Bug Fixes
+
+* account create returns 201 ([cb362fb](https://gitea.kood.tech/karlrometsomelar/match-me/commit/cb362fbae5aab4439457b1ae1815868409f34b85))
+* add missing user_attributes_id to profilechange ([77dca34](https://gitea.kood.tech/karlrometsomelar/match-me/commit/77dca34aa4a8e3ac5259938bcebaeb7d6a16477c))
+* authToken was stored in double quotes ([7382fb3](https://gitea.kood.tech/karlrometsomelar/match-me/commit/7382fb3bb07d501c518a75cf17e144aa255c74ef))
+* datepicker utc conversion ([dd665d0](https://gitea.kood.tech/karlrometsomelar/match-me/commit/dd665d04d8619034d4a79f1dc76b939bb6e226fc))
+* fix broken UserServiceTest ([5887027](https://gitea.kood.tech/karlrometsomelar/match-me/commit/58870279a83e1ce0f631647f87f5d97336ba60bb))
+* got auth working with array ([a2593d5](https://gitea.kood.tech/karlrometsomelar/match-me/commit/a2593d54394e4efca51f3c86a5154c7170de1385))
+* motion() is deprecated ([d1a91fd](https://gitea.kood.tech/karlrometsomelar/match-me/commit/d1a91fd4f6277eab3a348ba2825cd1655d146d78))
+* mvn crash on startup ([a2705e7](https://gitea.kood.tech/karlrometsomelar/match-me/commit/a2705e765a0dde4c1745a939ea3ae6cacb791869))
+* navigate from preferences reg. -> chatPage ([9cf6ab2](https://gitea.kood.tech/karlrometsomelar/match-me/commit/9cf6ab29cbadbe221849a89acfd1c77d75b5c195))
+* remove circular dependencies ([f7f00e3](https://gitea.kood.tech/karlrometsomelar/match-me/commit/f7f00e3dde156939c72ea7b41ab799f203dacbd7))
+* remove profileData on reg. completion ([9ec1c50](https://gitea.kood.tech/karlrometsomelar/match-me/commit/9ec1c500be9be3588e95aa897ecf311639773286))
+* remove unneeded postgresql dialect ([db51a96](https://gitea.kood.tech/karlrometsomelar/match-me/commit/db51a962ceed43478624fa4fc524dcfa7f2065df))
+* setUserParameters w/ initial account ([124ae1b](https://gitea.kood.tech/karlrometsomelar/match-me/commit/124ae1b6c9a32538e146cd82589afda713723cc7))
+* user role -> [@manytomany](https://gitea.kood.tech/manytomany) ([c42fa11](https://gitea.kood.tech/karlrometsomelar/match-me/commit/c42fa11f1afa73db42043365d8bab89b81d7c399))
+* UserServiceTest ([d9ccf9d](https://gitea.kood.tech/karlrometsomelar/match-me/commit/d9ccf9db6595453270828226a84b44311c663d39))
+
+
+### Housekeeping
+
+* add multi-range-slider-react ([e3519da](https://gitea.kood.tech/karlrometsomelar/match-me/commit/e3519dadc84f91213b1b6d035f8064b8fb9114d6))
+* add todo ([bf1c918](https://gitea.kood.tech/karlrometsomelar/match-me/commit/bf1c918c2826af14ee1568a181ccda45d381dacc))
+* clean up back-end import statements. ([374ff7e](https://gitea.kood.tech/karlrometsomelar/match-me/commit/374ff7e628e77422d22db84b617f8995b90719cc))
+* remove table rename fix ([31747a4](https://gitea.kood.tech/karlrometsomelar/match-me/commit/31747a4d955efc43003ec8de2e04d83abc161648))
+* remove unused import ([cf1bc29](https://gitea.kood.tech/karlrometsomelar/match-me/commit/cf1bc29f9bed0d92441aac9399457f8c89cb4cc4))
+
+
+### Styling
+
+* add spinner ([eb49c91](https://gitea.kood.tech/karlrometsomelar/match-me/commit/eb49c91ec3e9f39f82c38eef848e921ec4d4ef00))
+* remove disgusting background color ([9f92cfb](https://gitea.kood.tech/karlrometsomelar/match-me/commit/9f92cfbfcf3b996bfdc491d9743774171f59cb4b))
+* run prettier ([47ae560](https://gitea.kood.tech/karlrometsomelar/match-me/commit/47ae560641d63eea50a9c8adcd4e7597eae5a1ac))
+* tabWidth to 4 ([b030069](https://gitea.kood.tech/karlrometsomelar/match-me/commit/b030069aa222befe5b8a3a9f51afc6253cdc8b00))
+
+
+### Refactoring
+
+* camelcase to snakecase ([d76af7a](https://gitea.kood.tech/karlrometsomelar/match-me/commit/d76af7a7fff206794ae38fdbafb724a65a8cdf70))
+* change gender to record ([5fe4ae5](https://gitea.kood.tech/karlrometsomelar/match-me/commit/5fe4ae506533d1c6729822b90aa0e16eb4cc5ef9))
+* move chatspage ([84c0cca](https://gitea.kood.tech/karlrometsomelar/match-me/commit/84c0ccaac4ed89060fd0e5142a3ab57615444c75))
+* profile-completion ([640722a](https://gitea.kood.tech/karlrometsomelar/match-me/commit/640722acc442ad29beb4fba488c936a78ea6e103))
+* records back to classes ([fd863a6](https://gitea.kood.tech/karlrometsomelar/match-me/commit/fd863a65e6aad74b1e89e9f239af81f4d816968a))
+* refactor back-end ([efb6ab7](https://gitea.kood.tech/karlrometsomelar/match-me/commit/efb6ab7e5f362864e8828b753022f5598f714cad))
+* refactor back-stage entities and basic R operations ([f5750a7](https://gitea.kood.tech/karlrometsomelar/match-me/commit/f5750a7f48a14b47d0898e2926106cb603d7ecaf))
+* Refactor some elements ([5aa1c4b](https://gitea.kood.tech/karlrometsomelar/match-me/commit/5aa1c4b242048917372f9e30a3b2577ebc184068))
+* rename dup email to dup field ([c6a9a3d](https://gitea.kood.tech/karlrometsomelar/match-me/commit/c6a9a3db6ef51c79511b0efa67ab1cd0a969bc93))
+* too much to describe ([4a517fd](https://gitea.kood.tech/karlrometsomelar/match-me/commit/4a517fd0d00359a4a523ca18f6b5f9f80752a010))
+* use jwt instead of userid ([1e7ff04](https://gitea.kood.tech/karlrometsomelar/match-me/commit/1e7ff049dc7290e9cf3d4f1ef719263fc4223bbf))
+
 ## [0.0.1-alpha.6](https://gitea.kood.tech/karlrometsomelar/match-me/compare/v0.0.1-alpha.5...v0.0.1-alpha.6) (2024-11-24)
 
 

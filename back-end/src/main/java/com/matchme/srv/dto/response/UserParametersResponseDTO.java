@@ -8,14 +8,18 @@ public record UserParametersResponseDTO(
 
   String number,
 
-  Integer gender_self,
+  String first_name,
+  String last_name,
+  String alias,
 
-  String birthDate,
+  Long gender_self,
+
+  String birth_date,
 
   Double longitude,
   Double latitude,
 
-  Integer gender_other,
+  Long gender_other,
 
   Integer age_min,
 
@@ -23,7 +27,7 @@ public record UserParametersResponseDTO(
 
   Integer distance,
 
-  Double probabilityTolerance
+  Double probability_tolerance
 
   // TODO: All enum tables 
 

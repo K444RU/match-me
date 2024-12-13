@@ -2,7 +2,7 @@ package com.matchme.srv.model.user.profile.user_preferences;
 
 import java.util.Set;
 
-import com.matchme.srv.model.user.profile.Gender;
+import com.matchme.srv.model.user.profile.UserGenderType;
 import com.matchme.srv.model.user.profile.UserProfile;
 
 import jakarta.persistence.*;
@@ -21,8 +21,9 @@ public class UserPreferences {
   @JoinColumn(name = "user_id")
   private UserProfile userProfile;
 
-
-  private Gender gender;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "gender_id")
+  private UserGenderType gender;
 
 
   private Integer age_min;
@@ -33,7 +34,7 @@ public class UserPreferences {
 
   private Integer distance;
 
-  private Double probabilityTolerance;
+  private Double probability_tolerance;
 
   @OneToMany(mappedBy = "userPreferences", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   private Set<PreferenceChange> preferenceChangeLog;

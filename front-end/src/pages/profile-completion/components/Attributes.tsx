@@ -1,162 +1,234 @@
-import React, { useState, useRef, useEffect, ElementRef } from 'react';
+import React, { useState } from 'react';
 import InputField from '@/components/ui/forms/InputField';
-import InputSelect5 from '@/components/ui/forms/InputSelect5';
-import { genders } from '@assets/genders';
-import Select from '@/components/ui/forms/Select';
 import { FaArrowRight } from 'react-icons/fa';
-import { LuCalendar } from 'react-icons/lu';
-import { DayPicker } from 'react-day-picker';
-import Button from '@/components/ui/buttons/Button';
 import 'react-day-picker/style.css';
-import { format } from 'date-fns';
+import DatePicker from '@ui/forms/DatePicker.tsx';
+import { useDebounce } from '@/hooks/useDebounce';
+import { CitySuggestions } from './CitySuggestions';
+import { City, UnifiedFormData } from '../types/types';
+import MotionSpinner from '@/components/animations/MotionSpinner';
 
-interface AttributeProps {
-  onNext: () => void;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  formData: any;
+interface AttributesProps {
+    onNext: () => void;
+    formData: UnifiedFormData;
+    onChange: (name: keyof UnifiedFormData, value: any) => void;
+    genderOptions: { id: number; name: string }[];
 }
 
-const Attributes: React.FC<AttributeProps> = ({ onNext }) => {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [gender, setGender] = useState('');
-  const [dob, setDob] = useState<Date | undefined>(undefined);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const datePickerRef = useRef<HTMLDivElement>(null);
-  const datePickerBtnRef = useRef<ElementRef<'button'>>(null);
+const Attributes: React.FC<AttributesProps> = ({
+    onNext,
+    formData,
+    onChange,
+    genderOptions,
+}) => {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [citySearchValue, setCitySearchValue] = useState(
+        formData.city?.name || ''
+    );
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [firstName, setFirstName] = useState(formData.firstName || '');
+    const [lastName, setLastName] = useState(formData.lastName || '');
+    const [alias, setAlias] = useState(formData.alias || '');
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        datePickerRef.current &&
-        !datePickerRef.current.contains(event.target as Node) &&
-        !datePickerBtnRef.current?.contains(event.target as Node)
-      ) {
-        setShowDatePicker(false);
-      }
+    const debouncedCitySearchValue = useDebounce(citySearchValue, 1000);
+
+    const handleCitySelect = async (city: City) => {
+        setShowSuggestions(false);
+        setLoading(true);
+        setCitySearchValue(city.name);
+        onChange('city', city);
+        setLoading(false);
     };
 
-    if (showDatePicker) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+    const handleCityInputChange = (value: string) => {
+        setCitySearchValue(value);
+        setShowSuggestions(true);
     };
-  }, [showDatePicker]);
 
-  const submitForm = (e: React.FormEvent) => {
-    e.preventDefault();
-    const user = {
-      firstName,
-      lastName,
-      gender,
+    const validateAndProceed = () => {
+        if (
+            !formData.gender ||
+            !formData.dateOfBirth ||
+            !formData.city ||
+            !firstName ||
+            !lastName ||
+            !alias
+        ) {
+            setError('Please fill in all required fields.');
+            return;
+        }
+        onChange('firstName', firstName);
+        onChange('lastName', lastName);
+        onChange('alias', alias);
+        setError(null);
+        onNext();
     };
-    console.log(user);
-  };
 
-  return (
-    <form
-      onSubmit={submitForm}
-      className="w-full max-w-md rounded-lg bg-accent-200 p-6 shadow-md"
-    >
-      <h2 className="border-b-2 border-accent text-center text-2xl font-bold text-text">
-        Personal Information
-      </h2>
-      <div className="flex flex-col gap-2 py-4">
-        <div className="flex gap-2">
-          <InputField
-            type="text"
-            name="first_name"
-            placeholder="First name"
-            value={firstName}
-            onChange={setFirstName}
-            required={true}
-          />
-          <InputField
-            type="text"
-            name="last_name"
-            placeholder="Last name"
-            value={lastName}
-            onChange={setLastName}
-            required={true}
-          />
-        </div>
-        <div className="flex items-center justify-start gap-2">
-          <InputSelect5
-            label="Gender"
-            options={['Male', 'Female', 'Other']}
-            onChange={setGender}
-          />
-          <div
-            className={`w-fit place-self-end transition-opacity duration-150 ${gender !== 'Other' ? 'opacity-50' : ''}`}
-          >
-            <Select
-              disabled={gender !== 'Other'}
-              name="genderOther"
-              options={[
-                <option key="default" value="" disabled selected>
-                  Select gender...
-                </option>,
-                ...genders.map((gender) => (
-                  <option key={gender.value} value={gender.value}>
-                    {gender.label}
-                  </option>
-                )),
-              ]}
-            />
-          </div>
-        </div>
-        <div>
-          <div className="flex flex-col justify-between gap-2">
-            <span className="pl-1 font-semibold">Date of Birth</span>
-            <Button
-              ref={datePickerBtnRef}
-              onClick={() => {
-                setShowDatePicker(!showDatePicker);
-              }}
-            >
-              {!dob ? (
-                <>
-                  <LuCalendar /> Pick a date
-                </>
-              ) : (
-                // TODO: Format to user locale
-                // import { es, ru } from 'date-fns/locale'
-                // { locale: ru }
-                <>
-                  <LuCalendar /> {format(dob, 'PPP')}
-                </>
-              )}
-            </Button>
-          </div>
-          {showDatePicker && (
-            <div
-              ref={datePickerRef}
-              className="absolute z-10 mt-1 rounded-md border border-gray-200 bg-white p-2 shadow-lg"
-            >
-              <DayPicker
-                mode="single"
-                selected={dob}
-                onSelect={(date) => {
-                  setDob(date);
-                }}
-                disabled={{ after: new Date() }}
-              />
+    return (
+        <form
+            onSubmit={(e) => e.preventDefault()}
+            className="w-full max-w-md rounded-lg bg-accent-200 p-6 shadow-md"
+        >
+            <h2 className="border-b-2 border-accent text-center text-2xl font-bold text-text">
+                Personal Information
+            </h2>
+            <div className="flex flex-col gap-4 py-4">
+                {error && <div className="text-sm text-red-500">{error}</div>}
+
+                {/* Names */}
+                <div className="flex gap-2">
+                    <div className="flex flex-col">
+                        <label
+                            className="mb-1 text-sm font-medium text-gray-700"
+                            htmlFor="city"
+                        >
+                            First name
+                        </label>
+                        <InputField
+                            type="text"
+                            name="firstName"
+                            placeholder="Michael"
+                            value={firstName}
+                            onChange={setFirstName}
+                        />
+                    </div>
+                    <div className="flex flex-col">
+                        <label
+                            className="mb-1 text-sm font-medium text-gray-700"
+                            htmlFor="city"
+                        >
+                            Last name
+                        </label>
+                        <InputField
+                            type="text"
+                            name="lastName"
+                            placeholder="Doorstep"
+                            value={lastName}
+                            onChange={setLastName}
+                        />
+                    </div>
+                </div>
+
+                {/* Alias */}
+                <div className="flex flex-col">
+                    {' '}
+                    <label
+                        className="mb-1 text-sm font-medium text-gray-700"
+                        htmlFor="city"
+                    >
+                        Alias
+                    </label>
+                    <InputField
+                        type="text"
+                        name="alias"
+                        placeholder="Shotgunner404"
+                        value={alias}
+                        onChange={setAlias}
+                    />
+                </div>
+
+                {/* Gender Dropdown */}
+                <div>
+                    <label
+                        className="mb-1 text-sm font-medium text-gray-700"
+                        htmlFor="gender"
+                    >
+                        Gender
+                    </label>
+                    <select
+                        id="gender"
+                        name="gender"
+                        value={formData.gender || ''}
+                        onChange={(e) => onChange('gender', e.target.value)}
+                        className="w-full rounded-md border border-gray-300 p-2"
+                        required
+                    >
+                        <option value="" disabled>
+                            Select Gender
+                        </option>
+                        {genderOptions.map((gender) => (
+                            <option key={gender.id} value={gender.id}>
+                                {gender.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Birth Date Picker */}
+                <div className="flex flex-col">
+                    <label
+                        className="mb-1 text-sm font-medium text-gray-700"
+                        htmlFor="city"
+                    >
+                        Date of Birth
+                    </label>
+                    <DatePicker
+                        selectedDate={
+                            formData.dateOfBirth
+                                ? new Date(formData.dateOfBirth)
+                                : undefined
+                        }
+                        onDateChange={(dateString) =>
+                            onChange('dateOfBirth', dateString)
+                        }
+                    />
+                </div>
+
+                {/* City Input */}
+                <div>
+                    <label
+                        className="mb-1 text-sm font-medium text-gray-700"
+                        htmlFor="city"
+                    >
+                        City
+                    </label>
+                    <InputField
+                        type="text"
+                        name="city"
+                        placeholder="Enter your city"
+                        value={citySearchValue}
+                        onChange={handleCityInputChange}
+                        onFocus={() => setShowSuggestions(true)}
+                        onBlur={() => {
+                            setTimeout(() => {
+                                setShowSuggestions(false);
+                            }, 500);
+                        }}
+                    />
+                    <div
+                        className={`absolute z-10 ${!showSuggestions ? `hidden` : ``}`}
+                    >
+                        <CitySuggestions
+                            searchTerm={debouncedCitySearchValue}
+                            onCitySelect={handleCitySelect}
+                        />
+                    </div>
+                </div>
             </div>
-          )}
-        </div>
-      </div>
-      <button
-        className="flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
-        type="submit"
-        aria-label="Continue to next step"
-        onClick={onNext}
-      >
-        Continue <FaArrowRight />
-      </button>
-    </form>
-  );
+
+            <button
+                className={`flex w-full items-center justify-center gap-2 self-start rounded-md px-5 py-2 font-semibold tracking-wide text-text transition-colors ${
+                    loading
+                        ? 'cursor-not-allowed bg-gray-400'
+                        : 'bg-primary hover:bg-primary-200 hover:text-text'
+                }`}
+                type="button"
+                disabled={loading}
+                onClick={validateAndProceed}
+            >
+                {loading ? (
+                    <>
+                        Saving <MotionSpinner />
+                    </>
+                ) : (
+                    <>
+                        Continue <FaArrowRight />
+                    </>
+                )}
+            </button>
+        </form>
+    );
 };
 
 export default Attributes;
