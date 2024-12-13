@@ -1,10 +1,10 @@
-import AllChats from './components/AllChats';
 import OpenChat from './components/OpenChat';
+import Sidebar from './components/app-sidebar'
 
 const ChatsPage = () => {
   return (
     <div className="flex w-screen">
-      <AllChats />
+      <Sidebar />
       <OpenChat />
     </div>
   );
