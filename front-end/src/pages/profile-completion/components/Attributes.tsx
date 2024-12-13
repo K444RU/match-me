@@ -193,7 +193,7 @@ const Attributes: React.FC<AttributesProps> = ({
                         onBlur={() => {
                             setTimeout(() => {
                                 setShowSuggestions(false);
-                            }, 200);
+                            }, 500);
                         }}
                     />
                     <div
