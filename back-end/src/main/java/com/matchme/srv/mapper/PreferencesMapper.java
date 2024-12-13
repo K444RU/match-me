@@ -19,18 +19,18 @@ public interface PreferencesMapper {
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "userProfile", ignore = true)
   @Mapping(target = "preferenceChangeLog", ignore = true)
-  @Mapping(source = "gender_other", target = "gender")
+  @Mapping(target = "gender", ignore = true)
   @Mapping(source = "age_min", target = "age_min")
   @Mapping(source = "age_max", target = "age_max")
   @Mapping(source = "distance", target = "distance")
-  @Mapping(source = "probabilityTolerance", target = "probabilityTolerance")
+  @Mapping(source = "probability_tolerance", target = "probability_tolerance")
   UserPreferences toEntity(@MappingTarget UserPreferences entity, UserParametersRequestDTO parameters);
 
-  @Mapping(source = "gender", target = "gender_other")
-  @Mapping(source = "age_min", target = "age_min")
-  @Mapping(source = "age_max", target = "age_max")
-  @Mapping(source = "distance", target = "distance")
-  @Mapping(source = "probabilityTolerance", target = "probabilityTolerance")
-  PreferencesResponseDTO toUserParametersDTO(UserPreferences preferences);
+  // @Mapping(target = "gender", ignore = true)
+  // @Mapping(source = "age_min", target = "age_min")
+  // @Mapping(source = "age_max", target = "age_max")
+  // @Mapping(source = "distance", target = "distance")
+  // @Mapping(source = "probabilityTolerance", target = "probabilityTolerance")
+  // PreferencesResponseDTO toUserParametersDTO(UserPreferences preferences);
 
 }

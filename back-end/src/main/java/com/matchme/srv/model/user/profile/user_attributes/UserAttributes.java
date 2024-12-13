@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.matchme.srv.model.user.profile.Gender;
 import com.matchme.srv.model.user.profile.ProfileChange;
+import com.matchme.srv.model.user.profile.UserGenderType;
 import com.matchme.srv.model.user.profile.UserProfile;
 
 import jakarta.persistence.*;
@@ -25,9 +25,11 @@ public class UserAttributes {
   @JoinColumn(name = "user_id")
   private UserProfile userProfile;
 
-  private Gender gender;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "gender_id")
+  private UserGenderType gender;
 
-  private LocalDate birthDate;
+  private LocalDate birth_date;
 
   private List<Double> location = new ArrayList<>(); //Geohash of 6-7 length
 

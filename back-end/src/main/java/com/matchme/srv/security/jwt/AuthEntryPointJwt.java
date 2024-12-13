@@ -26,15 +26,20 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
   public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
       throws IOException, ServletException {
     logger.error("Unauthorized error: {}", authException.getMessage());
+    logger.debug("Request URI: " + request.getRequestURI());
 
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
     final Map<String, Object> body = new HashMap<>();
-    body.put("status", HttpServletResponse.SC_UNAUTHORIZED);
+    // TODO: Discuss if we need these
+    // I commented them out to make it consistent with the other exceptions
+    // So now instead of 4 values it just shows error: Unauthorized
+
+    // body.put("status", HttpServletResponse.SC_UNAUTHORIZED);
     body.put("error", "Unauthorized");
-    body.put("message", authException.getMessage());
-    body.put("path", request.getServletPath());
+    // body.put("message", authException.getMessage());
+    // body.put("path", request.getServletPath());
 
     final ObjectMapper mapper = new ObjectMapper();
     mapper.writeValue(response.getOutputStream(), body);

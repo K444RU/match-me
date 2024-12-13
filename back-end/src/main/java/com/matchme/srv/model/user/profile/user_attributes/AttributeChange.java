@@ -20,17 +20,14 @@ public class AttributeChange {
   @JoinColumn(name = "user_attributes_id")
   private UserAttributes userAttributes;
 
-  @Enumerated(EnumType.STRING)
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "attribute_change_type_id")
   private AttributeChangeType type;
 
   @NotNull
   private Instant instant;
 
   private String content; 
-
-  public enum AttributeChangeType {
-    CREATED, GENDER, BIRTHDATE, LOCATION
-  }
 
   public AttributeChange() {}
 

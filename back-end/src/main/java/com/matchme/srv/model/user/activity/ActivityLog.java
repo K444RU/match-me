@@ -11,6 +11,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "activity_log")
+
 public class ActivityLog {
 
   @Id
@@ -22,21 +23,20 @@ public class ActivityLog {
   @NotNull
   private User user;
 
-  @NotNull
-  @Enumerated(EnumType.STRING)
-  private LogType logType;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "activity_log_type_id")
+  private ActivityLogType type;
 
   @NotNull
   private Instant instant;
-
-  public enum LogType {
-    CREATED, VERIFIED, STATE_NEW, LOGIN, LOGOUT
-  }
   
-  public ActivityLog(User user, LogType logType) {
+  public ActivityLog(User user, ActivityLogType logType) {
     this.user = user;
-    this.logType = logType;
+    this.type = logType;
     this.instant = Instant.now();
   }
 
+  public ActivityLog() {
+
+  }
 }

@@ -2,12 +2,15 @@ package com.matchme.srv.model.connection;
 
 import java.util.Set;
 
-import com.matchme.srv.model.user.profile.Gender;
+import com.matchme.srv.model.user.profile.UserGenderType;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -16,7 +19,7 @@ import lombok.Data;
 @Table(name = "dating_pool")
 public class DatingPool {
   
-  public DatingPool(Long id2, Gender gender, Integer userAge, String geoHash, Integer currentScore2, Set<String> distance2,
+  public DatingPool(Long id2, UserGenderType gender, Integer userAge, String geoHash, Integer currentScore2, Set<String> distance2,
       Integer age_min2, Integer age_max2, Integer blindScore) {
   }
 
@@ -26,7 +29,9 @@ public class DatingPool {
 
   private Long myId;
 
-  private Gender myGender;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "gender_id")
+  private UserGenderType myGender;
 
   private Integer myAge;
 

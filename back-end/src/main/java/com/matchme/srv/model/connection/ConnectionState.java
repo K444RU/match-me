@@ -27,13 +27,11 @@ public class ConnectionState {
   @NotNull
   private User user;
 
-  @Enumerated(EnumType.STRING)
-  private ConnectionType type;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "connection_type_id")
+  private ConnectionType connection_type;
 
   @NotNull
   private Timestamp timestamp;
 
-  public enum ConnectionType {
-    SEEN, OPENED_PROFILE, JUST_FRIENDS, MAYBE_MORE, INTERESTED, CLOSED
-  }
 }

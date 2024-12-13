@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 
-const MotionLink = motion(Link);
+const MotionLink = motion.create(Link);
 
 interface LinkButtonProps {
   to: string;

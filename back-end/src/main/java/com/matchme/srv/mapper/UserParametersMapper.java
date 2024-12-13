@@ -14,15 +14,19 @@ public interface UserParametersMapper {
   
   @Mapping(source = "user.email", target = "email")
   @Mapping(source = "user.number", target = "number")
-  @Mapping(source = "userAttributes.gender", target = "gender_self")
-  @Mapping(source = "userAttributes.birthDate", target = "birthDate")
+  @Mapping(source = "user.profile.first_name", target = "first_name")
+  @Mapping(source = "user.profile.last_name", target = "last_name")
+  @Mapping(source = "user.profile.alias", target = "alias")
+  @Mapping(target = "gender_self", expression = "java(userAttributes.getGender().getId())")
+  @Mapping(source = "userAttributes.birth_date", target = "birth_date")
   @Mapping(target = "longitude", expression = "java(userAttributes.getLocation() != null ? userAttributes.getLocation().get(0) : null)")
   @Mapping(target = "latitude", expression = "java(userAttributes.getLocation() != null ? userAttributes.getLocation().get(1) : null)")
-  @Mapping(source = "userPreferences.gender", target = "gender_other")
+  @Mapping(target = "gender_other", expression = "java(userPreferences.getGender().getId())")
   @Mapping(source = "userPreferences.age_min", target = "age_min")
   @Mapping(source = "userPreferences.age_max", target = "age_max")
   @Mapping(source = "userPreferences.distance", target = "distance")
-  @Mapping(source = "userPreferences.probabilityTolerance", target = "probabilityTolerance")
+  @Mapping(source = "userPreferences.probability_tolerance", target = "probability_tolerance")
   @Mapping(source = "userAuth.password", target = "password")
   UserParametersResponseDTO toUserParametersDTO(User user, UserAttributes userAttributes, UserPreferences userPreferences, UserAuth userAuth);
+
 }

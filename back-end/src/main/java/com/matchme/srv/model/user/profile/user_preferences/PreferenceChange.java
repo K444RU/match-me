@@ -20,17 +20,14 @@ public class PreferenceChange {
   @JoinColumn(name = "user_preferences_id")
   private UserPreferences userPreferences;
 
-  @Enumerated(EnumType.STRING)
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "preference_change_type_id")
   private PreferenceChangeType type;
 
   @NotNull
   private Instant instant;
 
   private String content; 
-
-  public enum PreferenceChangeType {
-    CREATED, GENDER, AGE_MIN, AGE_MAX, DISTANCE, TOLERANCE //maybe blind shouldn't be here? 
-  }
 
   public PreferenceChange() {}
 
