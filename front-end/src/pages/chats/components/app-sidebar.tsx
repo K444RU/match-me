@@ -41,7 +41,7 @@ const AppSidebar = () => {
         <SidebarGroup>
           <SidebarGroupLabel>Blind</SidebarGroupLabel>
           <UserInfo />
-          <AllChats />
+          {/* <AllChats /> */}
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (

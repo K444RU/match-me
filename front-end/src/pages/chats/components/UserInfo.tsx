@@ -8,7 +8,7 @@ const UserInfo = () => {
     alias: '(Alias)',
   };
   return (
-    <div className="relative flex w-full items-center bg-primary-200 text-text">
+    <div className="relative flex w-full items-center bg-primary-200 text-text cursor-pointer">
       {/* <IoSettingsOutline className="absolute right-4 top-4 h-8 w-8 rounded-3xl bg-primary-300 p-1.5 text-primary-50 hover:cursor-pointer hover:bg-primary-400" /> */}
       <FaRegUserCircle className=" mr-2 p-2 h-20 w-20 text-text-600" />
       <div>
