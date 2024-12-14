@@ -5,6 +5,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 import com.matchme.srv.dto.request.UserParametersRequestDTO;
+import com.matchme.srv.dto.response.PreferencesResponseDTO;
 import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
 
 @Mapper(

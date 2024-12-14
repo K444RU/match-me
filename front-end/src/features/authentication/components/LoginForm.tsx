@@ -10,8 +10,8 @@ const LoginForm = () => {
   const location = useLocation();
   const { login } = useAuth();
   const from = location.state?.from?.pathname || '/chats';
-  const [email, setEmail] = useState('admin@kood.tech');
-  const [password, setPassword] = useState('123456');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [resTitle, setResTitle] = useState('');
   const [resSubtitle, setResSubtitle] = useState('');
@@ -31,7 +31,7 @@ const LoginForm = () => {
         // when they get to the protected page and click the back button, they
         // won't end up back on the login page, which is also really nice for the
         // user experience.
-        navigate(from, { replace: true });
+        navigate((from === '/logout') ? '/chats' : from, { replace: true });
       }
     } catch (err: any) {
       console.error('❌ LoginForm: Login failed:', err);
