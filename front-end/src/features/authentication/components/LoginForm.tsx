@@ -10,8 +10,8 @@ const LoginForm = () => {
   const location = useLocation();
   const { login } = useAuth();
   const from = location.state?.from?.pathname || '/chats';
-  const [email, setEmail] = useState('admin@kood.tech');
-  const [password, setPassword] = useState('123456');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [resTitle, setResTitle] = useState('');
   const [resSubtitle, setResSubtitle] = useState('');
