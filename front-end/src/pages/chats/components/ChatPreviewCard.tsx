@@ -5,7 +5,7 @@ import type { ChatPreview } from '@/types/api';
 const ChatPreviewCard = ({ chat }: { chat: ChatPreview }) => {
     return (
         <>
-            <div className="flex h-16 w-full items-center border-b border-background-500 bg-background-300 text-text">
+            <div className="flex h-16 w-full items-center text-text">
                 <div className="m-2 flex h-16 w-16 items-center justify-center">
                     {chat.participant.avatar ? (
                         <div className="flex h-12 w-12 items-center justify-center">
@@ -23,7 +23,7 @@ const ChatPreviewCard = ({ chat }: { chat: ChatPreview }) => {
                 </div>
                 <div className="flex h-full w-full flex-col pl-2">
                     <div className="mr-3 mt-4 flex justify-between">
-                        <p className="font-bold leading-none text-text-700 line-clamp-1">
+                        <p className="line-clamp-1 font-bold leading-none text-text-700">
                             {chat.participant.firstName
                                 ? chat.participant.firstName +
                                   ' ' +

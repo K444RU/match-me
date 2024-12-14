@@ -35,8 +35,8 @@ export default function OpenChat({ chat }: { chat: ChatPreview | null }) {
     // TODO: Implement Chat message fetching here
 
     return (
-        <div className="flex w-full flex-col bg-background-400 px-4 pb-4 pt-20 sm:px-6 md:px-8">
-            <div className="mt-4 h-full w-full">
+        <div className="flex w-full flex-col bg-background-400 px-4 pb-4  sm:px-6 md:px-8">
+            <div className="mt-4 h-full w-full overflow-y-scroll">
                 {connectionChats.map((msg, index) => (
                     <Message
                         key={index}
