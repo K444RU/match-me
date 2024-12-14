@@ -75,7 +75,7 @@ const Preferences: React.FC<PreferencesProps> = ({onPrevious, onNext, formData, 
                     <OneHandleSlider
                         name="distance"
                         min="10"
-                        max="500"
+                        max="300"
                         step="10"
                         value={formData.distance?.toString() || '300'}
                         label="Maximum distance (km)"
