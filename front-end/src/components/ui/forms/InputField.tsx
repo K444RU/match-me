@@ -42,6 +42,7 @@ const InputField = (
         onChange={(e) => onChange(e.target.value)}
         onFocus={onFocus}
         onBlur={onBlur}
+        onKeyDown={onKeyDown}
       />
     </div>
   );
