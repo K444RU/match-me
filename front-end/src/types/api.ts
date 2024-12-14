@@ -27,6 +27,7 @@ export interface User {
     firstName?: string;
     lastName?: string;
     alias: string;
+    avatar?: string;
 }
 
 export interface Chat {
