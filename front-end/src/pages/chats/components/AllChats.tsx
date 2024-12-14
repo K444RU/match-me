@@ -1,34 +1,35 @@
-import ChatPreview from './ChatPreview';
+import type { ChatPreview } from '@/types/api';
+import ChatPreviewCard from './ChatPreviewCard';
 import UserInfo from './UserInfo';
+import { useAuth } from '@/features/authentication/AuthContext';
+import { useEffect, useState } from 'react';
+import { mockChatPreviews } from '@/mocks/chatData';
 
-const AllChats = () => {
-  const chats: any = [
-    {
-      id: '1',
-      name: 'Andreas',
-      time: 'yesterday',
-      last: 'Hello there!',
-    },
-    {
-      id: '2',
-      name: 'Karl Romet',
-      time: '09:00',
-      last: "What's up?",
-    },
-  ];
+const AllChats = ({onChatSelect}: {onChatSelect: (chat: ChatPreview) => void}) => {
+  const [chats, setChats] = useState<ChatPreview[]>([]);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const fetchChats = async () => {
+      if (!user?.token) return;
+      try {
+        setChats(mockChatPreviews);
+      } catch (error) {
+        console.error('Failed to fetch chats:', error);
+      }
+    };
+
+    fetchChats();
+  }, [user?.token]);
+
   return (
     <>
-      <section className="flex h-screen w-1/4 flex-col items-center border-r border-background-500 bg-background">
-        <UserInfo />
-        <div className="w-full overflow-scroll">
-          {chats.map((chat: any) => (
-            <ChatPreview key={chat.id} chat={chat} />
-          ))}
-          {chats.map((chat: any) => (
-            <ChatPreview key={chat.id} chat={chat} />
-          ))}
-          {chats.map((chat: any) => (
-            <ChatPreview key={chat.id} chat={chat} />
+      <section className="flex h-screen flex-col items-center border-r border-background-500 bg-background">
+        <div className="w-full">
+          {chats.map((chat: ChatPreview) => (
+            <div key={chat.connectionId} onClick={() => onChatSelect(chat)} className='cursor-pointer'>
+              <ChatPreviewCard chat={chat} />
+            </div>
           ))}
         </div>
       </section>

@@ -9,6 +9,7 @@ type InputFieldProps = {
   className?: string;
   onFocus?: () => void;
   onBlur?: () => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 };
 
 const InputField = (
@@ -23,6 +24,7 @@ const InputField = (
     className,
     onFocus,
     onBlur,
+    onKeyDown,
   }: InputFieldProps
 ) => {
   return (
@@ -40,6 +42,7 @@ const InputField = (
         onChange={(e) => onChange(e.target.value)}
         onFocus={onFocus}
         onBlur={onBlur}
+        onKeyDown={onKeyDown}
       />
     </div>
   );

@@ -235,6 +235,16 @@ public class UserService {
     return parametersMapper.toUserParametersDTO(user, attributes, preferences, auth);
   }
 
+  public UserProfile getUserProfile(Long userId) {
+    User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found!"));
+    return user.getProfile();
+  }
+
+  public User getUser(Long userId) {
+    User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found!"));
+    return user;
+  }
+
   // public void setAttributes(Long userId) {
 
   // UserAttributes attributes = attributesRepository.findById(userId)
