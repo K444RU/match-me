@@ -1,21 +1,22 @@
-import axios from "axios";
-import {userProfile} from "@/types/api.ts";
+import axios from 'axios';
+import { CurrentUser, UserProfile } from '@/types/api.ts';
 
-const API_URL = 'http://localhost:8000/api/user/settings/setup';
-
-export const getUserParameters = async (): Promise<userProfile> => {
+export const getUserParameters = async (): Promise<UserProfile> => {
     console.log('📡 Fetching user parameters via JWT');
     try {
         const token = localStorage.getItem('authToken');
         console.log('🛡️ Token used in request: ', token);
-        const response = await axios.get(API_URL, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
+        const response = await axios.get(
+            `${import.meta.env.VITE_API_URL}/user/settings/setup`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
 
         const data = response.data;
-        const mappedData: userProfile = {
+        const mappedData: UserProfile = {
             firstName: data.first_name,
             lastName: data.last_name,
             alias: data.alias,
@@ -27,6 +28,24 @@ export const getUserParameters = async (): Promise<userProfile> => {
 
         console.log('✅ Received user parameters: ', mappedData);
         return mappedData;
+    } catch (error) {
+        console.error('❌ Error fetching user parameters', error);
+        throw error;
+    }
+};
+
+export const getCurrentUser = async (): Promise<CurrentUser> => {
+    try {
+        const token = localStorage.getItem('authToken');
+        const response = await axios.get(
+            `${import.meta.env.VITE_API_URL}/user/currentUser`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        return response.data;
     } catch (error) {
         console.error('❌ Error fetching user parameters', error);
         throw error;

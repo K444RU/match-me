@@ -1,4 +1,4 @@
-export interface userProfile {
+export interface UserProfile {
     firstName: string;
     lastName: string;
     alias: string;
@@ -6,4 +6,17 @@ export interface userProfile {
     city: string;
     latitude: number;
     longitude: number;
+}
+
+export interface CurrentUser {
+    id: number;
+    firstName: string;
+    lastName: string;
+    alias: string;
+    role: Role[]
+}
+
+export interface Role {
+    id: number,
+    name: string
 }
