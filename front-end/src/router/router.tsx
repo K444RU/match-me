@@ -3,20 +3,20 @@ import {
     createRoutesFromElements,
     Route,
 } from 'react-router-dom';
-import MainLayout from '../layout/MainLayout';
+import MainLayout from '../components/layout/MainLayout';
 import HomePage from '../pages/HomePage';
 import ChatsPage from '../pages/chats/ChatsPage';
 import SettingsPage from '../pages/SettingsPage';
-import {AuthenticationGuard} from './components/AuthenticationGuard';
-import {useAuth} from '@/features/authentication/AuthContext';
-import {useEffect} from 'react';
+import { AuthenticationGuard } from './components/AuthenticationGuard';
+import { useAuth } from '@/features/authentication/AuthContext';
+import { useEffect } from 'react';
 import LoginPage from '@/features/authentication/components/LoginPage';
 import RegisterPage from '@/features/authentication/components/RegisterPage';
 import ProfileCompletionPage from '@/pages/profile-completion/ProfileCompletionPage';
 import AuthenticatedLayout from '@/layout/AuthenticatedLayout';
 
 const LogoutPage = () => {
-    const {user, logout} = useAuth();
+    const { user, logout } = useAuth();
 
     useEffect(() => {
         if (user) logout();
