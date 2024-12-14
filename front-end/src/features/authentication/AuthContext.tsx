@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       try {
         // Parse the token and create a basic user object
         return {
-          token: token,
+          token,
           type: '',
           id: 0,
           email: '',
@@ -59,7 +59,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       if (response?.data?.token) {
         console.log('🎫 AuthContext: Token found, setting user');
         localStorage.setItem('authToken', response.data.token);
-        setUser(response.data);
+        setUser({...response.data});
+        console.log('✔️ AuthContext: User logged in successfully:', response.data);
+        console.log('AuthProvider user (immediately after setUser):', user);
       } else {
         console.warn('⚠️ AuthContext: No token in response');
       }

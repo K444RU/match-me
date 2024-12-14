@@ -62,8 +62,33 @@ public class UserController {
     return ResponseEntity.ok("Account set-up was successful");
   }
 
-  @GetMapping("/settings/setup/{userId}")
-  public ResponseEntity<?> getParameters(@PathVariable Long userId) {
+  /*
+   * https://stackoverflow.com/questions/49127791/extract-currently-logged-in-user-information-from-jwt-token-using-spring-securit
+   * Endpoint: GET /settings/setup
+   *
+   * Purpose:
+   * This endpoint retrieves user parameters for the currently authenticated user.
+   * It uses the `Authentication` object to identify the user and fetch their data from the database.
+   *
+   * How It Works:
+   * - The `Authentication` object is used to get the authenticated user's details.
+   * - The `UserDetailsImpl` class provides access to the user's ID (`userId`).
+   * - The `userService.getParameters(userId)` method fetches and returns the user's parameters.
+   *
+   * CORS Context:
+   * - This endpoint requires the `Authorization` header in the request, which triggers a preflight (OPTIONS) request.
+   * - The `CorsFilter` ensures that the backend responds to this preflight request with the necessary CORS headers,
+   *   allowing the actual GET request to succeed.
+   *
+   * Example Request:
+   * GET /api/user/settings/setup
+   * Headers:
+   *   Authorization: Bearer <JWT_TOKEN>
+   */
+  @GetMapping("/settings/setup")
+  public ResponseEntity<?> getParameters(Authentication authentication) {
+    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+    Long userId = userDetails.getId();
 
     return ResponseEntity.ok(userService.getParameters(userId));
   }
