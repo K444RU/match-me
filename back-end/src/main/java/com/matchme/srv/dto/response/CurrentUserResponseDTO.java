@@ -9,6 +9,7 @@ import lombok.Builder;
 @Builder
 public record CurrentUserResponseDTO(
         Long id,
+        String email,
         String firstName,
         String lastName,
         String alias,

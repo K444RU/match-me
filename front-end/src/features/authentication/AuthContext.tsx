@@ -1,13 +1,11 @@
 import { createContext, ReactNode, useContext, useState } from 'react';
 import AuthService from '@/features/authentication/services/AuthService';
 import { AxiosResponse } from 'axios';
+import { CurrentUser } from '@/types/api';
+import { getCurrentUser } from '@/pages/UserService';
 
-interface User {
+interface User extends CurrentUser {
   token: string;
-  type: string;
-  id: number;
-  email: string;
-  role: string;
 }
 
 interface AuthContextType {
@@ -32,13 +30,25 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const token = localStorage.getItem('authToken');
     if (token) {
       try {
+        getCurrentUser().then((currentUser) => {
+          setUser({
+            ...currentUser,
+            token,
+          })
+        }).catch(() => {
+          localStorage.removeItem('authToken');
+          setUser(null);
+        })
+
         // Parse the token and create a basic user object
         return {
           token,
-          type: '',
           id: 0,
           email: '',
-          role: '',
+          role: [],
+          firstName: '',
+          lastName: '',
+          alias: '',
         };
       } catch (e) {
         localStorage.removeItem('authToken');
@@ -59,8 +69,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       if (response?.data?.token) {
         console.log('🎫 AuthContext: Token found, setting user');
         localStorage.setItem('authToken', response.data.token);
-        setUser({...response.data});
-        console.log('✔️ AuthContext: User logged in successfully:', response.data);
+        const currentUser = await getCurrentUser();
+        
+        const userData: User = {
+          ...currentUser,
+          token: response.data.token,
+        };
+        
+        setUser(userData);
+        console.log('✔️ AuthContext: User logged in successfully:', userData);
         console.log('AuthProvider user (immediately after setUser):', user);
       } else {
         console.warn('⚠️ AuthContext: No token in response');
