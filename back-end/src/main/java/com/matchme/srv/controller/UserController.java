@@ -115,6 +115,7 @@ public class UserController {
 
     CurrentUserResponseDTO currentUser = CurrentUserResponseDTO.builder()
         .id(userId)
+        .email(user.getEmail())
         .firstName(userProfile.getFirst_name())
         .lastName(userProfile.getLast_name())
         .alias(userProfile.getAlias())
