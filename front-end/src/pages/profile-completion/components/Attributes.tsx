@@ -3,7 +3,7 @@ import InputField from '@/components/ui/forms/InputField';
 import { FaArrowRight } from 'react-icons/fa';
 import 'react-day-picker/style.css';
 import DatePicker from '@ui/forms/DatePicker.tsx';
-import { useDebounce } from '@/hooks/useDebounce';
+import { useDebounce } from '@/lib/hooks/useDebounce';
 import { CitySuggestions } from './CitySuggestions';
 import { City, UnifiedFormData } from '../types/types';
 import MotionSpinner from '@/components/animations/MotionSpinner';
