@@ -33,6 +33,12 @@ const DatePicker: React.FC<DatePickerProps> = ({ label, selectedDate, onDateChan
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [showDatePicker]);
 
+    useEffect(() => {
+        if(selectedDate) {
+            setLocalDate(selectedDate)
+        }
+    }, [selectedDate])
+
     const handleDateChange = (date: Date | undefined) => {
         if (date) {
             setLocalDate(date);

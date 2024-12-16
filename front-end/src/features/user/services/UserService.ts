@@ -15,9 +15,7 @@ export const getUserParameters = async (): Promise<UserProfile> => {
             }
         );
 
-        const data = response.data;
         const mappedData: UserProfile = response.data;
-
         console.log('✅ Received user parameters: ', mappedData);
         return mappedData;
     } catch (error) {
