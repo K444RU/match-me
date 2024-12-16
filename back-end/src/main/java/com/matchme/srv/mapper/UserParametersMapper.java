@@ -11,7 +11,7 @@ import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
 
 @Mapper(componentModel = "spring")
 public interface UserParametersMapper {
-  
+
   @Mapping(source = "user.email", target = "email")
   @Mapping(source = "user.number", target = "number")
   @Mapping(source = "user.profile.first_name", target = "first_name")
@@ -28,6 +28,7 @@ public interface UserParametersMapper {
   @Mapping(source = "userPreferences.distance", target = "distance")
   @Mapping(source = "userPreferences.probability_tolerance", target = "probability_tolerance")
   @Mapping(source = "userAuth.password", target = "password")
-  UserParametersResponseDTO toUserParametersDTO(User user, UserAttributes userAttributes, UserPreferences userPreferences, UserAuth userAuth);
+  UserParametersResponseDTO toUserParametersDTO(User user, UserAttributes userAttributes,
+      UserPreferences userPreferences, UserAuth userAuth);
 
 }
