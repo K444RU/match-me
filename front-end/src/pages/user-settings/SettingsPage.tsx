@@ -44,14 +44,16 @@ const SettingsPage = () => {
     return (
         <SettingsContext.Provider value={settings}>
             <GenderContext.Provider value={genders}>
-                <div className="mx-auto h-screen max-w-[800px] items-center justify-center overflow-auto bg-background-200 px-5 pt-24">
-                    <Tabs defaultValue="profile" className="w-[400px]">
-                        <TabsList>
-                            <TabsTrigger value="profile">Profile</TabsTrigger>
-                            <TabsTrigger value="preferences">
+                <div>
+                    <Tabs defaultValue="profile">
+                        <TabsList className="w-full">
+                            <TabsTrigger value="profile" className="w-full">
+                                Profile
+                            </TabsTrigger>
+                            <TabsTrigger className="w-full" value="preferences">
                                 Preferences
                             </TabsTrigger>
-                            <TabsTrigger value="attributes">
+                            <TabsTrigger className="w-full" value="attributes">
                                 Attributes
                             </TabsTrigger>
                         </TabsList>

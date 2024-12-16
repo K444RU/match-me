@@ -44,7 +44,7 @@ const UserAttributesCard = () => {
     }, [birthDate]);
 
     return (
-        <Card className="w-[350px]">
+        <Card className="w-full h-[475px] border-none shadow-none">
             <CardHeader>
                 <CardTitle>Attributes</CardTitle>
                 <CardDescription>Tell us about yourself</CardDescription>
