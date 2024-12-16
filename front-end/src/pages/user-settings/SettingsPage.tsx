@@ -10,7 +10,6 @@ import { SettingsContext } from './SettingsContext';
 import { GenderContext } from '@/features/gender/GenderContext';
 import { getGenders } from '@/features/gender/services/GenderService';
 import UserAccountCard from './components/UserAccountCard';
-import { Toaster } from '@/components/ui/sonner';
 import { toast } from "sonner"
 
 const SettingsPage = () => {
