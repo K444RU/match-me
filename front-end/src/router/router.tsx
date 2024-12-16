@@ -6,7 +6,7 @@ import {
 import MainLayout from '../components/layout/MainLayout';
 import HomePage from '../pages/HomePage';
 import ChatsPage from '../pages/chats/ChatsPage';
-import SettingsPage from '../pages/SettingsPage';
+import SettingsPage from '../pages/user-settings/SettingsPage';
 import { AuthenticationGuard } from './components/AuthenticationGuard';
 import { useAuth } from '@/features/authentication/AuthContext';
 import { useEffect } from 'react';
