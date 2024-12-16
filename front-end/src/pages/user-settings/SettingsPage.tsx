@@ -9,6 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SettingsContext } from './SettingsContext';
 import { GenderContext } from '@/features/gender/GenderContext';
 import { getGenders } from '@/features/gender/services/GenderService';
+import UserAccountCard from './components/UserAccountCard';
+import { Toaster } from '@/components/ui/sonner';
+import { toast } from "sonner"
 
 const SettingsPage = () => {
     const [settings, setSettings] = useState<UserProfile | null>(null);
@@ -41,12 +44,27 @@ const SettingsPage = () => {
         fetchSettings();
     }, []);
 
+    const refreshSettings = async () => {
+        try {
+            const response = await getUserParameters();
+            setSettings(response);
+        } catch (error) {
+            console.error('Error fetching settings: ', error);
+            toast.error('Failed to refresh settings');
+        }
+    };
+
     return (
-        <SettingsContext.Provider value={settings}>
+        <SettingsContext.Provider
+            value={ {settings, refreshSettings}}
+        >
             <GenderContext.Provider value={genders}>
                 <div>
-                    <Tabs defaultValue="profile">
+                    <Tabs defaultValue="account">
                         <TabsList className="w-full">
+                            <TabsTrigger value="account" className="w-full">
+                                Account
+                            </TabsTrigger>
                             <TabsTrigger value="profile" className="w-full">
                                 Profile
                             </TabsTrigger>
@@ -57,6 +75,9 @@ const SettingsPage = () => {
                                 Attributes
                             </TabsTrigger>
                         </TabsList>
+                        <TabsContent value="account">
+                            <UserAccountCard />
+                        </TabsContent>
                         <TabsContent value="profile">
                             <UserProfileCard />
                         </TabsContent>
