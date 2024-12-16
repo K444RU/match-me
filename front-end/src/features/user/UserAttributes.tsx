@@ -55,7 +55,7 @@ const UserAttributes = () => {
             <Select
               name="genderOther"
               options={genders.map((gender) => (
-                <option key={gender.value} value={gender.value}>
+                <option key={gender.label} value={gender.value}>
                   {gender.label}
                 </option>
               ))}
