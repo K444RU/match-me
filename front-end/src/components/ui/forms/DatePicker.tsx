@@ -55,6 +55,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ label, selectedDate, onDateChan
         <div>
             {label && <span className="pl-1 font-semibold">{label}</span>}
             <button
+                type='button'
                 ref={datePickerBtnRef}
                 onClick={() => setShowDatePicker(!showDatePicker)}
                 className="flex w-full items-center justify-center gap-2 self-start rounded-md px-5 py-2 font-semibold tracking-wide text-text transition-colors bg-primary hover:bg-primary-200 hover:text-text"

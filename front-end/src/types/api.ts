@@ -12,6 +12,7 @@ export interface UserPreferences {
     ageMax?: number;
     genderOther?: number;
     distance?: number;
+    probabilityTolerance?: number;
 }
 
 export interface UserAttributes {

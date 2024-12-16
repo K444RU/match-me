@@ -1,4 +1,9 @@
 import { createContext } from 'react';
 import { UserProfile } from '@/types/api';
 
-export const SettingsContext = createContext<UserProfile | null>(null);
+interface SettingsContextType {
+    settings: UserProfile | null;
+    refreshSettings: () => Promise<void>;
+}
+
+export const SettingsContext = createContext<SettingsContextType | null>(null);

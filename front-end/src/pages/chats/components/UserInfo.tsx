@@ -37,7 +37,7 @@ const UserInfo = () => {
                 >
                     <Avatar className="h-8 w-8 rounded-lg">
                         <AvatarImage
-                            src="https://www.pngitem.com/pimgs/m/41-415477_cat-tongue-png-cute-cat-png-transparent-png.png"
+                            src="https://media.npr.org/assets/img/2023/12/12/gettyimages-1054147940-627235e01fb63b4644bec84204c259f0a343e35b.jpg"
                             alt={user.firstName}
                         />
                         <AvatarFallback className="rounded-lg">
@@ -63,7 +63,7 @@ const UserInfo = () => {
                     <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                         <Avatar className="h-8 w-8 rounded-lg">
                             <AvatarImage
-                                src="https://www.pngitem.com/pimgs/m/41-415477_cat-tongue-png-cute-cat-png-transparent-png.png"
+                                src="https://media.npr.org/assets/img/2023/12/12/gettyimages-1054147940-627235e01fb63b4644bec84204c259f0a343e35b.jpg"
                                 alt={user.firstName}
                             />
                             <AvatarFallback className="rounded-lg">
