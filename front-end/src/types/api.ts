@@ -1,17 +1,24 @@
-export interface UserProfile {
+export interface UserProfile extends UserPreferences, UserAttributes {
     firstName: string;
     lastName: string;
     alias: string;
     email: string;
     number: string;
-    genderSelf: number;
-    birthDate: string;
     city: string;
-    latitude: number;
-    longitude: number;
-    genderOther: number;
-    ageMin: number;
-    ageMax: number;
+}
+
+export interface UserPreferences {
+    ageMin?: number;
+    ageMax?: number;
+    genderOther?: number;
+    distance?: number;
+}
+
+export interface UserAttributes {
+    latitude?: number | null;
+    longitude?: number | null;
+    birthDate?: string;
+    genderSelf?: number;
 }
 
 export interface CurrentUser {
@@ -49,4 +56,9 @@ export interface ChatPreview {
     participant: User;
     lastMessage: Chat;
     unreadCount: number;
+}
+
+export interface Gender {
+    id: number;
+    name: string;
 }
