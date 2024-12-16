@@ -7,7 +7,7 @@ export const getUserParameters = async (): Promise<UserProfile> => {
         const token = localStorage.getItem('authToken');
         console.log('🛡️ Token used in request: ', token);
         const response = await axios.get(
-            `${import.meta.env.VITE_API_URL}/user/settings/setup`,
+            `${import.meta.env.VITE_API_URL}/user/profile`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -16,15 +16,7 @@ export const getUserParameters = async (): Promise<UserProfile> => {
         );
 
         const data = response.data;
-        const mappedData: UserProfile = {
-            firstName: data.first_name,
-            lastName: data.last_name,
-            alias: data.alias,
-            email: data.email,
-            city: data.city || 'Unknown',
-            latitude: data.latitude,
-            longitude: data.longitude,
-        };
+        const mappedData: UserProfile = response.data;
 
         console.log('✅ Received user parameters: ', mappedData);
         return mappedData;
