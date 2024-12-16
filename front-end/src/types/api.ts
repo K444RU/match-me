@@ -3,9 +3,15 @@ export interface UserProfile {
     lastName: string;
     alias: string;
     email: string;
+    number: string;
+    genderSelf: number;
+    birthDate: string;
     city: string;
     latitude: number;
     longitude: number;
+    genderOther: number;
+    ageMin: number;
+    ageMax: number;
 }
 
 export interface CurrentUser {
