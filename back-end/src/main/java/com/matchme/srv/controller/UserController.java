@@ -3,12 +3,17 @@ package com.matchme.srv.controller;
 import java.sql.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import com.matchme.srv.dto.request.settings.AccountSettingsRequestDTO;
+import com.matchme.srv.dto.request.settings.AttributesSettingsRequestDTO;
+import com.matchme.srv.dto.request.settings.PreferencesSettingsRequestDTO;
+import com.matchme.srv.dto.request.settings.ProfileSettingsRequestDTO;
 import com.matchme.srv.dto.request.UserParametersRequestDTO;
 import com.matchme.srv.dto.response.CurrentUserResponseDTO;
 import com.matchme.srv.dto.response.SettingsResponseDTO;
@@ -109,24 +114,72 @@ public class UserController {
     UserParametersResponseDTO parameters = userService.getParameters(userId);
 
     SettingsResponseDTO settings = SettingsResponseDTO.builder()
-    .email(parameters.email())
-    .number(parameters.number())
-    .firstName(parameters.first_name())
-    .lastName(parameters.last_name())
-    .alias(parameters.alias())
-    .genderSelf(parameters.gender_self())
-    .birthDate(parameters.birth_date())
-    .city(parameters.city())
-    .longitude(parameters.longitude())
-    .latitude(parameters.latitude())
-    .genderOther(parameters.gender_other())
-    .ageMin(parameters.age_min())
-    .ageMax(parameters.age_max())
-    .distance(parameters.distance())
-    .probabilityTolerance(parameters.probability_tolerance())
-    .build();
+        .email(parameters.email())
+        .number(parameters.number())
+        .firstName(parameters.first_name())
+        .lastName(parameters.last_name())
+        .alias(parameters.alias())
+        .genderSelf(parameters.gender_self())
+        .birthDate(parameters.birth_date())
+        .city(parameters.city())
+        .longitude(parameters.longitude())
+        .latitude(parameters.latitude())
+        .genderOther(parameters.gender_other())
+        .ageMin(parameters.age_min())
+        .ageMax(parameters.age_max())
+        .distance(parameters.distance())
+        .probabilityTolerance(parameters.probability_tolerance())
+        .build();
 
     return ResponseEntity.ok(settings);
+  }
+
+  @PutMapping("/settings/account")
+  @Validated
+  public ResponseEntity<?> updateAccount(Authentication authentication,
+      @Validated @RequestBody AccountSettingsRequestDTO settings) {
+    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+    Long userId = userDetails.getId();
+
+    userService.updateAccountSettings(userId, settings);
+
+    return ResponseEntity.noContent().build();
+  }
+
+  @PutMapping("/settings/profile")
+  @Validated
+  public ResponseEntity<?> updateProfile(Authentication authentication,
+      @Validated @RequestBody ProfileSettingsRequestDTO settings) {
+    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+    Long userId = userDetails.getId();
+
+    userService.updateProfileSettings(userId, settings);
+
+    return ResponseEntity.noContent().build();
+  }
+
+  @PutMapping("/settings/attributes")
+  @Validated
+  public ResponseEntity<?> updateAttributes(Authentication authentication,
+      @Validated @RequestBody AttributesSettingsRequestDTO settings) {
+    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+    Long userId = userDetails.getId();
+
+    userService.updateAttributesSettings(userId, settings);
+
+    return ResponseEntity.noContent().build();
+  }
+
+  @PutMapping("/settings/preferences")
+  @Validated
+  public ResponseEntity<?> updatePreferences(Authentication authentication,
+      @Validated @RequestBody PreferencesSettingsRequestDTO settings) {
+    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+    Long userId = userDetails.getId();
+
+    userService.updatePreferencesSettings(userId, settings);
+
+    return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/currentUser")
