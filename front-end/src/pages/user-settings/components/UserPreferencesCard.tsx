@@ -20,26 +20,64 @@ import {
 import MultiHandleSlider from '@/components/ui/forms/MultiRangeSlider';
 import { SettingsContext } from '../SettingsContext';
 import { GenderContext } from '@/features/gender/GenderContext';
+import { toast } from 'sonner';
+import { updateSettings } from '@/features/user/services/UserService';
+import MotionSpinner from '@/components/animations/MotionSpinner';
+
 const UserPreferencesCard = () => {
-    const settings = useContext(SettingsContext);
+    const settingsContext = useContext(SettingsContext);
+    if (!settingsContext) return null;
+    const { settings, refreshSettings } = settingsContext;
     const genders = useContext(GenderContext);
 
     const [gender, setGender] = useState<number | null>(null);
     const [distance, setDistance] = useState<number | null>(null);
     const [ageMin, setAgeMin] = useState<number | null>(null);
     const [ageMax, setAgeMax] = useState<number | null>(null);
+    const [probabilityTolerance, setProbabilityTolerance] = useState<
+        number | null
+    >(null);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (settings) {
             setGender(settings.genderOther ?? null);
             setDistance(settings.distance ?? null);
             setAgeMin(settings.ageMin ?? null);
+            setProbabilityTolerance(settings.probabilityTolerance ?? null);
             setAgeMax(settings.ageMax ?? null);
         }
     }, [settings]);
 
+    const handleUpdate = async () => {
+        if (!settings) return;
+        
+        setLoading(true);
+        try {
+            if (!gender || !distance || !ageMin || !ageMax || !probabilityTolerance) return;
+            await updateSettings(
+                {
+                    ...settings,
+                    genderOther: gender,
+                    distance,
+                    ageMin,
+                    ageMax,
+                    probabilityTolerance,
+                },
+                'preferences'
+            );
+            refreshSettings();
+            toast.success('Preferences updated successfully');
+        } catch (error) {
+            toast.error('Failed to update preferences');
+            console.error('Error updating preferences:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
-        <Card className="w-full h-[475px] border-none shadow-none">
+        <Card className="h-[475px] w-full border-none shadow-none">
             <CardHeader>
                 <CardTitle>Preferences</CardTitle>
                 <CardDescription>
@@ -76,6 +114,20 @@ const UserPreferencesCard = () => {
                             />
                         </div>
                         <div className="flex flex-col space-y-1.5">
+                            <Label htmlFor="probabilityTolerance">
+                                Probability Tolerance
+                            </Label>
+                            <OneHandleSlider
+                                name="probabilityTolerance"
+                                min={0.1}
+                                max={1.0}
+                                value={probabilityTolerance}
+                                step={0.1}
+                                onChange={setProbabilityTolerance}
+                                showInputField={false}
+                            />
+                        </div>
+                        <div className="flex flex-col space-y-1.5">
                             <Label htmlFor="otherGender">Gender</Label>
                             <Select
                                 value={gender?.toString()}
@@ -103,7 +155,15 @@ const UserPreferencesCard = () => {
                 </form>
             </CardContent>
             <CardFooter className="flex justify-end">
-                <Button>Update</Button>
+            <Button onClick={handleUpdate} disabled={loading}>
+                    {loading ? (
+                        <>
+                            Updating <MotionSpinner />
+                        </>
+                    ) : (
+                        'Update'
+                    )}
+                </Button>
             </CardFooter>
         </Card>
     );

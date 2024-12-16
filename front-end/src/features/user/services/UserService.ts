@@ -41,3 +41,68 @@ export const getCurrentUser = async (): Promise<CurrentUser> => {
         throw error;
     }
 };
+
+export const updateSettings = async (
+    settings: UserProfile,
+    section: string
+): Promise<UserProfile> => {
+    let suffix = '';
+    let payload = {};
+
+    switch (section) {
+        case 'account':
+            suffix = 'account';
+            payload = {
+                email: settings.email,
+                number: settings.number,
+            };
+            break;
+        case 'profile':
+            suffix = 'profile';
+            payload = {
+                first_name: settings.firstName,
+                last_name: settings.lastName,
+                alias: settings.alias,
+            };
+            break;
+        case 'preferences':
+            suffix = 'preferences';
+            payload = {
+                gender_other: settings.genderOther,
+                age_min: settings.ageMin,
+                age_max: settings.ageMax,
+                distance: settings.distance,
+                probability_tolerance: settings.probabilityTolerance,
+            };
+            break;
+        case 'attributes':
+            suffix = 'attributes';
+            payload = {
+                gender_self: settings.genderSelf,
+                birth_date: settings.birthDate,
+                city: settings.city,
+                longitude: settings.longitude,
+                latitude: settings.latitude,
+            };
+            break;
+        default:
+            throw new Error('Invalid section');
+    }
+
+    try {
+        const token = localStorage.getItem('authToken');
+        const response = await axios.put(
+            `${import.meta.env.VITE_API_URL}/user/settings/${suffix}`,
+            payload,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error('❌ Error updating account settings', error);
+        throw error;
+    }
+};
