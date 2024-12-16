@@ -39,7 +39,7 @@ const UserPreferencesCard = () => {
     }, [settings]);
 
     return (
-        <Card className="w-[350px]">
+        <Card className="w-full h-[475px] border-none shadow-none">
             <CardHeader>
                 <CardTitle>Preferences</CardTitle>
                 <CardDescription>
