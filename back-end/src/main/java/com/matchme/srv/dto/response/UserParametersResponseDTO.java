@@ -1,5 +1,7 @@
 package com.matchme.srv.dto.response;
 
+import java.sql.Date;
+
 public record UserParametersResponseDTO(
   
   String email,
@@ -16,6 +18,7 @@ public record UserParametersResponseDTO(
 
   String birth_date,
 
+  String city,
   Double longitude,
   Double latitude,
 
