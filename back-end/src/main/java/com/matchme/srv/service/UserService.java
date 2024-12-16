@@ -1,5 +1,7 @@
 package com.matchme.srv.service;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -198,6 +200,7 @@ public class UserService {
 
     attributesMapper.toEntity(attributes, parameters);
     attributes.setGender(getGender(parameters.gender_self()));
+    attributes.setLocation(List.of(parameters.longitude(), parameters.latitude()));
 
     preferencesMapper.toEntity(preferences, parameters);
     preferences.setGender(getGender(parameters.gender_other()));

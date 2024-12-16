@@ -41,8 +41,6 @@ public class UserProfile {
   private String alias;
 
   private String city;
-  private String latitude;
-  private String longitude;
 
   public void setPreferences(UserPreferences preferences) {
     if (preferences != null) {

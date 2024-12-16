@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -87,6 +88,7 @@ public class UserServiceTest {
     attributes = new UserAttributes();
     preferences = new UserPreferences();
     
+    attributes.setLocation(List.of(2.22, 3.33));
     profile.setAttributes(attributes);
     profile.setPreferences(preferences);
     user.setProfile(profile);
