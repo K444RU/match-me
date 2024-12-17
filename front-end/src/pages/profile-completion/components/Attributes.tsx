@@ -202,6 +202,7 @@ const Attributes: React.FC<AttributesProps> = ({
                         <CitySuggestions
                             searchTerm={debouncedCitySearchValue}
                             onCitySelect={handleCitySelect}
+                            visible={showSuggestions}
                         />
                     </div>
                 </div>
