@@ -1,5 +1,6 @@
 package com.matchme.srv.dto.request;
 
+import com.matchme.srv.constraints.BirthDate;
 import com.matchme.srv.validation.annotations.NotBlankIfPresent;
 
 import jakarta.validation.constraints.Email;
@@ -7,6 +8,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -54,7 +56,8 @@ public class SettingsRequestDTO {
   private Long gender_self;
 
   @NotNull(message = "Birth date must be specified")
-  @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "Birthday must be in format (YYYY-MM-DD)")
+  @BirthDate(message = "Birth date must be greater than or equal to 18 years old")
+  @Past(message = "Birth date must be in the past")
   private String birth_date;
 
   @Min(value = -180, message = "Longitude must be greater than or equal to -180")
