@@ -4,6 +4,7 @@ import Preferences from './Preferences';
 import axios from 'axios';
 import { UnifiedFormData } from '../types/types';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const PayloadFormData = (formData: UnifiedFormData) => ({
     first_name: formData.firstName,
@@ -24,9 +25,11 @@ const PayloadFormData = (formData: UnifiedFormData) => ({
 const UnifiedForm = () => {
     const navigate = useNavigate();
 
-    const [formData, setFormData] = useState<UnifiedFormData>(() =>
-        JSON.parse(localStorage.getItem('profileData') || '{}')
-    );
+    const [formData, setFormData] = useState<UnifiedFormData>(() => ({
+        ...JSON.parse(localStorage.getItem('profileData') || '{}'),
+        probabilityTolerance: 0.5,
+        distance: 300,
+    }));
     const [genderOptions, setGenderOptions] = useState<
         { id: number; name: string }[]
     >([]);
@@ -68,15 +71,21 @@ const UnifiedForm = () => {
             const payload = PayloadFormData(formData);
             await axios.patch('/api/user/complete-registration', payload, {
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
             });
             navigate('/chats');
             localStorage.removeItem('profileData');
         } catch (err) {
             console.error('Error during final submission:', err);
-            alert('Failed to submit the form. Please try again.');
+            if (typeof err === 'string') {
+                toast.error(err);
+            } else if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error('An unexpected error occurred');
+            }
         } finally {
             setLoading(false);
         }
