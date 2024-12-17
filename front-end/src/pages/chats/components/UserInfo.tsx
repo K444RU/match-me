@@ -4,6 +4,7 @@ import {
     ChevronsUpDown,
     CreditCard,
     LogOut,
+    Settings,
     Sparkles,
 } from 'lucide-react';
 import { SidebarMenuButton } from '@/components/ui/sidebar';
@@ -18,6 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import SettingsDialog from './SettingsDialog';
+import { useState } from 'react';
 
 const UserInfo = () => {
     // Dunno how to see loading state since we are not awaiting useAuth...
@@ -26,10 +28,13 @@ const UserInfo = () => {
     // Maybe we don't need it anyway
 
     const { user } = useAuth();
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
     if (!user) return;
 
     return (
-        <DropdownMenu>
+        <>
+        <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                     size="lg"
@@ -89,7 +94,17 @@ const UserInfo = () => {
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                    <SettingsDialog />
+                    <DropdownMenuItem
+                        onSelect={(e) => {
+                            e.preventDefault();
+                            setIsDialogOpen(true);
+                            setIsDropdownOpen(false);
+                        }}
+                        className="cursor-pointer"
+                    >
+                        <Settings />
+                        Settings
+                    </DropdownMenuItem>
                     <DropdownMenuItem className="cursor-not-allowed bg-muted hover:bg-muted">
                         <CreditCard />
                         Billing
@@ -106,6 +121,11 @@ const UserInfo = () => {
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
+                    <SettingsDialog
+                    setIsOpen={setIsDialogOpen}
+                    isOpen={isDialogOpen}
+                />
+        </>
     );
 };
 
