@@ -26,6 +26,7 @@ import InputField from '@/components/ui/forms/InputField';
 import { toast } from 'sonner';
 import { updateSettings } from '@/features/user/services/UserService';
 import MotionSpinner from '@/components/animations/MotionSpinner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const UserAttributesCard = () => {
     const settingsContext = useContext(SettingsContext);
@@ -33,13 +34,13 @@ const UserAttributesCard = () => {
     const { settings, refreshSettings } = settingsContext;
     const genders = useContext(GenderContext);
 
-    const [city, setCity] = useState<string>('');
+    const [city, setCity] = useState<string>();
     const [longitude, setLongitude] = useState<number | null>(null);
     const [latitude, setLatitude] = useState<number | null>(null);
     const [gender, setGender] = useState<number | null>(null);
     const [birthDate, setBirthDate] = useState<Date | undefined>(undefined);
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const debouncedCitySearchValue = useDebounce(city, 1000);
+    const debouncedCitySearchValue = useDebounce(city as string, 1000);
     const [loading, setLoading] = useState(false);
 
     const handleCitySelect = async (city: City) => {
@@ -56,10 +57,11 @@ const UserAttributesCard = () => {
 
     const handleUpdate = async () => {
         if (!settings) return;
-        
+
         setLoading(true);
         try {
-            if (!city || !latitude || !longitude || !birthDate || !gender) return;
+            if (!city || !latitude || !longitude || !birthDate || !gender)
+                return;
             await updateSettings(
                 {
                     ...settings,
@@ -83,13 +85,15 @@ const UserAttributesCard = () => {
 
     useEffect(() => {
         if (settings) {
-            setCity(settings.city ?? '');
-            setLongitude(settings.longitude ?? null);
-            setLatitude(settings.latitude ?? null);
-            setGender(settings.genderSelf ?? null);
-            setBirthDate(
-                settings.birthDate ? new Date(settings.birthDate) : undefined
-            );
+                setCity(settings.city ?? '');
+                setLongitude(settings.longitude ?? null);
+                setLatitude(settings.latitude ?? null);
+                setGender(settings.genderSelf ?? null);
+                setBirthDate(
+                    settings.birthDate
+                        ? new Date(settings.birthDate)
+                        : undefined
+                );
         }
     }, [settings]);
 
@@ -104,28 +108,36 @@ const UserAttributesCard = () => {
                     <div className="grid w-full items-center gap-4">
                         <div className="relative flex flex-col space-y-1.5">
                             <Label htmlFor="name">Birth Date</Label>
-                            <DatePicker
-                                selectedDate={birthDate}
-                                onDateChange={(dateString: string) =>
-                                    setBirthDate(new Date(dateString))
-                                }
-                            />
+                            {birthDate !== undefined ? (
+                                <DatePicker
+                                    selectedDate={birthDate}
+                                    onDateChange={(dateString: string) =>
+                                        setBirthDate(new Date(dateString))
+                                    }
+                                />
+                            ) : (
+                                <Skeleton className="w=full h-[40px] bg-primary" />
+                            )}
                         </div>
                         <div className="relative flex flex-col space-y-1.5">
                             <Label htmlFor="city">City</Label>
-                            <InputField
-                                type="text"
-                                name="city"
-                                placeholder="Enter your city"
-                                value={city}
-                                onChange={handleCityInputChange}
-                                onFocus={() => setShowSuggestions(true)}
-                                onBlur={() => {
-                                    setTimeout(() => {
-                                        setShowSuggestions(false);
-                                    }, 500);
-                                }}
-                            />
+                            {city !== undefined && city !== null ? (
+                                <InputField
+                                    type="text"
+                                    name="city"
+                                    placeholder="Enter your city"
+                                    value={city}
+                                    onChange={handleCityInputChange}
+                                    onFocus={() => setShowSuggestions(true)}
+                                    onBlur={() => {
+                                        setTimeout(() => {
+                                            setShowSuggestions(false);
+                                        }, 500);
+                                    }}
+                                />
+                            ) : (
+                                <Skeleton className="h-[40px] w-full" />
+                            )}
                             <div
                                 className={`absolute top-full z-10 w-full ${!showSuggestions ? `hidden` : ``}`}
                             >
@@ -138,33 +150,37 @@ const UserAttributesCard = () => {
                         </div>
                         <div className="flex flex-col space-y-1.5">
                             <Label htmlFor="selfGender">Gender</Label>
-                            <Select
-                                value={gender?.toString()}
-                                onValueChange={(value) =>
-                                    setGender(Number(value))
-                                }
-                            >
-                                <SelectTrigger id="selfGender">
-                                    <SelectValue placeholder="Select a gender..." />
-                                </SelectTrigger>
-                                <SelectContent position="popper">
-                                    {genders &&
-                                        genders.map((gender) => (
-                                            <SelectItem
-                                                key={gender.id} // Add key prop
-                                                value={gender.id.toString()}
-                                            >
-                                                {gender.name}
-                                            </SelectItem>
-                                        ))}
-                                </SelectContent>
-                            </Select>
+                            {gender !== null && genders !== null ? (
+                                <Select
+                                    value={gender?.toString()}
+                                    onValueChange={(value) =>
+                                        setGender(Number(value))
+                                    }
+                                >
+                                    <SelectTrigger id="selfGender">
+                                        <SelectValue placeholder="Select a gender..." />
+                                    </SelectTrigger>
+                                    <SelectContent position="popper">
+                                        {genders &&
+                                            genders.map((gender) => (
+                                                <SelectItem
+                                                    key={gender.id} // Add key prop
+                                                    value={gender.id.toString()}
+                                                >
+                                                    {gender.name}
+                                                </SelectItem>
+                                            ))}
+                                    </SelectContent>
+                                </Select>
+                            ) : (
+                                <Skeleton className="h-[40px] w-full rounded-md border border-[#e5e7eb]" />
+                            )}
                         </div>
                     </div>
                 </form>
             </CardContent>
             <CardFooter className="flex justify-end">
-            <Button onClick={handleUpdate} disabled={loading}>
+                <Button onClick={handleUpdate} disabled={loading}>
                     {loading ? (
                         <>
                             Updating <MotionSpinner />
