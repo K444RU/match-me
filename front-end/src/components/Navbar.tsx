@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/features/authentication/AuthContext';
 import LinkButton from './ui/buttons/LinkButton';
+import ThemeToggler from './ThemeToggler';
 
 const Navbar = () => {
   const { user } = useAuth();
@@ -17,6 +18,7 @@ const Navbar = () => {
             </Link>
             <div className="md:ml-auto">
               <div className="flex space-x-2">
+                <ThemeToggler />
                 {!user ? (
                   <>
                     <LinkButton to={'/login'} content={'Log in'} />
