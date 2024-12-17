@@ -29,6 +29,7 @@ export interface CurrentUser {
     lastName: string;
     alias: string;
     role: Role[];
+    avatar?: string;
 }
 
 export interface Role {
