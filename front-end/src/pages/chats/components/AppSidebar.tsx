@@ -17,8 +17,11 @@ import { useAuth } from '@/features/authentication/AuthContext';
 import { ChatPreview } from '@/types/api';
 import { mockChatPreviews } from '@/mocks/chatData';
 import ChatPreviewCard from './ChatPreviewCard';
+import {StompSessionProvider, useSubscription } from 'react-stomp-hooks';
 
 // Read on usage here: https://ui.shadcn.com/docs/components/sidebar
+
+
 
 const AppSidebar = ({
     onChatSelect,
@@ -41,27 +44,48 @@ const AppSidebar = ({
         fetchChats();
     }, [user?.token]);
 
+    const wsConfig = {
+        url: 'http:/localhost:8000/ws',
+        connectHeaders: {
+            Authorization: `Bearer ${user?.token}`
+        },
+        debug: (str: string) => {
+            console.log('WS Debug:', str);
+        },
+        onConnect: () => {
+            console.log('WS Connected');
+        },
+        onDisconnect: () => {
+            console.log('WS Disconnected');
+        },
+        onStompError: (frame: any) => {
+            console.error('WS Error:', frame)
+        }
+    }
+
     return (
         <Sidebar>
             <SidebarContent>
                 <SidebarGroup>
                     <SidebarGroupLabel>Blind</SidebarGroupLabel>
-                    {/* <AllChats /> */}
-                    <SidebarGroupContent>
-                        {chats.map((chat: ChatPreview) => (
-                            <SidebarMenuItem
-                                key={chat.connectionId}
-                                className="list-none"
-                            >
-                                <SidebarMenuButton
-                                    onClick={() => onChatSelect(chat)}
-                                    className="h-fit w-full"
+                    <StompSessionProvider {...wsConfig}>
+                        {/* <AllChats /> */}
+                        <SidebarGroupContent>
+                            {chats.map((chat: ChatPreview) => (
+                                <SidebarMenuItem
+                                    key={chat.connectionId}
+                                    className="list-none"
                                 >
-                                    <ChatPreviewCard chat={chat} />
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                        ))}
-                    </SidebarGroupContent>
+                                    <SidebarMenuButton
+                                        onClick={() => onChatSelect(chat)}
+                                        className="h-fit w-full"
+                                    >
+                                        <ChatPreviewCard chat={chat} />
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
+                        </SidebarGroupContent>
+                    </StompSessionProvider>
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter>

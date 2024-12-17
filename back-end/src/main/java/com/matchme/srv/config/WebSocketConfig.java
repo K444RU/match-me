@@ -29,14 +29,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
   
   @Override
   public void configureMessageBroker(MessageBrokerRegistry config) {
-    config.enableSimpleBroker(""); // the client subscribes
+    config.enableSimpleBroker("/topic", "/user"); // the client subscribes
     config.setApplicationDestinationPrefixes("/app"); //These go to server
+    config.setUserDestinationPrefix("/user");
   }
 
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
-    registry.addEndpoint("stomp") //connects to the configured endpoint here
-      .setAllowedOrigins("*")
+    registry.addEndpoint("/ws") //connects to the configured endpoint here
+      .setAllowedOrigins("http://localhost:8000", "http://localhost:3000", "http://127.0.0.1:3000")
       .withSockJS() // enable SockJS fallback;
       .setSessionCookieNeeded(true);
   }
