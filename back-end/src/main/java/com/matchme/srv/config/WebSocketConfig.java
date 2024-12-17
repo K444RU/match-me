@@ -22,12 +22,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
   
   @Override
   public void configureMessageBroker(MessageBrokerRegistry config) {
-    config.enableSimpleBroker("");
-    config.setApplicationDestinationPrefixes("");
+    config.enableSimpleBroker(""); // the client subscribes
+    config.setApplicationDestinationPrefixes("/app"); //These go to server
   }
 
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
-    registry.addEndpoint("");
+    registry.addEndpoint("stomp") //connects to the configured endpoint here
+      .setAllowedOrigins("*")
+      .withSockJS(); // enable SockJS fallback;
   }
 }

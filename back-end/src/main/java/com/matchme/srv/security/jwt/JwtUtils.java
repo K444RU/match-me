@@ -1,12 +1,18 @@
 package com.matchme.srv.security.jwt;
 
 import java.security.Key;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import com.matchme.srv.security.services.UserDetailsImpl;
@@ -29,8 +35,14 @@ public class JwtUtils {
 
     UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
 
+    // TODO : DISCUSS THIS CHANGE WITH TEAM
+    String roles = userPrincipal.getAuthorities().stream()
+      .map(GrantedAuthority::getAuthority)
+      .collect(Collectors.joining(","));
+
     return Jwts.builder()
         .setSubject((userPrincipal.getUsername()))
+        .claim("roles", roles)
         .setIssuedAt(new Date())
         .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
         .signWith(key(), SignatureAlgorithm.HS256)
@@ -61,5 +73,27 @@ public class JwtUtils {
     }
 
     return false;
+  }
+
+  public List<GrantedAuthority> getAuthoritiesFromJwtToken(String token) {
+    try {
+      Claims claims = Jwts.parserBuilder()
+      .setSigningKey(key())
+      .build()
+      .parseClaimsJws(token)
+      .getBody();
+      
+      String roles = claims.get("roles", String.class);
+      if (roles != null && !roles.isEmpty()) {
+        return Arrays.stream(roles.split(","))
+            .map(SimpleGrantedAuthority :: new)
+            .collect(Collectors.toList());
+      }
+
+      return new ArrayList<>();
+    } catch (Exception e) {
+      logger.error("Error extracting authorities from token: {}", e.getMessage());
+      return new ArrayList<>();
+    }
   }
 }
