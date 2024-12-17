@@ -14,6 +14,7 @@ import LoginPage from '@/features/authentication/components/LoginPage';
 import RegisterPage from '@/features/authentication/components/RegisterPage';
 import ProfileCompletionPage from '@/pages/profile-completion/ProfileCompletionPage';
 import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout';
+import PageNotFound from '@/pages/404Page';
 
 const LogoutPage = () => {
     const { user, logout } = useAuth();
@@ -37,6 +38,10 @@ export const routes = createRoutesFromElements(
                 <Route path="login" element={<LoginPage />} />
                 <Route path="register" element={<RegisterPage />} />
             </Route>
+            <Route
+                    path="*"
+                    element={<PageNotFound />}
+                />
         </Route>
 
         {/* Protected Routes */}
