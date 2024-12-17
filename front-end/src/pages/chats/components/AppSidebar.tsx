@@ -1,4 +1,3 @@
-import { Calendar, Home, Inbox, Search, Settings } from 'lucide-react';
 import UserInfo from './UserInfo';
 
 import {
@@ -8,38 +7,21 @@ import {
     SidebarGroup,
     SidebarGroupContent,
     SidebarGroupLabel,
-    SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { useEffect, useState } from 'react';
-import { useAuth } from '@/features/authentication/AuthContext';
+import { useContext } from 'react';
 import { ChatPreview } from '@/types/api';
-import { mockChatPreviews } from '@/mocks/chatData';
 import ChatPreviewCard from './ChatPreviewCard';
+import { ChatContext } from '../ChatContext';
 
 // Read on usage here: https://ui.shadcn.com/docs/components/sidebar
 
-const AppSidebar = ({
-    onChatSelect,
-}: {
-    onChatSelect: (chat: ChatPreview) => void;
-}) => {
-    const [chats, setChats] = useState<ChatPreview[]>([]);
-    const { user } = useAuth();
+const AppSidebar = () => {
+    const chatContext = useContext(ChatContext);
+    if (!chatContext) return null;
 
-    useEffect(() => {
-        const fetchChats = async () => {
-            if (!user?.token) return;
-            try {
-                setChats(mockChatPreviews);
-            } catch (error) {
-                console.error('Failed to fetch chats:', error);
-            }
-        };
-
-        fetchChats();
-    }, [user?.token]);
+    const { chatPreviews: chats, setOpenChat } = chatContext;
 
     return (
         <Sidebar>
@@ -48,13 +30,15 @@ const AppSidebar = ({
                     <SidebarGroupLabel>Blind</SidebarGroupLabel>
                     {/* <AllChats /> */}
                     <SidebarGroupContent>
-                        {chats.map((chat: ChatPreview) => (
+                        {chats?.map((chat: ChatPreview) => (
                             <SidebarMenuItem
                                 key={chat.connectionId}
                                 className="list-none"
                             >
                                 <SidebarMenuButton
-                                    onClick={() => onChatSelect(chat)}
+                                    onClick={() =>
+                                        setOpenChat(chat.connectionId)
+                                    }
                                     className="h-fit w-full"
                                 >
                                     <ChatPreviewCard chat={chat} />
@@ -66,7 +50,7 @@ const AppSidebar = ({
             </SidebarContent>
             <SidebarFooter>
                 <SidebarMenuItem className="list-none">
-                        <UserInfo />
+                    <UserInfo />
                 </SidebarMenuItem>
             </SidebarFooter>
         </Sidebar>

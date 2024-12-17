@@ -1,6 +1,6 @@
-import { Chat, ChatPreview } from '@/types/api';
+import { Chat, ChatPreview, User } from '@/types/api';
 import { faker } from '@faker-js/faker';
-import { mockChats, user1 } from './chatData';
+import { getMockChats } from './chatData';
 
 export function createRandomUser(id: number) {
     const shouldHaveAvatar = faker.datatype.boolean();
@@ -42,25 +42,33 @@ export const createRandomChat = (
     sender: any,
     timeOffset: number
 ): Chat => {
-    const shouldSwapSender = faker.datatype.boolean();
 
     return {
         connectionId,
-        sender: shouldSwapSender ? sender : user1,
+        sender: sender,
         content: faker.lorem.sentences({ min: 1, max: 5 }),
         sentAt: Date.now() - timeOffset,
         isRead: faker.datatype.boolean(),
     };
 };
 
-export const getLastMessageForConnection = (connectionId: number) => {
-    return mockChats
+export const getLastMessageForConnection = (connectionId: number, userId: User) => {
+    return getMockChats(userId)
         .filter(chat => chat.connectionId === connectionId)
         .sort((a, b) => b.sentAt - a.sentAt)[0];
 };
 
-export const getUnreadCountForConnection = (connectionId: number) => {
-    return mockChats
+export const getUnreadCountForConnection = (connectionId: number, userId: User) => {
+    return getMockChats(userId)
         .filter(chat => chat.connectionId === connectionId && !chat.isRead)
         .length;
 };
+
+export const getCurrentUser = (user: User) => ({
+    id: user.id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    alias: user.alias,
+    email: 'karl.romet@example.com',
+    avatar: user.avatar || 'https://images.rawpixel.com/image_png_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDI0LTAxL3Jhd3BpeGVsb2ZmaWNlN19waG90b19vZl9hX2NhdF9wZWVraW5nX3JvYW5fY2F0X3N0dWRpb19saWdodF9pc180ZDM5MDZhNy03MWY1LTQ2N2MtYTQyZC1hZmY0ZTIyYTY0ZmIucG5n.png',
+});
