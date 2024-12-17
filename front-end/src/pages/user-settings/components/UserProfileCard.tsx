@@ -14,6 +14,7 @@ import { SettingsContext } from '../SettingsContext';
 import { updateSettings } from '@/features/user/services/UserService';
 import { toast } from 'sonner';
 import MotionSpinner from '@/components/animations/MotionSpinner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const UserProfileCard = () => {
     const settingsContext = useContext(SettingsContext);
@@ -34,7 +35,7 @@ const UserProfileCard = () => {
 
     const handleUpdate = async () => {
         if (!settings) return;
-        
+
         setLoading(true);
         try {
             if (!firstName || !lastName || !alias) return;
@@ -69,37 +70,53 @@ const UserProfileCard = () => {
                 <form>
                     <div className="grid w-full items-center gap-4">
                         <div className="flex flex-col space-y-1.5">
-                            <Label htmlFor="name">First Name</Label>
-                            <Input
-                                id="name"
-                                placeholder="First Name"
-                                value={firstName ?? ''}
-                                onChange={(e) => setFirstName(e.target.value)}
-                            />
+                            <Label htmlFor="firstName">First Name</Label>
+                            {firstName !== undefined && firstName !== null ? (
+                                <Input
+                                    id="firstName"
+                                    placeholder="First Name"
+                                    value={firstName}
+                                    onChange={(e) =>
+                                        setFirstName(e.target.value)
+                                    }
+                                />
+                            ) : (
+                                <Skeleton className="h-[40px] w-full rounded-md border-[#e5e7eb]" />
+                            )}
                         </div>
                         <div className="flex flex-col space-y-1.5">
-                            <Label htmlFor="name">Last Name</Label>
-                            <Input
-                                id="name"
-                                placeholder="Last Name"
-                                value={lastName ?? ''}
-                                onChange={(e) => setLastName(e.target.value)}
-                            />
+                            <Label htmlFor="lastName">Last Name</Label>
+                            {lastName !== undefined && lastName !== null ? (
+                                <Input
+                                    id="lastName"
+                                    placeholder="Last Name"
+                                    value={lastName}
+                                    onChange={(e) =>
+                                        setLastName(e.target.value)
+                                    }
+                                />
+                            ) : (
+                                <Skeleton className="h-[40px] w-full rounded-md border-[#e5e7eb]" />
+                            )}
                         </div>
                         <div className="flex flex-col space-y-1.5">
-                            <Label htmlFor="name">Alias</Label>
-                            <Input
-                                id="name"
-                                placeholder="Alias"
-                                value={alias ?? ''}
-                                onChange={(e) => setAlias(e.target.value)}
-                            />
+                            <Label htmlFor="alias">Alias</Label>
+                            {alias !== undefined && alias !== null ? (
+                                <Input
+                                    id="alias"
+                                    placeholder="Alias"
+                                    value={alias}
+                                    onChange={(e) => setAlias(e.target.value)}
+                                />
+                            ) : (
+                                <Skeleton className="h-[40px] w-full rounded-md border-[#e5e7eb]" />
+                            )}
                         </div>
                     </div>
                 </form>
             </CardContent>
             <CardFooter className="flex justify-end">
-            <Button onClick={handleUpdate} disabled={loading}>
+                <Button onClick={handleUpdate} disabled={loading}>
                     {loading ? (
                         <>
                             Updating <MotionSpinner />

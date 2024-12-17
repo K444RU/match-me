@@ -16,16 +16,17 @@ import { updateSettings } from '@/features/user/services/UserService';
 import MotionSpinner from '@/components/animations/MotionSpinner';
 import { useAuth } from '@/features/authentication/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const UserAccountCard = () => {
     const settingsContext = useContext(SettingsContext);
     if (!settingsContext) return null;
     const { settings, refreshSettings } = settingsContext;
-    const [email, setEmail] = useState<string>('');
-    const [countryCode, setCountryCode] = useState<string>('');
-    const [number, setNumber] = useState<string>('');
+    const [email, setEmail] = useState<string>();
+    const [countryCode, setCountryCode] = useState<string>();
+    const [number, setNumber] = useState<string>();
     const [loading, setLoading] = useState(false);
-    const {logout} = useAuth()
+    const { logout } = useAuth();
     const navigate = useNavigate();
     const handleUpdate = async () => {
         if (!settings) return;
@@ -41,8 +42,11 @@ const UserAccountCard = () => {
                 },
                 'account'
             );
-            logout();
-            navigate('/login')
+            if (settings.email !== email) {
+                logout();
+                navigate('/login');
+            }
+            refreshSettings();
         } catch (error) {
             toast.error('Failed to update account');
             console.error('Error updating account:', error);
@@ -73,37 +77,52 @@ const UserAccountCard = () => {
                     <div className="grid w-full items-center gap-4">
                         <div className="flex flex-col space-y-1.5">
                             <Label htmlFor="email">Email</Label>
-                            <Input
-                                id="email"
-                                placeholder="Email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
+                            {email !== undefined && email !== null ? (
+                                <Input
+                                    id="email"
+                                    placeholder="Email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
+                            ) : (
+                                <Skeleton className="h-[40px] w-full" />
+                            )}
                         </div>
                         <div className="flex gap-4">
                             <div className="flex w-1/3 flex-col space-y-1.5">
                                 <Label htmlFor="countryCode">
                                     Country Code
                                 </Label>
-                                <Input
-                                    id="countryCode"
-                                    placeholder="Country Code"
-                                    value={countryCode}
-                                    onChange={(e) =>
-                                        setCountryCode(e.target.value)
-                                    }
-                                />
+                                {countryCode !== undefined &&
+                                countryCode !== null ? (
+                                    <Input
+                                        id="countryCode"
+                                        placeholder="Country Code"
+                                        value={countryCode}
+                                        onChange={(e) =>
+                                            setCountryCode(e.target.value)
+                                        }
+                                    />
+                                ) : (
+                                    <Skeleton className="h-[40px] w-full" />
+                                )}
                             </div>
                             <div className="flex w-2/3 flex-col space-y-1.5">
                                 <Label htmlFor="phoneNumber">
                                     Phone Number
                                 </Label>
-                                <Input
-                                    id="phoneNumber"
-                                    placeholder="Phone Number"
-                                    value={number}
-                                    onChange={(e) => setNumber(e.target.value)}
-                                />
+                                {number !== undefined && number !== null ? (
+                                    <Input
+                                        id="phoneNumber"
+                                        placeholder="Phone Number"
+                                        value={number}
+                                        onChange={(e) =>
+                                            setNumber(e.target.value)
+                                        }
+                                    />
+                                ) : (
+                                    <Skeleton className="h-[40px] w-full" />
+                                )}
                             </div>
                         </div>
                     </div>
