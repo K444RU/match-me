@@ -1,12 +1,15 @@
 import { RouterProvider } from 'react-router-dom';
 import { router } from './router/router';
 import { AuthProvider } from './features/authentication/AuthContext';
+import { StrictMode } from 'react';
 
 const App = () => {
   return (
-    <AuthProvider>
+    <StrictMode>
+      <AuthProvider>
       <RouterProvider router={router} />
     </AuthProvider>
+    </StrictMode>
   );
 };
 
