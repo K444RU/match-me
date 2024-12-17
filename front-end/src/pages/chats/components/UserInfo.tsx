@@ -20,6 +20,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import SettingsDialog from './SettingsDialog';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const UserInfo = () => {
     // Dunno how to see loading state since we are not awaiting useAuth...
@@ -27,9 +28,10 @@ const UserInfo = () => {
     // const [error, setError] = useState<string | null>(null);
     // Maybe we don't need it anyway
 
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const navigate = useNavigate();
     if (!user) return;
 
     return (
@@ -115,7 +117,12 @@ const UserInfo = () => {
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem className='cursor-pointer' onSelect={
+                    () => {
+                        logout();
+                        navigate('/login');
+                    }
+                }>
                     <LogOut />
                     Log out
                 </DropdownMenuItem>
