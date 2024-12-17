@@ -74,10 +74,10 @@ const Preferences: React.FC<PreferencesProps> = ({onPrevious, onNext, formData, 
                 <div>
                     <OneHandleSlider
                         name="distance"
-                        min="10"
-                        max="300"
-                        step="10"
-                        value={formData.distance?.toString() || '300'}
+                        min={10}
+                        max={300}
+                        step={10}
+                        value={formData.distance || 300}
                         label="Maximum distance (km)"
                         onChange={(value) => onChange('distance', Number(value))}
                     />
@@ -102,10 +102,10 @@ const Preferences: React.FC<PreferencesProps> = ({onPrevious, onNext, formData, 
                 <div>
                     <OneHandleSlider
                         name="probabilityTolerance"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={formData.probabilityTolerance?.toString() || '0.5'}
+                        min={0}
+                        max={1}
+                        step={0.05}
+                        value={formData.probabilityTolerance || 0.5}
                         label="Probability Tolerance"
                         onChange={(value) => onChange('probabilityTolerance', Number(value))}
                     />
