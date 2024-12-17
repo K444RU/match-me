@@ -1,11 +1,17 @@
 package com.matchme.srv.service;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.matchme.srv.dto.request.*;
+import com.matchme.srv.dto.request.settings.AccountSettingsRequestDTO;
+import com.matchme.srv.dto.request.settings.AttributesSettingsRequestDTO;
+import com.matchme.srv.dto.request.settings.PreferencesSettingsRequestDTO;
+import com.matchme.srv.dto.request.settings.ProfileSettingsRequestDTO;
 import com.matchme.srv.dto.response.*;
 import com.matchme.srv.exception.DuplicateFieldException;
 import com.matchme.srv.exception.ResourceNotFoundException;
@@ -198,6 +204,7 @@ public class UserService {
 
     attributesMapper.toEntity(attributes, parameters);
     attributes.setGender(getGender(parameters.gender_self()));
+    attributes.setLocation(List.of(parameters.longitude(), parameters.latitude()));
 
     preferencesMapper.toEntity(preferences, parameters);
     preferences.setGender(getGender(parameters.gender_other()));
@@ -222,6 +229,65 @@ public class UserService {
     userRepository.save(user);
 
     return newEntry;
+  }
+
+  public boolean updateAccountSettings(Long userId, AccountSettingsRequestDTO settings) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new EntityNotFoundException("User not found!"));
+
+    user.setEmail(settings.getEmail());
+    user.setNumber(settings.getNumber());
+
+    // TODO: Add logging
+    userRepository.save(user);
+    return true;
+  }
+
+  public boolean updateProfileSettings(Long userId, ProfileSettingsRequestDTO settings) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new EntityNotFoundException("User not found!"));
+
+    UserProfile profile = user.getProfile();
+    profile.setFirst_name(settings.getFirst_name());
+    profile.setLast_name(settings.getLast_name());
+    profile.setAlias(settings.getAlias());
+
+    // TODO: Add logging
+    userRepository.save(user);
+    return true;
+  }
+
+  public boolean updateAttributesSettings(Long userId, AttributesSettingsRequestDTO settings) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new EntityNotFoundException("User not found!"));
+
+    UserProfile profile = user.getProfile();
+    UserAttributes attributes = profile.getAttributes();
+
+    attributesMapper.toEntity(attributes, settings);
+    attributes.setGender(getGender(settings.getGender_self()));
+    attributes.setLocation(List.of(settings.getLongitude(), settings.getLatitude()));
+
+    profile.setCity(settings.getCity());
+
+    // TODO: Add logging
+    userRepository.save(user);
+    return true;
+  }
+
+  public boolean updatePreferencesSettings(Long userId, PreferencesSettingsRequestDTO settings) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new EntityNotFoundException("User not found!"));
+
+    UserProfile profile = user.getProfile();
+    UserPreferences preferences = profile.getPreferences();
+
+    preferencesMapper.toEntity(preferences, settings);
+    preferences.setGender(getGender(settings.getGender_other()));
+
+    // TODO: Add logging
+    userRepository.save(user);
+    return true;
   }
 
   public UserParametersResponseDTO getParameters(Long userId) {

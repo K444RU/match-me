@@ -4,6 +4,7 @@ import UserInfo from './UserInfo';
 import {
     Sidebar,
     SidebarContent,
+    SidebarFooter,
     SidebarGroup,
     SidebarGroupContent,
     SidebarGroupLabel,
@@ -45,14 +46,16 @@ const AppSidebar = ({
             <SidebarContent>
                 <SidebarGroup>
                     <SidebarGroupLabel>Blind</SidebarGroupLabel>
-                    <UserInfo />
                     {/* <AllChats /> */}
                     <SidebarGroupContent>
                         {chats.map((chat: ChatPreview) => (
-                            <SidebarMenuItem key={chat.connectionId} className="list-none">
+                            <SidebarMenuItem
+                                key={chat.connectionId}
+                                className="list-none"
+                            >
                                 <SidebarMenuButton
                                     onClick={() => onChatSelect(chat)}
-                                    className="w-full h-fit"
+                                    className="h-fit w-full"
                                 >
                                     <ChatPreviewCard chat={chat} />
                                 </SidebarMenuButton>
@@ -61,6 +64,11 @@ const AppSidebar = ({
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
+            <SidebarFooter>
+                <SidebarMenuItem className="list-none">
+                        <UserInfo />
+                </SidebarMenuItem>
+            </SidebarFooter>
         </Sidebar>
     );
 };

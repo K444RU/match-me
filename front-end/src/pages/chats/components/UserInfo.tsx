@@ -1,9 +1,26 @@
-import { IoSettingsOutline } from 'react-icons/io5';
-import { FaRegUserCircle } from 'react-icons/fa';
 import { useAuth } from '@/features/authentication/AuthContext';
-import { Skeleton } from '@/components/ui/Skeleton';
-import { LogOut } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import {
+    Bell,
+    ChevronsUpDown,
+    CreditCard,
+    LogOut,
+    Settings,
+    Sparkles,
+} from 'lucide-react';
+import { SidebarMenuButton } from '@/components/ui/sidebar';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import SettingsDialog from './SettingsDialog';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const UserInfo = () => {
     // Dunno how to see loading state since we are not awaiting useAuth...
@@ -11,30 +28,111 @@ const UserInfo = () => {
     // const [error, setError] = useState<string | null>(null);
     // Maybe we don't need it anyway
 
-    const {user} = useAuth();
-    if(!user) return;
+    const { user, logout } = useAuth();
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const navigate = useNavigate();
+    if (!user) return;
 
     return (
-        <div className="relative flex h-40 w-full items-center bg-primary-200 text-text">
-            <Link
-            to={'/logout'}
+        <>
+        <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+            <DropdownMenuTrigger asChild>
+                <SidebarMenuButton
+                    size="lg"
+                    className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                >
+                    <Avatar className="h-8 w-8 rounded-lg">
+                        <AvatarImage
+                            src="https://media.npr.org/assets/img/2023/12/12/gettyimages-1054147940-627235e01fb63b4644bec84204c259f0a343e35b.jpg"
+                            alt={user.firstName}
+                        />
+                        <AvatarFallback className="rounded-lg">
+                            CN
+                        </AvatarFallback>
+                    </Avatar>
+                    <div className="grid flex-1 text-left text-sm leading-tight">
+                        <span className="truncate font-semibold">
+                            {user.firstName} {user.lastName}
+                        </span>
+                        <span className="truncate text-xs">{user.alias}</span>
+                    </div>
+                    <ChevronsUpDown className="ml-auto size-4" />
+                </SidebarMenuButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+                side="bottom"
+                align="end"
+                sideOffset={4}
             >
-            <LogOut className="absolute right-4 top-4 h-8 w-8 rounded-md bg-primary-300 p-1.5 text-primary-50 hover:cursor-pointer hover:bg-primary-400"/>
-            </Link>
-            <FaRegUserCircle className="ml-2 mr-2 h-20 w-20 text-text-600" />
-            <div>
-                <h2 className="ml-2 text-2xl font-bold text-text-700">
-                    {user?.firstName || (
-                        <Skeleton className="h-[32px] w-[120px] bg-text-300 rounded-md" />
-                    )}
-                </h2>
-                <h2 className="ml-2 text-lg font-bold text-text-700">
-                    {user?.alias || (
-                        <Skeleton className="mt-1 h-[28px] w-[100px] bg-text-300 rounded-md" />
-                    )}
-                </h2>
-            </div>
-        </div>
+                <DropdownMenuLabel className="p-0 font-normal">
+                    <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                        <Avatar className="h-8 w-8 rounded-lg">
+                            <AvatarImage
+                                src="https://media.npr.org/assets/img/2023/12/12/gettyimages-1054147940-627235e01fb63b4644bec84204c259f0a343e35b.jpg"
+                                alt={user.firstName}
+                            />
+                            <AvatarFallback className="rounded-lg">
+                                CN
+                            </AvatarFallback>
+                        </Avatar>
+                        <div className="grid flex-1 text-left text-sm leading-tight">
+                            <span className="truncate font-semibold">
+                                {user.firstName} {user.lastName}
+                            </span>
+                            <span className="truncate text-xs">
+                                {user.alias}
+                            </span>
+                        </div>
+                    </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                    <DropdownMenuItem>
+                        <Sparkles />
+                        Upgrade to Pro
+                    </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                    <DropdownMenuItem
+                        onSelect={(e) => {
+                            e.preventDefault();
+                            setIsDialogOpen(true);
+                            setIsDropdownOpen(false);
+                        }}
+                        className="cursor-pointer"
+                    >
+                        <Settings />
+                        Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-not-allowed bg-muted hover:bg-muted">
+                        <CreditCard />
+                        Billing
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-not-allowed bg-muted hover:bg-muted">
+                        <Bell />
+                        Notifications
+                    </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className='cursor-pointer' onSelect={
+                    () => {
+                        logout();
+                        navigate('/login');
+                    }
+                }>
+                    <LogOut />
+                    Log out
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+                    <SettingsDialog
+                    setIsOpen={setIsDialogOpen}
+                    isOpen={isDialogOpen}
+                />
+        </>
     );
 };
 
