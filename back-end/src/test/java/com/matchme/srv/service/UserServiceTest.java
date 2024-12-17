@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -96,13 +97,14 @@ public class UserServiceTest {
 
   @Test
   void setUserParameters_Success() {
+    LocalDate birthDate = LocalDate.of(1995, 07, 20);
 
     var parameters = new UserParametersRequestDTO(
       "Peeter",          // String firstName
       "Tamm",            // String lastName
       "pt_420",          // String alias
       1L,                // Long gender_self
-      "1995-10-10",      // String birthDate
+      birthDate,      // String birthDate
       "Tartu",           // String city
       2.22,              // Double longitude
       3.33,              // Double latitude
