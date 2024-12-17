@@ -23,6 +23,7 @@ import { GenderContext } from '@/features/gender/GenderContext';
 import { toast } from 'sonner';
 import { updateSettings } from '@/features/user/services/UserService';
 import MotionSpinner from '@/components/animations/MotionSpinner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const UserPreferencesCard = () => {
     const settingsContext = useContext(SettingsContext);
@@ -51,10 +52,17 @@ const UserPreferencesCard = () => {
 
     const handleUpdate = async () => {
         if (!settings) return;
-        
+
         setLoading(true);
         try {
-            if (!gender || !distance || !ageMin || !ageMax || !probabilityTolerance) return;
+            if (
+                !gender ||
+                !distance ||
+                !ageMin ||
+                !ageMax ||
+                !probabilityTolerance
+            )
+                return;
             await updateSettings(
                 {
                     ...settings,
@@ -129,33 +137,39 @@ const UserPreferencesCard = () => {
                         </div>
                         <div className="flex flex-col space-y-1.5">
                             <Label htmlFor="otherGender">Gender</Label>
-                            <Select
-                                value={gender?.toString()}
-                                onValueChange={(value) =>
-                                    setGender(Number(value))
-                                }
-                            >
-                                <SelectTrigger id="otherGender">
-                                    <SelectValue placeholder="Select a gender..." />
-                                </SelectTrigger>
-                                <SelectContent position="popper">
-                                    {genders &&
-                                        genders.map((gender) => (
-                                            <SelectItem
-                                                key={gender.id}
-                                                value={gender.id.toString()}
-                                            >
-                                                {gender.name}
-                                            </SelectItem>
-                                        ))}
-                                </SelectContent>
-                            </Select>
+                            {gender !== null && genders !== null ? (
+                                <>
+                                    <Select
+                                        value={gender?.toString()}
+                                        onValueChange={(value) =>
+                                            setGender(Number(value))
+                                        }
+                                    >
+                                        <SelectTrigger id="otherGender">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent position="popper">
+                                            {genders &&
+                                                genders.map((gender) => (
+                                                    <SelectItem
+                                                        key={gender.id}
+                                                        value={gender.id.toString()}
+                                                    >
+                                                        {gender.name}
+                                                    </SelectItem>
+                                                ))}
+                                        </SelectContent>
+                                    </Select>
+                                </>
+                            ) : (
+                                <Skeleton className="h-[40px] w-full rounded-md border border-[#e5e7eb]" />
+                            )}
                         </div>
                     </div>
                 </form>
             </CardContent>
             <CardFooter className="flex justify-end">
-            <Button onClick={handleUpdate} disabled={loading}>
+                <Button onClick={handleUpdate} disabled={loading}>
                     {loading ? (
                         <>
                             Updating <MotionSpinner />
