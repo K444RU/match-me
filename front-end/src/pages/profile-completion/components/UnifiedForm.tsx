@@ -66,29 +66,32 @@ const UnifiedForm = () => {
 
     const handleFinalSubmit = async () => {
         setLoading(true);
-        try {
-            const token = localStorage.getItem('authToken');
-            const payload = PayloadFormData(formData);
-            await axios.patch('/api/user/complete-registration', payload, {
+        const token = localStorage.getItem('authToken');
+        const payload = PayloadFormData(formData);
+        await axios
+            .patch('/api/user/complete-registration', payload, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
+            })
+            .then(() => {
+                localStorage.removeItem('profileData');
+                navigate('/chats');
+            })
+            .catch((err) => {
+                console.error('Error during final submission:', err);
+                if (typeof err === 'string') {
+                    toast.error(err);
+                } else if (err instanceof Error) {
+                    toast.error(err.message);
+                } else {
+                    toast.error('An unexpected error occurred');
+                }
+            })
+            .finally(() => {
+                setLoading(false);
             });
-            navigate('/chats');
-            localStorage.removeItem('profileData');
-        } catch (err) {
-            console.error('Error during final submission:', err);
-            if (typeof err === 'string') {
-                toast.error(err);
-            } else if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error('An unexpected error occurred');
-            }
-        } finally {
-            setLoading(false);
-        }
     };
 
     return (
