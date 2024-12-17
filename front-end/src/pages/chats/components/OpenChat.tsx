@@ -1,28 +1,32 @@
-import { ChatPreview } from '@/types/api';
 import { NoChat } from './NoChat';
 import { Message } from './Message';
 import InputField from '@/components/ui/forms/InputField';
 import Button from '@/components/ui/buttons/Button';
-import { mockChats } from '@/mocks/chatData';
-import { useState } from 'react';
+import { getMockChats } from '@/mocks/chatData';
+import { useContext, useState } from 'react';
 import sendMessage from '../ChatService';
 import { useAuth } from '@/features/authentication/AuthContext';
+import { ChatContext } from '../ChatContext';
 
-export default function OpenChat({ chat }: { chat: ChatPreview | null }) {
+export default function OpenChat() {
     const { user } = useAuth();
     const [message, setMessage] = useState('');
 
+    const chatContext = useContext(ChatContext);
+    if (!chatContext) return null;
+    const { openChat } = chatContext;
+
     // Early return if no user
     if (!user) return null;
-    if (!chat) return <NoChat />;
+    if (!openChat) return <NoChat />;
 
-    const connectionChats = mockChats
-        .filter((msg) => msg.connectionId === chat.connectionId)
+    const connectionChats = getMockChats(user)
+        .filter((msg) => msg.connectionId === openChat)
         .sort((a, b) => a.sentAt - b.sentAt);
 
     const handleSendMessage = () => {
         if (!message) return;
-        sendMessage(message, chat.connectionId, user.token);
+        sendMessage(message, openChat, user.token);
         setMessage('');
     };
 
