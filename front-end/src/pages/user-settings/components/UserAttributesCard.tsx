@@ -132,6 +132,7 @@ const UserAttributesCard = () => {
                                 <CitySuggestions
                                     searchTerm={debouncedCitySearchValue}
                                     onCitySelect={handleCitySelect}
+                                    visible={showSuggestions}
                                 />
                             </div>
                         </div>

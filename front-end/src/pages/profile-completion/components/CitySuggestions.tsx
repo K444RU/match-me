@@ -6,11 +6,13 @@ import MotionSpinner from '@/components/animations/MotionSpinner';
 interface CitySuggestionsProps {
     searchTerm: string;
     onCitySelect: (city: City) => void;
+    visible: boolean;
 }
 
 export const CitySuggestions: React.FC<CitySuggestionsProps> = ({
     searchTerm,
     onCitySelect,
+    visible
 }) => {
     const [loading, setLoading] = useState(false);
     const [cities, setCities] = useState<City[]>([]);
@@ -18,7 +20,7 @@ export const CitySuggestions: React.FC<CitySuggestionsProps> = ({
 
     useEffect(() => {
         const fetchSuggestions = async () => {
-            if (searchTerm.trim().length <= 2) {
+            if (!visible || searchTerm.trim().length <= 2) {
                 setCities([]);
                 return;
             }
@@ -41,7 +43,9 @@ export const CitySuggestions: React.FC<CitySuggestionsProps> = ({
         };
 
         fetchSuggestions();
-    }, [searchTerm]);
+    }, [searchTerm, visible]);
+
+    if (!visible) return null;
 
     if (loading) {
         return (
