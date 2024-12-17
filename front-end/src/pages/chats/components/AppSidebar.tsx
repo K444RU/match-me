@@ -1,4 +1,3 @@
-import { Calendar, Home, Inbox, Search, Settings } from 'lucide-react';
 import UserInfo from './UserInfo';
 
 import {
@@ -8,89 +7,52 @@ import {
     SidebarGroup,
     SidebarGroupContent,
     SidebarGroupLabel,
-    SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { useEffect, useState } from 'react';
-import { useAuth } from '@/features/authentication/AuthContext';
+import { useContext } from 'react';
 import { ChatPreview } from '@/types/api';
-import { mockChatPreviews } from '@/mocks/chatData';
 import ChatPreviewCard from './ChatPreviewCard';
-import {StompSessionProvider, useSubscription } from 'react-stomp-hooks';
+import { ChatContext } from '../ChatContext';
 
 // Read on usage here: https://ui.shadcn.com/docs/components/sidebar
 
 
 
-const AppSidebar = ({
-    onChatSelect,
-}: {
-    onChatSelect: (chat: ChatPreview) => void;
-}) => {
-    const [chats, setChats] = useState<ChatPreview[]>([]);
-    const { user } = useAuth();
+const AppSidebar = () => {
+    const chatContext = useContext(ChatContext);
+    if (!chatContext) return null;
 
-    useEffect(() => {
-        const fetchChats = async () => {
-            if (!user?.token) return;
-            try {
-                setChats(mockChatPreviews);
-            } catch (error) {
-                console.error('Failed to fetch chats:', error);
-            }
-        };
-
-        fetchChats();
-    }, [user?.token]);
-
-    const wsConfig = {
-        url: 'http:/localhost:8000/ws',
-        connectHeaders: {
-            Authorization: `Bearer ${user?.token}`
-        },
-        debug: (str: string) => {
-            console.log('WS Debug:', str);
-        },
-        onConnect: () => {
-            console.log('WS Connected');
-        },
-        onDisconnect: () => {
-            console.log('WS Disconnected');
-        },
-        onStompError: (frame: any) => {
-            console.error('WS Error:', frame)
-        }
-    }
+    const { chatPreviews: chats, setOpenChat } = chatContext;
 
     return (
         <Sidebar>
             <SidebarContent>
                 <SidebarGroup>
                     <SidebarGroupLabel>Blind</SidebarGroupLabel>
-                    <StompSessionProvider {...wsConfig}>
-                        {/* <AllChats /> */}
-                        <SidebarGroupContent>
-                            {chats.map((chat: ChatPreview) => (
-                                <SidebarMenuItem
-                                    key={chat.connectionId}
-                                    className="list-none"
+                    {/* <AllChats /> */}
+                    <SidebarGroupContent>
+                        {chats?.map((chat: ChatPreview) => (
+                            <SidebarMenuItem
+                                key={chat.connectionId}
+                                className="list-none"
+                            >
+                                <SidebarMenuButton
+                                    onClick={() =>
+                                        setOpenChat(chat.connectionId)
+                                    }
+                                    className="h-fit w-full"
                                 >
-                                    <SidebarMenuButton
-                                        onClick={() => onChatSelect(chat)}
-                                        className="h-fit w-full"
-                                    >
-                                        <ChatPreviewCard chat={chat} />
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            ))}
-                        </SidebarGroupContent>
-                    </StompSessionProvider>
+                                    <ChatPreviewCard chat={chat} />
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        ))}
+                    </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter>
                 <SidebarMenuItem className="list-none">
-                        <UserInfo />
+                    <UserInfo />
                 </SidebarMenuItem>
             </SidebarFooter>
         </Sidebar>
