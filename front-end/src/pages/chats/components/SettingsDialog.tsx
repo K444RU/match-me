@@ -5,32 +5,28 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
-  } from "@/components/ui/dialog";
-  import { Settings } from "lucide-react";
-  import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import SettingsPage from "@/pages/user-settings/SettingsPage";
-  
-  const SettingsDialog = () => {
+} from '@/components/ui/dialog';
+import SettingsPage from '@/pages/user-settings/SettingsPage';
+import { Dispatch, SetStateAction } from 'react';
+
+const SettingsDialog = ({
+  setIsOpen,isOpen
+}: {
+  setIsOpen: Dispatch<SetStateAction<boolean>>, isOpen: boolean;
+}) => {
     return (
-      <Dialog>
-        <DialogTrigger asChild>
-          <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer">
-            <Settings />
-            Settings
-          </DropdownMenuItem>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Settings</DialogTitle>
-            <DialogDescription>
-              Manage your account settings and preferences here.
-            </DialogDescription>
-          </DialogHeader>
-          <SettingsPage />
-        </DialogContent>
-      </Dialog>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Settings</DialogTitle>
+                    <DialogDescription>
+                        Manage your account settings and preferences here.
+                    </DialogDescription>
+                </DialogHeader>
+                <SettingsPage />
+            </DialogContent>
+        </Dialog>
     );
-  };
-  
-  export default SettingsDialog;
+};
+
+export default SettingsDialog;
