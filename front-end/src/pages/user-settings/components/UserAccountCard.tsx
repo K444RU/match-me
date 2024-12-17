@@ -14,6 +14,8 @@ import { SettingsContext } from '../SettingsContext';
 import { toast } from 'sonner';
 import { updateSettings } from '@/features/user/services/UserService';
 import MotionSpinner from '@/components/animations/MotionSpinner';
+import { useAuth } from '@/features/authentication/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const UserAccountCard = () => {
     const settingsContext = useContext(SettingsContext);
@@ -23,7 +25,8 @@ const UserAccountCard = () => {
     const [countryCode, setCountryCode] = useState<string>('');
     const [number, setNumber] = useState<string>('');
     const [loading, setLoading] = useState(false);
-
+    const {logout} = useAuth()
+    const navigate = useNavigate();
     const handleUpdate = async () => {
         if (!settings) return;
 
@@ -38,8 +41,8 @@ const UserAccountCard = () => {
                 },
                 'account'
             );
-            refreshSettings();
-            toast.success('Account updated successfully');
+            logout();
+            navigate('/login')
         } catch (error) {
             toast.error('Failed to update account');
             console.error('Error updating account:', error);
