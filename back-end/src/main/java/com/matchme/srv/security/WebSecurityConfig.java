@@ -116,6 +116,8 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/user/complete-registration").permitAll()
                         .requestMatchers("/api/test/all").permitAll()
                         .requestMatchers("/api/genders").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/ws").permitAll()
                         .anyRequest().authenticated());
 
         http.authenticationProvider(authenticationProvider());
