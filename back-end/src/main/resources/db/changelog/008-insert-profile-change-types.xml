@@ -5,20 +5,45 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
-    <changeSet id="008" author="liquibase">
+    <changeSet id="008-1" author="liquibase">
+        <preConditions  onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="profile_change_types" schemaName="public"/>
+            </not>
+        </preConditions>
+        <createTable tableName="profile_change_types">
+            <column name="id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="text">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="008-2" author="liquibase">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM profile_change_types WHERE id IN (1, 2, 3, 4, 5)
+            </sqlCheck>
+        </preConditions>
         <insert tableName="profile_change_types">
+            <column name="id" valueNumeric="1"/>
             <column name="name">CREATED</column>
         </insert>
         <insert tableName="profile_change_types">
+            <column name="id" valueNumeric="2"/>
             <column name="name">AGE</column>
         </insert>
         <insert tableName="profile_change_types">
+            <column name="id" valueNumeric="3"/>
             <column name="name">BIO</column>
         </insert>
         <insert tableName="profile_change_types">
+            <column name="id" valueNumeric="4"/>
             <column name="name">PHOTO</column>
         </insert>
         <insert tableName="profile_change_types">
+            <column name="id" valueNumeric="5"/>
             <column name="name">INTERESTS </column>
         </insert>
 
