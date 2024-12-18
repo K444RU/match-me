@@ -5,23 +5,49 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
-    <changeSet id="003" author="liquibase">
+    <changeSet id="003-1" author="liquibase">
+        <preConditions  onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="connection_types" schemaName="public"/>
+            </not>
+        </preConditions>
+        <createTable tableName="connection_types">
+            <column name="id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="text">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="003-2" author="liquibase">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM connection_types WHERE id IN (1, 2, 3, 4, 5, 6)
+            </sqlCheck>
+        </preConditions>    
         <insert tableName="connection_types">
+            <column name="id" valueNumeric="1"/>
             <column name="name">SEEN</column>
         </insert>
         <insert tableName="connection_types">
+            <column name="id" valueNumeric="2"/>
             <column name="name">OPENED_PROFILE</column>
         </insert>
         <insert tableName="connection_types">
+            <column name="id" valueNumeric="3"/>
             <column name="name">JUST_FRIENDS</column>
         </insert>
         <insert tableName="connection_types">
+            <column name="id" valueNumeric="4"/>
             <column name="name">MAYBE_MORE</column>
         </insert>
         <insert tableName="connection_types">
+            <column name="id" valueNumeric="5"/>
             <column name="name">INTERESTED</column>
         </insert>
         <insert tableName="connection_types">
+            <column name="id" valueNumeric="6"/>
             <column name="name">CLOSED</column>
         </insert>
     </changeSet>
