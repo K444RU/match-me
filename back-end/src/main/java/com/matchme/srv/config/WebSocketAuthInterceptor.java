@@ -14,9 +14,11 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import com.matchme.srv.security.jwt.JwtUtils;
+import com.matchme.srv.security.services.UserDetailsImpl;
 
 
 @Component
@@ -25,6 +27,9 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor{
 
   @Autowired
   private JwtUtils jwtUtils;
+
+  @Autowired
+  private UserDetailsService userDetailsService;
 
   @Override
   public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -49,7 +54,8 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor{
         String username = jwtUtils.getUserNameFromJwtToken(authToken);
 
         List<GrantedAuthority> authorities = jwtUtils.getAuthoritiesFromJwtToken(authToken);
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
+        UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(username);
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
 
         accessor.setUser(authentication);
       } catch (Exception e) {
