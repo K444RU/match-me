@@ -5,9 +5,11 @@ import java.sql.Timestamp;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @Entity
+@EqualsAndHashCode(exclude = "message")
 @Table(name = "message_events")
 public class MessageEvent {
   
