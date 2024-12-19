@@ -10,10 +10,11 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { useContext } from 'react';
-import { ChatPreview } from '@/types/api';
+import {ChatPreview} from '@/types/api';
 import ChatPreviewCard from './ChatPreviewCard';
-import {StompSessionProvider, useSubscription } from 'react-stomp-hooks';
+import {StompSessionProvider} from 'react-stomp-hooks';
+import {useEffect, useState} from "react";
+import {useAuth} from "@features/authentication/AuthContext.tsx";
 
 // Read on usage here: https://ui.shadcn.com/docs/components/sidebar
 

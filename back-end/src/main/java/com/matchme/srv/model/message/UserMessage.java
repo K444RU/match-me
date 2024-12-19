@@ -3,6 +3,7 @@ package com.matchme.srv.model.message;
 import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.model.user.User;
 
+import java.sql.Timestamp;
 import java.util.Set;
 
 import jakarta.persistence.*;
@@ -31,6 +32,9 @@ public class UserMessage {
   @NotNull
   private String content;
 
-  @OneToMany(mappedBy = "", cascade = CascadeType.ALL)
+  @Column(name = "created_at")
+  private Timestamp createdAt;
+
+  @OneToMany(mappedBy = "message", cascade = CascadeType.ALL)
   private Set<MessageEvent> messageEvents; 
 }

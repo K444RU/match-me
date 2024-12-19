@@ -20,7 +20,9 @@ public class Connection {
   private Long id;
 
   @ManyToMany
-  @JoinTable(name = "user_connections", joinColumns = @JoinColumn(name = "connection_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+  @JoinTable(name = "user_connections",
+          joinColumns = @JoinColumn(name = "connection_id"),
+          inverseJoinColumns = @JoinColumn(name = "user_id"))
   private Set<User> users = new HashSet<>(); 
 
   @OneToMany(mappedBy = "connection", cascade = CascadeType.ALL)
@@ -32,9 +34,5 @@ public class Connection {
   @OneToMany(mappedBy = "connection", cascade = CascadeType.ALL) 
   private Set<UserMessage> userMessages;
 
-
   // Somewhere or in an added relationship, also ELO scores should be encoded...
-
-
-
 }

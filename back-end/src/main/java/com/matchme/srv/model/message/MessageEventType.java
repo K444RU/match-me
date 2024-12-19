@@ -15,9 +15,9 @@ public class MessageEventType {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	Long id;
+	private Long id;
 
 	@Column(length = 50, unique = true)
-	String name;
+	private String name;
 
 }
