@@ -22,7 +22,7 @@ public class MessageEvent {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "message_event_type_id")
-  private MessageEventType message_event_type;
+  private MessageEventType messageEventType;
 
   @NotNull
   private Timestamp timestamp;
