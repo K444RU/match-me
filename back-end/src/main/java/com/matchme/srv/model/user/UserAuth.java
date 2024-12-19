@@ -2,6 +2,8 @@ package com.matchme.srv.model.user;
 
 import java.security.SecureRandom;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -20,6 +22,7 @@ public class UserAuth {
   @OneToOne(fetch = FetchType.LAZY)
   @MapsId
   @JoinColumn(name = "user_id")
+  @JsonBackReference
   private User user;
 
   @NotBlank

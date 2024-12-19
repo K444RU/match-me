@@ -1,5 +1,6 @@
 package com.matchme.srv.model.user;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.matchme.srv.model.user.activity.ActivityLog;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_score.UserScore;
@@ -38,6 +39,7 @@ public class User {
     private String number;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private UserAuth userAuth;
 
     @ManyToOne(fetch = FetchType.LAZY)
