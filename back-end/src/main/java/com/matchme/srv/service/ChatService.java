@@ -26,45 +26,19 @@ public class ChatService {
     private final ConnectionRepository connectionRepository;
     private final UserMessageRepository userMessageRepository;
 
+    public static final String EVENT_TYPE_READ = "READ";
+    public static final String EVENT_TYPE_SEND = "SEND";
+
     /**
-     * This method fetches a list of chat previews for a given user.
-     * Each chat preview includes the most recent chat details the last message,
-     * connected user's alias, the last message's date, and the count of unread messages.
-     * 1. **Fetch User's Connections**:
-     * - We call the repository method `findConnectionsByUserId(userId)` to get all
-     * connections (chats) involving the user.
-     * - A "connection" here represents a chat session between the current user and
-     * another user.
-     * 2. **Find the Other Participant**:
-     * - We use `Optional<User> optionalOtherParticipant = connection.getUsers().stream()`
-     * to find the **other user** in the connection.
-     * - We filter out the current user (`userId`) to get the connected user's details.
-     * - Using `Optional` is important because it prevents `null` errors if no other
-     * user is found in the connection.
-     * - `Optional<User>` ensures that we safely handle situations where there might not be
-     * a valid "other user" in the connection.
-     * - It avoids potential `NullPointerException` errors by using methods like
-     * `isEmpty()` and `get()` for safe access.
-     * 3. **Connected User Alias**:
-     * - Once we find the other participant, we retrieve their alias using
-     * `otherParticipant.getProfile().getAlias()`.
-     * - The alias is the connected user's display name in the chat.
-     * 4. **Last Sent Message**:
-     * - From the set of messages in the connection, we find the **most recent message**
-     * using:
-     * `messages.stream().max(Comparator.comparing(UserMessage::getCreatedAt))`.
-     * - This ensures we get the last message based on its creation timestamp.
-     * - The content (`lastMessage.getContent()`) and timestamp
-     * (`lastMessage.getCreatedAt()`) are set in the preview.
-     * 5. **Unread Message Count**:
-     * - We calculate the unread messages by filtering messages sent by the **other user**:
-     * - Check if the message does NOT have a "READ" event in its `messageEvents`.
-     * - Use `stream().noneMatch()` to see if the "READ" event exists.
-     * - Count the messages that match the unread condition.
-     * 6. **Sorting Chats**:
-     * https://docs.oracle.com/javase/8/docs/api/java/util/Comparator.html#compare-T-T-
-     * - After creating all the chat previews, we sort them by the **last message's timestamp**.
-     * - The most recent chats appear first (descending order).
+     * Fetches a list of chat previews for the given user.
+     * - Retrieves all chat connections for the user.
+     * - For each connection, determines the other participant and fetches details
+     * like their alias and the last message in the chat.
+     * - Counts unread messages for the user in each chat.
+     * - Sorts the chats by the timestamp of the last message, with the newest first.
+     * - https://docs.oracle.com/javase/8/docs/api/java/util/Comparator.html#compare-T-T-
+     * - Returns a list of chat previews, including the connection ID, alias,
+     * last message, and unread count.
      */
     public List<ChatPreviewResponseDTO> getChatPreviews(Long userId) {
 
@@ -102,7 +76,7 @@ public class ChatService {
             int unreadMessageCount = (int) messages.stream()
                     .filter(userMessage -> !userMessage.getUser().getId().equals(userId))
                     .filter(userMessage -> userMessage.getMessageEvents().stream()
-                            .noneMatch(messageEvent -> messageEvent.getMessageEventType().getName().equals("READ")))
+                            .noneMatch(messageEvent -> EVENT_TYPE_READ.equals(messageEvent.getMessageEventType().getName())))
                     .count();
 
             chatPreview.setUnreadMessageCount(unreadMessageCount);
@@ -119,6 +93,14 @@ public class ChatService {
         return chatPreviews;
     }
 
+    /**
+     * Fetches paginated messages for a specific connection and user.
+     * - Validates that the connection exists and the user is a participant in it.
+     * - Retrieves all messages for the connection, ordered by the time they were created.
+     * - Maps each message to a `ChatMessageResponseDTO`, which includes sender details,
+     * content, and timestamp.
+     * - Returns a paginated list of chat messages.
+     */
     public Page<ChatMessageResponseDTO> getChatMessages(Long connectionId, Long userId, Pageable pageable) {
         Connection connection = connectionRepository.findById(connectionId)
                 .orElseThrow(() -> new IllegalArgumentException("Connection not found"));
@@ -143,6 +125,15 @@ public class ChatService {
     }
 
     /**
+     * Saves a new chat message and creates a "SENT" event.
+     * - Validates that the connection exists and the sender is a participant in it.
+     * - Creates a new `UserMessage` entity, associates it with the connection and sender,
+     * and sets its content and timestamp.
+     * - Persists the message to the database.
+     * - Creates a "SENT" event for the message and associates it with the message.
+     * - Saves the message again with the event included.
+     * - Returns a `ChatMessageResponseDTO` with the message details.
+     * -@Transactional annotation ensures database consistency
     * Saves a newly created message to user_messages table
     *
     * @param  connectionId - Connection to send to
@@ -179,7 +170,8 @@ public class ChatService {
 
         MessageEvent deliveredEvent = new MessageEvent();
         deliveredEvent.setMessage(savedMessage);
-        deliveredEvent.setMessageEventType(new MessageEventType(1L, "SENT"));
+        //toDo: Refactor using constants for "SENT" to avoid hardcoding.
+        deliveredEvent.setMessageEventType(new MessageEventType(1L, EVENT_TYPE_SEND));
         deliveredEvent.setTimestamp(timestamp);
         savedMessage.getMessageEvents().add(deliveredEvent);
 
@@ -194,6 +186,12 @@ public class ChatService {
         );
     }
 
+    /**
+     * Finds the other participant's user ID in a chat connection.
+     * - Validates that the connection exists.
+     * - Identifies the user in the connection who is not the sender.
+     * - Returns the other user's ID, or throws an exception if not found.
+     */
     @Transactional
     public Long getOtherUserIdInConnection(Long connectionId, Long senderId) {
         Connection connection = connectionRepository.findById(connectionId)
