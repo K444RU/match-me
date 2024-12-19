@@ -8,11 +8,14 @@ import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
 
 import jakarta.persistence.*;
 // import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import lombok.*;
 
 @Data
 @Entity
 @Table(name = "user_profile")
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class UserProfile {
 
   @Id

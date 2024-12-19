@@ -166,4 +166,93 @@ class ChatServiceTest {
 
         assertThat(result.getContent()).isEmpty();
     }
+
+    @Test
+    void testSaveMessage() {
+        Long connectionId = 101L;
+        Long senderId = 1L;
+        String content = "Test message content";
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+        User sender = new User();
+        sender.setId(senderId);
+        sender.setProfile(UserProfile.builder().alias("TestNickName123321").build());
+
+        Connection connection = new Connection();
+        connection.setId(connectionId);
+        connection.setUsers(Set.of(sender));
+
+        UserMessage userMessage = new UserMessage();
+        userMessage.setId(1L);
+        userMessage.setContent(content);
+        userMessage.setCreatedAt(timestamp);
+        userMessage.setUser(sender);
+        userMessage.setConnection(connection);
+        userMessage.setMessageEvents(new HashSet<>());
+
+        when(connectionRepository.findById(connectionId)).thenReturn(Optional.of(connection));
+        when(userMessageRepository.save(any(UserMessage.class))).thenReturn(userMessage);
+
+        ChatMessageResponseDTO response = chatService.saveMessage(connectionId, senderId, content, timestamp);
+
+        assertThat(response.getMessageId()).isEqualTo(1L);
+        assertThat(response.getConnectionId()).isEqualTo(101L);
+        assertThat(response.getSenderAlias()).isEqualTo("TestNickName123321");
+        assertThat(response.getContent()).isEqualTo("Test message content");
+        assertThat(response.getCreatedAt()).isEqualTo(timestamp);
+    }
+
+    @Test
+    void testGetOtherUserIdInConnection() {
+        Long connectionId = 101L;
+        Long senderId = 1L;
+        Long otherUserId = 2L;
+
+        User sender = new User();
+        sender.setId(senderId);
+
+        User otherUser = new User();
+        otherUser.setId(otherUserId);
+
+        Connection connection = new Connection();
+        connection.setId(connectionId);
+        connection.setUsers(Set.of(sender, otherUser));
+
+        when(connectionRepository.findById(connectionId)).thenReturn(Optional.of(connection));
+
+        Long result = chatService.getOtherUserIdInConnection(connectionId, senderId);
+
+        assertThat(result).isEqualTo(otherUserId);
+    }
+
+    @Test
+    void testGetOtherUserIdInConnectionUserNotFound() {
+        Long connectionId = 101L;
+        Long senderId = 1L;
+
+        User sender = new User();
+        sender.setId(senderId);
+
+        Connection connection = new Connection();
+        connection.setId(connectionId);
+        connection.setUsers(Set.of(sender));
+
+        when(connectionRepository.findById(connectionId)).thenReturn(Optional.of(connection));
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            chatService.getOtherUserIdInConnection(connectionId, senderId);
+        });
+    }
+
+    @Test
+    void testGetOtherUserIdInConnectionConnectionNotFound() {
+        Long connectionId = 101L;
+        Long senderId = 1L;
+
+        when(connectionRepository.findById(connectionId)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            chatService.getOtherUserIdInConnection(connectionId, senderId);
+        });
+    }
 }
