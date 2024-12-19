@@ -123,18 +123,16 @@ public class ChatService {
             );
         });
     }
-
     /**
-     * Saves a new chat message and creates a "SENT" event.
-     * - Validates that the connection exists and the sender is a participant in it.
-     * - Creates a new `UserMessage` entity, associates it with the connection and sender,
-     * and sets its content and timestamp.
-     * - Persists the message to the database.
-     * - Creates a "SENT" event for the message and associates it with the message.
-     * - Saves the message again with the event included.
-     * - Returns a `ChatMessageResponseDTO` with the message details.
-     * -@Transactional annotation ensures database consistency
-    * Saves a newly created message to user_messages table
+    * Saves a new chat message and creates a "SENT" event.
+    * - Validates that the connection exists and the sender is a participant in it.
+    * - Creates a new `UserMessage` entity, associates it with the connection and sender,
+    * and sets its content and timestamp.
+    * - Persists the message to the database.
+    * - Creates a "SENT" event for the message and associates it with the message.
+    * - Saves the message again with the event included.
+    * - Returns a `ChatMessageResponseDTO` with the message details.
+    * -@Transactional annotation ensures database consistency
     *
     * @param  connectionId - Connection to send to
     * @param  senderId
