@@ -142,6 +142,19 @@ public class ChatService {
         });
     }
 
+    /**
+    * Saves a newly created message to user_messages table
+    *
+    * @param  connectionId - Connection to send to
+    * @param  senderId
+    * @param  content
+    * @param  timestamp - Message creation/sent at timestamp
+    * @return ChatMessageResponseDTO
+    * @see  ChatMessageResponseDTO
+    * @see  Connection
+    * @see  UserMessage
+    * @see  MessageEvent
+    */
     @Transactional
     public ChatMessageResponseDTO saveMessage(Long connectionId, Long senderId, String content, Timestamp timestamp) {
         Connection connection = connectionRepository.findById(connectionId)
