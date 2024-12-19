@@ -33,6 +33,7 @@ public class UserMessage {
   private Connection connection;
 
   @NotNull
+  @Column(columnDefinition = "text")
   private String content;
 
   @Column(name = "created_at")
