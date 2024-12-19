@@ -3,6 +3,8 @@ package com.matchme.srv.service;
 import com.matchme.srv.dto.response.ChatMessageResponseDTO;
 import com.matchme.srv.dto.response.ChatPreviewResponseDTO;
 import com.matchme.srv.model.connection.Connection;
+import com.matchme.srv.model.message.MessageEvent;
+import com.matchme.srv.model.message.MessageEventType;
 import com.matchme.srv.model.message.UserMessage;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.repository.ConnectionRepository;
@@ -138,11 +140,53 @@ public class ChatService {
         });
     }
 
+
     public ChatMessageResponseDTO saveMessage(Long connectionId, Long senderId, String content, Timestamp timestamp) {
-        return null;
+        Connection connection = connectionRepository.findById(connectionId)
+                .orElseThrow(() -> new IllegalArgumentException("Connection not found"));
+
+        boolean isParticipant = connection.getUsers().stream()
+                .anyMatch(u -> u.getId().equals(senderId));
+        if (!isParticipant) {
+            throw new RuntimeException("User is not participant.");
+        }
+
+        UserMessage message = new UserMessage();
+        message.setConnection(connection);
+        message.setUser(connection.getUsers().stream()
+                .filter(user -> user.getId().equals(senderId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("User not found")));
+        message.setContent(content);
+        message.setCreatedAt(timestamp);
+
+        UserMessage savedMessage = userMessageRepository.save(message);
+
+        MessageEvent deliveredEvent = new MessageEvent();
+        deliveredEvent.setMessage(savedMessage);
+        deliveredEvent.setMessageEventType(new MessageEventType(1L, "SENT"));
+        deliveredEvent.setTimestamp(timestamp);
+        savedMessage.getMessageEvents().add(deliveredEvent);
+
+        userMessageRepository.save(savedMessage);
+
+        return new ChatMessageResponseDTO(
+                connectionId,
+                savedMessage.getId(),
+                savedMessage.getUser().getProfile().getAlias(),
+                savedMessage.getContent(),
+                savedMessage.getCreatedAt()
+        );
     }
 
     public Long getOtherUserIdInConnection(Long connectionId, Long senderId) {
-        return null;
+        Connection connection = connectionRepository.findById(connectionId)
+                .orElseThrow(() -> new IllegalArgumentException("Connection not found"));
+
+        return connection.getUsers().stream()
+                .filter(user -> !user.getId().equals(senderId))
+                .map(User::getId)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 }
