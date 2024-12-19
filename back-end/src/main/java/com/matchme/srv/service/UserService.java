@@ -311,6 +311,16 @@ public class UserService {
     return user;
   }
 
+  public User getUserByEmail(String email) {
+    User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found!"));
+    return user;
+  }
+
+  public void removeUserByEmail(String email) {
+    User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found!"));
+    userRepository.delete(user);
+  }
+
   // public void setAttributes(Long userId) {
 
   // UserAttributes attributes = attributesRepository.findById(userId)
