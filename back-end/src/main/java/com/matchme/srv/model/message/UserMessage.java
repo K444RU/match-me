@@ -4,14 +4,17 @@ import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.model.user.User;
 
 import java.sql.Timestamp;
+import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @Entity
+@EqualsAndHashCode(exclude = "messageEvents")
 @Table(name = "user_messages")
 public class UserMessage {
   
@@ -36,5 +39,5 @@ public class UserMessage {
   private Timestamp createdAt;
 
   @OneToMany(mappedBy = "message", cascade = CascadeType.ALL)
-  private Set<MessageEvent> messageEvents; 
+  private Set<MessageEvent> messageEvents = new HashSet<>();
 }
