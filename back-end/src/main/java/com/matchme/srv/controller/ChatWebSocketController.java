@@ -7,7 +7,10 @@ import com.matchme.srv.model.user.User;
 import com.matchme.srv.security.services.UserDetailsImpl;
 import com.matchme.srv.service.ChatService;
 import com.matchme.srv.service.UserService;
+
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -29,6 +32,7 @@ import java.sql.Timestamp;
  */
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class ChatWebSocketController {
 
     private final UserService userService;
@@ -50,6 +54,9 @@ public class ChatWebSocketController {
         UserDetailsImpl senderDetails = (UserDetailsImpl) authentication.getPrincipal();
         Long senderId = senderDetails.getId();
         User sender = userService.getUser(senderId);
+
+        log.info("Received chat message from user ID: {} for connection ID: {}",
+                        senderId, messageDTO.getConnectionId());
 
         ChatMessageResponseDTO savedMessage = chatService.saveMessage(
                 messageDTO.getConnectionId(),
@@ -73,6 +80,9 @@ public class ChatWebSocketController {
                 "/queue/messages",
                 savedMessage
         );
+
+        log.debug("Broadcasting message ID: {} to users {} and {}",
+                savedMessage.getMessageId(), senderId, otherUserId);
     }
 
     /**
