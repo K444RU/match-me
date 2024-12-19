@@ -9,6 +9,8 @@ import com.matchme.srv.model.message.UserMessage;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.repository.ConnectionRepository;
 import com.matchme.srv.repository.UserMessageRepository;
+
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -140,7 +142,7 @@ public class ChatService {
         });
     }
 
-
+    @Transactional
     public ChatMessageResponseDTO saveMessage(Long connectionId, Long senderId, String content, Timestamp timestamp) {
         Connection connection = connectionRepository.findById(connectionId)
                 .orElseThrow(() -> new IllegalArgumentException("Connection not found"));
@@ -171,14 +173,15 @@ public class ChatService {
         userMessageRepository.save(savedMessage);
 
         return new ChatMessageResponseDTO(
-                connectionId,
                 savedMessage.getId(),
+                connectionId,
                 savedMessage.getUser().getProfile().getAlias(),
                 savedMessage.getContent(),
                 savedMessage.getCreatedAt()
         );
     }
 
+    @Transactional
     public Long getOtherUserIdInConnection(Long connectionId, Long senderId) {
         Connection connection = connectionRepository.findById(connectionId)
                 .orElseThrow(() -> new IllegalArgumentException("Connection not found"));
