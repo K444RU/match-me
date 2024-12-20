@@ -48,8 +48,7 @@ public class ConnectionService {
     /**
      * Gets all connections for a given user
      * @param user
-     * @return List of connections associated with the user
-     * @see Connection
+     * @return List of {@link Connection} associated with the user
      * @see User
      */
     public List<Connection> getUserConnections(User user) {
