@@ -1,9 +1,7 @@
 package com.matchme.srv.controller;
 
-import java.sql.Date;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,11 +23,35 @@ import com.matchme.srv.service.UserService;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/users")
 public class UserController {
 
   @Autowired
   private UserService userService;
+
+  @GetMapping("/{targetId}")
+  public ResponseEntity<?> getUser(@PathVariable Long targetId, Authentication authentication) {
+    UserDetailsImpl requesterUserDetails = (UserDetailsImpl) authentication.getPrincipal();
+    Long requesterUserId = requesterUserDetails.getId();
+
+    if (requesterUserId == targetId || userService.isConnected(requesterUserId, targetId)) {
+      UserProfile userProfile = userService.getUserProfile(targetId);
+      User user = userService.getUser(targetId);
+
+      CurrentUserResponseDTO currentUser = CurrentUserResponseDTO.builder()
+          .id(targetId)
+          .email(user.getEmail())
+          .firstName(userProfile != null ? userProfile.getFirst_name() : null)
+          .lastName(userProfile != null ? userProfile.getLast_name() : null)
+          .alias(userProfile != null ? userProfile.getAlias() : null)
+          .role(user.getRoles())
+          .build();
+
+      return ResponseEntity.ok(currentUser);
+    } else {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+  }
 
   // @GetMapping("/settings/{userId}")
   // public ResponseEntity<SettingsResponseDTO> getSettings(@PathVariable Long
@@ -181,24 +203,4 @@ public class UserController {
 
     return ResponseEntity.noContent().build();
   }
-
-  @GetMapping("/currentUser")
-  public ResponseEntity<CurrentUserResponseDTO> getCurrentUser(Authentication authentication) {
-    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-    Long userId = userDetails.getId();
-    UserProfile userProfile = userService.getUserProfile(userId);
-    User user = userService.getUser(userId);
-
-    CurrentUserResponseDTO currentUser = CurrentUserResponseDTO.builder()
-        .id(userId)
-        .email(user.getEmail())
-        .firstName(userProfile != null ? userProfile.getFirst_name() : null)
-        .lastName(userProfile != null ? userProfile.getLast_name() : null)
-        .alias(userProfile != null ? userProfile.getAlias() : null)
-        .role(user.getRoles())
-        .build();
-
-    return ResponseEntity.ok(currentUser);
-  }
-
 }

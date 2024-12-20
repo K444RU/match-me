@@ -2,12 +2,10 @@ package com.matchme.srv.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
@@ -25,7 +23,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.matchme.srv.dto.request.SignupRequestDTO;
 import com.matchme.srv.dto.request.UserParametersRequestDTO;
 import com.matchme.srv.exception.DuplicateFieldException;
-import com.matchme.srv.exception.ResourceNotFoundException;
 import com.matchme.srv.mapper.AttributesMapper;
 import com.matchme.srv.mapper.PreferencesMapper;
 import com.matchme.srv.model.user.User;
@@ -42,8 +39,6 @@ import com.matchme.srv.repository.UserGenderTypeRepository;
 import com.matchme.srv.repository.UserRepository;
 import com.matchme.srv.repository.UserRoleTypeRepository;
 import com.matchme.srv.repository.UserStateTypesRepository;
-
-import jakarta.persistence.EntityNotFoundException;
 
 @ExtendWith(MockitoExtension.class) // equals to openMocks for BeforeEach
 public class UserServiceTest {
