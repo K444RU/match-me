@@ -2,8 +2,6 @@ package com.matchme.srv.service;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +16,7 @@ import com.matchme.srv.exception.ResourceNotFoundException;
 import com.matchme.srv.mapper.AttributesMapper;
 import com.matchme.srv.mapper.PreferencesMapper;
 import com.matchme.srv.mapper.UserParametersMapper;
+import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.UserAuth;
 import com.matchme.srv.model.user.UserRoleType;
@@ -44,10 +43,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserService {
 
-  private static final Logger log = LoggerFactory.getLogger(UserService.class);
   private final UserRepository userRepository;
   private final UserGenderTypeRepository genderRepository;
   private final UserRoleTypeRepository roleRepository;
+  private final ConnectionRepository connectionRepository;
 
   private final AttributesMapper attributesMapper;
   private final PreferencesMapper preferencesMapper;
@@ -194,12 +193,12 @@ public class UserService {
 
     UserPreferences preferences = profile.getPreferences();
     if (preferences == null) {
-        preferences = new UserPreferences();
-        profile.setPreferences(preferences);
-        
-        PreferenceChangeType preferenceChangeType = preferenceChangeTypeRepository.findByName("CREATED")
-            .orElseThrow(() -> new ResourceNotFoundException("Preference Change Type"));
-        new PreferenceChange(preferences, preferenceChangeType, null);
+      preferences = new UserPreferences();
+      profile.setPreferences(preferences);
+
+      PreferenceChangeType preferenceChangeType = preferenceChangeTypeRepository.findByName("CREATED")
+          .orElseThrow(() -> new ResourceNotFoundException("Preference Change Type"));
+      new PreferenceChange(preferences, preferenceChangeType, null);
     }
 
     attributesMapper.toEntity(attributes, parameters);
@@ -319,6 +318,20 @@ public class UserService {
   public void removeUserByEmail(String email) {
     User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found!"));
     userRepository.delete(user);
+  }
+
+  /**
+   * Checks if two users have an established connection.
+   * <p>
+   * Currently DOES NOT account for inactive connections
+   */
+  public boolean isConnected(Long requesterId, Long targetId) {
+    List<Connection> connections = connectionRepository.findConnectionsByUserId(requesterId);
+    for (Connection connection : connections) {
+      if (connection.getUsers().stream().anyMatch(user -> user.getId().equals(targetId)))
+        return true;
+    }
+    return false;
   }
 
   // public void setAttributes(Long userId) {
