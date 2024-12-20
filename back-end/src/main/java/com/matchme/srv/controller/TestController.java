@@ -1,10 +1,8 @@
 package com.matchme.srv.controller;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,12 +17,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.matchme.srv.dto.request.MessagesSendRequestDTO;
 import com.matchme.srv.dto.request.SignupRequestDTO;
 import com.matchme.srv.dto.request.UserParametersRequestDTO;
 import com.matchme.srv.dto.response.ChatMessageResponseDTO;
 import com.matchme.srv.dto.response.ConnectionResponseDTO;
-import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.service.ChatService;
 import com.matchme.srv.service.ConnectionService;
