@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 
 
 @Getter
@@ -17,6 +17,6 @@ public class ChatPreviewResponseDTO {
     private Long connectedUserId;
     private String connectedUserAlias;
     private String lastMessageContent;
-    private Timestamp lastMessageTimestamp;
+    private Instant lastMessageTimestamp;
     private int unreadMessageCount;
 }

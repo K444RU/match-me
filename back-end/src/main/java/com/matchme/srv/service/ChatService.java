@@ -16,7 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -145,7 +145,7 @@ public class ChatService {
     * @see  MessageEvent
     */
     @Transactional
-    public ChatMessageResponseDTO saveMessage(Long connectionId, Long senderId, String content, Timestamp timestamp) {
+    public ChatMessageResponseDTO saveMessage(Long connectionId, Long senderId, String content, Instant timestamp) {
         Connection connection = connectionRepository.findById(connectionId)
                 .orElseThrow(() -> new IllegalArgumentException("Connection not found"));
 

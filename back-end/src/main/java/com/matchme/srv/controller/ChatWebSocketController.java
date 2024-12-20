@@ -17,7 +17,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 
 /**
  * This controller handles the real-time WebSocket-based chat functionalities:
@@ -62,7 +62,7 @@ public class ChatWebSocketController {
                 messageDTO.getConnectionId(),
                 sender.getId(),
                 messageDTO.getContent(),
-                new Timestamp(System.currentTimeMillis())
+                Instant.now()
         );
 
         Long otherUserId = chatService.getOtherUserIdInConnection(messageDTO.getConnectionId(), senderId);

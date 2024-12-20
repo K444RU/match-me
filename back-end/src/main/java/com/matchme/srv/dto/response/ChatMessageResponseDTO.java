@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -16,7 +16,7 @@ public class ChatMessageResponseDTO {
     private Long connectionId;
     private String senderAlias;
     private String content;
-    private Timestamp createdAt;
+    private Instant createdAt;
     //toDo: we might add MessageEventType here as well?
 }
 
