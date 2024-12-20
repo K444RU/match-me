@@ -1,5 +1,12 @@
 package com.matchme.srv.controller;
 
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,12 +20,19 @@ import com.matchme.srv.dto.request.settings.AttributesSettingsRequestDTO;
 import com.matchme.srv.dto.request.settings.PreferencesSettingsRequestDTO;
 import com.matchme.srv.dto.request.settings.ProfileSettingsRequestDTO;
 import com.matchme.srv.dto.request.UserParametersRequestDTO;
+import com.matchme.srv.dto.response.BiographicalResponseDTO;
+import com.matchme.srv.dto.response.ConnectionResponseDTO;
 import com.matchme.srv.dto.response.CurrentUserResponseDTO;
+import com.matchme.srv.dto.response.GenderTypeDTO;
+import com.matchme.srv.dto.response.ProfileResponseDTO;
 import com.matchme.srv.dto.response.SettingsResponseDTO;
 import com.matchme.srv.dto.response.UserParametersResponseDTO;
+import com.matchme.srv.dto.response.UserResponseDTO;
+import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.security.services.UserDetailsImpl;
+import com.matchme.srv.service.ConnectionService;
 import com.matchme.srv.service.UserService;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -29,6 +43,19 @@ public class UserController {
   @Autowired
   private UserService userService;
 
+  @Autowired
+  private ConnectionService connectionService;
+
+  /**
+   * Retrieves a users basic information by ID
+   * <p>
+   * Checks if the requester is connected or is the user.
+   * 
+   * @param targetId       ID of the user to retrieve
+   * @param authentication
+   * @return ID, email, first_name, last_name, alias and roles
+   * @see CurrentUserResponseDTO
+   */
   @GetMapping("/{targetId}")
   public ResponseEntity<?> getUser(@PathVariable Long targetId, Authentication authentication) {
     UserDetailsImpl requesterUserDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -51,6 +78,110 @@ public class UserController {
     } else {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
+  }
+
+  /**
+   * Retrieves a users profile
+   * <p>
+   * Checks if the requester is connected or is the user.
+   * 
+   * @param targetId       ID of the user to retrieve profile for
+   * @param authentication
+   * @return first_name, last_name and city
+   * @see ProfileResponseDTO
+   */
+  @GetMapping("/{targetId}/profile")
+  public ResponseEntity<ProfileResponseDTO> getProfile(@PathVariable Long targetId, Authentication authentication) {
+    UserDetailsImpl requesterUserDetails = (UserDetailsImpl) authentication.getPrincipal();
+    Long requesterUserId = requesterUserDetails.getId();
+
+    if (requesterUserId == targetId || userService.isConnected(requesterUserId, targetId)) {
+      UserProfile userProfile = userService.getUserProfile(targetId);
+      ProfileResponseDTO profile = ProfileResponseDTO.builder()
+          .first_name(userProfile.getFirst_name())
+          .last_name(userProfile.getLast_name())
+          .city(userProfile.getCity())
+          .build();
+      return ResponseEntity.ok(profile);
+    } else {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+  }
+
+  /**
+   * Retrieves a users biographical data
+   * <p>
+   * Checks if the requester is connected or is the user
+   * 
+   * @param targetId       ID of the user to retrieve biographical data for
+   * @param authentication
+   * @return User age, preferences and attributes
+   * @see BiographicalResponseDTO
+   */
+  @GetMapping("/{targetId}/bio")
+  public ResponseEntity<BiographicalResponseDTO> getBio(@PathVariable Long targetId, Authentication authentication) {
+    UserDetailsImpl requesterUserDetails = (UserDetailsImpl) authentication.getPrincipal();
+    Long requesterUserId = requesterUserDetails.getId();
+
+    if (requesterUserId == targetId || userService.isConnected(requesterUserId, targetId)) {
+      UserProfile userProfile = userService.getUserProfile(targetId);
+
+      BiographicalResponseDTO bio = BiographicalResponseDTO.builder()
+          .gender_self(new GenderTypeDTO(userProfile.getAttributes().getGender().getId(),
+              userProfile.getAttributes().getGender().getName()))
+          .gender_other(new GenderTypeDTO(userProfile.getPreferences().getGender().getId(),
+              userProfile.getPreferences().getGender().getName()))
+          .age_self(Period.between(userProfile.getAttributes().getBirth_date(),
+              LocalDate.now()).getYears())
+          .age_min(userProfile.getPreferences().getAge_min())
+          .age_max(userProfile.getPreferences().getAge_max())
+          .distance(userProfile.getPreferences().getDistance())
+          .probability_tolerance(userProfile.getPreferences().getProbability_tolerance())
+          .build();
+
+      return ResponseEntity.ok(bio);
+    } else {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+  }
+
+  /**
+   * Retrieves a users connections
+   * <p>
+   * Checks if the requester is the user.
+   * 
+   * @param targetId       ID of the user to retrieve connections for
+   * @param authentication
+   * @return List of {@link ConnectionResponseDTO}
+   */
+  @GetMapping("/{targetId}/connections")
+  public ResponseEntity<List<ConnectionResponseDTO>> getConnections(@PathVariable Long targetId,
+      Authentication authentication) {
+    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+    Long userId = userDetails.getId();
+
+    if (userId == targetId) {
+      User user = userService.getUser(userId);
+      List<Connection> connections = connectionService.getUserConnections(user);
+      List<ConnectionResponseDTO> connectionResponse = new ArrayList<>();
+      for (Connection connection : connections) {
+        Set<UserResponseDTO> users = connection.getUsers()
+            .stream()
+            .map(u -> new UserResponseDTO(
+                u.getId(),
+                u.getEmail(),
+                u.getNumber()))
+            .collect(Collectors.toSet());
+        connectionResponse.add(ConnectionResponseDTO.builder().id(connection.getId()).users(users).build());
+      }
+
+      return ResponseEntity.ok(connectionResponse);
+    } else {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
   }
 
   // @GetMapping("/settings/{userId}")
