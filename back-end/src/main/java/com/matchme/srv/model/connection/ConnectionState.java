@@ -1,6 +1,7 @@
 package com.matchme.srv.model.connection;
 
-import java.sql.Timestamp;
+
+import java.time.Instant;
 
 import com.matchme.srv.model.user.User;
 
@@ -32,6 +33,6 @@ public class ConnectionState {
   private ConnectionType connection_type;
 
   @NotNull
-  private Timestamp timestamp;
+  private Instant timestamp;
 
 }

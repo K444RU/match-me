@@ -1,6 +1,6 @@
 package com.matchme.srv.model.message;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -27,5 +27,5 @@ public class MessageEvent {
   private MessageEventType messageEventType;
 
   @NotNull
-  private Timestamp timestamp;
+  private Instant timestamp;
 }

@@ -2,7 +2,7 @@ package com.matchme.srv.controller;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -156,6 +156,6 @@ public class TestController {
     Long connectionId,
     String content,
     String senderEmail,
-    Timestamp timestamp
+    Instant timestamp
 ) {}
 }

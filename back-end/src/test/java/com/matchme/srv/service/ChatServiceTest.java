@@ -20,7 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -69,7 +69,7 @@ class ChatServiceTest {
 
         UserMessage lastMessage = new UserMessage();
         lastMessage.setContent("Hello!");
-        lastMessage.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        lastMessage.setCreatedAt(Instant.now());
         lastMessage.setUser(user2);
         lastMessage.setMessageEvents(Set.of(messageEvent));
 
@@ -110,7 +110,7 @@ class ChatServiceTest {
         userMessage.setId(1L);
         userMessage.setUser(user2);
         userMessage.setContent("Hello!");
-        userMessage.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        userMessage.setCreatedAt(Instant.now());
 
         Connection connection = new Connection();
         connection.setId(connectionId);
@@ -172,7 +172,7 @@ class ChatServiceTest {
         Long connectionId = 101L;
         Long senderId = 1L;
         String content = "Test message content";
-        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        Instant timestamp = Instant.now();
 
         User sender = new User();
         sender.setId(senderId);

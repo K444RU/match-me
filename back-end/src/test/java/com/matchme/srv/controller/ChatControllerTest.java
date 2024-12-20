@@ -21,7 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
@@ -73,7 +73,7 @@ class ChatControllerTest {
         chatPreview.setConnectedUserId(2L);
         chatPreview.setConnectedUserAlias("TestNickName123321");
         chatPreview.setLastMessageContent("Hello!");
-        chatPreview.setLastMessageTimestamp(new Timestamp(System.currentTimeMillis()));
+        chatPreview.setLastMessageTimestamp(Instant.now());
         chatPreview.setUnreadMessageCount(3);
 
         when(chatService.getChatPreviews(anyLong())).thenReturn(List.of(chatPreview));
@@ -101,7 +101,7 @@ class ChatControllerTest {
                 101L,
                 "TestNickName123321",
                 "Hello, this is a test message.",
-                new Timestamp(System.currentTimeMillis())
+                Instant.now()
         );
 
         Page<ChatMessageResponseDTO> messagePage = new PageImpl<>(List.of(chatMessage), pageable, 1);

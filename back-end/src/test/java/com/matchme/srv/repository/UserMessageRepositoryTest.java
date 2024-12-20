@@ -12,7 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -46,14 +47,14 @@ class UserMessageRepositoryTest {
         message1.setUser(testUser);
         message1.setConnection(testConnection);
         message1.setContent("Message 1");
-        message1.setCreatedAt(new Timestamp(System.currentTimeMillis() - 1000));
+        message1.setCreatedAt(Instant.now().minus(Duration.ofMillis(1000)));
         userMessageRepository.save(message1);
 
         UserMessage message2 = new UserMessage();
         message2.setUser(testUser);
         message2.setConnection(testConnection);
         message2.setContent("Message 2");
-        message2.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        message2.setCreatedAt(Instant.now());
         userMessageRepository.save(message2);
     }
 
