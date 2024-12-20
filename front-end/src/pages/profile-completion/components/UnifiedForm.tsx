@@ -69,7 +69,7 @@ const UnifiedForm = () => {
         const token = localStorage.getItem('authToken');
         const payload = PayloadFormData(formData);
         await axios
-            .patch('/api/user/complete-registration', payload, {
+            .patch('/api/users/complete-registration', payload, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',

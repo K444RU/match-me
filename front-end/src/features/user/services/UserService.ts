@@ -28,7 +28,7 @@ export const getCurrentUser = async (): Promise<CurrentUser> => {
     try {
         const token = localStorage.getItem('authToken');
         const response = await axios.get(
-            `${import.meta.env.VITE_API_URL}/user/currentUser`,
+            `${import.meta.env.VITE_API_URL}/me`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
