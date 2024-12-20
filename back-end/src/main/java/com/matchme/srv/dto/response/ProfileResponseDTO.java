@@ -1,22 +1,12 @@
 package com.matchme.srv.dto.response;
 
+import lombok.Builder;
+import lombok.Data;
 
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
+@Data
+@Builder
 public class ProfileResponseDTO {
   private String first_name;
   private String last_name;
-  // TODO: add fields when they become apparent
-
-  public ProfileResponseDTO() {}
-
-  public ProfileResponseDTO(String first_name, String last_name) {
-    this.first_name = first_name;
-    this.last_name = last_name;
-  }
-
-
+  private String city;
 }
