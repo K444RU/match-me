@@ -1,7 +1,5 @@
 package com.matchme.srv.dto.response;
 
-import java.sql.Date;
-
 public record UserParametersResponseDTO(
   
   String email,
