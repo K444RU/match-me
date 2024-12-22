@@ -1,10 +1,14 @@
 package com.matchme.srv.dto.request.settings;
 
+import java.time.LocalDate;
+
+import com.matchme.srv.constraints.BirthDate;
+
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,8 +27,9 @@ public class AttributesSettingsRequestDTO {
     private Long gender_self;
 
     @NotNull(message = "Birth date must be specified")
-    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "Birthday must be in format (YYYY-MM-DD)")
-    private String birth_date;
+    @BirthDate(message = "Birth date must be greater than or equal to 18 years old")
+    @Past(message = "Birth date must be in the past")
+    private LocalDate birth_date;
 
     @NotBlank(message = "City is required")
     @Size(min = 2, max = 100, message = "City name must be between 2 and 100 characters")
