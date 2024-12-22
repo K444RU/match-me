@@ -7,7 +7,7 @@ export const getUserParameters = async (): Promise<UserProfile> => {
         const token = localStorage.getItem('authToken');
         console.log('🛡️ Token used in request: ', token);
         const response = await axios.get(
-            `${import.meta.env.VITE_API_URL}/user/profile`,
+            `${import.meta.env.VITE_API_URL}/me/settings`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -92,7 +92,7 @@ export const updateSettings = async (
     try {
         const token = localStorage.getItem('authToken');
         const response = await axios.put(
-            `${import.meta.env.VITE_API_URL}/user/settings/${suffix}`,
+            `${import.meta.env.VITE_API_URL}/users/settings/${suffix}`,
             payload,
             {
                 headers: {
