@@ -4,12 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matchme.srv.dto.request.LoginRequestDTO;
 import com.matchme.srv.dto.request.SignupRequestDTO;
 import com.matchme.srv.model.user.UserRoleType;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.containsString;
@@ -21,6 +25,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 public class AuthControllerTest {
+
+    @Mock
+    private Authentication authentication;
 
     @Autowired
     private MockMvc mockMvc;
@@ -58,26 +65,32 @@ public class AuthControllerTest {
 
     // Should return 200 and string "User Content."
     @Test
+    @WithMockUser(username = "user", authorities = {"ROLE_USER"})
     void shouldReturnUserContent() throws Exception {
-        // TODO: Finish shouldReturnUserContent
-        // this.mockMvc.perform(get("/api/test/user")).andDo(print()).andExpect(status().isOk())
-        // .andExpect(content().string(containsString("User Content.")));
+        this.mockMvc.perform(get("/api/test/user")
+                .principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("User Content.")));
     }
 
-    // Should return 200 and string "Moderator Content."
+    // Should return 200 and string "Moderator Board."
     @Test
+    @WithMockUser(username = "moderator", authorities = {"ROLE_MODERATOR"})
     void shouldReturnModeratorContent() throws Exception {
-        // TODO: Finish shouldReturnModeratorContent
-        // this.mockMvc.perform(get("/api/test/mod")).andDo(print()).andExpect(status().isOk())
-        // .andExpect(content().string(containsString("Moderator Content.")));
+        this.mockMvc.perform(get("/api/test/mod")
+                .principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Moderator Board.")));
     }
 
     // Should return 200 and string "Admin Content."
     @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_ADMIN"})
     void shouldReturnAdminContent() throws Exception {
-        // TODO: Finish shouldReturnAdminContent
-        // this.mockMvc.perform(get("/api/test/admin")).andDo(print()).andExpect(status().isOk())
-        // .andExpect(content().string(containsString("Admin Content.")));
+        this.mockMvc.perform(get("/api/test/admin")
+                .principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Admin Board.")));
     }
 
     @Test
