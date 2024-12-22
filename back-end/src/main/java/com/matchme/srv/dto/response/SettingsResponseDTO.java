@@ -1,7 +1,5 @@
 package com.matchme.srv.dto.response;
 
-import java.sql.Date;
-
 import lombok.Builder;
 
 @Builder
