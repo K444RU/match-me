@@ -57,7 +57,7 @@ public class UserController {
    * @see CurrentUserResponseDTO
    */
   @GetMapping("/{targetId}")
-  public ResponseEntity<?> getUser(@PathVariable Long targetId, Authentication authentication) {
+  public ResponseEntity<CurrentUserResponseDTO> getUser(@PathVariable Long targetId, Authentication authentication) {
     UserDetailsImpl requesterUserDetails = (UserDetailsImpl) authentication.getPrincipal();
     Long requesterUserId = requesterUserDetails.getId();
 
