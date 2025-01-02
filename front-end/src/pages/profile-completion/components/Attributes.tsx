@@ -7,6 +7,11 @@ import { useDebounce } from '@/lib/hooks/useDebounce';
 import { CitySuggestions } from './CitySuggestions';
 import { City, UnifiedFormData } from '../types/types';
 import MotionSpinner from '@/components/animations/MotionSpinner';
+import { Hobby } from '@/types/api';
+import MultipleSelector from '@/components/ui/multi-select';
+import { Label } from '@/components/ui/label';
+import { hobbiesById, hobbiesToOptions, optionsToHobbies } from '@/lib/utils/dataConversion';
+import { HOBBIES } from '@/assets/hobbies';
 
 interface AttributesProps {
     onNext: () => void;
@@ -30,6 +35,7 @@ const Attributes: React.FC<AttributesProps> = ({
     const [firstName, setFirstName] = useState(formData.firstName || '');
     const [lastName, setLastName] = useState(formData.lastName || '');
     const [alias, setAlias] = useState(formData.alias || '');
+    const [hobbies, setHobbies] = useState<Hobby[] | []>(hobbiesById(formData.hobbies || []));
 
     const debouncedCitySearchValue = useDebounce(citySearchValue, 1000);
 
@@ -61,6 +67,7 @@ const Attributes: React.FC<AttributesProps> = ({
         onChange('firstName', firstName);
         onChange('lastName', lastName);
         onChange('alias', alias);
+        onChange('hobbies', hobbies.map((hobby) => hobby.id));
         setError(null);
         onNext();
     };
@@ -125,6 +132,22 @@ const Attributes: React.FC<AttributesProps> = ({
                         placeholder="Shotgunner404"
                         value={alias}
                         onChange={setAlias}
+                    />
+                </div>
+
+                {/* Hobbies */}
+                <div className="flex flex-col space-y-1.5">
+                    <Label htmlFor="hobbies">Hobbies</Label>
+                    <MultipleSelector
+                    value={hobbiesToOptions(hobbies)}
+                    onChange={(value) => setHobbies(optionsToHobbies(value))}
+                    placeholder='Select your hobbies...'
+                    defaultOptions={hobbiesToOptions(HOBBIES)}
+                    groupBy='category'
+                    hideClearAllButton={true}
+                    maxSelected={5}
+                    hidePlaceholderWhenSelected={true}
+                    className='bg-white'
                     />
                 </div>
 
