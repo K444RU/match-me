@@ -2,6 +2,7 @@ export interface UserProfile extends UserPreferences, UserAttributes {
     firstName: string;
     lastName: string;
     alias: string;
+    hobbies?: number[];
     email: string;
     number: string;
     city: string;
@@ -63,4 +64,11 @@ export interface ChatPreview {
 export interface Gender {
     id: number;
     name: string;
+}
+
+export interface Hobby {
+    id: number;
+    name: string;
+    group: string;
+    subGroup: string;
 }
