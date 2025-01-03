@@ -17,6 +17,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 export interface Option {
   value: string;
   label: string;
+  group?: string;
   disable?: boolean;
   /** fixed option that can't be removed. */
   fixed?: boolean;
@@ -430,18 +431,23 @@ const MultipleSelector = React.forwardRef<
         [];
 
       Object.entries(selectables).forEach(([groupKey, options]) => {
-        // Add group header if groupBy is used
-        if (groupBy && groupKey) {
+        // Filter options if input value provided
+        const filteredOptions = inputValue
+        ? options.filter(option => option.label.toLowerCase().includes(inputValue.toLowerCase()))
+        : options;
+
+        // Add group header if groupBy is used, dont if searching
+        if (!inputValue && groupBy && groupKey) {
           items.push({ type: 'group', data: groupKey });
         }
-        // Add items
-        options.forEach((option) => {
+        // Add filtered/all items
+        filteredOptions.forEach((option) => {
           items.push({ type: 'item', data: option, groupKey });
         });
       });
 
       return items;
-    }, [selectables, groupBy]);
+    }, [selectables, groupBy, inputValue]);
 
     const rowVirtualizer = useVirtualizer({
       count: virtualItems.length,
@@ -591,8 +597,7 @@ const MultipleSelector = React.forwardRef<
                   {!selectFirstItem && (
                     <CommandItem value="-" className="hidden" />
                   )}
-
-                  <div
+                  <CommandGroup
                     style={{
                       height: `${rowVirtualizer.getTotalSize()}px`,
                       width: '100%',
@@ -655,7 +660,7 @@ const MultipleSelector = React.forwardRef<
                         </CommandItem>
                       );
                     })}
-                  </div>
+                  </CommandGroup>
                 </>
               )}
             </CommandList>
