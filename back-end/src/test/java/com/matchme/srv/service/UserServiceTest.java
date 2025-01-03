@@ -11,7 +11,7 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,11 +30,13 @@ import com.matchme.srv.model.user.UserRoleType;
 import com.matchme.srv.model.user.UserStateTypes;
 import com.matchme.srv.model.user.activity.ActivityLog;
 import com.matchme.srv.model.user.activity.ActivityLogType;
+import com.matchme.srv.model.user.profile.Hobby;
 import com.matchme.srv.model.user.profile.UserGenderType;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
 import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
 import com.matchme.srv.repository.ActivityLogTypeRepository;
+import com.matchme.srv.repository.HobbyRepository;
 import com.matchme.srv.repository.UserGenderTypeRepository;
 import com.matchme.srv.repository.UserRepository;
 import com.matchme.srv.repository.UserRoleTypeRepository;
@@ -60,6 +62,9 @@ public class UserServiceTest {
 
   @Mock
   private ActivityLogTypeRepository activityLogTypeRepository;
+
+  @Mock
+  private HobbyRepository hobbyRepository;
 
   @Mock
   private PasswordEncoder encoder;
@@ -98,6 +103,7 @@ public class UserServiceTest {
       "Peeter",          // String firstName
       "Tamm",            // String lastName
       "pt_420",          // String alias
+      Set.of(1L, 2L),    // Set<Long> hobbies
       1L,                // Long gender_self
       birthDate,      // String birthDate
       "Tartu",           // String city
@@ -120,12 +126,23 @@ public class UserServiceTest {
     maleGender.setId(2L);
     maleGender.setName("FEMALE");
 
+    Hobby hobby1 = new Hobby();
+    hobby1.setId(1L);
+    hobby1.setName("3D printing");
+    hobby1.setCategory("General");
+
+    Hobby hobby2 = new Hobby();
+    hobby1.setId(2L);
+    hobby1.setName("Acrobatics");
+    hobby1.setCategory("General");
+
     when(userRepository.findById(1L)).thenReturn(Optional.of(user));
     when(userStateTypesRepository.findByName("NEW")).thenReturn(Optional.of(newState));
     when(activityLogTypeRepository.findByName("VERIFIED")).thenReturn(Optional.of(verifiedLogType));
     when(genderRepository.findById(1L)).thenReturn(Optional.of(maleGender));
     when(genderRepository.findById(2L)).thenReturn(Optional.of(femaleGender));
-    
+    when(hobbyRepository.findById(1L)).thenReturn(Optional.of(hobby1));
+    when(hobbyRepository.findById(2L)).thenReturn(Optional.of(hobby2));
   
     ActivityLog result = userService.setUserParameters(1L, parameters);
     
