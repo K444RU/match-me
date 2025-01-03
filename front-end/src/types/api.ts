@@ -65,10 +65,3 @@ export interface Gender {
     id: number;
     name: string;
 }
-
-export interface Hobby {
-    id: number;
-    name: string;
-    group: string;
-    subGroup: string;
-}
