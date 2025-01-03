@@ -1,5 +1,6 @@
 package com.matchme.srv.service;
 
+import java.util.Base64;
 import java.util.List;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,6 +39,7 @@ import com.matchme.srv.repository.*;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -81,6 +83,7 @@ public class UserService {
   }
 
   // Creates User entity and UserAuth entity for user, sends verification e-mail
+  @Transactional
   public ActivityLog createUser(SignupRequestDTO signUpRequest) {
     System.out.println("Creating user with email: " + signUpRequest.getEmail());
 
@@ -334,6 +337,64 @@ public class UserService {
     return false;
   }
 
+  @Transactional
+  public void saveProfilePicture(Long userId, String base64Image) {
+    if (base64Image == null || base64Image.isEmpty()) {
+      throw new IllegalArgumentException("Base64 image data cannot be null or empty.");
+    }
+
+    String base64Part = base64Image;
+    if (base64Image.contains(",")) {
+      base64Part = base64Image.substring(base64Image.indexOf(',') + 1);
+    }
+
+    byte[] imageBytes;
+    try {
+      imageBytes = Base64.getDecoder().decode(base64Part);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Invalid Base64 image data.", e);
+    }
+
+    if (imageBytes.length == 0) {
+      throw new IllegalArgumentException("Decoded image is empty, please check your Base64 input.");
+    }
+
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new EntityNotFoundException("User not found for ID: " + userId));
+
+    UserProfile profile = user.getProfile();
+    if (profile == null) {
+      profile = new UserProfile();
+      user.setProfile(profile);
+    }
+
+    profile.setProfilePicture(imageBytes);
+
+    userRepository.save(user);
+  }
+
+  public CurrentUserResponseDTO getCurrentUserDTO(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found!"));
+        UserProfile userProfile = user.getProfile();
+        String base64Picture = null;
+        if (userProfile != null && userProfile.getProfilePicture() != null
+                && userProfile.getProfilePicture().length > 0) {
+            base64Picture = "data:image/png;base64,"
+                    + Base64.getEncoder().encodeToString(userProfile.getProfilePicture());
+        }
+
+        return CurrentUserResponseDTO.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .firstName(userProfile != null ? userProfile.getFirst_name() : null)
+                .lastName(userProfile != null ? userProfile.getLast_name() : null)
+                .alias(userProfile != null ? userProfile.getAlias() : null)
+                .role(user.getRoles())
+                .profilePicture(base64Picture)
+                .build();
+  }
+}
+
   // public void setAttributes(Long userId) {
 
   // UserAttributes attributes = attributesRepository.findById(userId)
@@ -379,4 +440,3 @@ public class UserService {
 
   // return new ProfileResponseDTO(profile.getFirstName(), profile.getLastName());
   // }
-}

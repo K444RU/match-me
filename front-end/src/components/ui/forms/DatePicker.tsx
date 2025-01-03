@@ -52,10 +52,10 @@ const DatePicker: React.FC<DatePickerProps> = ({ label, selectedDate, onDateChan
     };
 
     return (
-        <div>
+        <div className="relative">
             {label && <span className="pl-1 font-semibold">{label}</span>}
             <button
-                type='button'
+                type="button"
                 ref={datePickerBtnRef}
                 onClick={() => setShowDatePicker(!showDatePicker)}
                 className="flex w-full items-center justify-center gap-2 self-start rounded-md px-5 py-2 font-semibold tracking-wide text-text transition-colors bg-primary hover:bg-primary-200 hover:text-text"
@@ -73,7 +73,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ label, selectedDate, onDateChan
             {showDatePicker && (
                 <div
                     ref={datePickerRef}
-                    className="absolute z-10 mt-1 rounded-md border border-gray-200 bg-white p-2 shadow-lg"
+                    className="absolute z-10 -top-[300px] left-0 mt-1 ml-7 rounded-md border border-gray-200 bg-white p-2 shadow-lg"
                 >
                     <DayPicker
                         mode="single"

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -42,25 +43,15 @@ public class MeController {
     /**
      * Retrieves the current authenticated users basic information.
      * 
-     * @return ID, email, first_name, last_name, alias and roles
+     * @return ID, email, first_name, last_name, alias, profile_picture and roles
      * @see CurrentUserResponseDTO
      */
+    @Transactional
     @GetMapping("/me")
     public ResponseEntity<CurrentUserResponseDTO> getCurrentUser(Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         Long userId = userDetails.getId();
-        UserProfile userProfile = userService.getUserProfile(userId);
-        User user = userService.getUser(userId);
-
-        CurrentUserResponseDTO currentUser = CurrentUserResponseDTO.builder()
-                .id(userId)
-                .email(user.getEmail())
-                .firstName(userProfile != null ? userProfile.getFirst_name() : null)
-                .lastName(userProfile != null ? userProfile.getLast_name() : null)
-                .alias(userProfile != null ? userProfile.getAlias() : null)
-                .role(user.getRoles())
-                .build();
-
+        CurrentUserResponseDTO currentUser = userService.getCurrentUserDTO(userId);
         return ResponseEntity.ok(currentUser);
     }
 
