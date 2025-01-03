@@ -1,2968 +1,2474 @@
-import { Hobby } from "@/types/api";
+import { Option } from "@/components/ui/multi-select";
 
 export const HOBBIES = [
   {
-    "id": 1,
-    "name": "3D printing",
+    "value": "1",
+    "label": "3D printing",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 2,
-    "name": "Acrobatics",
+    "value": "2",
+    "label": "Acrobatics",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 3,
-    "name": "Acting",
+    "value": "3",
+    "label": "Acting",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 4,
-    "name": "Amateur radio",
+    "value": "4",
+    "label": "Amateur radio",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 5,
-    "name": "Animation",
+    "value": "5",
+    "label": "Animation",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 6,
-    "name": "Aquascaping",
+    "value": "6",
+    "label": "Aquascaping",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 7,
-    "name": "Astrology",
+    "value": "7",
+    "label": "Astrology",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 8,
-    "name": "Astronomy",
+    "value": "8",
+    "label": "Astronomy",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 9,
-    "name": "Baking",
+    "value": "9",
+    "label": "Baking",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 10,
-    "name": "Baton twirling",
+    "value": "10",
+    "label": "Baton twirling",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 11,
-    "name": "Blogging",
+    "value": "11",
+    "label": "Blogging",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 12,
-    "name": "Building",
+    "value": "12",
+    "label": "Building",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 13,
-    "name": "Board/tabletop games",
+    "value": "13",
+    "label": "Board/tabletop games",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 14,
-    "name": "Book discussion clubs",
+    "value": "14",
+    "label": "Book discussion clubs",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 15,
-    "name": "Book restoration",
+    "value": "15",
+    "label": "Book restoration",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 16,
-    "name": "Bowling",
+    "value": "16",
+    "label": "Bowling",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 17,
-    "name": "Brazilian jiu-jitsu",
+    "value": "17",
+    "label": "Brazilian jiu-jitsu",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 18,
-    "name": "Breadmaking",
+    "value": "18",
+    "label": "Breadmaking",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 19,
-    "name": "Bullet journaling",
+    "value": "19",
+    "label": "Bullet journaling",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 20,
-    "name": "Cabaret",
+    "value": "20",
+    "label": "Cabaret",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 21,
-    "name": "Calligraphy",
+    "value": "21",
+    "label": "Calligraphy",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 22,
-    "name": "Candle making",
+    "value": "22",
+    "label": "Candle making",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 23,
-    "name": "Candy making",
+    "value": "23",
+    "label": "Candy making",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 24,
-    "name": "Car fixing & building",
+    "value": "24",
+    "label": "Car fixing & building",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 25,
-    "name": "Card games",
+    "value": "25",
+    "label": "Card games",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 26,
-    "name": "Cheesemaking",
+    "value": "26",
+    "label": "Cheesemaking",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 27,
-    "name": "Cleaning",
+    "value": "27",
+    "label": "Cleaning",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 28,
-    "name": "Clothesmaking",
+    "value": "28",
+    "label": "Clothesmaking",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 29,
-    "name": "Coffee roasting",
+    "value": "29",
+    "label": "Coffee roasting",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 30,
-    "name": "Collecting",
+    "value": "30",
+    "label": "Collecting",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 31,
-    "name": "Coloring",
+    "value": "31",
+    "label": "Coloring",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 32,
-    "name": "Computer programming",
+    "value": "32",
+    "label": "Computer programming",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 33,
-    "name": "Confectionery",
+    "value": "33",
+    "label": "Confectionery",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 34,
-    "name": "Cooking",
+    "value": "34",
+    "label": "Cooking",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 35,
-    "name": "Cosplaying",
+    "value": "35",
+    "label": "Cosplaying",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 36,
-    "name": "Couponing",
+    "value": "36",
+    "label": "Couponing",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 37,
-    "name": "Craft",
+    "value": "37",
+    "label": "Craft",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 38,
-    "name": "Creative writing",
+    "value": "38",
+    "label": "Creative writing",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 39,
-    "name": "Crocheting",
+    "value": "39",
+    "label": "Crocheting",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 40,
-    "name": "Cross-stitch",
+    "value": "40",
+    "label": "Cross-stitch",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 41,
-    "name": "Crossword puzzles",
+    "value": "41",
+    "label": "Crossword puzzles",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 42,
-    "name": "Cryptography",
+    "value": "42",
+    "label": "Cryptography",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 43,
-    "name": "Cue sports",
+    "value": "43",
+    "label": "Cue sports",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 44,
-    "name": "Dance",
+    "value": "44",
+    "label": "Dance",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 45,
-    "name": "Digital arts",
+    "value": "45",
+    "label": "Digital arts",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 46,
-    "name": "Distro Hopping",
+    "value": "46",
+    "label": "Distro Hopping",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 47,
-    "name": "DJing",
+    "value": "47",
+    "label": "DJing",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 48,
-    "name": "Do it yourself",
+    "value": "48",
+    "label": "Do it yourself",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 49,
-    "name": "Drama",
+    "value": "49",
+    "label": "Drama",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 50,
-    "name": "Drawing",
+    "value": "50",
+    "label": "Drawing",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 51,
-    "name": "Drink mixing",
+    "value": "51",
+    "label": "Drink mixing",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 52,
-    "name": "Drinking",
+    "value": "52",
+    "label": "Drinking",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 53,
-    "name": "Electronic games",
+    "value": "53",
+    "label": "Electronic games",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 54,
-    "name": "Electronics",
+    "value": "54",
+    "label": "Electronics",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 55,
-    "name": "Embroidery",
+    "value": "55",
+    "label": "Embrovalueery",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 56,
-    "name": "Experimenting",
+    "value": "56",
+    "label": "Experimenting",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 57,
-    "name": "Fantasy sports",
+    "value": "57",
+    "label": "Fantasy sports",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 58,
-    "name": "Fashion",
+    "value": "58",
+    "label": "Fashion",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 59,
-    "name": "Fashion design",
+    "value": "59",
+    "label": "Fashion design",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 60,
-    "name": "Fishkeeping",
+    "value": "60",
+    "label": "Fishkeeping",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 61,
-    "name": "Filmmaking",
+    "value": "61",
+    "label": "Filmmaking",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 62,
-    "name": "Flower arranging",
+    "value": "62",
+    "label": "Flower arranging",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 63,
-    "name": "Fly tying",
+    "value": "63",
+    "label": "Fly tying",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 64,
-    "name": "Foreign language learning",
+    "value": "64",
+    "label": "Foreign language learning",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 65,
-    "name": "Furniture building",
+    "value": "65",
+    "label": "Furniture building",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 66,
-    "name": "Gaming",
+    "value": "66",
+    "label": "Gaming",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 67,
-    "name": "Genealogy",
+    "value": "67",
+    "label": "Genealogy",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 68,
-    "name": "Gingerbread house making",
+    "value": "68",
+    "label": "Gingerbread house making",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 69,
-    "name": "Glassblowing",
+    "value": "69",
+    "label": "Glassblowing",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 70,
-    "name": "Graphic design",
+    "value": "70",
+    "label": "Graphic design",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 71,
-    "name": "Gunsmithing",
+    "value": "71",
+    "label": "Gunsmithing",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 72,
-    "name": "Gymnastics",
+    "value": "72",
+    "label": "Gymnastics",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 73,
-    "name": "Hacking",
+    "value": "73",
+    "label": "Hacking",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 74,
-    "name": "Herp keeping",
+    "value": "74",
+    "label": "Herp keeping",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 75,
-    "name": "Home improvement",
+    "value": "75",
+    "label": "Home improvement",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 76,
-    "name": "Homebrewing",
+    "value": "76",
+    "label": "Homebrewing",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 77,
-    "name": "Houseplant care",
+    "value": "77",
+    "label": "Houseplant care",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 78,
-    "name": "Hula hooping",
+    "value": "78",
+    "label": "Hula hooping",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 79,
-    "name": "Humor",
+    "value": "79",
+    "label": "Humor",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 80,
-    "name": "Hydroponics",
+    "value": "80",
+    "label": "Hydroponics",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 81,
-    "name": "Ice skating",
+    "value": "81",
+    "label": "Ice skating",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 82,
-    "name": "Jewelry making",
+    "value": "82",
+    "label": "Jewelry making",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 83,
-    "name": "Jigsaw puzzles",
+    "value": "83",
+    "label": "Jigsaw puzzles",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 84,
-    "name": "Journaling",
+    "value": "84",
+    "label": "Journaling",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 85,
-    "name": "Juggling",
+    "value": "85",
+    "label": "Juggling",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 86,
-    "name": "Karaoke",
+    "value": "86",
+    "label": "Karaoke",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 87,
-    "name": "Karate",
+    "value": "87",
+    "label": "Karate",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 88,
-    "name": "Kendama",
+    "value": "88",
+    "label": "Kendama",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 89,
-    "name": "Knife making",
+    "value": "89",
+    "label": "Knife making",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 90,
-    "name": "Knitting",
+    "value": "90",
+    "label": "Knitting",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 91,
-    "name": "Knot tying",
+    "value": "91",
+    "label": "Knot tying",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 92,
-    "name": "Kombucha brewing",
+    "value": "92",
+    "label": "Kombucha brewing",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 93,
-    "name": "Lace making",
+    "value": "93",
+    "label": "Lace making",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 94,
-    "name": "Lapidary",
+    "value": "94",
+    "label": "Lapvalueary",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 95,
-    "name": "Leather crafting",
+    "value": "95",
+    "label": "Leather crafting",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 96,
-    "name": "Lego building",
+    "value": "96",
+    "label": "Lego building",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 97,
-    "name": "Lock picking",
+    "value": "97",
+    "label": "Lock picking",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 98,
-    "name": "Listening to music",
+    "value": "98",
+    "label": "Listening to music",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 99,
-    "name": "Listening to podcasts",
+    "value": "99",
+    "label": "Listening to podcasts",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 100,
-    "name": "Machining",
+    "value": "100",
+    "label": "Machining",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 101,
-    "name": "Macrame",
+    "value": "101",
+    "label": "Macrame",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 102,
-    "name": "Magic",
+    "value": "102",
+    "label": "Magic",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 103,
-    "name": "Makeup",
+    "value": "103",
+    "label": "Makeup",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 104,
-    "name": "Mazes (indoor/outdoor)",
+    "value": "104",
+    "label": "Mazes (indoor/outdoor)",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 105,
-    "name": "Metalworking",
+    "value": "105",
+    "label": "Metalworking",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 106,
-    "name": "Model building",
+    "value": "106",
+    "label": "Model building",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 107,
-    "name": "Model engineering",
+    "value": "107",
+    "label": "Model engineering",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 108,
-    "name": "Nail art",
+    "value": "108",
+    "label": "Nail art",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 109,
-    "name": "Needlepoint",
+    "value": "109",
+    "label": "Needlepoint",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 110,
-    "name": "Origami",
+    "value": "110",
+    "label": "Origami",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 111,
-    "name": "Painting",
+    "value": "111",
+    "label": "Painting",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 112,
-    "name": "Palmistry",
+    "value": "112",
+    "label": "Palmistry",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 113,
-    "name": "Pet adoption & fostering",
+    "value": "113",
+    "label": "Pet adoption & fostering",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 114,
-    "name": "Philately",
+    "value": "114",
+    "label": "Philately",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 115,
-    "name": "Photography",
+    "value": "115",
+    "label": "Photography",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 116,
-    "name": "Practical jokes",
+    "value": "116",
+    "label": "Practical jokes",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 117,
-    "name": "Pressed flower craft",
+    "value": "117",
+    "label": "Pressed flower craft",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 118,
-    "name": "Playing musical instruments",
+    "value": "118",
+    "label": "Playing musical instruments",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 119,
-    "name": "Poi",
+    "value": "119",
+    "label": "Poi",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 120,
-    "name": "Pottery",
+    "value": "120",
+    "label": "Pottery",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 121,
-    "name": "Powerlifting",
+    "value": "121",
+    "label": "Powerlifting",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 122,
-    "name": "Puzzles",
+    "value": "122",
+    "label": "Puzzles",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 123,
-    "name": "Quilling",
+    "value": "123",
+    "label": "Quilling",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 124,
-    "name": "Quilting",
+    "value": "124",
+    "label": "Quilting",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 125,
-    "name": "Quizzes",
+    "value": "125",
+    "label": "Quizzes",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 126,
-    "name": "Radio-controlled model",
+    "value": "126",
+    "label": "Radio-controlled model",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 127,
-    "name": "Rail transport modeling",
+    "value": "127",
+    "label": "Rail transport modeling",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 128,
-    "name": "Rapping",
+    "value": "128",
+    "label": "Rapping",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 129,
-    "name": "Reading",
+    "value": "129",
+    "label": "Reading",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 130,
-    "name": "Refinishing",
+    "value": "130",
+    "label": "Refinishing",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 131,
-    "name": "Reiki",
+    "value": "131",
+    "label": "Reiki",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 132,
-    "name": "Robot combat",
+    "value": "132",
+    "label": "Robot combat",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 133,
-    "name": "Rubik's Cube",
+    "value": "133",
+    "label": "Rubik's Cube",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 134,
-    "name": "Scrapbooking",
+    "value": "134",
+    "label": "Scrapbooking",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 135,
-    "name": "Sculpting",
+    "value": "135",
+    "label": "Sculpting",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 136,
-    "name": "Sewing",
+    "value": "136",
+    "label": "Sewing",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 137,
-    "name": "Shoemaking",
+    "value": "137",
+    "label": "Shoemaking",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 138,
-    "name": "Singing",
+    "value": "138",
+    "label": "Singing",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 139,
-    "name": "Sketching",
+    "value": "139",
+    "label": "Sketching",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 140,
-    "name": "Skipping rope",
+    "value": "140",
+    "label": "Skipping rope",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 141,
-    "name": "Slot car",
+    "value": "141",
+    "label": "Slot car",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 142,
-    "name": "Soapmaking",
+    "value": "142",
+    "label": "Soapmaking",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 143,
-    "name": "Social media",
+    "value": "143",
+    "label": "Social media",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 144,
-    "name": "Spreadsheets",
+    "value": "144",
+    "label": "Spreadsheets",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 145,
-    "name": "Stand-up comedy",
+    "value": "145",
+    "label": "Stand-up comedy",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 146,
-    "name": "Stamp collecting",
+    "value": "146",
+    "label": "Stamp collecting",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 147,
-    "name": "Table tennis",
+    "value": "147",
+    "label": "Table tennis",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 148,
-    "name": "Tarot",
+    "value": "148",
+    "label": "Tarot",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 149,
-    "name": "Taxidermy",
+    "value": "149",
+    "label": "Taxvalueermy",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 150,
-    "name": "Thrifting",
+    "value": "150",
+    "label": "Thrifting",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 151,
-    "name": "Video editing",
+    "value": "151",
+    "label": "Vvalueeo editing",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 152,
-    "name": "Video game developing",
+    "value": "152",
+    "label": "Vvalueeo game developing",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 153,
-    "name": "Video gaming",
+    "value": "153",
+    "label": "Vvalueeo gaming",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 154,
-    "name": "Watching movies",
+    "value": "154",
+    "label": "Watching movies",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 155,
-    "name": "Watching television",
+    "value": "155",
+    "label": "Watching television",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 156,
-    "name": "Videography",
+    "value": "156",
+    "label": "Vvalueeography",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 157,
-    "name": "Virtual reality",
+    "value": "157",
+    "label": "Virtual reality",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 158,
-    "name": "Waxing",
+    "value": "158",
+    "label": "Waxing",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 159,
-    "name": "Weaving",
+    "value": "159",
+    "label": "Weaving",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 160,
-    "name": "Weight training",
+    "value": "160",
+    "label": "Weight training",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 161,
-    "name": "Welding",
+    "value": "161",
+    "label": "Welding",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 162,
-    "name": "Whittling",
+    "value": "162",
+    "label": "Whittling",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 163,
-    "name": "Wikipedia editing",
+    "value": "163",
+    "label": "Wikipedia editing",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 164,
-    "name": "Winemaking",
+    "value": "164",
+    "label": "Winemaking",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 165,
-    "name": "Wood carving",
+    "value": "165",
+    "label": "Wood carving",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 166,
-    "name": "Woodworking",
+    "value": "166",
+    "label": "Woodworking",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 167,
-    "name": "Worldbuilding",
+    "value": "167",
+    "label": "Worldbuilding",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 168,
-    "name": "Writing",
+    "value": "168",
+    "label": "Writing",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 169,
-    "name": "Word searches",
+    "value": "169",
+    "label": "Word searches",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 170,
-    "name": "Yo-yoing",
+    "value": "170",
+    "label": "Yo-yoing",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 171,
-    "name": "Yoga",
+    "value": "171",
+    "label": "Yoga",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 172,
-    "name": "Zumba",
+    "value": "172",
+    "label": "Zumba",
     "group": "General",
-    "subGroup": "Indoors"
   },
   {
-    "id": 173,
-    "name": "Amusement park visiting",
+    "value": "173",
+    "label": "Amusement park visiting",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 174,
-    "name": "Air sports",
+    "value": "174",
+    "label": "Air sports",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 175,
-    "name": "Airsoft",
+    "value": "175",
+    "label": "Airsoft",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 176,
-    "name": "Amateur geology",
+    "value": "176",
+    "label": "Amateur geology",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 177,
-    "name": "Archery",
+    "value": "177",
+    "label": "Archery",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 178,
-    "name": "Astronomy",
+    "value": "178",
+    "label": "Astronomy",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 179,
-    "name": "Backpacking",
+    "value": "179",
+    "label": "Backpacking",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 180,
-    "name": "Badminton",
+    "value": "180",
+    "label": "Badminton",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 181,
-    "name": "BASE jumping",
+    "value": "181",
+    "label": "BASE jumping",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 182,
-    "name": "Baseball",
+    "value": "182",
+    "label": "Baseball",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 183,
-    "name": "Basketball",
+    "value": "183",
+    "label": "Basketball",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 184,
-    "name": "Beekeeping",
+    "value": "184",
+    "label": "Beekeeping",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 185,
-    "name": "Birdwatching",
+    "value": "185",
+    "label": "Birdwatching",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 186,
-    "name": "Blacksmithing",
+    "value": "186",
+    "label": "Blacksmithing",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 187,
-    "name": "BMX",
+    "value": "187",
+    "label": "BMX",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 188,
-    "name": "Board sports",
+    "value": "188",
+    "label": "Board sports",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 189,
-    "name": "Bodybuilding",
+    "value": "189",
+    "label": "Bodybuilding",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 190,
-    "name": "Bonsai",
+    "value": "190",
+    "label": "Bonsai",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 191,
-    "name": "Butterfly watching",
+    "value": "191",
+    "label": "Butterfly watching",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 192,
-    "name": "Bus riding",
+    "value": "192",
+    "label": "Bus rvalueing",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 193,
-    "name": "Camping",
+    "value": "193",
+    "label": "Camping",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 194,
-    "name": "Canoeing",
+    "value": "194",
+    "label": "Canoeing",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 195,
-    "name": "Canyoning",
+    "value": "195",
+    "label": "Canyoning",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 196,
-    "name": "Car riding",
+    "value": "196",
+    "label": "Car rvalueing",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 197,
-    "name": "Caving",
+    "value": "197",
+    "label": "Caving",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 198,
-    "name": "Composting",
+    "value": "198",
+    "label": "Composting",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 199,
-    "name": "Cycling",
+    "value": "199",
+    "label": "Cycling",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 200,
-    "name": "Dowsing",
+    "value": "200",
+    "label": "Dowsing",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 201,
-    "name": "Driving",
+    "value": "201",
+    "label": "Driving",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 202,
-    "name": "Farming",
+    "value": "202",
+    "label": "Farming",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 203,
-    "name": "Fishing",
+    "value": "203",
+    "label": "Fishing",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 204,
-    "name": "Flag football",
+    "value": "204",
+    "label": "Flag football",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 205,
-    "name": "Flower growing",
+    "value": "205",
+    "label": "Flower growing",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 206,
-    "name": "Flying",
+    "value": "206",
+    "label": "Flying",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 207,
-    "name": "Flying disc",
+    "value": "207",
+    "label": "Flying disc",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 208,
-    "name": "Foraging",
+    "value": "208",
+    "label": "Foraging",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 209,
-    "name": "Fossicking",
+    "value": "209",
+    "label": "Fossicking",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 210,
-    "name": "Freestyle football",
+    "value": "210",
+    "label": "Freestyle football",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 211,
-    "name": "Gardening",
+    "value": "211",
+    "label": "Gardening",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 212,
-    "name": "Geocaching",
+    "value": "212",
+    "label": "Geocaching",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 213,
-    "name": "Ghost hunting",
+    "value": "213",
+    "label": "Ghost hunting",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 214,
-    "name": "Gold prospecting",
+    "value": "214",
+    "label": "Gold prospecting",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 215,
-    "name": "Graffiti",
+    "value": "215",
+    "label": "Graffiti",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 216,
-    "name": "Handball",
+    "value": "216",
+    "label": "Handball",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 217,
-    "name": "Herbalism",
+    "value": "217",
+    "label": "Herbalism",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 218,
-    "name": "Herping",
+    "value": "218",
+    "label": "Herping",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 219,
-    "name": "High-power rocketry",
+    "value": "219",
+    "label": "High-power rocketry",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 220,
-    "name": "Hiking",
+    "value": "220",
+    "label": "Hiking",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 221,
-    "name": "Hobby horsing",
+    "value": "221",
+    "label": "Hobby horsing",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 222,
-    "name": "Hobby tunneling",
+    "value": "222",
+    "label": "Hobby tunneling",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 223,
-    "name": "Hooping",
+    "value": "223",
+    "label": "Hooping",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 224,
-    "name": "Horseback riding",
+    "value": "224",
+    "label": "Horseback rvalueing",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 225,
-    "name": "Hunting",
+    "value": "225",
+    "label": "Hunting",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 226,
-    "name": "Inline skating",
+    "value": "226",
+    "label": "Inline skating",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 227,
-    "name": "Jogging",
+    "value": "227",
+    "label": "Jogging",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 228,
-    "name": "Jumping rope",
+    "value": "228",
+    "label": "Jumping rope",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 229,
-    "name": "Kayaking",
+    "value": "229",
+    "label": "Kayaking",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 230,
-    "name": "Kite flying",
+    "value": "230",
+    "label": "Kite flying",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 231,
-    "name": "Kitesurfing",
+    "value": "231",
+    "label": "Kitesurfing",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 232,
-    "name": "Lacrosse",
+    "value": "232",
+    "label": "Lacrosse",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 233,
-    "name": "LARPing",
+    "value": "233",
+    "label": "LARPing",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 234,
-    "name": "Letterboxing",
+    "value": "234",
+    "label": "Letterboxing",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 235,
-    "name": "Longboarding",
+    "value": "235",
+    "label": "Longboarding",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 236,
-    "name": "Martial arts",
+    "value": "236",
+    "label": "Martial arts",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 237,
-    "name": "Metal detecting",
+    "value": "237",
+    "label": "Metal detecting",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 238,
-    "name": "Meteorology",
+    "value": "238",
+    "label": "Meteorology",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 239,
-    "name": "Motor sports",
+    "value": "239",
+    "label": "Motor sports",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 240,
-    "name": "Mountain biking",
+    "value": "240",
+    "label": "Mountain biking",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 241,
-    "name": "Mountaineering",
+    "value": "241",
+    "label": "Mountaineering",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 242,
-    "name": "Museum visiting",
+    "value": "242",
+    "label": "Museum visiting",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 243,
-    "name": "Mushroom hunting",
+    "value": "243",
+    "label": "Mushroom hunting",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 244,
-    "name": "Netball",
+    "value": "244",
+    "label": "Netball",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 245,
-    "name": "Nordic skating",
+    "value": "245",
+    "label": "Nordic skating",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 246,
-    "name": "Orienteering",
+    "value": "246",
+    "label": "Orienteering",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 247,
-    "name": "Paintball",
+    "value": "247",
+    "label": "Paintball",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 248,
-    "name": "Parkour",
+    "value": "248",
+    "label": "Parkour",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 249,
-    "name": "Photography",
+    "value": "249",
+    "label": "Photography",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 250,
-    "name": "Podcast hosting",
+    "value": "250",
+    "label": "Podcast hosting",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 251,
-    "name": "Polo",
+    "value": "251",
+    "label": "Polo",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 252,
-    "name": "Public transport riding",
+    "value": "252",
+    "label": "Public transport rvalueing",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 253,
-    "name": "Rafting",
+    "value": "253",
+    "label": "Rafting",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 254,
-    "name": "Railway journeys",
+    "value": "254",
+    "label": "Railway journeys",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 255,
-    "name": "Rappelling",
+    "value": "255",
+    "label": "Rappelling",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 256,
-    "name": "Road biking",
+    "value": "256",
+    "label": "Road biking",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 257,
-    "name": "Rock climbing",
+    "value": "257",
+    "label": "Rock climbing",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 258,
-    "name": "Roller skating",
+    "value": "258",
+    "label": "Roller skating",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 259,
-    "name": "Rugby",
+    "value": "259",
+    "label": "Rugby",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 260,
-    "name": "Running",
+    "value": "260",
+    "label": "Running",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 261,
-    "name": "Radio-controlled model",
+    "value": "261",
+    "label": "Radio-controlled model",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 262,
-    "name": "Sailing",
+    "value": "262",
+    "label": "Sailing",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 263,
-    "name": "Sand art",
+    "value": "263",
+    "label": "Sand art",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 264,
-    "name": "Scouting",
+    "value": "264",
+    "label": "Scouting",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 265,
-    "name": "Scuba diving",
+    "value": "265",
+    "label": "Scuba diving",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 266,
-    "name": "Sculling",
+    "value": "266",
+    "label": "Sculling",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 267,
-    "name": "Shooting",
+    "value": "267",
+    "label": "Shooting",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 268,
-    "name": "Shopping",
+    "value": "268",
+    "label": "Shopping",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 269,
-    "name": "Shuffleboard",
+    "value": "269",
+    "label": "Shuffleboard",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 270,
-    "name": "Skateboarding",
+    "value": "270",
+    "label": "Skateboarding",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 271,
-    "name": "Skiing",
+    "value": "271",
+    "label": "Skiing",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 272,
-    "name": "Skimboarding",
+    "value": "272",
+    "label": "Skimboarding",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 273,
-    "name": "Skydiving",
+    "value": "273",
+    "label": "Skydiving",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 274,
-    "name": "Slacklining",
+    "value": "274",
+    "label": "Slacklining",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 275,
-    "name": "Snowboarding",
+    "value": "275",
+    "label": "Snowboarding",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 276,
-    "name": "Snowmobiling",
+    "value": "276",
+    "label": "Snowmobiling",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 277,
-    "name": "Snowshoeing",
+    "value": "277",
+    "label": "Snowshoeing",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 278,
-    "name": "Soccer",
+    "value": "278",
+    "label": "Soccer",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 279,
-    "name": "Stone skipping",
+    "value": "279",
+    "label": "Stone skipping",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 280,
-    "name": "Sun bathing",
+    "value": "280",
+    "label": "Sun bathing",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 281,
-    "name": "Surfing",
+    "value": "281",
+    "label": "Surfing",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 282,
-    "name": "Survivalism",
+    "value": "282",
+    "label": "Survivalism",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 283,
-    "name": "Swimming",
+    "value": "283",
+    "label": "Swimming",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 284,
-    "name": "Taekwondo",
+    "value": "284",
+    "label": "Taekwondo",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 285,
-    "name": "Tai chi",
+    "value": "285",
+    "label": "Tai chi",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 286,
-    "name": "Tennis",
+    "value": "286",
+    "label": "Tennis",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 287,
-    "name": "Topiary",
+    "value": "287",
+    "label": "Topiary",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 288,
-    "name": "Tourism",
+    "value": "288",
+    "label": "Tourism",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 289,
-    "name": "Thru-hiking",
+    "value": "289",
+    "label": "Thru-hiking",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 290,
-    "name": "Trade fair visiting",
+    "value": "290",
+    "label": "Trade fair visiting",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 291,
-    "name": "Travel",
+    "value": "291",
+    "label": "Travel",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 292,
-    "name": "Urban exploration",
+    "value": "292",
+    "label": "Urban exploration",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 293,
-    "name": "Vacation",
+    "value": "293",
+    "label": "Vacation",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 294,
-    "name": "Vegetable farming",
+    "value": "294",
+    "label": "Vegetable farming",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 295,
-    "name": "Videography",
+    "value": "295",
+    "label": "Vvalueeography",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 296,
-    "name": "Vehicle restoration",
+    "value": "296",
+    "label": "Vehicle restoration",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 297,
-    "name": "Walking",
+    "value": "297",
+    "label": "Walking",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 298,
-    "name": "Water sports",
+    "value": "298",
+    "label": "Water sports",
     "group": "General",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 299,
-    "name": "Astronomy",
+    "value": "299",
+    "label": "Astronomy",
     "group": "Educational",
-    "subGroup": false
   },
   {
-    "id": 300,
-    "name": "Biology",
+    "value": "300",
+    "label": "Biology",
     "group": "Educational",
-    "subGroup": false
   },
   {
-    "id": 301,
-    "name": "Chemistry",
+    "value": "301",
+    "label": "Chemistry",
     "group": "Educational",
-    "subGroup": false
   },
   {
-    "id": 302,
-    "name": "Electrochemistry",
+    "value": "302",
+    "label": "Electrochemistry",
     "group": "Educational",
-    "subGroup": false
   },
   {
-    "id": 303,
-    "name": "Physics",
+    "value": "303",
+    "label": "Physics",
     "group": "Educational",
-    "subGroup": false
   },
   {
-    "id": 304,
-    "name": "Psychology",
+    "value": "304",
+    "label": "Psychology",
     "group": "Educational",
-    "subGroup": false
   },
   {
-    "id": 305,
-    "name": "Sports science",
+    "value": "305",
+    "label": "Sports science",
     "group": "Educational",
-    "subGroup": false
   },
   {
-    "id": 306,
-    "name": "Geography",
+    "value": "306",
+    "label": "Geography",
     "group": "Educational",
-    "subGroup": false
   },
   {
-    "id": 307,
-    "name": "History",
+    "value": "307",
+    "label": "History",
     "group": "Educational",
-    "subGroup": false
   },
   {
-    "id": 308,
-    "name": "Mathematics",
+    "value": "308",
+    "label": "Mathematics",
     "group": "Educational",
-    "subGroup": false
   },
   {
-    "id": 309,
-    "name": "Railway studies",
+    "value": "309",
+    "label": "Railway studies",
     "group": "Educational",
-    "subGroup": false
   },
   {
-    "id": 310,
-    "name": "Action figure",
+    "value": "310",
+    "label": "Action figure",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 311,
-    "name": "Antiquing",
+    "value": "311",
+    "label": "Antiquing",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 312,
-    "name": "Ant-keeping",
+    "value": "312",
+    "label": "Ant-keeping",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 313,
-    "name": "Art collecting",
+    "value": "313",
+    "label": "Art collecting",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 314,
-    "name": "Book collecting",
+    "value": "314",
+    "label": "Book collecting",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 315,
-    "name": "Button collecting",
+    "value": "315",
+    "label": "Button collecting",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 316,
-    "name": "Cartophily",
+    "value": "316",
+    "label": "Cartophily",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 317,
-    "name": "Coin collecting",
+    "value": "317",
+    "label": "Coin collecting",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 318,
-    "name": "Comic book collecting",
+    "value": "318",
+    "label": "Comic book collecting",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 319,
-    "name": "Deltiology",
+    "value": "319",
+    "label": "Deltiology",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 320,
-    "name": "Die-cast toy",
+    "value": "320",
+    "label": "Die-cast toy",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 321,
-    "name": "Digital hoarding",
+    "value": "321",
+    "label": "Digital hoarding",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 322,
-    "name": "Dolls",
+    "value": "322",
+    "label": "Dolls",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 323,
-    "name": "Element collecting",
+    "value": "323",
+    "label": "Element collecting",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 324,
-    "name": "Ephemera collecting",
+    "value": "324",
+    "label": "Ephemera collecting",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 325,
-    "name": "Fusilately",
+    "value": "325",
+    "label": "Fusilately",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 326,
-    "name": "Knife collecting",
+    "value": "326",
+    "label": "Knife collecting",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 327,
-    "name": "Lotology",
+    "value": "327",
+    "label": "Lotology",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 328,
-    "name": "Movie and movie memorabilia collecting",
+    "value": "328",
+    "label": "Movie and movie memorabilia collecting",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 329,
-    "name": "Fingerprint collecting",
+    "value": "329",
+    "label": "Fingerprint collecting",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 330,
-    "name": "Perfume",
+    "value": "330",
+    "label": "Perfume",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 331,
-    "name": "Phillumeny",
+    "value": "331",
+    "label": "Phillumeny",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 332,
-    "name": "Radio-controlled model",
+    "value": "332",
+    "label": "Radio-controlled model",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 333,
-    "name": "Rail transport modelling",
+    "value": "333",
+    "label": "Rail transport modelling",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 334,
-    "name": "Record collecting",
+    "value": "334",
+    "label": "Record collecting",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 335,
-    "name": "Rock tumbling",
+    "value": "335",
+    "label": "Rock tumbling",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 336,
-    "name": "Scutelliphily",
+    "value": "336",
+    "label": "Scutelliphily",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 337,
-    "name": "Shoes",
+    "value": "337",
+    "label": "Shoes",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 338,
-    "name": "Slot car",
+    "value": "338",
+    "label": "Slot car",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 339,
-    "name": "Sports memorabilia",
+    "value": "339",
+    "label": "Sports memorabilia",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 340,
-    "name": "Stamp collecting",
+    "value": "340",
+    "label": "Stamp collecting",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 341,
-    "name": "Stuffed toy collecting",
+    "value": "341",
+    "label": "Stuffed toy collecting",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 342,
-    "name": "Tea bag collecting",
+    "value": "342",
+    "label": "Tea bag collecting",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 343,
-    "name": "Ticket collecting",
+    "value": "343",
+    "label": "Ticket collecting",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 344,
-    "name": "Toys",
+    "value": "344",
+    "label": "Toys",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 345,
-    "name": "Transit map collecting",
+    "value": "345",
+    "label": "Transit map collecting",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 346,
-    "name": "Video game collecting",
+    "value": "346",
+    "label": "Vvalueeo game collecting",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 347,
-    "name": "Vintage cars",
+    "value": "347",
+    "label": "Vintage cars",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 348,
-    "name": "Vintage clothing",
+    "value": "348",
+    "label": "Vintage clothing",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 349,
-    "name": "Vinyl Records",
+    "value": "349",
+    "label": "Vinyl Records",
     "group": "Collection",
-    "subGroup": "Indoors"
   },
   {
-    "id": 350,
-    "name": "Antiquities",
+    "value": "350",
+    "label": "Antiquities",
     "group": "Collection",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 351,
-    "name": "Auto audiophilia",
+    "value": "351",
+    "label": "Auto audiophilia",
     "group": "Collection",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 352,
-    "name": "Flower collecting and pressing",
+    "value": "352",
+    "label": "Flower collecting and pressing",
     "group": "Collection",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 353,
-    "name": "Fossil hunting",
+    "value": "353",
+    "label": "Fossil hunting",
     "group": "Collection",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 354,
-    "name": "Insect collecting",
+    "value": "354",
+    "label": "Insect collecting",
     "group": "Collection",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 355,
-    "name": "Magnet fishing",
+    "value": "355",
+    "label": "Magnet fishing",
     "group": "Collection",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 356,
-    "name": "Metal detecting",
+    "value": "356",
+    "label": "Metal detecting",
     "group": "Collection",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 357,
-    "name": "Mineral collecting",
+    "value": "357",
+    "label": "Mineral collecting",
     "group": "Collection",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 358,
-    "name": "Rock balancing",
+    "value": "358",
+    "label": "Rock balancing",
     "group": "Collection",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 359,
-    "name": "Sea glass collecting",
+    "value": "359",
+    "label": "Sea glass collecting",
     "group": "Collection",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 360,
-    "name": "Seashell collecting",
+    "value": "360",
+    "label": "Seashell collecting",
     "group": "Collection",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 361,
-    "name": "Stone collecting",
+    "value": "361",
+    "label": "Stone collecting",
     "group": "Collection",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 362,
-    "name": "Animal fancy",
+    "value": "362",
+    "label": "Animal fancy",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 363,
-    "name": "Axe throwing",
+    "value": "363",
+    "label": "Axe throwing",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 364,
-    "name": "Backgammon",
+    "value": "364",
+    "label": "Backgammon",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 365,
-    "name": "Badminton",
+    "value": "365",
+    "label": "Badminton",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 366,
-    "name": "Baton twirling",
+    "value": "366",
+    "label": "Baton twirling",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 367,
-    "name": "Beauty pageants",
+    "value": "367",
+    "label": "Beauty pageants",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 368,
-    "name": "Billiards",
+    "value": "368",
+    "label": "Billiards",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 369,
-    "name": "Bowling",
+    "value": "369",
+    "label": "Bowling",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 370,
-    "name": "Boxing",
+    "value": "370",
+    "label": "Boxing",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 371,
-    "name": "Bridge",
+    "value": "371",
+    "label": "Brvaluege",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 372,
-    "name": "Checkers (draughts)",
+    "value": "372",
+    "label": "Checkers (draughts)",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 373,
-    "name": "Cheerleading",
+    "value": "373",
+    "label": "Cheerleading",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 374,
-    "name": "Chess",
+    "value": "374",
+    "label": "Chess",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 375,
-    "name": "Color guard",
+    "value": "375",
+    "label": "Color guard",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 376,
-    "name": "Cribbage",
+    "value": "376",
+    "label": "Cribbage",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 377,
-    "name": "Curling",
+    "value": "377",
+    "label": "Curling",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 378,
-    "name": "Dancing",
+    "value": "378",
+    "label": "Dancing",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 379,
-    "name": "Darts",
+    "value": "379",
+    "label": "Darts",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 380,
-    "name": "Debate",
+    "value": "380",
+    "label": "Debate",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 381,
-    "name": "Dominoes",
+    "value": "381",
+    "label": "Dominoes",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 382,
-    "name": "Eating",
+    "value": "382",
+    "label": "Eating",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 383,
-    "name": "Esports",
+    "value": "383",
+    "label": "Esports",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 384,
-    "name": "Fencing",
+    "value": "384",
+    "label": "Fencing",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 385,
-    "name": "Go",
+    "value": "385",
+    "label": "Go",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 386,
-    "name": "Gymnastics",
+    "value": "386",
+    "label": "Gymnastics",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 387,
-    "name": "Ice hockey",
+    "value": "387",
+    "label": "Ice hockey",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 388,
-    "name": "Ice skating",
+    "value": "388",
+    "label": "Ice skating",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 389,
-    "name": "Judo",
+    "value": "389",
+    "label": "Judo",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 390,
-    "name": "Jujitsu",
+    "value": "390",
+    "label": "Jujitsu",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 391,
-    "name": "Kabaddi",
+    "value": "391",
+    "label": "Kabaddi",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 392,
-    "name": "Knowledge/word games",
+    "value": "392",
+    "label": "Knowledge/word games",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 393,
-    "name": "Laser tag",
+    "value": "393",
+    "label": "Laser tag",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 394,
-    "name": "Longboarding",
+    "value": "394",
+    "label": "Longboarding",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 395,
-    "name": "Mahjong",
+    "value": "395",
+    "label": "Mahjong",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 396,
-    "name": "Marbles",
+    "value": "396",
+    "label": "Marbles",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 397,
-    "name": "Martial arts",
+    "value": "397",
+    "label": "Martial arts",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 398,
-    "name": "Model United Nations",
+    "value": "398",
+    "label": "Model United Nations",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 399,
-    "name": "Poker",
+    "value": "399",
+    "label": "Poker",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 400,
-    "name": "Pool",
+    "value": "400",
+    "label": "Pool",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 401,
-    "name": "Role-playing games",
+    "value": "401",
+    "label": "Role-playing games",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 402,
-    "name": "Shogi",
+    "value": "402",
+    "label": "Shogi",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 403,
-    "name": "Slot car racing",
+    "value": "403",
+    "label": "Slot car racing",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 404,
-    "name": "Speedcubing",
+    "value": "404",
+    "label": "Speedcubing",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 405,
-    "name": "Sport stacking",
+    "value": "405",
+    "label": "Sport stacking",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 406,
-    "name": "Table football",
+    "value": "406",
+    "label": "Table football",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 407,
-    "name": "Table tennis",
+    "value": "407",
+    "label": "Table tennis",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 408,
-    "name": "Volleyball",
+    "value": "408",
+    "label": "Volleyball",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 409,
-    "name": "Weightlifting",
+    "value": "409",
+    "label": "Weightlifting",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 410,
-    "name": "Wrestling",
+    "value": "410",
+    "label": "Wrestling",
     "group": "Competitive",
-    "subGroup": "Indoors"
   },
   {
-    "id": 411,
-    "name": "Airsoft",
+    "value": "411",
+    "label": "Airsoft",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 412,
-    "name": "Archery",
+    "value": "412",
+    "label": "Archery",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 413,
-    "name": "Association football",
+    "value": "413",
+    "label": "Association football",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 414,
-    "name": "Australian rules football",
+    "value": "414",
+    "label": "Australian rules football",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 415,
-    "name": "Auto racing",
+    "value": "415",
+    "label": "Auto racing",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 416,
-    "name": "Baseball",
+    "value": "416",
+    "label": "Baseball",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 417,
-    "name": "Beach volleyball",
+    "value": "417",
+    "label": "Beach volleyball",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 418,
-    "name": "Breakdancing",
+    "value": "418",
+    "label": "Breakdancing",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 419,
-    "name": "Climbing",
+    "value": "419",
+    "label": "Climbing",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 420,
-    "name": "Cricket",
+    "value": "420",
+    "label": "Cricket",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 421,
-    "name": "Croquet",
+    "value": "421",
+    "label": "Croquet",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 422,
-    "name": "Cycling",
+    "value": "422",
+    "label": "Cycling",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 423,
-    "name": "Disc golf",
+    "value": "423",
+    "label": "Disc golf",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 424,
-    "name": "Dog sport",
+    "value": "424",
+    "label": "Dog sport",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 425,
-    "name": "Equestrianism",
+    "value": "425",
+    "label": "Equestrianism",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 426,
-    "name": "Exhibition drill",
+    "value": "426",
+    "label": "Exhibition drill",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 427,
-    "name": "Field hockey",
+    "value": "427",
+    "label": "Field hockey",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 428,
-    "name": "Figure skating",
+    "value": "428",
+    "label": "Figure skating",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 429,
-    "name": "Fishing",
+    "value": "429",
+    "label": "Fishing",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 430,
-    "name": "Footbag",
+    "value": "430",
+    "label": "Footbag",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 431,
-    "name": "Frisbee",
+    "value": "431",
+    "label": "Frisbee",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 432,
-    "name": "Golfing",
+    "value": "432",
+    "label": "Golfing",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 433,
-    "name": "Handball",
+    "value": "433",
+    "label": "Handball",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 434,
-    "name": "Horseback riding",
+    "value": "434",
+    "label": "Horseback rvalueing",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 435,
-    "name": "Horseshoes",
+    "value": "435",
+    "label": "Horseshoes",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 436,
-    "name": "Iceboat racing",
+    "value": "436",
+    "label": "Iceboat racing",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 437,
-    "name": "Jukskei",
+    "value": "437",
+    "label": "Jukskei",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 438,
-    "name": "Kart racing",
+    "value": "438",
+    "label": "Kart racing",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 439,
-    "name": "Knife throwing",
+    "value": "439",
+    "label": "Knife throwing",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 440,
-    "name": "Lacrosse",
+    "value": "440",
+    "label": "Lacrosse",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 441,
-    "name": "Longboarding",
+    "value": "441",
+    "label": "Longboarding",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 442,
-    "name": "Long-distance running",
+    "value": "442",
+    "label": "Long-distance running",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 443,
-    "name": "Marching band",
+    "value": "443",
+    "label": "Marching band",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 444,
-    "name": "Model aircraft",
+    "value": "444",
+    "label": "Model aircraft",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 445,
-    "name": "Orienteering",
+    "value": "445",
+    "label": "Orienteering",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 446,
-    "name": "Pickleball",
+    "value": "446",
+    "label": "Pickleball",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 447,
-    "name": "Quidditch",
+    "value": "447",
+    "label": "Quvalueditch",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 448,
-    "name": "Race walking",
+    "value": "448",
+    "label": "Race walking",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 449,
-    "name": "Racquetball",
+    "value": "449",
+    "label": "Racquetball",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 450,
-    "name": "Radio-controlled car racing",
+    "value": "450",
+    "label": "Radio-controlled car racing",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 451,
-    "name": "Roller derby",
+    "value": "451",
+    "label": "Roller derby",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 452,
-    "name": "Rugby league football",
+    "value": "452",
+    "label": "Rugby league football",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 453,
-    "name": "Sculling",
+    "value": "453",
+    "label": "Sculling",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 454,
-    "name": "Shooting sport",
+    "value": "454",
+    "label": "Shooting sport",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 455,
-    "name": "Skateboarding",
+    "value": "455",
+    "label": "Skateboarding",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 456,
-    "name": "Skiing",
+    "value": "456",
+    "label": "Skiing",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 457,
-    "name": "Sled dog racing",
+    "value": "457",
+    "label": "Sled dog racing",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 458,
-    "name": "Softball",
+    "value": "458",
+    "label": "Softball",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 459,
-    "name": "Speed skating",
+    "value": "459",
+    "label": "Speed skating",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 460,
-    "name": "Squash",
+    "value": "460",
+    "label": "Squash",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 461,
-    "name": "Surfing",
+    "value": "461",
+    "label": "Surfing",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 462,
-    "name": "Swimming",
+    "value": "462",
+    "label": "Swimming",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 463,
-    "name": "Table tennis",
+    "value": "463",
+    "label": "Table tennis",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 464,
-    "name": "Tennis",
+    "value": "464",
+    "label": "Tennis",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 465,
-    "name": "Tennis polo",
+    "value": "465",
+    "label": "Tennis polo",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 466,
-    "name": "Tether car",
+    "value": "466",
+    "label": "Tether car",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 467,
-    "name": "Tour skating",
+    "value": "467",
+    "label": "Tour skating",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 468,
-    "name": "Tourism",
+    "value": "468",
+    "label": "Tourism",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 469,
-    "name": "Trapshooting",
+    "value": "469",
+    "label": "Trapshooting",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 470,
-    "name": "Triathlon",
+    "value": "470",
+    "label": "Triathlon",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 471,
-    "name": "Ultimate frisbee",
+    "value": "471",
+    "label": "Ultimate frisbee",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 472,
-    "name": "Volleyball",
+    "value": "472",
+    "label": "Volleyball",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 473,
-    "name": "Water polo",
+    "value": "473",
+    "label": "Water polo",
     "group": "Competitive",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 474,
-    "name": "Fishkeeping",
+    "value": "474",
+    "label": "Fishkeeping",
     "group": "Observation",
-    "subGroup": "Indoors"
   },
   {
-    "id": 475,
-    "name": "Learning",
+    "value": "475",
+    "label": "Learning",
     "group": "Observation",
-    "subGroup": "Indoors"
   },
   {
-    "id": 476,
-    "name": "Meditation",
+    "value": "476",
+    "label": "Meditation",
     "group": "Observation",
-    "subGroup": "Indoors"
   },
   {
-    "id": 477,
-    "name": "Microscopy",
+    "value": "477",
+    "label": "Microscopy",
     "group": "Observation",
-    "subGroup": "Indoors"
   },
   {
-    "id": 478,
-    "name": "Reading",
+    "value": "478",
+    "label": "Reading",
     "group": "Observation",
-    "subGroup": "Indoors"
   },
   {
-    "id": 479,
-    "name": "Research",
+    "value": "479",
+    "label": "Research",
     "group": "Observation",
-    "subGroup": "Indoors"
   },
   {
-    "id": 480,
-    "name": "Shortwave listening",
+    "value": "480",
+    "label": "Shortwave listening",
     "group": "Observation",
-    "subGroup": "Indoors"
   },
   {
-    "id": 481,
-    "name": "Audiophile",
+    "value": "481",
+    "label": "Audiophile",
     "group": "Observation",
-    "subGroup": "Indoors"
   },
   {
-    "id": 482,
-    "name": "Aircraft spotting",
+    "value": "482",
+    "label": "Aircraft spotting",
     "group": "Observation",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 483,
-    "name": "Amateur astronomy",
+    "value": "483",
+    "label": "Amateur astronomy",
     "group": "Observation",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 484,
-    "name": "Birdwatching",
+    "value": "484",
+    "label": "Birdwatching",
     "group": "Observation",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 485,
-    "name": "Bus spotting",
+    "value": "485",
+    "label": "Bus spotting",
     "group": "Observation",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 486,
-    "name": "Geocaching",
+    "value": "486",
+    "label": "Geocaching",
     "group": "Observation",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 487,
-    "name": "Gongoozling",
+    "value": "487",
+    "label": "Gongoozling",
     "group": "Observation",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 488,
-    "name": "Herping",
+    "value": "488",
+    "label": "Herping",
     "group": "Observation",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 489,
-    "name": "Hiking",
+    "value": "489",
+    "label": "Hiking",
     "group": "Observation",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 490,
-    "name": "Meteorology",
+    "value": "490",
+    "label": "Meteorology",
     "group": "Observation",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 491,
-    "name": "Photography",
+    "value": "491",
+    "label": "Photography",
     "group": "Observation",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 492,
-    "name": "Satellite watching",
+    "value": "492",
+    "label": "Satellite watching",
     "group": "Observation",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 493,
-    "name": "Trainspotting",
+    "value": "493",
+    "label": "Trainspotting",
     "group": "Observation",
-    "subGroup": "Outdoors"
   },
   {
-    "id": 494,
-    "name": "Whale watching",
+    "value": "494",
+    "label": "Whale watching",
     "group": "Observation",
-    "subGroup": "Outdoors"
   }
-] as Hobby[];
+] as Option[];
