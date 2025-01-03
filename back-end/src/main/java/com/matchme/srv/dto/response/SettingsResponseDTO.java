@@ -1,5 +1,6 @@
 package com.matchme.srv.dto.response;
 
+import java.util.Set;
 import lombok.Builder;
 
 @Builder
@@ -10,6 +11,7 @@ public record SettingsResponseDTO(
     String firstName,
     String lastName,
     String alias,
+    Set<Long> hobbies,
     Long genderSelf,
     String birthDate,
     String city,

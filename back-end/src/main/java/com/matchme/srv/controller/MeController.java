@@ -154,6 +154,7 @@ public class MeController {
         .firstName(parameters.first_name())
         .lastName(parameters.last_name())
         .alias(parameters.alias())
+        .hobbies(parameters.hobbies())
         .genderSelf(parameters.gender_self())
         .birthDate(parameters.birth_date())
         .city(parameters.city())
