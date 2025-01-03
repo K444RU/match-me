@@ -277,28 +277,32 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Endpoint for uploading a user's profile picture.
+     *
+     * Delegates validation and business logic to the service layer.
+     * Handles specific exceptions like invalid input, entity not found, and general errors.
+     *
+     * @param request        DTO containing base64 image string (optional).
+     * @param authentication Current authenticated user.
+     * @return Success or error message wrapped in a ResponseEntity.
+     */
     @PostMapping("/profile-picture")
     public ResponseEntity<?> uploadProfilePicture(
             @RequestBody(required = false) ProfilePictureSettingsRequestDTO request,
             Authentication authentication) {
 
-        if (request == null || request.getBase64Image() == null) {
-            return ResponseEntity.badRequest().body("No valid base64 image found in the request.");
-        }
-
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         Long userId = userDetails.getId();
 
         try {
-            userService.saveProfilePicture(userId, request.getBase64Image());
+            userService.saveProfilePicture(userId, request);
             return ResponseEntity.ok("Profile picture uploaded successfully.");
         } catch (IllegalArgumentException e) {
-            // This typically means something's off with the base64 input
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
-            // Catch any other errors
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to upload picture: " + e.getMessage());
         }

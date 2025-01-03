@@ -3,14 +3,11 @@ package com.matchme.srv.service;
 import java.util.Base64;
 import java.util.List;
 
+import com.matchme.srv.dto.request.settings.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.matchme.srv.dto.request.*;
-import com.matchme.srv.dto.request.settings.AccountSettingsRequestDTO;
-import com.matchme.srv.dto.request.settings.AttributesSettingsRequestDTO;
-import com.matchme.srv.dto.request.settings.PreferencesSettingsRequestDTO;
-import com.matchme.srv.dto.request.settings.ProfileSettingsRequestDTO;
 import com.matchme.srv.dto.response.*;
 import com.matchme.srv.exception.DuplicateFieldException;
 import com.matchme.srv.exception.ResourceNotFoundException;
@@ -338,8 +335,14 @@ public class UserService {
   }
 
   @Transactional
-  public void saveProfilePicture(Long userId, String base64Image) {
-    if (base64Image == null || base64Image.isEmpty()) {
+  public void saveProfilePicture(Long userId, ProfilePictureSettingsRequestDTO request) {
+
+    if (request == null || request.getBase64Image() == null) {
+      throw new IllegalArgumentException("No valid base64 image found in the request.");
+    }
+
+    String base64Image = request.getBase64Image();
+    if (base64Image.isEmpty()) {
       throw new IllegalArgumentException("Base64 image data cannot be null or empty.");
     }
 
@@ -369,7 +372,6 @@ public class UserService {
     }
 
     profile.setProfilePicture(imageBytes);
-
     userRepository.save(user);
   }
 
@@ -393,6 +395,7 @@ public class UserService {
                 .profilePicture(base64Picture)
                 .build();
   }
+
 }
 
   // public void setAttributes(Long userId) {
