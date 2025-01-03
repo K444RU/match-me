@@ -1,6 +1,9 @@
 package com.matchme.srv.service;
 
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,7 @@ import com.matchme.srv.model.user.UserRoleType;
 import com.matchme.srv.model.user.UserStateTypes;
 import com.matchme.srv.model.user.activity.ActivityLog;
 import com.matchme.srv.model.user.activity.ActivityLogType;
+import com.matchme.srv.model.user.profile.Hobby;
 import com.matchme.srv.model.user.profile.ProfileChange;
 import com.matchme.srv.model.user.profile.ProfileChangeType;
 import com.matchme.srv.model.user.profile.UserGenderType;
@@ -47,6 +51,7 @@ public class UserService {
   private final UserGenderTypeRepository genderRepository;
   private final UserRoleTypeRepository roleRepository;
   private final ConnectionRepository connectionRepository;
+  private final HobbyRepository hobbyRepository;
 
   private final AttributesMapper attributesMapper;
   private final PreferencesMapper preferencesMapper;
@@ -213,6 +218,16 @@ public class UserService {
     profile.setAlias(parameters.alias());
     profile.setCity(parameters.city());
 
+    if (parameters.hobbies() != null && !parameters.hobbies().isEmpty()) {
+        Set<Hobby> foundHobbies = parameters.hobbies().stream()
+                .map(hobbyId -> hobbyRepository.findById(hobbyId)
+                        .orElseThrow(() -> new EntityNotFoundException("Hobby not found with id: " + hobbyId)))
+                .collect(Collectors.toSet());
+        profile.setHobbies(foundHobbies);
+    } else {
+        profile.setHobbies(new HashSet<>());
+    }
+
     user.setState(userStateTypesRepository.findByName("NEW")
         .orElseThrow(() -> new ResourceNotFoundException("User state")));
 
@@ -250,6 +265,16 @@ public class UserService {
     profile.setFirst_name(settings.getFirst_name());
     profile.setLast_name(settings.getLast_name());
     profile.setAlias(settings.getAlias());
+    if (settings.getHobbies() != null && !settings.getHobbies().isEmpty()) {
+        Set<Hobby> foundHobbies = settings.getHobbies().stream()
+            .map(hobbyId -> hobbyRepository.findById(hobbyId)
+                .orElseThrow(() -> new EntityNotFoundException("Hobby not found with id: " + hobbyId)))
+            .collect(Collectors.toSet());
+        
+        profile.setHobbies(foundHobbies);
+    } else {
+        profile.setHobbies(new HashSet<>());
+    }
 
     // TODO: Add logging
     userRepository.save(user);

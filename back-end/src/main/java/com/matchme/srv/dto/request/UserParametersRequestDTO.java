@@ -1,7 +1,7 @@
 package com.matchme.srv.dto.request;
 
 import java.time.LocalDate;
-
+import java.util.Set;
 import com.matchme.srv.constraints.BirthDate;
 import com.matchme.srv.validation.annotations.NotBlankIfPresent;
 
@@ -30,6 +30,9 @@ public record UserParametersRequestDTO(
   @Size(min = 2, max = 30, message = "Alias must be between 2 and 30 characters")
   @Pattern(regexp = "^[a-zA-Z0-9\\s-_]+$", message = "Alias can only contain letters, numbers, spaces, hyphens and underscores")
   String alias,
+
+  @Size(max = 5, message = "Maximum 5 hobbies allowed")
+  Set<Long> hobbies,
 
   @NotNull(message = "Self gender must be specified")
   @Min(value = 1, message = "Invalid gender value")
