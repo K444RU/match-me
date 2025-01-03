@@ -16,9 +16,8 @@ import { toast } from 'sonner';
 import MotionSpinner from '@/components/animations/MotionSpinner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HOBBIES } from '@/assets/hobbies';
-import MultipleSelector from '@/components/ui/multi-select';
-import { Hobby } from '@/types/api';
-import { hobbiesById, hobbiesToOptions, optionsToHobbies } from '@/lib/utils/dataConversion';
+import MultipleSelector, { Option } from '@/components/ui/multi-select';
+import { hobbiesById } from '@/lib/utils/dataConversion';
 
 const UserProfileCard = () => {
     const settingsContext = useContext(SettingsContext);
@@ -26,7 +25,7 @@ const UserProfileCard = () => {
     const { settings, refreshSettings } = settingsContext;
     const [firstName, setFirstName] = useState<string | null>();
     const [lastName, setLastName] = useState<string | null>();
-    const [hobbies, setHobbies] = useState<Hobby[] | undefined>([]);
+    const [hobbies, setHobbies] = useState<Option[] | undefined>([]);
     const [alias, setAlias] = useState<string | null>();
     const [loading, setLoading] = useState(false);
 
@@ -51,7 +50,7 @@ const UserProfileCard = () => {
                     firstName,
                     lastName,
                     alias,
-                    hobbies: hobbies?.map(hobby => hobby.id)
+                    hobbies: hobbies?.map(hobby => parseInt(hobby.value))
                 },
                 'profile'
             );
@@ -124,10 +123,10 @@ const UserProfileCard = () => {
                         <div className="flex flex-col space-y-1.5">
                                 <Label htmlFor="hobbies">Hobbies</Label>
                                 <MultipleSelector
-                                value={hobbiesToOptions(hobbies)}
-                                onChange={(value) => setHobbies(optionsToHobbies(value))}
+                                value={hobbies}
+                                onChange={setHobbies}
                                 placeholder='Select your hobbies...'
-                                defaultOptions={hobbiesToOptions(HOBBIES)}
+                                defaultOptions={HOBBIES}
                                 groupBy='category'
                                 hideClearAllButton={true}
                                 maxSelected={5}
