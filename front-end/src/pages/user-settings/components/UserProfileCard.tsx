@@ -15,6 +15,7 @@ import { updateSettings } from '@/features/user/services/UserService';
 import { toast } from 'sonner';
 import MotionSpinner from '@/components/animations/MotionSpinner';
 import { Skeleton } from '@/components/ui/skeleton';
+import ProfilePictureUploader from "@ui/forms/ProfilePictureUploader.tsx";
 
 const UserProfileCard = () => {
     const settingsContext = useContext(SettingsContext);
@@ -59,7 +60,7 @@ const UserProfileCard = () => {
     };
 
     return (
-        <Card className="h-[475px] w-full border-none shadow-none">
+        <Card className="h-[475px] w-full border-none shadow-none overflow-y-auto no-scrollbar">
             <CardHeader>
                 <CardTitle>Profile</CardTitle>
                 <CardDescription>
@@ -98,6 +99,16 @@ const UserProfileCard = () => {
                             ) : (
                                 <Skeleton className="h-[40px] w-full rounded-md border-[#e5e7eb]" />
                             )}
+                        </div>
+                        <div className="flex flex-col space-y-1.5">
+                            <label className="mb-1 text-sm font-medium text-gray-700">
+                                Profile Picture
+                            </label>
+                            <ProfilePictureUploader
+                                onUploadSuccess={() => {
+                                    console.log('Upload was successful!');
+                                }}
+                            />
                         </div>
                         <div className="flex flex-col space-y-1.5">
                             <Label htmlFor="alias">Alias</Label>
