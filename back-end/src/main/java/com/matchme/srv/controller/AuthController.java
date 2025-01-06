@@ -53,7 +53,7 @@ public class AuthController {
 
 
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequestDTO loginRequest) {
+    public ResponseEntity<JwtResponseDTO> authenticateUser(@Valid @RequestBody LoginRequestDTO loginRequest) {
 
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
@@ -70,7 +70,7 @@ public class AuthController {
     }
 
   @PostMapping("/signup")
-  public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequestDTO signUpRequest) {
+  public ResponseEntity<Void> registerUser(@Valid @RequestBody SignupRequestDTO signUpRequest) {
     userService.createUser(signUpRequest);
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
