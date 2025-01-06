@@ -1,8 +1,9 @@
 import { createContext, ReactNode, useContext, useState } from 'react';
-import AuthService from '@/features/authentication/services/AuthService';
+import { AuthService } from '@/features/authentication/services/AuthService';
 import { AxiosResponse } from 'axios';
 import { CurrentUser } from '@/types/api';
 import { getCurrentUser } from '@/features/user/services/UserService';
+import { LoginRequestDTO } from '@/api/types';
 
 interface User extends CurrentUser {
     token: string;
@@ -10,10 +11,7 @@ interface User extends CurrentUser {
 
 interface AuthContextType {
     user: User | null;
-    login: (
-        email: string,
-        password: string
-    ) => Promise<AxiosResponse<any, any>>;
+    login: (credentials: LoginRequestDTO) => Promise<AxiosResponse<any, any>>;
     logout: () => void;
 }
 
@@ -63,16 +61,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return null;
     });
 
-    const login = async (email: string, password: string) => {
-        console.log('🔑 AuthContext: Login attempt with:', { email, password });
-
+    const login = async (credentials: LoginRequestDTO) => {
         try {
-            console.log('📡 AuthContext: Calling AuthService.login');
-            const response = await AuthService.login(email, password);
-            console.log('📥 AuthContext: Received response:', response);
+            const response = await AuthService.login(credentials);
 
             if (response?.data?.token) {
-                console.log('🎫 AuthContext: Token found, setting user');
                 localStorage.setItem('authToken', response.data.token);
                 const currentUser = await getCurrentUser();
 
@@ -82,11 +75,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                 };
 
                 setUser(userData);
-                console.log(
+                console.debug(
                     '✔️ AuthContext: User logged in successfully:',
                     userData
                 );
-                console.log(
+                console.debug(
                     'AuthProvider user (immediately after setUser):',
                     user
                 );
