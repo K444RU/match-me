@@ -118,6 +118,10 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/genders").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/ws").permitAll()
+                        .requestMatchers("/v3/api-docs/").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-ui.html").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
                         .anyRequest().authenticated());
 
         http.authenticationProvider(authenticationProvider());
