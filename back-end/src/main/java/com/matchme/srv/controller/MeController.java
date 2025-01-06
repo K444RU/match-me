@@ -102,6 +102,7 @@ public class MeController {
                         userProfile.getAttributes().getGender().getName()))
                 .gender_other(new GenderTypeDTO(userProfile.getPreferences().getGender().getId(),
                         userProfile.getPreferences().getGender().getName()))
+                .hobbies(userProfile.getHobbies().stream().map(hobby -> hobby.getId()).collect(Collectors.toSet()))
                 .age_self(Period.between(userProfile.getAttributes().getBirth_date(),
                         LocalDate.now()).getYears())
                 .age_min(userProfile.getPreferences().getAge_min())

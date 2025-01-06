@@ -25,8 +25,6 @@ import com.matchme.srv.dto.response.ConnectionResponseDTO;
 import com.matchme.srv.dto.response.CurrentUserResponseDTO;
 import com.matchme.srv.dto.response.GenderTypeDTO;
 import com.matchme.srv.dto.response.ProfileResponseDTO;
-import com.matchme.srv.dto.response.SettingsResponseDTO;
-import com.matchme.srv.dto.response.UserParametersResponseDTO;
 import com.matchme.srv.dto.response.UserResponseDTO;
 import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.model.user.User;
@@ -134,6 +132,7 @@ public class UserController {
               userProfile.getPreferences().getGender().getName()))
           .age_self(Period.between(userProfile.getAttributes().getBirth_date(),
               LocalDate.now()).getYears())
+              .hobbies(userProfile.getHobbies().stream().map(hobby -> hobby.getId()).collect(Collectors.toSet()))
           .age_min(userProfile.getPreferences().getAge_min())
           .age_max(userProfile.getPreferences().getAge_max())
           .distance(userProfile.getPreferences().getDistance())
