@@ -1,13 +1,12 @@
 package com.matchme.srv.controller;
 
-import java.time.LocalDate;
-import java.time.Period;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import jakarta.transaction.Transactional;
+import com.matchme.srv.dto.response.*;
+import com.matchme.srv.model.connection.Connection;
+import com.matchme.srv.model.user.User;
+import com.matchme.srv.model.user.profile.UserProfile;
+import com.matchme.srv.security.services.UserDetailsImpl;
+import com.matchme.srv.service.ConnectionService;
+import com.matchme.srv.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -15,20 +14,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.matchme.srv.dto.response.BiographicalResponseDTO;
-import com.matchme.srv.dto.response.ConnectionResponseDTO;
-import com.matchme.srv.dto.response.CurrentUserResponseDTO;
-import com.matchme.srv.dto.response.GenderTypeDTO;
-import com.matchme.srv.dto.response.ProfileResponseDTO;
-import com.matchme.srv.dto.response.SettingsResponseDTO;
-import com.matchme.srv.dto.response.UserParametersResponseDTO;
-import com.matchme.srv.dto.response.UserResponseDTO;
-import com.matchme.srv.model.connection.Connection;
-import com.matchme.srv.model.user.User;
-import com.matchme.srv.model.user.profile.UserProfile;
-import com.matchme.srv.security.services.UserDetailsImpl;
-import com.matchme.srv.service.ConnectionService;
-import com.matchme.srv.service.UserService;
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -46,11 +37,9 @@ public class MeController {
      * @return ID, email, first_name, last_name, alias, profile_picture and roles
      * @see CurrentUserResponseDTO
      */
-    @Transactional
     @GetMapping("/me")
     public ResponseEntity<CurrentUserResponseDTO> getCurrentUser(Authentication authentication) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long userId = userDetails.getId();
+        Long userId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
         CurrentUserResponseDTO currentUser = userService.getCurrentUserDTO(userId);
         return ResponseEntity.ok(currentUser);
     }
@@ -63,16 +52,8 @@ public class MeController {
      */
     @GetMapping("/me/profile")
     public ResponseEntity<ProfileResponseDTO> getCurrentProfile(Authentication authentication) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long userId = userDetails.getId();
-        UserProfile userProfile = userService.getUserProfile(userId);
-
-        ProfileResponseDTO profile = ProfileResponseDTO.builder()
-                .first_name(userProfile.getFirst_name())
-                .last_name(userProfile.getLast_name())
-                .city(userProfile.getCity())
-                .build();
-
+        Long userId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
+        ProfileResponseDTO profile = userService.getUserProfileDTO(userId, userId);
         return ResponseEntity.ok(profile);
     }
 
