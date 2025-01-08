@@ -337,30 +337,10 @@ public class UserService {
   @Transactional
   public void saveProfilePicture(Long userId, ProfilePictureSettingsRequestDTO request) {
 
-    if (request == null || request.getBase64Image() == null) {
-      throw new IllegalArgumentException("No valid base64 image found in the request.");
-    }
+    validateProfilePictureRequest(request);
 
-    String base64Image = request.getBase64Image();
-    if (base64Image.isEmpty()) {
-      throw new IllegalArgumentException("Base64 image data cannot be null or empty.");
-    }
-
-    String base64Part = base64Image;
-    if (base64Image.contains(",")) {
-      base64Part = base64Image.substring(base64Image.indexOf(',') + 1);
-    }
-
-    byte[] imageBytes;
-    try {
-      imageBytes = Base64.getDecoder().decode(base64Part);
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("Invalid Base64 image data.", e);
-    }
-
-    if (imageBytes.length == 0) {
-      throw new IllegalArgumentException("Decoded image is empty, please check your Base64 input.");
-    }
+    String base64Part = extractBase64Part(request.getBase64Image());
+    byte[] imageBytes = decodeBase64Image(base64Part);
 
     User user = userRepository.findById(userId)
             .orElseThrow(() -> new EntityNotFoundException("User not found for ID: " + userId));
@@ -375,6 +355,73 @@ public class UserService {
     userRepository.save(user);
   }
 
+  private void validateProfilePictureRequest(ProfilePictureSettingsRequestDTO request) {
+    if (request == null || request.getBase64Image() == null || request.getBase64Image().isEmpty()) {
+      throw new IllegalArgumentException("Invalid base64 image data in the request.");
+    }
+  }
+
+  private String extractBase64Part(String base64Image) {
+    return base64Image.contains(",") ? base64Image.substring(base64Image.indexOf(',') + 1) : base64Image;
+  }
+
+  private byte[] decodeBase64Image(String base64Part) {
+    try {
+      return Base64.getDecoder().decode(base64Part);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Invalid Base64 image data.", e);
+    }
+  }
+
+  //TODO: Add validateImageSize method to check Checks if the image exceeds 5 MB
+  //TODO: validateImageFormat method to check that the image is either PNG or JPEG method.
+
+  /**
+   * Validate that `currentUserId` can view `targetUserId`.
+   * If not, throw an exception (404 or 403).
+   */
+  public void validateUserAccess(Long currentUserId, Long targetUserId) {
+    if (!currentUserId.equals(targetUserId) && !isConnected(currentUserId, targetUserId)) {
+      throw new EntityNotFoundException("User not found or no access rights.");
+    }
+  }
+
+  /**
+   * Return a user’s basic info,
+   * first checks whether the current user can access the target’s data.
+   */
+  @Transactional(readOnly = true)
+  public CurrentUserResponseDTO getUserDTO(Long currentUserId, Long targetUserId) {
+    validateUserAccess(currentUserId, targetUserId);
+    User user = userRepository.findById(targetUserId)
+            .orElseThrow(() -> new EntityNotFoundException("User not found!"));
+    return buildCurrentUserResponseDTO(user);
+  }
+
+  /**
+   * Build CurrentUserResponseDTO, factoring in profile picture, etc.
+   */
+  private CurrentUserResponseDTO buildCurrentUserResponseDTO(User user) {
+    UserProfile profile = user.getProfile();
+
+    String base64Picture = null;
+    if (profile != null && profile.getProfilePicture() != null && profile.getProfilePicture().length > 0) {
+      base64Picture = "data:image/png;base64,"
+              + Base64.getEncoder().encodeToString(profile.getProfilePicture());
+    }
+
+    return CurrentUserResponseDTO.builder()
+            .id(user.getId())
+            .email(user.getEmail())
+            .firstName(profile != null ? profile.getFirst_name() : null)
+            .lastName(profile != null ? profile.getLast_name() : null)
+            .alias(profile != null ? profile.getAlias() : null)
+            .profilePicture(base64Picture)
+            .role(user.getRoles())
+            .build();
+  }
+
+  @Transactional
   public CurrentUserResponseDTO getCurrentUserDTO(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found!"));
         UserProfile userProfile = user.getProfile();
@@ -396,6 +443,20 @@ public class UserService {
                 .build();
   }
 
+  @Transactional
+  public ProfileResponseDTO getUserProfileDTO(Long currentUserId, Long targetUserId) {
+    validateUserAccess(currentUserId, targetUserId);
+
+    UserProfile profile = userRepository.findById(targetUserId)
+            .orElseThrow(() -> new EntityNotFoundException("User not found!"))
+            .getProfile();
+
+    return ProfileResponseDTO.builder()
+            .first_name(profile.getFirst_name())
+            .last_name(profile.getLast_name())
+            .city(profile.getCity())
+            .build();
+  }
 }
 
   // public void setAttributes(Long userId) {

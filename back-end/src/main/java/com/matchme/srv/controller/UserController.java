@@ -56,26 +56,9 @@ public class UserController {
      */
     @GetMapping("/{targetId}")
     public ResponseEntity<CurrentUserResponseDTO> getUser(@PathVariable Long targetId, Authentication authentication) {
-        UserDetailsImpl requesterUserDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long requesterUserId = requesterUserDetails.getId();
-
-        if (requesterUserId == targetId || userService.isConnected(requesterUserId, targetId)) {
-            UserProfile userProfile = userService.getUserProfile(targetId);
-            User user = userService.getUser(targetId);
-
-            CurrentUserResponseDTO currentUser = CurrentUserResponseDTO.builder()
-                    .id(targetId)
-                    .email(user.getEmail())
-                    .firstName(userProfile != null ? userProfile.getFirst_name() : null)
-                    .lastName(userProfile != null ? userProfile.getLast_name() : null)
-                    .alias(userProfile != null ? userProfile.getAlias() : null)
-                    .role(user.getRoles())
-                    .build();
-
-            return ResponseEntity.ok(currentUser);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        Long currentUserId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
+        CurrentUserResponseDTO response = userService.getUserDTO(currentUserId, targetId);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -90,21 +73,9 @@ public class UserController {
      */
     @GetMapping("/{targetId}/profile")
     public ResponseEntity<ProfileResponseDTO> getProfile(@PathVariable Long targetId, Authentication authentication) {
-        UserDetailsImpl requesterUserDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long requesterUserId = requesterUserDetails.getId();
-
-        if (requesterUserId == targetId || userService.isConnected(requesterUserId, targetId)) {
-            UserProfile userProfile = userService.getUserProfile(targetId);
-            ProfileResponseDTO profile = ProfileResponseDTO.builder()
-                    .first_name(userProfile.getFirst_name())
-                    .last_name(userProfile.getLast_name())
-                    .city(userProfile.getCity())
-                    .build();
-            return ResponseEntity.ok(profile);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-
+        Long currentUserId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
+        ProfileResponseDTO profile = userService.getUserProfileDTO(currentUserId, targetId);
+        return ResponseEntity.ok(profile);
     }
 
     /**
