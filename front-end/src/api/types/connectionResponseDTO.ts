@@ -8,6 +8,6 @@
 import type { UserResponseDTO } from './userResponseDTO';
 
 export interface ConnectionResponseDTO {
-    id?: number;
-    users?: UserResponseDTO[];
+  id?: number;
+  users?: UserResponseDTO[];
 }

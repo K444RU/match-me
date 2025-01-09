@@ -757,5 +757,6 @@ export {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
+  /* eslint-disable react-refresh/only-export-components */
   useSidebar,
 }

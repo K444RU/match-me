@@ -11,7 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SettingsContext } from '../SettingsContext';
-import { updateSettings } from '@/features/user/services/UserService';
+import { userService } from '@/features/user';
 import { toast } from 'sonner';
 import MotionSpinner from '@/components/animations/MotionSpinner';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -22,8 +22,6 @@ import ProfilePictureUploader from "@ui/forms/ProfilePictureUploader.tsx";
 
 const UserProfileCard = () => {
     const settingsContext = useContext(SettingsContext);
-    if (!settingsContext) return null;
-    const { settings, refreshSettings } = settingsContext;
     const [firstName, setFirstName] = useState<string | null>();
     const [lastName, setLastName] = useState<string | null>();
     const [hobbies, setHobbies] = useState<Option[] | undefined>([]);
@@ -31,31 +29,28 @@ const UserProfileCard = () => {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (settings) {
-            setFirstName(settings.firstName ?? '');
-            setLastName(settings.lastName ?? '');
-            setAlias(settings.alias ?? '');
-            setHobbies(hobbiesById(settings.hobbies || []))
-        }
-    }, [settings]);
+        if (!settingsContext?.settings) return;
+
+        setFirstName(settingsContext.settings.firstName ?? '');
+        setLastName(settingsContext.settings.lastName ?? '');
+        setAlias(settingsContext.settings.alias ?? '');
+        setHobbies(hobbiesById(settingsContext.settings.hobbies || []))
+
+    }, [settingsContext?.settings]);
 
     const handleUpdate = async () => {
-        if (!settings) return;
+        if (!settingsContext?.settings) return;
 
         setLoading(true);
         try {
             if (!firstName || !lastName || !alias) return;
-            await updateSettings(
-                {
-                    ...settings,
-                    firstName,
-                    lastName,
-                    alias,
-                    hobbies: hobbies?.map(hobby => parseInt(hobby.value))
-                },
-                'profile'
-            );
-            refreshSettings();
+            await userService.updateProfileSettings({
+                first_name: firstName,
+                last_name: lastName,
+                alias,
+                hobbies: hobbies?.map(hobby => parseInt(hobby.value))
+            });
+            settingsContext.refreshSettings();
             toast.success('Profile updated successfully');
         } catch (error) {
             toast.error('Failed to update profile');
@@ -66,7 +61,7 @@ const UserProfileCard = () => {
     };
 
     return (
-        <Card className="h-[475px] w-full border-none shadow-none overflow-y-auto no-scrollbar">
+        <Card className="no-scrollbar h-[475px] w-full overflow-y-auto border-none shadow-none">
             <CardHeader>
                 <CardTitle>Profile</CardTitle>
                 <CardDescription>

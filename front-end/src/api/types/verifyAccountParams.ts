@@ -7,5 +7,5 @@
  */
 
 export type VerifyAccountParams = {
-    verificationCode: number;
+  verificationCode: number;
 };

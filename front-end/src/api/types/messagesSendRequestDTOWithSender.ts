@@ -7,8 +7,8 @@
  */
 
 export interface MessagesSendRequestDTOWithSender {
-    connectionId?: number;
-    content?: string;
-    senderEmail?: string;
-    timestamp?: string;
+  connectionId?: number;
+  content?: string;
+  senderEmail?: string;
+  timestamp?: string;
 }

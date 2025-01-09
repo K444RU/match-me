@@ -7,26 +7,26 @@
  */
 
 export interface PreferencesSettingsRequestDTO {
-    /**
-     * @minimum 18
-     * @maximum 120
-     */
-    age_max: number;
-    /**
-     * @minimum 18
-     * @maximum 120
-     */
-    age_min: number;
-    /**
-     * @minimum 50
-     * @maximum 300
-     */
-    distance: number;
-    /** @minimum 1 */
-    gender_other: number;
-    /**
-     * @minimum 0
-     * @maximum 1
-     */
-    probability_tolerance: number;
+  /**
+   * @minimum 18
+   * @maximum 120
+   */
+  age_max: number;
+  /**
+   * @minimum 18
+   * @maximum 120
+   */
+  age_min: number;
+  /**
+   * @minimum 50
+   * @maximum 300
+   */
+  distance: number;
+  /** @minimum 1 */
+  gender_other: number;
+  /**
+   * @minimum 0
+   * @maximum 1
+   */
+  probability_tolerance: number;
 }

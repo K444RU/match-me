@@ -10,10 +10,10 @@ import type { UserGenderType } from './userGenderType';
 import type { UserProfile } from './userProfile';
 
 export interface UserAttributes {
-    attributeChangeLog?: ProfileChange[];
-    birth_date?: string;
-    gender?: UserGenderType;
-    id?: number;
-    location?: number[];
-    userProfile?: UserProfile;
+  attributeChangeLog?: ProfileChange[];
+  birth_date?: string;
+  gender?: UserGenderType;
+  id?: number;
+  location?: number[];
+  userProfile?: UserProfile;
 }

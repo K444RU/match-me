@@ -7,6 +7,6 @@
  */
 
 export interface PreferenceChangeType {
-    id?: number;
-    name?: string;
+  id?: number;
+  name?: string;
 }

@@ -7,22 +7,27 @@
  */
 
 export interface ProfileSettingsRequestDTO {
-    /**
-     * @minLength 2
-     * @maxLength 30
-     * @pattern ^[a-zA-Z0-9\s-_]+$
-     */
-    alias?: string;
-    /**
-     * @minLength 2
-     * @maxLength 50
-     * @pattern ^[a-zA-Z\s-']+$
-     */
-    first_name: string;
-    /**
-     * @minLength 2
-     * @maxLength 50
-     * @pattern ^[a-zA-Z\s-']+$
-     */
-    last_name: string;
+  /**
+   * @minLength 2
+   * @maxLength 30
+   * @pattern ^[a-zA-Z0-9\s-_]+$
+   */
+  alias?: string;
+  /**
+   * @minLength 2
+   * @maxLength 50
+   * @pattern ^[a-zA-Z\s-']+$
+   */
+  first_name: string;
+  /**
+   * @minItems 0
+   * @maxItems 5
+   */
+  hobbies?: number[];
+  /**
+   * @minLength 2
+   * @maxLength 50
+   * @pattern ^[a-zA-Z\s-']+$
+   */
+  last_name: string;
 }

@@ -10,10 +10,10 @@ import type { UserAttributes } from './userAttributes';
 import type { UserProfile } from './userProfile';
 
 export interface ProfileChange {
-    content?: string;
-    id?: number;
-    instant: string;
-    type?: ProfileChangeType;
-    userAttributes?: UserAttributes;
-    userProfile: UserProfile;
+  content?: string;
+  id?: number;
+  instant: string;
+  type?: ProfileChangeType;
+  userAttributes?: UserAttributes;
+  userProfile: UserProfile;
 }

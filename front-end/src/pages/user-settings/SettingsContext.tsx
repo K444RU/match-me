@@ -1,8 +1,8 @@
 import { createContext } from 'react';
-import { UserProfile } from '@/types/api';
+import { SettingsResponseDTO } from '@/api/types';
 
 interface SettingsContextType {
-    settings: UserProfile | null;
+    settings: SettingsResponseDTO | null;
     refreshSettings: () => Promise<void>;
 }
 

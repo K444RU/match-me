@@ -5,19 +5,23 @@ import axios from 'axios';
 import { UnifiedFormData } from '../types/types';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import {useAuth} from "@features/authentication/AuthContext.tsx";
+import { useAuth } from '@features/authentication/AuthContext.tsx';
+import { userService } from '@/features/user';
+import { UserParametersRequestDTO } from '@/api/types';
 
-const PayloadFormData = (formData: UnifiedFormData) => ({
+const PayloadFormData = (
+    formData: UnifiedFormData
+): UserParametersRequestDTO => ({
     first_name: formData.firstName,
     last_name: formData.lastName,
     alias: formData.alias,
-    hobbies: formData.hobbies,
-    gender_self: formData.gender,
+    hobbies: formData.hobbies || [],
+    gender_self: Number(formData.gender),
     birth_date: formData.dateOfBirth,
     city: formData.city.name,
     latitude: formData.city.latitude,
     longitude: formData.city.longitude,
-    gender_other: formData.genderOther,
+    gender_other: Number(formData.genderOther),
     age_min: formData.ageMin,
     age_max: formData.ageMax,
     distance: formData.distance,
@@ -63,7 +67,7 @@ const UnifiedForm = () => {
         setStep((prev) => prev - 1);
     };
 
-    const handleChange = (name: keyof UnifiedFormData, value: any) => {
+    const handleChange = (name: keyof UnifiedFormData, value: UnifiedFormData[keyof UnifiedFormData]) => {
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
@@ -71,31 +75,29 @@ const UnifiedForm = () => {
         setLoading(true);
         const token = localStorage.getItem('authToken');
         const payload = PayloadFormData(formData);
-        await axios
-            .patch('/api/users/complete-registration', payload, {
+        try {
+            await userService.updateParameters(payload, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
-            })
-            .then(async () => {
-                localStorage.removeItem('profileData');
-                await fetchCurrentUser();
-                navigate('/chats');
-            })
-            .catch((err) => {
-                console.error('Error during final submission:', err);
-                if (typeof err === 'string') {
-                    toast.error(err);
-                } else if (err instanceof Error) {
-                    toast.error(err.message);
-                } else {
-                    toast.error('An unexpected error occurred');
-                }
-            })
-            .finally(() => {
-                setLoading(false);
             });
+
+            localStorage.removeItem('profileData');
+            await fetchCurrentUser();
+            navigate('/chats');
+        } catch (err) {
+            console.error('Error during final submission:', err);
+            if (typeof err === 'string') {
+                toast.error(err);
+            } else if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error('An unexpected error occurred');
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

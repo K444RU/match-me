@@ -7,6 +7,6 @@
  */
 
 export interface UserPair {
-    email1?: string;
-    email2?: string;
+  email1?: string;
+  email2?: string;
 }
