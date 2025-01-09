@@ -2,7 +2,8 @@ import { useState } from 'react';
 import InputField from '../../../components/ui/forms/InputField';
 import MotionSpinner from '@animations/MotionSpinner';
 import FormResponse from './FormResponse';
-import { register } from '@/features/authentication/services/AuthService';
+import { AuthService } from '@/features/authentication/services/AuthService';
+import PhoneInput from './PhoneInput';
 import {useNavigate} from "react-router-dom";
 import { CountryCodePhoneInput } from '@ui/country-code-phone-input';
 import {parsePhoneNumber} from "react-phone-number-input";
@@ -66,7 +67,7 @@ const RegisterForm = () => {
         e.preventDefault();
         setLoading(true);
 
-        register(email, `${countryCode} ${localNumber}`, password)
+        AuthService.register({email, number: `${countryCode} ${localNumber}`, password})
             .then((res) => {
                 // TODO: Don't redirect on register & wait for email verify.
                 // This current approach would cause a unnecessary
@@ -87,12 +88,20 @@ const RegisterForm = () => {
             })
             .catch((err) => {
                 console.error('Error registering user:', err);
+                setResState('error');
+
+                // Handle network errors
+                if (err.code === 'ERR_NETWORK') {
+                    setResTitle('Connection Error');
+                    setResSubtitle('Unable to connect to the server. Please check your internet connection and try again.');
+                    return;
+                }
+
                 if (err.response.status === 401) {
                     setResTitle('Wrong Credentials');
                     setResSubtitle('Invalid username or password');
                 } else if (err.response.status === 400) {
                     setResTitle('We found some errors');
-                    setResState('error');
                     setResSubtitle('');
                     // TODO: Make back-end return better error messages
                     // size must be between 0 and 20 -> what size? (its number...)

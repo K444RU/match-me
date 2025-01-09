@@ -109,6 +109,7 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ onUploa
                 </label>
                 {image && (
                     <button
+                        type="button"
                         onClick={handleSubmit}
                         className="flex w-full items-center justify-center gap-2 self-start rounded-md px-5 py-2 font-semibold tracking-wide text-text transition-colors bg-primary hover:bg-primary-200 hover:text-text"
                     >
