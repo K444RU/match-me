@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
-     <include file="changelog/001-insert-roles.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/001-insert-roles.xml" relativeToChangelogFile="true"/>
     <include file="changelog/002-insert-genders.xml" relativeToChangelogFile="true"/>
     <include file="changelog/003-insert-connection-types.xml" relativeToChangelogFile="true"/>
     <include file="changelog/004-insert-message-event-types.xml" relativeToChangelogFile="true"/>

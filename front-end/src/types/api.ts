@@ -30,7 +30,7 @@ export interface CurrentUser {
     lastName: string;
     alias: string;
     role: Role[];
-    avatar?: string;
+    profilePicture?: string;
 }
 
 export interface Role {
