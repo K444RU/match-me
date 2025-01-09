@@ -1,5 +1,9 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import { CurrentUser, UserProfile } from '@/types/api.ts';
+import { getUserController } from '@/api/user-controller';
+import { ProfilePictureSettingsRequestDTO } from '@/api/types';
+
+const userController = getUserController();
 
 export const getUserParameters = async (): Promise<UserProfile> => {
     console.log('📡 Fetching user parameters via JWT');
@@ -106,3 +110,14 @@ export const updateSettings = async (
         throw error;
     }
 };
+
+export const updateProfilePicture = async (base64Image: ProfilePictureSettingsRequestDTO, options?: AxiosRequestConfig): Promise<unknown> => {
+    try {
+        console.debug('👤 UserService: Making updateProfilePicture request')
+        const response = await userController.uploadProfilePicture(base64Image, options)
+        return response;
+    } catch (error) {
+        console.error('👤 UserService: Request failed');
+        throw error;
+    }
+}
