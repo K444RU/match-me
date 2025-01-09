@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
-     <include file="changelog/001-insert-roles.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/001-insert-roles.xml" relativeToChangelogFile="true"/>
     <include file="changelog/002-insert-genders.xml" relativeToChangelogFile="true"/>
     <include file="changelog/003-insert-connection-types.xml" relativeToChangelogFile="true"/>
     <include file="changelog/004-insert-message-event-types.xml" relativeToChangelogFile="true"/>
@@ -14,6 +14,7 @@
     <include file="changelog/007-insert-preference-change-types.xml" relativeToChangelogFile="true"/>
     <include file="changelog/008-insert-profile-change-types.xml" relativeToChangelogFile="true"/>
     <include file="changelog/009-insert-user-state-types.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/010-update-user-profile-with-profile-picture.xml" relativeToChangelogFile="true"/>
 
     <!-- All changes are saved to DATABASECHANGELOG table, if you delete a role, liquibase won't reinsert it unless
     you delete DATABASECHANGELOG -->

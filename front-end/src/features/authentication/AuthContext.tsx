@@ -13,6 +13,7 @@ interface AuthContextType {
     user: User | null;
     login: (credentials: LoginRequestDTO) => Promise<AxiosResponse<any, any>>;
     logout: () => void;
+    fetchCurrentUser: () => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -20,6 +21,8 @@ export const AuthContext = createContext<AuthContextType>({
     login: async () =>
         await Promise.reject(new Error('AuthContext not initialized')),
     logout: () => {},
+    fetchCurrentUser: async () =>
+        await Promise.reject(new Error('AuthContext not initialized')),
 });
 
 interface AuthProviderProps {
@@ -95,11 +98,32 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     const logout = () => {
         localStorage.removeItem('authToken');
+        localStorage.removeItem('profileData');
         setUser(null);
     };
 
+    const fetchCurrentUser = async () => {
+      try {
+          const token = localStorage.getItem('authToken');
+          if (!token) {
+              setUser(null);
+              return;
+          }
+
+          const currentUser = await getCurrentUser();
+          setUser({
+              ...currentUser,
+              token,
+          });
+      } catch (error) {
+          console.error('❌ fetchCurrentUser error:', error);
+          localStorage.removeItem('authToken');
+          setUser(null);
+      }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, login, logout, fetchCurrentUser }}>
             {children}
         </AuthContext.Provider>
     );
