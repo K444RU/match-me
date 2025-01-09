@@ -45,6 +45,8 @@ public class UserProfile {
 
   private String city;
 
+  private byte[] profilePicture;
+
   @ManyToMany
   @JoinTable(name = "user_profile_hobbies",
           joinColumns = @JoinColumn(name = "user_profile_id"),
@@ -64,4 +66,5 @@ public class UserProfile {
     }
     this.attributes = attributes;
   }
+
 }
