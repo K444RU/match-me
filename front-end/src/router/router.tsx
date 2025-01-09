@@ -8,21 +8,12 @@ import HomePage from '../pages/HomePage';
 import ChatsPage from '../pages/chats/ChatsPage';
 import SettingsPage from '../pages/user-settings/SettingsPage';
 import { AuthenticationGuard } from './components/AuthenticationGuard';
-import { useEffect } from 'react';
-import {LoginPage, RegisterPage, useAuth} from '@/features/authentication';
+import { LoginPage, RegisterPage } from '@/features/authentication';
 import ProfileCompletionPage from '@/pages/profile-completion/ProfileCompletionPage';
 import AuthenticatedLayout from '@/components/layout/AuthenticatedLayout';
 import PageNotFound from '@/pages/404Page';
 import TestPage from '@/pages/test/TestPage';
-
-const LogoutPage = () => {
-    const { user, logout } = useAuth();
-
-    useEffect(() => {
-        if (user) logout();
-    }, [user, logout]);
-    return null;
-};
+import LogoutPage from './components/LogoutPage';
 
 export const routes = createRoutesFromElements(
     <Route>
