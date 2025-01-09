@@ -7,6 +7,6 @@
  */
 
 export interface GenderTypeDTO {
-    id?: number;
-    name?: string;
+    id: number;
+    name: string;
 }
