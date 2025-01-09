@@ -13,7 +13,7 @@ const ChatsPage = () => {
     const { user } = useAuth();
 
     const refreshChats = useCallback(async () => {
-        if (!user?.token) return;
+        if (!user) return;
         try {
             setChats(getMockChatPreviews(user));
         } catch (error) {
