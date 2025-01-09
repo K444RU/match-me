@@ -10,7 +10,7 @@ interface PreferencesProps {
     onNext: () => void;
     formData: UnifiedFormData;
     loading: boolean;
-    onChange: (name: keyof UnifiedFormData, value: any) => void;
+    onChange: (name: keyof UnifiedFormData, value: UnifiedFormData[keyof UnifiedFormData]) => void;
     genderOptions: { id: number; name: string }[];
 }
 

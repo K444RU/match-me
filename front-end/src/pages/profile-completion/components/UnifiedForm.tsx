@@ -66,7 +66,7 @@ const UnifiedForm = () => {
         setStep((prev) => prev - 1);
     };
 
-    const handleChange = (name: keyof UnifiedFormData, value: any) => {
+    const handleChange = (name: keyof UnifiedFormData, value: UnifiedFormData[keyof UnifiedFormData]) => {
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
