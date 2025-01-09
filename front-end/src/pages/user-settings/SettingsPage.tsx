@@ -3,7 +3,7 @@ import UserAttributesCard from './components/UserAttributesCard';
 import UserProfileCard from './components/UserProfileCard';
 import { useAuth } from '@/features/authentication/AuthContext';
 import { useEffect, useState } from 'react';
-import { getUserParameters } from '../../features/user/services/UserService';
+import { UserService } from '../../features/user/services/UserService';
 import { Gender, UserProfile } from '@/types/api';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SettingsContext } from './SettingsContext';
@@ -22,7 +22,7 @@ const SettingsPage = () => {
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const response = await getUserParameters();
+                const response = await UserService.getUserParameters();
                 setSettings(response);
             } catch (error) {
                 console.error('Error fetching settings: ', error);
@@ -45,7 +45,7 @@ const SettingsPage = () => {
 
     const refreshSettings = async () => {
         try {
-            const response = await getUserParameters();
+            const response = await UserService.getUserParameters();
             setSettings(response);
         } catch (error) {
             console.error('Error fetching settings: ', error);

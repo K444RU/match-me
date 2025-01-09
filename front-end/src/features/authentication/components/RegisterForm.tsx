@@ -3,7 +3,6 @@ import InputField from '../../../components/ui/forms/InputField';
 import MotionSpinner from '@animations/MotionSpinner';
 import FormResponse from './FormResponse';
 import { AuthService } from '@/features/authentication/services/AuthService';
-import PhoneInput from './PhoneInput';
 import {useNavigate} from "react-router-dom";
 import { CountryCodePhoneInput } from '@ui/country-code-phone-input';
 import {parsePhoneNumber} from "react-phone-number-input";

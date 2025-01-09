@@ -11,7 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SettingsContext } from '../SettingsContext';
-import { updateSettings } from '@/features/user/services/UserService';
+import { UserService } from '@/features/user/services/UserService';
 import { toast } from 'sonner';
 import MotionSpinner from '@/components/animations/MotionSpinner';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -40,7 +40,7 @@ const UserProfileCard = () => {
         setLoading(true);
         try {
             if (!firstName || !lastName || !alias) return;
-            await updateSettings(
+            await UserService.updateSettings(
                 {
                     ...settings,
                     firstName,
