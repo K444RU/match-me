@@ -2,6 +2,7 @@ export interface UserProfile extends UserPreferences, UserAttributes {
     firstName: string;
     lastName: string;
     alias: string;
+    hobbies?: number[];
     email: string;
     number: string;
     city: string;

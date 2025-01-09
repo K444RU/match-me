@@ -7,6 +7,10 @@ import { useDebounce } from '@/lib/hooks/useDebounce';
 import { CitySuggestions } from './CitySuggestions';
 import { City, UnifiedFormData } from '../types/types';
 import MotionSpinner from '@/components/animations/MotionSpinner';
+import MultipleSelector, { Option } from '@/components/ui/multi-select';
+import { Label } from '@/components/ui/label';
+import { hobbiesById } from '@/lib/utils/dataConversion';
+import { HOBBIES } from '@/assets/hobbies';
 import ProfilePictureUploader from "@ui/forms/ProfilePictureUploader.tsx";
 
 interface AttributesProps {
@@ -31,6 +35,7 @@ const Attributes: React.FC<AttributesProps> = ({
     const [firstName, setFirstName] = useState(formData.firstName || '');
     const [lastName, setLastName] = useState(formData.lastName || '');
     const [alias, setAlias] = useState(formData.alias || '');
+    const [hobbies, setHobbies] = useState<Option[] | []>(hobbiesById(formData.hobbies || []));
 
     const debouncedCitySearchValue = useDebounce(citySearchValue, 1000);
 
@@ -62,6 +67,7 @@ const Attributes: React.FC<AttributesProps> = ({
         onChange('firstName', firstName);
         onChange('lastName', lastName);
         onChange('alias', alias);
+        onChange('hobbies', hobbies.map((hobby) => parseInt(hobby.value)));
         setError(null);
         onNext();
     };
@@ -124,23 +130,39 @@ const Attributes: React.FC<AttributesProps> = ({
                         />
                     </div>
 
-                    {/* Alias */}
-                    <div className="flex flex-col">
-                        <label
-                            className="mb-1 text-sm font-medium text-gray-700"
-                            htmlFor="city"
-                        >
-                            Alias
-                        </label>
-                        <InputField
-                            type="text"
-                            name="alias"
-                            placeholder="Shotgunner404"
-                            value={alias}
-                            onChange={setAlias}
-                        />
-                    </div>
+                {/* Alias */}
+                <div className="flex flex-col">
+                    {' '}
+                    <label
+                        className="mb-1 text-sm font-medium text-gray-700"
+                        htmlFor="city"
+                    >
+                        Alias
+                    </label>
+                    <InputField
+                        type="text"
+                        name="alias"
+                        placeholder="Shotgunner404"
+                        value={alias}
+                        onChange={setAlias}
+                    />
+                </div>
 
+                {/* Hobbies */}
+                <div className="flex flex-col space-y-1.5">
+                    <Label htmlFor="hobbies">Hobbies</Label>
+                    <MultipleSelector
+                    value={hobbies}
+                    onChange={setHobbies}
+                    placeholder='Select your hobbies...'
+                    defaultOptions={HOBBIES}
+                    groupBy='category'
+                    hideClearAllButton={true}
+                    maxSelected={5}
+                    hidePlaceholderWhenSelected={true}
+                    className='bg-white'
+                    />
+                </div>
                     {/* Gender Dropdown */}
                     <div>
                         <label
