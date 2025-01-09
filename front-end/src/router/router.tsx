@@ -23,7 +23,7 @@ export const routes = createRoutesFromElements(
 
             {/* Login page in case unauthenticated */}
             <Route
-                element={<AuthenticationGuard guardType="unauthenticated" />}
+                element={<AuthenticationGuard guardType="unauthenticated" redirectPath="/chats" />}
             >
                 <Route path="login" element={<LoginPage />} />
                 <Route path="register" element={<RegisterPage />} />
