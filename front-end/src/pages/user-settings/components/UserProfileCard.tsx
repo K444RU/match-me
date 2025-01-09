@@ -119,16 +119,6 @@ const UserProfileCard = () => {
                             />
                         </div>
                         <div className="flex flex-col space-y-1.5">
-                            <label className="mb-1 text-sm font-medium text-gray-700">
-                                Profile Picture
-                            </label>
-                            <ProfilePictureUploader
-                                onUploadSuccess={() => {
-                                    console.debug('Upload was successful!');
-                                }}
-                            />
-                        </div>
-                        <div className="flex flex-col space-y-1.5">
                             <Label htmlFor="alias">Alias</Label>
                             {alias !== undefined && alias !== null ? (
                                 <Input
