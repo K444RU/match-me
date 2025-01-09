@@ -3,7 +3,7 @@ import { LoginRequestDTO, SignupRequestDTO } from '@/api/types';
 
 const authController = getAuthController();
 
-export const AuthService = {
+export const authService = {
     login: async (credentials: LoginRequestDTO): Promise<AuthenticateUserResult> => {
         try {
             console.debug('🌐 AuthService: Making login request');
