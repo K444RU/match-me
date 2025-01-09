@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SettingsContext } from '../SettingsContext';
 import { toast } from 'sonner';
-import { updateSettings } from '@/features/user/services/UserService';
+import { userService } from '@/features/user/services/user-service';
 import MotionSpinner from '@/components/animations/MotionSpinner';
 import { useAuth } from '@/features/authentication/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -34,14 +34,10 @@ const UserAccountCard = () => {
         setLoading(true);
         try {
             if (!email || !number || !countryCode) return;
-            await updateSettings(
-                {
-                    ...settings,
-                    email,
-                    number: `${countryCode} ${number}`,
-                },
-                'account'
-            );
+            await userService.updateAccountSettings({
+                email,
+                number: `${countryCode} ${number}`,
+            });
             if (settings.email !== email) {
                 logout();
                 navigate('/login');

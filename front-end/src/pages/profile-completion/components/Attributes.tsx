@@ -119,7 +119,7 @@ const Attributes: React.FC<AttributesProps> = ({
                         </label>
                         <ProfilePictureUploader
                             onUploadSuccess={() => {
-                                console.log('Upload was successful!');
+                                console.debug('Upload was successful!');
                             }}
                         />
                     </div>

@@ -6,15 +6,15 @@ export interface City {
   }
 
 export interface UnifiedFormData {
-  firstName: string | null;
-  lastName: string | null;
-  alias: string | null;
-  gender: string | null;
+  firstName: string;
+  lastName: string;
+  alias: string | "";
+  gender: string;
   dateOfBirth: string;
   city: City;
-  genderOther: string | null;
-  ageMin: number | null;
-  ageMax: number | null;
-  distance: number | null;
-  probabilityTolerance: number | null;
+  genderOther: string;
+  ageMin: number;
+  ageMax: number;
+  distance: number;
+  probabilityTolerance: number;
 }

@@ -11,11 +11,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SettingsContext } from '../SettingsContext';
-import { UserService } from '@/features/user/services/UserService';
+import { userService } from '@/features/user/services/user-service';
 import { toast } from 'sonner';
 import MotionSpinner from '@/components/animations/MotionSpinner';
 import { Skeleton } from '@/components/ui/skeleton';
-import ProfilePictureUploader from "@ui/forms/ProfilePictureUploader.tsx";
+import ProfilePictureUploader from '@ui/forms/ProfilePictureUploader.tsx';
 
 const UserProfileCard = () => {
     const settingsContext = useContext(SettingsContext);
@@ -40,15 +40,11 @@ const UserProfileCard = () => {
         setLoading(true);
         try {
             if (!firstName || !lastName || !alias) return;
-            await UserService.updateSettings(
-                {
-                    ...settings,
-                    firstName,
-                    lastName,
-                    alias,
-                },
-                'profile'
-            );
+            await userService.updateProfileSettings({
+                first_name: firstName,
+                last_name: lastName,
+                alias,
+            });
             refreshSettings();
             toast.success('Profile updated successfully');
         } catch (error) {
@@ -60,7 +56,7 @@ const UserProfileCard = () => {
     };
 
     return (
-        <Card className="h-[475px] w-full border-none shadow-none overflow-y-auto no-scrollbar">
+        <Card className="no-scrollbar h-[475px] w-full overflow-y-auto border-none shadow-none">
             <CardHeader>
                 <CardTitle>Profile</CardTitle>
                 <CardDescription>

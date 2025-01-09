@@ -21,7 +21,7 @@ import MultiHandleSlider from '@/components/ui/forms/MultiRangeSlider';
 import { SettingsContext } from '../SettingsContext';
 import { GenderContext } from '@/features/gender/GenderContext';
 import { toast } from 'sonner';
-import { updateSettings } from '@/features/user/services/UserService';
+import { userService } from '@/features/user/services/user-service';
 import MotionSpinner from '@/components/animations/MotionSpinner';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -63,17 +63,13 @@ const UserPreferencesCard = () => {
                 !probabilityTolerance
             )
                 return;
-            await updateSettings(
-                {
-                    ...settings,
-                    genderOther: gender,
-                    distance,
-                    ageMin,
-                    ageMax,
-                    probabilityTolerance,
-                },
-                'preferences'
-            );
+            await userService.updatePreferencesSettings({
+                gender_other: gender,
+                distance,
+                age_min: ageMin,
+                age_max: ageMax,
+                probability_tolerance: probabilityTolerance,
+            });
             refreshSettings();
             toast.success('Preferences updated successfully');
         } catch (error) {

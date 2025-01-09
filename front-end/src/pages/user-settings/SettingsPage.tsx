@@ -3,17 +3,18 @@ import UserAttributesCard from './components/UserAttributesCard';
 import UserProfileCard from './components/UserProfileCard';
 import { useAuth } from '@/features/authentication/AuthContext';
 import { useEffect, useState } from 'react';
-import { UserService } from '../../features/user/services/UserService';
-import { Gender, UserProfile } from '@/types/api';
+import { Gender } from '@/types/api';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SettingsContext } from './SettingsContext';
 import { GenderContext } from '@/features/gender/GenderContext';
 import { getGenders } from '@/features/gender/services/GenderService';
 import UserAccountCard from './components/UserAccountCard';
 import { toast } from "sonner"
+import { meService } from '@/features/user/services/me-service';
+import { SettingsResponseDTO } from '@/api/types';
 
 const SettingsPage = () => {
-    const [settings, setSettings] = useState<UserProfile | null>(null);
+    const [settings, setSettings] = useState<SettingsResponseDTO | null>(null);
     const [genders, setGenders] = useState<Gender[] | null>(null);
     const { user } = useAuth();
 
@@ -22,7 +23,7 @@ const SettingsPage = () => {
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const response = await UserService.getUserParameters();
+                const response = await meService.getUserParameters();
                 setSettings(response);
             } catch (error) {
                 console.error('Error fetching settings: ', error);
@@ -45,7 +46,7 @@ const SettingsPage = () => {
 
     const refreshSettings = async () => {
         try {
-            const response = await UserService.getUserParameters();
+            const response = await meService.getUserParameters();
             setSettings(response);
         } catch (error) {
             console.error('Error fetching settings: ', error);
