@@ -1,39 +1,42 @@
-import axios, { AxiosRequestConfig } from 'axios';
-import { CurrentUser, UserProfile } from '@/types/api.ts';
+import { AxiosRequestConfig } from 'axios';
 import { getUserController } from '@/api/user-controller';
-import { ProfilePictureSettingsRequestDTO } from '@/api/types';
+import {
+    AccountSettingsRequestDTO,
+    AttributesSettingsRequestDTO,
+    PreferencesSettingsRequestDTO,
+    ProfilePictureSettingsRequestDTO,
+    ProfileSettingsRequestDTO,
+    UserParametersRequestDTO,
+} from '@/api/types';
 
 const userController = getUserController();
 
 export const userService = {
-    getUserParameters: async (): Promise<UserProfile> => {
-        console.log('📡 Fetching user parameters via JWT');
+    updateParameters: async (
+        userPararmetersRequestDTO: UserParametersRequestDTO,
+        options?: AxiosRequestConfig
+    ): Promise<unknown> => {
         try {
-            const token = localStorage.getItem('authToken');
-            console.log('🛡️ Token used in request: ', token);
-            const response = await axios.get(
-                `${import.meta.env.VITE_API_URL}/me/settings`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
+            console.debug('👤 UserService: Making updateParameters request');
+            const response = await userController.setParameters(
+                userPararmetersRequestDTO,
+                options
             );
-
-            const mappedData: UserProfile = response.data;
-            console.log('✅ Received user parameters: ', mappedData);
-            return mappedData;
+            return response.data;
         } catch (error) {
-            console.error('❌ Error fetching user parameters', error);
+            console.error('👤 UserService: Request failed');
             throw error;
         }
     },
 
-    getCurrentUser: async (): Promise<CurrentUser> => {
+    updateAccountSettings: async (
+        accountSettingsRequestDTO: AccountSettingsRequestDTO
+    ): Promise<unknown> => {
         try {
+            console.debug('👤 UserService: Making updateAccount request');
             const token = localStorage.getItem('authToken');
-            const response = await axios.get(
-                `${import.meta.env.VITE_API_URL}/me`,
+            const response = await userController.updateAccount(
+                accountSettingsRequestDTO,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -42,63 +45,19 @@ export const userService = {
             );
             return response.data;
         } catch (error) {
-            console.error('❌ Error fetching user parameters', error);
+            console.error('👤 UserService: Request failed');
             throw error;
         }
     },
 
-    updateSettings: async (
-        settings: UserProfile,
-        section: string
-    ): Promise<UserProfile> => {
-        let suffix = '';
-        let payload = {};
-
-        switch (section) {
-            case 'account':
-                suffix = 'account';
-                payload = {
-                    email: settings.email,
-                    number: settings.number,
-                };
-                break;
-            case 'profile':
-                suffix = 'profile';
-                payload = {
-                    first_name: settings.firstName,
-                    last_name: settings.lastName,
-                    alias: settings.alias,
-                };
-                break;
-            case 'preferences':
-                suffix = 'preferences';
-                payload = {
-                    gender_other: settings.genderOther,
-                    age_min: settings.ageMin,
-                    age_max: settings.ageMax,
-                    distance: settings.distance,
-                    probability_tolerance: settings.probabilityTolerance,
-                };
-                break;
-            case 'attributes':
-                suffix = 'attributes';
-                payload = {
-                    gender_self: settings.genderSelf,
-                    birth_date: settings.birthDate,
-                    city: settings.city,
-                    longitude: settings.longitude,
-                    latitude: settings.latitude,
-                };
-                break;
-            default:
-                throw new Error('Invalid section');
-        }
-
+    updateProfileSettings: async (
+        profileSettingsRequestDTO: ProfileSettingsRequestDTO
+    ): Promise<unknown> => {
         try {
+            console.debug('👤 UserService: Making updateProfile request');
             const token = localStorage.getItem('authToken');
-            const response = await axios.put(
-                `${import.meta.env.VITE_API_URL}/users/settings/${suffix}`,
-                payload,
+            const response = await userController.updateProfile(
+                profileSettingsRequestDTO,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -107,7 +66,49 @@ export const userService = {
             );
             return response.data;
         } catch (error) {
-            console.error('❌ Error updating account settings', error);
+            console.error('👤 UserService: Request failed');
+            throw error;
+        }
+    },
+
+    updatePreferencesSettings: async (
+        preferencesSettingsRequestDTO: PreferencesSettingsRequestDTO
+    ): Promise<unknown> => {
+        try {
+            console.debug('👤 UserService: Making updatePreferences request');
+            const token = localStorage.getItem('authToken');
+            const response = await userController.updatePreferences(
+                preferencesSettingsRequestDTO,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            return response.data;
+        } catch (error) {
+            console.error('👤 UserService: Request failed');
+            throw error;
+        }
+    },
+
+    updateAttributesSettings: async (
+        attributesSettingsRequestDTO: AttributesSettingsRequestDTO
+    ): Promise<unknown> => {
+        try {
+            console.debug('👤 UserService: Making updateAttributes request');
+            const token = localStorage.getItem('authToken');
+            const response = await userController.updateAttributes(
+                attributesSettingsRequestDTO,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            return response.data;
+        } catch (error) {
+            console.error('👤 UserService: Request failed');
             throw error;
         }
     },

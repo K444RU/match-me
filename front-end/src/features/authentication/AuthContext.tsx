@@ -1,11 +1,10 @@
 import { createContext, ReactNode, useContext, useState } from 'react';
-import { AuthService } from '@/features/authentication/services/AuthService';
+import { authService } from '@/features/authentication/services/auth-service';
 import { AxiosResponse } from 'axios';
-import { CurrentUser } from '@/types/api';
-import { getCurrentUser } from '@/features/user/services/UserService';
-import { LoginRequestDTO } from '@/api/types';
+import { meService } from '@/features/user/services/me-service';
+import { CurrentUserResponseDTO, LoginRequestDTO } from '@/api/types';
 
-interface User extends CurrentUser {
+interface User extends CurrentUserResponseDTO {
     token: string;
 }
 
@@ -34,7 +33,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         const token = localStorage.getItem('authToken');
         if (token) {
             try {
-                getCurrentUser()
+                meService.getCurrentUser()
                     .then((currentUser) => {
                         setUser({
                             ...currentUser,
@@ -66,11 +65,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     const login = async (credentials: LoginRequestDTO) => {
         try {
-            const response = await AuthService.login(credentials);
+            const response = await authService.login(credentials);
 
             if (response?.data?.token) {
                 localStorage.setItem('authToken', response.data.token);
-                const currentUser = await getCurrentUser();
+                const currentUser = await meService.getCurrentUser();
 
                 const userData: User = {
                     ...currentUser,
@@ -110,7 +109,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
               return;
           }
 
-          const currentUser = await getCurrentUser();
+          const currentUser = await meService.getCurrentUser();
           setUser({
               ...currentUser,
               token,

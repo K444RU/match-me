@@ -2,7 +2,7 @@ import { useState } from 'react';
 import InputField from '../../../components/ui/forms/InputField';
 import MotionSpinner from '@animations/MotionSpinner';
 import FormResponse from './FormResponse';
-import { AuthService } from '@/features/authentication/services/AuthService';
+import { authService } from '@/features/authentication/services/auth-service';
 import {useNavigate} from "react-router-dom";
 import { CountryCodePhoneInput } from '@ui/country-code-phone-input';
 import {parsePhoneNumber} from "react-phone-number-input";
@@ -66,7 +66,7 @@ const RegisterForm = () => {
         e.preventDefault();
         setLoading(true);
 
-        AuthService.register({email, number: `${countryCode} ${localNumber}`, password})
+        authService.register({email, number: `${countryCode} ${localNumber}`, password})
             .then((res) => {
                 // TODO: Don't redirect on register & wait for email verify.
                 // This current approach would cause a unnecessary

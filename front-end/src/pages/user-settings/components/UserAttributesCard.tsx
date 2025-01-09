@@ -24,7 +24,7 @@ import { useDebounce } from '@/lib/hooks/useDebounce';
 import { City } from '@/pages/profile-completion/types/types';
 import InputField from '@/components/ui/forms/InputField';
 import { toast } from 'sonner';
-import { updateSettings } from '@/features/user/services/UserService';
+import { userService } from '@/features/user/services/user-service';
 import MotionSpinner from '@/components/animations/MotionSpinner';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -62,17 +62,13 @@ const UserAttributesCard = () => {
         try {
             if (!city || !latitude || !longitude || !birthDate || !gender)
                 return;
-            await updateSettings(
-                {
-                    ...settings,
-                    city,
-                    longitude,
-                    latitude,
-                    birthDate: birthDate.toISOString().split('T')[0],
-                    genderSelf: gender,
-                },
-                'attributes'
-            );
+            await userService.updateAttributesSettings({
+                city,
+                longitude,
+                latitude,
+                birth_date: birthDate.toISOString().split('T')[0],
+                gender_self: gender,
+            });
             refreshSettings();
             toast.success('Attributes updated successfully');
         } catch (error) {
@@ -85,15 +81,13 @@ const UserAttributesCard = () => {
 
     useEffect(() => {
         if (settings) {
-                setCity(settings.city ?? '');
-                setLongitude(settings.longitude ?? null);
-                setLatitude(settings.latitude ?? null);
-                setGender(settings.genderSelf ?? null);
-                setBirthDate(
-                    settings.birthDate
-                        ? new Date(settings.birthDate)
-                        : undefined
-                );
+            setCity(settings.city ?? '');
+            setLongitude(settings.longitude ?? null);
+            setLatitude(settings.latitude ?? null);
+            setGender(settings.genderSelf ?? null);
+            setBirthDate(
+                settings.birthDate ? new Date(settings.birthDate) : undefined
+            );
         }
     }, [settings]);
 
