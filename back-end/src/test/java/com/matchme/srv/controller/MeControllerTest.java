@@ -78,33 +78,44 @@ public class MeControllerTest {
      */
     @Test
     void testGetUser() throws Exception {
-        // Given
         Long userId = 1L;
         String email = "user1@example.com";
         String firstName = "firstName";
         String lastName = "lastName";
         String alias = "alias";
-        String city = "city";
+        String profilePicture = "data:image/png;base64,dummyImageData";
+
+        UserRoleType roleUser = new UserRoleType();
+        roleUser.setId(1L);
+        roleUser.setName("ROLE_USER");
+        Set<UserRoleType> roles = Set.of(roleUser);
 
         setupAuthenticatedUser(userId, email);
 
-        User mockUser = createMockUser(userId, email, firstName, lastName, alias, city);
+        CurrentUserResponseDTO responseDTO = CurrentUserResponseDTO.builder()
+                .id(userId)
+                .email(email)
+                .firstName(firstName)
+                .lastName(lastName)
+                .alias(alias)
+                .profilePicture(profilePicture)
+                .role(roles)
+                .build();
 
-        when(userService.getUser(1L)).thenReturn(mockUser);
-        when(userService.getUserProfile(1L)).thenReturn(mockUser.getProfile());
+        when(userService.getCurrentUserDTO(userId)).thenReturn(responseDTO);
 
-        // When/Then
-        mockMvc.perform(get("/api/me", userId)
-                .principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/api/me")
+                        .principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(userId.intValue())))
-                .andExpect(jsonPath("$.email", is(email)))
-                .andExpect(jsonPath("$.firstName", is(firstName)))
-                .andExpect(jsonPath("$.lastName", is(lastName)))
-                .andExpect(jsonPath("$.alias", is(alias)))
-                .andExpect(jsonPath("$.role[0].id", is(1)))
-                .andExpect(jsonPath("$.role[0].name", is("ROLE_USER")));
+                .andExpect(jsonPath("$.id").value(userId))
+                .andExpect(jsonPath("$.email").value(email))
+                .andExpect(jsonPath("$.firstName").value(firstName))
+                .andExpect(jsonPath("$.lastName").value(lastName))
+                .andExpect(jsonPath("$.alias").value(alias))
+                .andExpect(jsonPath("$.profilePicture").value(profilePicture))
+                .andExpect(jsonPath("$.role[0].id").value(1))
+                .andExpect(jsonPath("$.role[0].name").value("ROLE_USER"));
     }
 
     /**

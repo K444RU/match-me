@@ -1,15 +1,13 @@
 package com.matchme.srv.service;
 
+import java.util.Base64;
 import java.util.List;
 
+import com.matchme.srv.dto.request.settings.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.matchme.srv.dto.request.*;
-import com.matchme.srv.dto.request.settings.AccountSettingsRequestDTO;
-import com.matchme.srv.dto.request.settings.AttributesSettingsRequestDTO;
-import com.matchme.srv.dto.request.settings.PreferencesSettingsRequestDTO;
-import com.matchme.srv.dto.request.settings.ProfileSettingsRequestDTO;
 import com.matchme.srv.dto.response.*;
 import com.matchme.srv.exception.DuplicateFieldException;
 import com.matchme.srv.exception.ResourceNotFoundException;
@@ -38,6 +36,7 @@ import com.matchme.srv.repository.*;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -81,6 +80,7 @@ public class UserService {
   }
 
   // Creates User entity and UserAuth entity for user, sends verification e-mail
+  @Transactional
   public ActivityLog createUser(SignupRequestDTO signUpRequest) {
     System.out.println("Creating user with email: " + signUpRequest.getEmail());
 
@@ -334,6 +334,131 @@ public class UserService {
     return false;
   }
 
+  @Transactional
+  public void saveProfilePicture(Long userId, ProfilePictureSettingsRequestDTO request) {
+
+    validateProfilePictureRequest(request);
+
+    String base64Part = extractBase64Part(request.getBase64Image());
+    byte[] imageBytes = decodeBase64Image(base64Part);
+
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new EntityNotFoundException("User not found for ID: " + userId));
+
+    UserProfile profile = user.getProfile();
+    if (profile == null) {
+      profile = new UserProfile();
+      user.setProfile(profile);
+    }
+
+    profile.setProfilePicture(imageBytes);
+    userRepository.save(user);
+  }
+
+  private void validateProfilePictureRequest(ProfilePictureSettingsRequestDTO request) {
+    if (request == null || request.getBase64Image() == null || request.getBase64Image().isEmpty()) {
+      throw new IllegalArgumentException("Invalid base64 image data in the request.");
+    }
+  }
+
+  private String extractBase64Part(String base64Image) {
+    return base64Image.contains(",") ? base64Image.substring(base64Image.indexOf(',') + 1) : base64Image;
+  }
+
+  private byte[] decodeBase64Image(String base64Part) {
+    try {
+      return Base64.getDecoder().decode(base64Part);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Invalid Base64 image data.", e);
+    }
+  }
+
+  //TODO: Add validateImageSize method to check Checks if the image exceeds 5 MB
+  //TODO: validateImageFormat method to check that the image is either PNG or JPEG method.
+
+  /**
+   * Validate that `currentUserId` can view `targetUserId`.
+   * If not, throw an exception (404 or 403).
+   */
+  public void validateUserAccess(Long currentUserId, Long targetUserId) {
+    if (!currentUserId.equals(targetUserId) && !isConnected(currentUserId, targetUserId)) {
+      throw new EntityNotFoundException("User not found or no access rights.");
+    }
+  }
+
+  /**
+   * Return a user’s basic info,
+   * first checks whether the current user can access the target’s data.
+   */
+  @Transactional(readOnly = true)
+  public CurrentUserResponseDTO getUserDTO(Long currentUserId, Long targetUserId) {
+    validateUserAccess(currentUserId, targetUserId);
+    User user = userRepository.findById(targetUserId)
+            .orElseThrow(() -> new EntityNotFoundException("User not found!"));
+    return buildCurrentUserResponseDTO(user);
+  }
+
+  /**
+   * Build CurrentUserResponseDTO, factoring in profile picture, etc.
+   */
+  private CurrentUserResponseDTO buildCurrentUserResponseDTO(User user) {
+    UserProfile profile = user.getProfile();
+
+    String base64Picture = null;
+    if (profile != null && profile.getProfilePicture() != null && profile.getProfilePicture().length > 0) {
+      base64Picture = "data:image/png;base64,"
+              + Base64.getEncoder().encodeToString(profile.getProfilePicture());
+    }
+
+    return CurrentUserResponseDTO.builder()
+            .id(user.getId())
+            .email(user.getEmail())
+            .firstName(profile != null ? profile.getFirst_name() : null)
+            .lastName(profile != null ? profile.getLast_name() : null)
+            .alias(profile != null ? profile.getAlias() : null)
+            .profilePicture(base64Picture)
+            .role(user.getRoles())
+            .build();
+  }
+
+  @Transactional
+  public CurrentUserResponseDTO getCurrentUserDTO(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found!"));
+        UserProfile userProfile = user.getProfile();
+        String base64Picture = null;
+        if (userProfile != null && userProfile.getProfilePicture() != null
+                && userProfile.getProfilePicture().length > 0) {
+            base64Picture = "data:image/png;base64,"
+                    + Base64.getEncoder().encodeToString(userProfile.getProfilePicture());
+        }
+
+        return CurrentUserResponseDTO.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .firstName(userProfile != null ? userProfile.getFirst_name() : null)
+                .lastName(userProfile != null ? userProfile.getLast_name() : null)
+                .alias(userProfile != null ? userProfile.getAlias() : null)
+                .role(user.getRoles())
+                .profilePicture(base64Picture)
+                .build();
+  }
+
+  @Transactional
+  public ProfileResponseDTO getUserProfileDTO(Long currentUserId, Long targetUserId) {
+    validateUserAccess(currentUserId, targetUserId);
+
+    UserProfile profile = userRepository.findById(targetUserId)
+            .orElseThrow(() -> new EntityNotFoundException("User not found!"))
+            .getProfile();
+
+    return ProfileResponseDTO.builder()
+            .first_name(profile.getFirst_name())
+            .last_name(profile.getLast_name())
+            .city(profile.getCity())
+            .build();
+  }
+}
+
   // public void setAttributes(Long userId) {
 
   // UserAttributes attributes = attributesRepository.findById(userId)
@@ -379,4 +504,3 @@ public class UserService {
 
   // return new ProfileResponseDTO(profile.getFirstName(), profile.getLastName());
   // }
-}

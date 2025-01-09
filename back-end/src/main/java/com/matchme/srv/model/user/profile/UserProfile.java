@@ -45,6 +45,8 @@ public class UserProfile {
 
   private String city;
 
+  private byte[] profilePicture;
+
   public void setPreferences(UserPreferences preferences) {
     if (preferences != null) {
       preferences.setUserProfile(this);
@@ -58,4 +60,5 @@ public class UserProfile {
     }
     this.attributes = attributes;
   }
+
 }

@@ -21,6 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import SettingsDialog from './SettingsDialog';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import defaultProfilePicture from '@/assets/defaultProfilePicture.png';
 
 const UserInfo = () => {
     // Dunno how to see loading state since we are not awaiting useAuth...
@@ -34,6 +35,8 @@ const UserInfo = () => {
     const navigate = useNavigate();
     if (!user) return;
 
+    const profileSrc = user.profilePicture || defaultProfilePicture;
+
     return (
         <>
         <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
@@ -44,7 +47,7 @@ const UserInfo = () => {
                 >
                     <Avatar className="h-8 w-8 rounded-lg">
                         <AvatarImage
-                            src="https://media.npr.org/assets/img/2023/12/12/gettyimages-1054147940-627235e01fb63b4644bec84204c259f0a343e35b.jpg"
+                            src={profileSrc}
                             alt={user.firstName}
                         />
                         <AvatarFallback className="rounded-lg">
@@ -70,7 +73,7 @@ const UserInfo = () => {
                     <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                         <Avatar className="h-8 w-8 rounded-lg">
                             <AvatarImage
-                                src="https://media.npr.org/assets/img/2023/12/12/gettyimages-1054147940-627235e01fb63b4644bec84204c259f0a343e35b.jpg"
+                                src={profileSrc}
                                 alt={user.firstName}
                             />
                             <AvatarFallback className="rounded-lg">
