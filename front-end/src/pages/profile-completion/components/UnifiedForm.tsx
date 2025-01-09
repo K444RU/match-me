@@ -6,7 +6,7 @@ import { UnifiedFormData } from '../types/types';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuth } from '@features/authentication/AuthContext.tsx';
-import { userService } from '@/features/user/services/user-service';
+import { userService } from '@/features/user';
 import { UserParametersRequestDTO } from '@/api/types';
 
 const PayloadFormData = (

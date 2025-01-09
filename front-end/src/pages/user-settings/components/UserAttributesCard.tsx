@@ -18,13 +18,13 @@ import {
 } from '@/components/ui/select';
 import { SettingsContext } from '../SettingsContext';
 import DatePicker from '@/components/ui/forms/DatePicker';
-import { GenderContext } from '@/features/gender/GenderContext';
+import { GenderContext } from '@/features/gender';
 import { CitySuggestions } from '@/pages/profile-completion/components/CitySuggestions';
 import { useDebounce } from '@/lib/hooks/useDebounce';
 import { City } from '@/pages/profile-completion/types/types';
 import InputField from '@/components/ui/forms/InputField';
 import { toast } from 'sonner';
-import { userService } from '@/features/user/services/user-service';
+import { userService } from '@/features/user';
 import MotionSpinner from '@/components/animations/MotionSpinner';
 import { Skeleton } from '@/components/ui/skeleton';
 

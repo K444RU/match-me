@@ -2,10 +2,10 @@ import { useState } from 'react';
 import InputField from '../../../components/ui/forms/InputField';
 import MotionSpinner from '@animations/MotionSpinner';
 import FormResponse from './FormResponse';
-import { authService } from '@/features/authentication/services/auth-service';
-import {useNavigate} from "react-router-dom";
+import { authService } from '@/features/authentication';
+import { useNavigate } from 'react-router-dom';
 import { CountryCodePhoneInput } from '@ui/country-code-phone-input';
-import {parsePhoneNumber} from "react-phone-number-input";
+import { parsePhoneNumber } from 'react-phone-number-input';
 
 const RegisterForm = () => {
     const [email, setEmail] = useState('');
@@ -44,16 +44,16 @@ const RegisterForm = () => {
      * This separation helps make the app work smoothly for both backend systems and user-facing features.
      */
     const handlePhoneChange = (val: string | undefined) => {
-        const E164Number = val ?? "";
+        const E164Number = val ?? '';
         setPhone(E164Number);
 
-        let countryCode = "";
-        let localNumber = "";
+        let countryCode = '';
+        let localNumber = '';
 
         if (E164Number) {
             const parsedPhoneNumber = parsePhoneNumber(E164Number);
             if (parsedPhoneNumber) {
-                countryCode = "+" + parsedPhoneNumber.countryCallingCode;
+                countryCode = '+' + parsedPhoneNumber.countryCallingCode;
                 localNumber = parsedPhoneNumber.nationalNumber;
             }
         }
@@ -66,7 +66,12 @@ const RegisterForm = () => {
         e.preventDefault();
         setLoading(true);
 
-        authService.register({email, number: `${countryCode} ${localNumber}`, password})
+        authService
+            .register({
+                email,
+                number: `${countryCode} ${localNumber}`,
+                password,
+            })
             .then((res) => {
                 // TODO: Don't redirect on register & wait for email verify.
                 // This current approach would cause a unnecessary
@@ -92,7 +97,9 @@ const RegisterForm = () => {
                 // Handle network errors
                 if (err.code === 'ERR_NETWORK') {
                     setResTitle('Connection Error');
-                    setResSubtitle('Unable to connect to the server. Please check your internet connection and try again.');
+                    setResSubtitle(
+                        'Unable to connect to the server. Please check your internet connection and try again.'
+                    );
                     return;
                 }
 
@@ -107,7 +114,9 @@ const RegisterForm = () => {
                     // Password must be between 6 and 40 characters -> good
                     // Error: email is already taken!
                     Object.keys(err.response.data).forEach((key) => {
-                        setResSubtitle((prev) => `${prev}\n${err.response.data[key]}`);
+                        setResSubtitle(
+                            (prev) => `${prev}\n${err.response.data[key]}`
+                        );
                     });
                 } else {
                     setResTitle('Something went wrong...');
@@ -120,12 +129,19 @@ const RegisterForm = () => {
     };
 
     return (
-        <form onSubmit={submitForm} className="flex flex-col items-center gap-4">
+        <form
+            onSubmit={submitForm}
+            className="flex flex-col items-center gap-4"
+        >
             {resTitle && resSubtitle && (
-                <FormResponse title={resTitle} subtitle={resSubtitle} state={resState}/>
+                <FormResponse
+                    title={resTitle}
+                    subtitle={resSubtitle}
+                    state={resState}
+                />
             )}
 
-            <div className="flex flex-col w-full">
+            <div className="flex w-full flex-col">
                 <label
                     htmlFor="contact_email"
                     className="mb-1 text-sm font-medium text-gray-700"
@@ -142,7 +158,7 @@ const RegisterForm = () => {
                 />
             </div>
 
-            <div className="flex flex-col w-full">
+            <div className="flex w-full flex-col">
                 <label
                     htmlFor="password"
                     className="mb-1 text-sm font-medium text-gray-700"
@@ -159,14 +175,14 @@ const RegisterForm = () => {
                 />
             </div>
 
-            <div className="flex flex-col w-full">
+            <div className="flex w-full flex-col">
                 <label
                     htmlFor="phone2"
                     className="mb-1 text-sm font-medium text-gray-700"
                 >
                     Country Code & Phone Number
                 </label>
-                <div className="flex space-x-2 w-full">
+                <div className="flex w-full space-x-2">
                     <CountryCodePhoneInput
                         value={phone}
                         defaultCountry="EE"
@@ -183,7 +199,7 @@ const RegisterForm = () => {
                 aria-label="Submit form."
             >
                 <span>Register</span>
-                {loading && <MotionSpinner/>}
+                {loading && <MotionSpinner />}
             </button>
         </form>
     );

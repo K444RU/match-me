@@ -19,9 +19,9 @@ import {
 } from '@/components/ui/select';
 import MultiHandleSlider from '@/components/ui/forms/MultiRangeSlider';
 import { SettingsContext } from '../SettingsContext';
-import { GenderContext } from '@/features/gender/GenderContext';
+import { GenderContext } from '@/features/gender';
 import { toast } from 'sonner';
-import { userService } from '@/features/user/services/user-service';
+import { userService } from '@/features/user';
 import MotionSpinner from '@/components/animations/MotionSpinner';
 import { Skeleton } from '@/components/ui/skeleton';
 

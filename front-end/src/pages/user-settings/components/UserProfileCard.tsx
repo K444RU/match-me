@@ -11,7 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SettingsContext } from '../SettingsContext';
-import { userService } from '@/features/user/services/user-service';
+import { userService } from '@/features/user';
 import { toast } from 'sonner';
 import MotionSpinner from '@/components/animations/MotionSpinner';
 import { Skeleton } from '@/components/ui/skeleton';
