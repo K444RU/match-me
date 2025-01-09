@@ -29,11 +29,8 @@ import MotionSpinner from '@/components/animations/MotionSpinner';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const UserAttributesCard = () => {
-    const settingsContext = useContext(SettingsContext);
-    if (!settingsContext) return null;
-    const { settings, refreshSettings } = settingsContext;
     const genders = useContext(GenderContext);
-
+    const settingsContext = useContext(SettingsContext);
     const [city, setCity] = useState<string>();
     const [longitude, setLongitude] = useState<number | null>(null);
     const [latitude, setLatitude] = useState<number | null>(null);
@@ -42,6 +39,19 @@ const UserAttributesCard = () => {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const debouncedCitySearchValue = useDebounce(city as string, 1000);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (!settingsContext?.settings) return;
+
+        setCity(settingsContext.settings.city ?? '');
+        setLongitude(settingsContext.settings.longitude ?? null);
+        setLatitude(settingsContext.settings.latitude ?? null);
+        setGender(settingsContext.settings.genderSelf ?? null);
+        setBirthDate(
+            settingsContext.settings.birthDate ? new Date(settingsContext.settings.birthDate) : undefined
+        );
+        
+    }, [settingsContext?.settings]);
 
     const handleCitySelect = async (city: City) => {
         setShowSuggestions(false);
@@ -56,7 +66,7 @@ const UserAttributesCard = () => {
     };
 
     const handleUpdate = async () => {
-        if (!settings) return;
+        if (!settingsContext?.settings) return;
 
         setLoading(true);
         try {
@@ -69,7 +79,7 @@ const UserAttributesCard = () => {
                 birth_date: birthDate.toISOString().split('T')[0],
                 gender_self: gender,
             });
-            refreshSettings();
+            settingsContext.refreshSettings();
             toast.success('Attributes updated successfully');
         } catch (error) {
             toast.error('Failed to update attributes');
@@ -78,18 +88,6 @@ const UserAttributesCard = () => {
             setLoading(false);
         }
     };
-
-    useEffect(() => {
-        if (settings) {
-            setCity(settings.city ?? '');
-            setLongitude(settings.longitude ?? null);
-            setLatitude(settings.latitude ?? null);
-            setGender(settings.genderSelf ?? null);
-            setBirthDate(
-                settings.birthDate ? new Date(settings.birthDate) : undefined
-            );
-        }
-    }, [settings]);
 
     return (
         <Card className="h-[475px] w-full border-none shadow-none">

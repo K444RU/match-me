@@ -10,16 +10,16 @@ import { genderService } from '@/features/gender';
 import UserAccountCard from './components/UserAccountCard';
 import { toast } from "sonner"
 import { meService } from '@/features/user';
-import { SettingsResponseDTO, UserGenderType } from '@/api/types';
+import { GenderTypeDTO, SettingsResponseDTO } from '@/api/types';
 
 const SettingsPage = () => {
     const [settings, setSettings] = useState<SettingsResponseDTO | null>(null);
-    const [genders, setGenders] = useState<UserGenderType[] | null>(null);
+    const [genders, setGenders] = useState<GenderTypeDTO[] | null>(null);
     const { user } = useAuth();
-
-    if (!user) return null;
-
+    
     useEffect(() => {
+        if (!user) return;
+
         const fetchSettings = async () => {
             try {
                 const response = await meService.getUserParameters();
@@ -41,7 +41,9 @@ const SettingsPage = () => {
 
         fetchGenders();
         fetchSettings();
-    }, []);
+    }, [user]);
+
+    if (!user) return null;
 
     const refreshSettings = async () => {
         try {
