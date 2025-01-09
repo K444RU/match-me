@@ -1,5 +1,7 @@
 package com.matchme.srv.dto.response;
 
+import java.util.Set;
+
 public record UserParametersResponseDTO(
   
   String email,
@@ -11,6 +13,7 @@ public record UserParametersResponseDTO(
   String first_name,
   String last_name,
   String alias,
+  Set<Long> hobbies,
 
   Long gender_self,
 

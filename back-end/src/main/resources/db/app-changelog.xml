@@ -14,7 +14,7 @@
     <include file="changelog/007-insert-preference-change-types.xml" relativeToChangelogFile="true"/>
     <include file="changelog/008-insert-profile-change-types.xml" relativeToChangelogFile="true"/>
     <include file="changelog/009-insert-user-state-types.xml" relativeToChangelogFile="true"/>
-    
+    <include file="changelog/010-insert-hobbies.xml" relativeToChangelogFile="true"/>
 
     <!-- All changes are saved to DATABASECHANGELOG table, if you delete a role, liquibase won't reinsert it unless
     you delete DATABASECHANGELOG -->

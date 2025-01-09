@@ -34,6 +34,7 @@ import com.matchme.srv.dto.response.ProfileResponseDTO;
 import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.UserRoleType;
+import com.matchme.srv.model.user.profile.Hobby;
 import com.matchme.srv.model.user.profile.UserGenderType;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
@@ -41,6 +42,7 @@ import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
 import com.matchme.srv.security.services.UserDetailsImpl;
 import com.matchme.srv.service.ChatService;
 import com.matchme.srv.service.ConnectionService;
+import com.matchme.srv.service.HobbyService;
 import com.matchme.srv.service.UserService;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -58,6 +60,9 @@ public class UserControllerTest {
 
     @Mock
     private ConnectionService connectionService;
+
+    @Mock
+    private HobbyService hobbyService;
 
     @Mock
     private Authentication authentication;
@@ -272,6 +277,7 @@ public class UserControllerTest {
         String city = "city";
         UserGenderType genderSelf = createMockGenderType(1L); // MALE
         UserGenderType genderOther = createMockGenderType(2L); // FEMALE
+        Set<Hobby> hobbies = createMockHobbies();
         Integer ageMin = 18;
         Integer ageMax = 100;
         Integer distance = 50;
@@ -290,11 +296,15 @@ public class UserControllerTest {
         UserProfile mockUserProfile = createMockUserProfile(mockUser.getProfile(), mockUserPreferences,
                 mockUserAttributes);
         mockUser.setProfile(mockUserProfile);
+        mockUserProfile.setHobbies(hobbies);
 
         when(userService.getUser(1L)).thenReturn(mockUser);
         when(userService.getUserProfile(1L)).thenReturn(mockUser.getProfile());
+        for (Hobby hobby : hobbies) {
+            when(hobbyService.findById(hobby.getId())).thenReturn(hobby);
+        }
 
-        // When/Then
+    // When/Then
         mockMvc.perform(get("/api/users/{targetId}/bio", userId)
                 .principal(authentication)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -339,6 +349,7 @@ public class UserControllerTest {
         String target_city = "city";
         UserGenderType target_genderSelf = createMockGenderType(1L); // MALE
         UserGenderType target_genderOther = createMockGenderType(2L); // FEMALE
+        Set<Hobby> hobbies = createMockHobbies();
         Integer target_ageMin = 18;
         Integer target_ageMax = 100;
         Integer target_distance = 50;
@@ -361,9 +372,13 @@ public class UserControllerTest {
         UserProfile mockUserProfile = createMockUserProfile(mockUser.getProfile(), mockUserPreferences,
                 mockUserAttributes);
         mockUser.setProfile(mockUserProfile);
+        mockUserProfile.setHobbies(hobbies);
 
         when(userService.getUser(target_userId)).thenReturn(mockUser);
         when(userService.getUserProfile(target_userId)).thenReturn(mockUser.getProfile());
+        for (Hobby hobby : hobbies) {
+            when(hobbyService.findById(hobby.getId())).thenReturn(hobby);
+        }
 
         // When/Then
         mockMvc.perform(get("/api/users/{targetId}/bio", target_userId)
@@ -564,6 +579,25 @@ public class UserControllerTest {
                         .content("{ \"base64Image\": \"" + validBase64 + "\" }"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("User not found for ID: 999")));
+    }
+
+    /**
+     * Helper method to create a set of hobbies
+     * 
+     * @return Set<Hobby>
+     */
+    private Set<Hobby> createMockHobbies() {
+        Hobby hobby1 = new Hobby();
+        hobby1.setId(1L);
+        hobby1.setName("3D printing");
+        hobby1.setCategory("General");
+    
+        Hobby hobby2 = new Hobby();
+        hobby2.setId(2L);
+        hobby2.setName("Acrobatics");
+        hobby2.setCategory("General");
+
+        return Set.of(hobby1, hobby2);
     }
 
     /**

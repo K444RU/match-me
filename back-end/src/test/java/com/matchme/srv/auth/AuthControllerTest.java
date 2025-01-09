@@ -15,7 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-
+import org.springframework.transaction.annotation.Transactional;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class AuthControllerTest {
 
     @Mock
@@ -107,8 +108,7 @@ public class AuthControllerTest {
         mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(signUpRequest)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.email").value("Email already exists"));
+                .andExpect(status().isCreated());
 
         LoginRequestDTO loginRequest = new LoginRequestDTO();
         loginRequest.setEmail(VALID_EMAIL);
@@ -132,6 +132,11 @@ public class AuthControllerTest {
         signUpRequest.setEmail(VALID_EMAIL);
         signUpRequest.setPassword(VALID_PASSWORD);
         signUpRequest.setNumber(VALID_PHONE);
+
+        mockMvc.perform(post("/api/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(signUpRequest)))
+                .andExpect(status().isCreated());
 
         mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
