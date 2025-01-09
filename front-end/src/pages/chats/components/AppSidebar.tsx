@@ -31,7 +31,7 @@ const AppSidebar = ({
 
     useEffect(() => {
         const fetchChats = async () => {
-            if (!user?.token) return;
+            if (!user) return;
             try {
                 setChats(getMockChatPreviews(user));
             } catch (error) {
@@ -40,7 +40,7 @@ const AppSidebar = ({
         };
 
         fetchChats();
-    }, [user?.token]);
+    }, [user]);
 
     const wsConfig = {
         url: 'http:/localhost:8000/ws',

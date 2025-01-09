@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import OpenChat from './components/OpenChat';
 import AppSidebar from './components/AppSidebar';
 import { ChatPreview } from '@/types/api';
@@ -12,18 +12,18 @@ const ChatsPage = () => {
     const [openChat, setOpenChat] = useState<number | null>(null);
     const { user } = useAuth();
 
-    const refreshChats = async () => {
+    const refreshChats = useCallback(async () => {
         if (!user?.token) return;
         try {
             setChats(getMockChatPreviews(user));
         } catch (error) {
             console.error('Failed to refresh chats: ', error);
         }
-    };
+    }, [user])
 
     useEffect(() => {
         refreshChats();
-    }, [user?.token]);
+    }, [refreshChats]);
 
     return (
         <ChatContext.Provider
