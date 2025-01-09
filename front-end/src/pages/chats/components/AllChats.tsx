@@ -1,9 +1,8 @@
 import type { ChatPreview } from '@/types/api';
 import ChatPreviewCard from './ChatPreviewCard';
-import UserInfo from './UserInfo';
 import { useAuth } from '@/features/authentication/AuthContext';
 import { useEffect, useState } from 'react';
-import { mockChatPreviews } from '@/mocks/chatData';
+import { getMockChatPreviews } from '@/mocks/chatData';
 
 const AllChats = ({onChatSelect}: {onChatSelect: (chat: ChatPreview) => void}) => {
   const [chats, setChats] = useState<ChatPreview[]>([]);
@@ -13,7 +12,7 @@ const AllChats = ({onChatSelect}: {onChatSelect: (chat: ChatPreview) => void}) =
     const fetchChats = async () => {
       if (!user?.token) return;
       try {
-        setChats(mockChatPreviews);
+        setChats(getMockChatPreviews(user));
       } catch (error) {
         console.error('Failed to fetch chats:', error);
       }
