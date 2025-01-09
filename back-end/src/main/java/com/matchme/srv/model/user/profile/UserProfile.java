@@ -47,6 +47,12 @@ public class UserProfile {
 
   private byte[] profilePicture;
 
+  @ManyToMany
+  @JoinTable(name = "user_profile_hobbies",
+          joinColumns = @JoinColumn(name = "user_profile_id"),
+          inverseJoinColumns = @JoinColumn(name = "hobby_id"))
+  private Set<Hobby> hobbies;
+
   public void setPreferences(UserPreferences preferences) {
     if (preferences != null) {
       preferences.setUserProfile(this);
