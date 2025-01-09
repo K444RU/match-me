@@ -88,12 +88,20 @@ const RegisterForm = () => {
             })
             .catch((err) => {
                 console.error('Error registering user:', err);
+                setResState('error');
+
+                // Handle network errors
+                if (err.code === 'ERR_NETWORK') {
+                    setResTitle('Connection Error');
+                    setResSubtitle('Unable to connect to the server. Please check your internet connection and try again.');
+                    return;
+                }
+
                 if (err.response.status === 401) {
                     setResTitle('Wrong Credentials');
                     setResSubtitle('Invalid username or password');
                 } else if (err.response.status === 400) {
                     setResTitle('We found some errors');
-                    setResState('error');
                     setResSubtitle('');
                     // TODO: Make back-end return better error messages
                     // size must be between 0 and 20 -> what size? (its number...)
