@@ -136,15 +136,16 @@ public class MeControllerTest {
         String email = "user1@example.com";
         String firstName = "firstName";
         String lastName = "lastName";
-        String alias = "alias";
         String city = "city";
 
         setupAuthenticatedUser(userId, email);
 
-        User mockUser = createMockUser(userId, email, firstName, lastName, alias, city);
-
-        when(userService.getUser(userId)).thenReturn(mockUser);
-        when(userService.getUserProfile(userId)).thenReturn(mockUser.getProfile());
+        ProfileResponseDTO profileDTO = ProfileResponseDTO.builder()
+            .first_name(firstName)
+            .last_name(lastName)
+            .city(city)
+            .build();
+        when(userService.getUserProfileDTO(userId, userId)).thenReturn(profileDTO);
 
         // When/Then
         mockMvc.perform(get("/api/me/profile")
