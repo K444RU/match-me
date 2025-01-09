@@ -10,10 +10,10 @@ import type { MessageEvent } from './messageEvent';
 import type { User } from './user';
 
 export interface UserMessage {
-    connection: Connection;
-    content: string;
-    createdAt?: string;
-    id?: number;
-    messageEvents?: MessageEvent[];
-    user: User;
+  connection: Connection;
+  content: string;
+  createdAt?: string;
+  id?: number;
+  messageEvents?: MessageEvent[];
+  user: User;
 }

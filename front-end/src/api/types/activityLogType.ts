@@ -7,6 +7,6 @@
  */
 
 export interface ActivityLogType {
-    id?: number;
-    name?: string;
+  id?: number;
+  name?: string;
 }

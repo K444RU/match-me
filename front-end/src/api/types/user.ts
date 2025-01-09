@@ -13,22 +13,22 @@ import type { UserStateTypes } from './userStateTypes';
 import type { UserAuth } from './userAuth';
 
 export interface User {
-    activity?: ActivityLog[];
-    /**
-     * @minLength 0
-     * @maxLength 50
-     */
-    email: string;
-    id?: number;
-    /**
-     * @minLength 0
-     * @maxLength 20
-     */
-    number?: string;
-    profile?: UserProfile;
-    role?: UserRoleType;
-    roles?: UserRoleType[];
-    score?: UserScore;
-    state?: UserStateTypes;
-    userAuth?: UserAuth;
+  activity?: ActivityLog[];
+  /**
+   * @minLength 0
+   * @maxLength 50
+   */
+  email: string;
+  id?: number;
+  /**
+   * @minLength 0
+   * @maxLength 20
+   */
+  number?: string;
+  profile?: UserProfile;
+  role?: UserRoleType;
+  roles?: UserRoleType[];
+  score?: UserScore;
+  state?: UserStateTypes;
+  userAuth?: UserAuth;
 }

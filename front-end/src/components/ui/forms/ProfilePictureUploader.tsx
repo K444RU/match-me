@@ -1,16 +1,21 @@
 import React, { useState, useRef } from 'react';
 import ReactAvatarEditor from 'react-avatar-editor';
-import axios from 'axios';
-import OneHandleSlider from "@ui/forms/OneHandleSlider.tsx";
+import OneHandleSlider from '@ui/forms/OneHandleSlider.tsx';
+import { userService } from '@/features/user';
 
 interface ProfilePictureUploaderProps {
     onUploadSuccess?: () => void;
 }
 
-const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ onUploadSuccess }) => {
+const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({
+    onUploadSuccess,
+}) => {
     const [image, setImage] = useState<File | string | null>(null);
     const [scale, setScale] = useState<number | null>(1);
-    const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0.5, y: 0.5 });
+    const [position, setPosition] = useState<{ x: number; y: number }>({
+        x: 0.5,
+        y: 0.5,
+    });
     const editorRef = useRef<ReactAvatarEditor>(null);
 
     const handleNewImage = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,8 +36,7 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ onUploa
 
             try {
                 const token = localStorage.getItem('authToken') || '';
-                await axios.post(
-                    '/api/users/profile-picture',
+                await userService.updateProfilePicture(
                     { base64Image },
                     {
                         headers: {
@@ -51,12 +55,12 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ onUploa
     };
 
     return (
-        <div className="p-6 bg-gray-100 rounded-lg shadow-md flex items-center gap-6">
+        <div className="flex items-center gap-6 rounded-lg bg-gray-100 p-6 shadow-md">
             {/* Left: Image Preview */}
             <div className="flex flex-col items-center">
                 {image ? (
                     <div className="flex flex-col items-center">
-                        <div className="w-48 h-48 bg-gray-200 rounded-lg flex justify-center items-center ">
+                        <div className="flex h-48 w-48 items-center justify-center rounded-lg bg-gray-200">
                             <ReactAvatarEditor
                                 ref={editorRef}
                                 image={image}
@@ -85,18 +89,17 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ onUploa
                         </div>
                     </div>
                 ) : (
-                    <div
-                        className="w-36 h-24 bg-gray-200 rounded-lg flex justify-center items-center text-gray-500 text-sm">
+                    <div className="flex h-24 w-36 items-center justify-center rounded-lg bg-gray-200 text-sm text-gray-500">
                         No image selected
                     </div>
                 )}
             </div>
 
             {/* Right: File Input and Upload Button */}
-            <div className="flex flex-col gap-4 justify-center items-center">
+            <div className="flex flex-col items-center justify-center gap-4">
                 <label
                     htmlFor="image-upload"
-                    className="flex w-full items-center justify-center gap-2 self-start rounded-md px-5 py-2 font-semibold tracking-wide text-text transition-colors bg-primary hover:bg-primary-200 hover:text-text cursor-pointer"
+                    className="flex w-full cursor-pointer items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
                 >
                     Choose File
                     <input
@@ -111,7 +114,7 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ onUploa
                     <button
                         type="button"
                         onClick={handleSubmit}
-                        className="flex w-full items-center justify-center gap-2 self-start rounded-md px-5 py-2 font-semibold tracking-wide text-text transition-colors bg-primary hover:bg-primary-200 hover:text-text"
+                        className="flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
                     >
                         Upload
                     </button>

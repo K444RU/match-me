@@ -2,8 +2,7 @@ import { forwardRef } from 'react';
 import { ImSpinner8 } from 'react-icons/im';
 import { motion } from 'motion/react';
 
-// @ts-ignore
-const MotionSpinner = forwardRef((props, ref) => {
+const MotionSpinner = forwardRef((_props, _ref) => {
   return (
     <motion.div
       animate={{

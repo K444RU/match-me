@@ -8,55 +8,46 @@
 import * as axios from 'axios';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import type {
-    BiographicalResponseDTO,
-    ConnectionResponseDTO,
-    CurrentUserResponseDTO,
-    ProfileResponseDTO,
-    SettingsResponseDTO,
+  BiographicalResponseDTO,
+  ConnectionResponseDTO,
+  CurrentUserResponseDTO,
+  ProfileResponseDTO,
+  SettingsResponseDTO,
 } from './types';
 
 export const getMeController = () => {
-    const getCurrentUser = <TData = AxiosResponse<CurrentUserResponseDTO>>(
-        options?: AxiosRequestConfig
-    ): Promise<TData> => {
-        return axios.default.get(`http://localhost:8000/api/me`, options);
-    };
-    const getParameters = <TData = AxiosResponse<SettingsResponseDTO>>(
-        options?: AxiosRequestConfig
-    ): Promise<TData> => {
-        return axios.default.get(
-            `http://localhost:8000/api/me/settings`,
-            options
-        );
-    };
-    const getCurrentProfile = <TData = AxiosResponse<ProfileResponseDTO>>(
-        options?: AxiosRequestConfig
-    ): Promise<TData> => {
-        return axios.default.get(
-            `http://localhost:8000/api/me/profile`,
-            options
-        );
-    };
-    const getCurrentBio = <TData = AxiosResponse<BiographicalResponseDTO>>(
-        options?: AxiosRequestConfig
-    ): Promise<TData> => {
-        return axios.default.get(`http://localhost:8000/api/me/bio`, options);
-    };
-    const getConnections1 = <TData = AxiosResponse<ConnectionResponseDTO[]>>(
-        options?: AxiosRequestConfig
-    ): Promise<TData> => {
-        return axios.default.get(
-            `http://localhost:8000/api/connections`,
-            options
-        );
-    };
-    return {
-        getCurrentUser,
-        getParameters,
-        getCurrentProfile,
-        getCurrentBio,
-        getConnections1,
-    };
+  const getCurrentUser = <TData = AxiosResponse<CurrentUserResponseDTO>>(
+    options?: AxiosRequestConfig
+  ): Promise<TData> => {
+    return axios.default.get(`http://localhost:8000/api/me`, options);
+  };
+  const getParameters = <TData = AxiosResponse<SettingsResponseDTO>>(
+    options?: AxiosRequestConfig
+  ): Promise<TData> => {
+    return axios.default.get(`http://localhost:8000/api/me/settings`, options);
+  };
+  const getCurrentProfile = <TData = AxiosResponse<ProfileResponseDTO>>(
+    options?: AxiosRequestConfig
+  ): Promise<TData> => {
+    return axios.default.get(`http://localhost:8000/api/me/profile`, options);
+  };
+  const getCurrentBio = <TData = AxiosResponse<BiographicalResponseDTO>>(
+    options?: AxiosRequestConfig
+  ): Promise<TData> => {
+    return axios.default.get(`http://localhost:8000/api/me/bio`, options);
+  };
+  const getConnections1 = <TData = AxiosResponse<ConnectionResponseDTO[]>>(
+    options?: AxiosRequestConfig
+  ): Promise<TData> => {
+    return axios.default.get(`http://localhost:8000/api/connections`, options);
+  };
+  return {
+    getCurrentUser,
+    getParameters,
+    getCurrentProfile,
+    getCurrentBio,
+    getConnections1,
+  };
 };
 export type GetCurrentUserResult = AxiosResponse<CurrentUserResponseDTO>;
 export type GetParametersResult = AxiosResponse<SettingsResponseDTO>;

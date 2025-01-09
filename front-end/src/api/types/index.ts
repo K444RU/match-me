@@ -21,6 +21,7 @@ export * from './connectionType';
 export * from './currentUserResponseDTO';
 export * from './genderTypeDTO';
 export * from './getChatMessagesParams';
+export * from './hobby';
 export * from './jwtResponseDTO';
 export * from './loginRequestDTO';
 export * from './messageEvent';

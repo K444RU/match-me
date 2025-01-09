@@ -6,7 +6,9 @@
  * OpenAPI spec version: v0.0.1
  */
 
-export interface UserGenderType {
+export interface Hobby {
+  category?: string;
   id?: number;
   name?: string;
+  subCategory?: string;
 }

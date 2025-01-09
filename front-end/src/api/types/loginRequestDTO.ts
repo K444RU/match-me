@@ -7,14 +7,14 @@
  */
 
 export interface LoginRequestDTO {
-    /**
-     * @minLength 0
-     * @maxLength 320
-     */
-    email: string;
-    /**
-     * @minLength 6
-     * @maxLength 40
-     */
-    password: string;
+  /**
+   * @minLength 0
+   * @maxLength 320
+   */
+  email: string;
+  /**
+   * @minLength 6
+   * @maxLength 40
+   */
+  password: string;
 }

@@ -1,6 +1,7 @@
 import { Chat, ChatPreview, User } from '@/types/api';
 import { faker, fakerFI } from '@faker-js/faker';
 import { getMockChats } from './chatData';
+import { CurrentUserResponseDTO } from '@/api/types';
 
 export function createRandomUser(id: number) {
     const shouldHaveAvatar = faker.datatype.boolean();
@@ -69,14 +70,14 @@ export const getUnreadCountForConnection = (
     ).length;
 };
 
-export const getCurrentUser = (user: User) => ({
-    id: user.id,
+export const getCurrentUser = (user: CurrentUserResponseDTO) => ({
+    id: user.id ?? 0,
     firstName: user.firstName,
     lastName: user.lastName,
-    alias: user.alias,
+    alias: user.alias ?? '',
     email: 'karl.romet@example.com',
     avatar:
-        user.avatar ||
+        user.profilePicture ||
         'https://images.rawpixel.com/image_png_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDI0LTAxL3Jhd3BpeGVsb2ZmaWNlN19waG90b19vZl9hX2NhdF9wZWVraW5nX3JvYW5fY2F0X3N0dWRpb19saWdodF9pc180ZDM5MDZhNy03MWY1LTQ2N2MtYTQyZC1hZmY0ZTIyYTY0ZmIucG5n.png',
 });
 

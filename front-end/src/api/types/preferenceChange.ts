@@ -9,9 +9,9 @@ import type { PreferenceChangeType } from './preferenceChangeType';
 import type { UserPreferences } from './userPreferences';
 
 export interface PreferenceChange {
-    content?: string;
-    id?: number;
-    instant: string;
-    type?: PreferenceChangeType;
-    userPreferences: UserPreferences;
+  content?: string;
+  id?: number;
+  instant: string;
+  type?: PreferenceChangeType;
+  userPreferences: UserPreferences;
 }

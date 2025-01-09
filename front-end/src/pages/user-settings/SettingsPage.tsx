@@ -1,28 +1,28 @@
 import UserPreferencesCard from './components/UserPreferencesCard';
 import UserAttributesCard from './components/UserAttributesCard';
 import UserProfileCard from './components/UserProfileCard';
-import { useAuth } from '@/features/authentication/AuthContext';
+import { useAuth } from '@/features/authentication';
 import { useEffect, useState } from 'react';
-import { getUserParameters } from '../../features/user/services/UserService';
-import { Gender, UserProfile } from '@/types/api';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SettingsContext } from './SettingsContext';
-import { GenderContext } from '@/features/gender/GenderContext';
-import { getGenders } from '@/features/gender/services/GenderService';
+import { GenderContext } from '@/features/gender';
+import { genderService } from '@/features/gender';
 import UserAccountCard from './components/UserAccountCard';
 import { toast } from "sonner"
+import { meService } from '@/features/user';
+import { GenderTypeDTO, SettingsResponseDTO } from '@/api/types';
 
 const SettingsPage = () => {
-    const [settings, setSettings] = useState<UserProfile | null>(null);
-    const [genders, setGenders] = useState<Gender[] | null>(null);
+    const [settings, setSettings] = useState<SettingsResponseDTO | null>(null);
+    const [genders, setGenders] = useState<GenderTypeDTO[] | null>(null);
     const { user } = useAuth();
-
-    if (!user) return null;
-
+    
     useEffect(() => {
+        if (!user) return;
+
         const fetchSettings = async () => {
             try {
-                const response = await getUserParameters();
+                const response = await meService.getUserParameters();
                 setSettings(response);
             } catch (error) {
                 console.error('Error fetching settings: ', error);
@@ -32,7 +32,7 @@ const SettingsPage = () => {
 
         const fetchGenders = async () => {
             try {
-                const genders = await getGenders();
+                const genders = await genderService.getGenders();
                 setGenders(genders);
             } catch (error) {
                 console.error('Failed fetching genders:', error);
@@ -41,11 +41,13 @@ const SettingsPage = () => {
 
         fetchGenders();
         fetchSettings();
-    }, []);
+    }, [user]);
+
+    if (!user) return null;
 
     const refreshSettings = async () => {
         try {
-            const response = await getUserParameters();
+            const response = await meService.getUserParameters();
             setSettings(response);
         } catch (error) {
             console.error('Error fetching settings: ', error);

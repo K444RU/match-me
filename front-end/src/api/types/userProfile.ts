@@ -6,19 +6,21 @@
  * OpenAPI spec version: v0.0.1
  */
 import type { UserAttributes } from './userAttributes';
+import type { Hobby } from './hobby';
 import type { UserPreferences } from './userPreferences';
 import type { ProfileChange } from './profileChange';
 import type { User } from './user';
 
 export interface UserProfile {
-    alias?: string;
-    attributes?: UserAttributes;
-    city?: string;
-    first_name?: string;
-    id?: number;
-    last_name?: string;
-    preferences?: UserPreferences;
-    profileChangeLog?: ProfileChange[];
-    profilePicture?: string;
-    user?: User;
+  alias?: string;
+  attributes?: UserAttributes;
+  city?: string;
+  first_name?: string;
+  hobbies?: Hobby[];
+  id?: number;
+  last_name?: string;
+  preferences?: UserPreferences;
+  profileChangeLog?: ProfileChange[];
+  profilePicture?: string;
+  user?: User;
 }
