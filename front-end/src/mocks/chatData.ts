@@ -1,3 +1,4 @@
+import { CurrentUserResponseDTO } from '@/api/types';
 import { Chat, ChatPreview, User } from '../types/api';
 import { createRandomChat, createRandomUser, getCurrentUser, getLastMessageForConnection, getUnreadCountForConnection } from './FakerService';
 
@@ -34,7 +35,7 @@ export const getMockChats = (user: User): Chat[] => [
     createRandomChat(4, user5, 75600000),
 ];
 
-export const getMockChatPreviews = (user: User): ChatPreview[] => [
+export const getMockChatPreviews = (user: CurrentUserResponseDTO): ChatPreview[] => [
     {
         connectionId: 1,
         participant: user2,

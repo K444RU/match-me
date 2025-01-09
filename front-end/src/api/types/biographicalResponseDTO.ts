@@ -8,11 +8,12 @@
 import type { GenderTypeDTO } from './genderTypeDTO';
 
 export interface BiographicalResponseDTO {
-    age_max?: number;
-    age_min?: number;
-    age_self?: number;
-    distance?: number;
-    gender_other?: GenderTypeDTO;
-    gender_self?: GenderTypeDTO;
-    probability_tolerance?: number;
+  age_max?: number;
+  age_min?: number;
+  age_self?: number;
+  distance?: number;
+  gender_other?: GenderTypeDTO;
+  gender_self?: GenderTypeDTO;
+  hobbies?: number[];
+  probability_tolerance?: number;
 }

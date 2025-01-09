@@ -12,9 +12,10 @@ import {
 } from '@/components/ui/sidebar';
 import {ChatPreview} from '@/types/api';
 import ChatPreviewCard from './ChatPreviewCard';
-import {StompSessionProvider} from 'react-stomp-hooks';
+import {IFrame, StompSessionProvider} from 'react-stomp-hooks';
 import {useEffect, useState} from "react";
 import {useAuth} from "@features/authentication/AuthContext.tsx";
+import { getMockChatPreviews } from '@/mocks/chatData';
 
 // Read on usage here: https://ui.shadcn.com/docs/components/sidebar
 
@@ -30,16 +31,16 @@ const AppSidebar = ({
 
     useEffect(() => {
         const fetchChats = async () => {
-            if (!user?.token) return;
+            if (!user) return;
             try {
-                setChats(mockChatPreviews);
+                setChats(getMockChatPreviews(user));
             } catch (error) {
                 console.error('Failed to fetch chats:', error);
             }
         };
 
         fetchChats();
-    }, [user?.token]);
+    }, [user]);
 
     const wsConfig = {
         url: 'http:/localhost:8000/ws',
@@ -55,7 +56,7 @@ const AppSidebar = ({
         onDisconnect: () => {
             console.log('WS Disconnected');
         },
-        onStompError: (frame: any) => {
+        onStompError: (frame: IFrame) => {
             console.error('WS Error:', frame)
         }
     }

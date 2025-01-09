@@ -11,9 +11,9 @@ import type { UserMessage } from './userMessage';
 import type { User } from './user';
 
 export interface Connection {
-    connectionResults?: ConnectionResult[];
-    connectionStates?: ConnectionState[];
-    id?: number;
-    userMessages?: UserMessage[];
-    users?: User[];
+  connectionResults?: ConnectionResult[];
+  connectionStates?: ConnectionState[];
+  id?: number;
+  userMessages?: UserMessage[];
+  users?: User[];
 }

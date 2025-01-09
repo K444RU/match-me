@@ -7,19 +7,20 @@
  */
 
 export interface SettingsResponseDTO {
-    ageMax?: number;
-    ageMin?: number;
-    alias?: string;
-    birthDate?: string;
-    city?: string;
-    distance?: number;
-    email?: string;
-    firstName?: string;
-    genderOther?: number;
-    genderSelf?: number;
-    lastName?: string;
-    latitude?: number;
-    longitude?: number;
-    number?: string;
-    probabilityTolerance?: number;
+  ageMax?: number;
+  ageMin?: number;
+  alias?: string;
+  birthDate?: string;
+  city?: string;
+  distance?: number;
+  email?: string;
+  firstName?: string;
+  genderOther?: number;
+  genderSelf?: number;
+  hobbies?: number[];
+  lastName?: string;
+  latitude?: number;
+  longitude?: number;
+  number?: string;
+  probabilityTolerance?: number;
 }

@@ -9,8 +9,8 @@ import type { ActivityLogType } from './activityLogType';
 import type { User } from './user';
 
 export interface ActivityLog {
-    id?: number;
-    instant: string;
-    type?: ActivityLogType;
-    user: User;
+  id?: number;
+  instant: string;
+  type?: ActivityLogType;
+  user: User;
 }

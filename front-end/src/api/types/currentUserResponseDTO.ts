@@ -8,11 +8,11 @@
 import type { UserRoleType } from './userRoleType';
 
 export interface CurrentUserResponseDTO {
-    alias?: string;
-    email?: string;
-    firstName?: string;
-    id?: number;
-    lastName?: string;
-    profilePicture?: string;
-    role?: UserRoleType[];
+  alias?: string;
+  email?: string;
+  firstName?: string;
+  id?: number;
+  lastName?: string;
+  profilePicture?: string;
+  role?: UserRoleType[];
 }

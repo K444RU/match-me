@@ -16,7 +16,7 @@ import ProfilePictureUploader from "@ui/forms/ProfilePictureUploader.tsx";
 interface AttributesProps {
     onNext: () => void;
     formData: UnifiedFormData;
-    onChange: (name: keyof UnifiedFormData, value: any) => void;
+    onChange: (name: keyof UnifiedFormData, value: UnifiedFormData[keyof UnifiedFormData]) => void;
     genderOptions: { id: number; name: string }[];
 }
 
@@ -125,7 +125,7 @@ const Attributes: React.FC<AttributesProps> = ({
                         </label>
                         <ProfilePictureUploader
                             onUploadSuccess={() => {
-                                console.log('Upload was successful!');
+                                console.debug('Upload was successful!');
                             }}
                         />
                     </div>
