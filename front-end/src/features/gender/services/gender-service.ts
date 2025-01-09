@@ -1,10 +1,10 @@
 import { getGenderController } from '@/api/gender-controller';
-import { UserGenderType } from '@/api/types';
+import { GenderTypeDTO } from '@/api/types';
 
 const genderController = getGenderController();
 
 export const genderService = {
-  getGenders: async (): Promise<UserGenderType[]> => {
+  getGenders: async (): Promise<GenderTypeDTO[]> => {
     try {
       console.debug('🖖 GenderService: Making request')
       const token = localStorage.getItem('authToken');
