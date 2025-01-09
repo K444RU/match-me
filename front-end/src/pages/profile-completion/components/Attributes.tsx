@@ -12,7 +12,7 @@ import ProfilePictureUploader from "@ui/forms/ProfilePictureUploader.tsx";
 interface AttributesProps {
     onNext: () => void;
     formData: UnifiedFormData;
-    onChange: (name: keyof UnifiedFormData, value: any) => void;
+    onChange: (name: keyof UnifiedFormData, value: UnifiedFormData[keyof UnifiedFormData]) => void;
     genderOptions: { id: number; name: string }[];
 }
 

@@ -4,6 +4,7 @@ import MotionSpinner from '@animations/MotionSpinner';
 import InputField from '../../../components/ui/forms/InputField';
 import { useAuth } from '@/features/authentication';
 import FormResponse from './FormResponse';
+import { AxiosError } from 'axios';
 
 const LoginForm = () => {
     const navigate = useNavigate();
@@ -35,7 +36,7 @@ const LoginForm = () => {
                     replace: true,
                 });
             }
-        } catch (err: any) {
+        } catch (err) {
             console.error('❌ LoginForm: Login failed:', err);
             if (err?.response?.status === 401) {
                 setResTitle('Invalid Credentials');

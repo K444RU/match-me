@@ -62,7 +62,7 @@ const RegisterForm = () => {
         setLocalNumber(localNumber);
     };
 
-    const submitForm = (e: any) => {
+    const submitForm = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
 

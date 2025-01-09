@@ -1,8 +1,8 @@
 import { createContext, ReactNode, useContext, useState } from 'react';
 import { authService } from '@/features/authentication';
-import { AxiosResponse } from 'axios';
 import { meService } from '@/features/user';
 import { CurrentUserResponseDTO, LoginRequestDTO } from '@/api/types';
+import { AuthenticateUserResult } from '@/api/auth-controller';
 
 interface User extends CurrentUserResponseDTO {
     token: string;
@@ -10,7 +10,7 @@ interface User extends CurrentUserResponseDTO {
 
 interface AuthContextType {
     user: User | null;
-    login: (credentials: LoginRequestDTO) => Promise<AxiosResponse<any, any>>;
+    login: (credentials: LoginRequestDTO) => Promise<AuthenticateUserResult>;
     logout: () => void;
     fetchCurrentUser: () => Promise<void>;
 }
@@ -90,7 +90,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                 console.warn('⚠️ AuthContext: No token in response');
             }
             return response;
-        } catch (error: any) {
+        } catch (error) {
             console.error('💥 AuthContext: Login error:', error);
             throw error;
         }

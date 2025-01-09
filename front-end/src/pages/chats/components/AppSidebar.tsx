@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/sidebar';
 import {ChatPreview} from '@/types/api';
 import ChatPreviewCard from './ChatPreviewCard';
-import {StompSessionProvider} from 'react-stomp-hooks';
+import {IFrame, StompSessionProvider} from 'react-stomp-hooks';
 import {useEffect, useState} from "react";
 import {useAuth} from "@features/authentication/AuthContext.tsx";
 import { getMockChatPreviews } from '@/mocks/chatData';
@@ -56,7 +56,7 @@ const AppSidebar = ({
         onDisconnect: () => {
             console.log('WS Disconnected');
         },
-        onStompError: (frame: any) => {
+        onStompError: (frame: IFrame) => {
             console.error('WS Error:', frame)
         }
     }
