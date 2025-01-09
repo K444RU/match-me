@@ -15,6 +15,7 @@ import ChatPreviewCard from './ChatPreviewCard';
 import {StompSessionProvider} from 'react-stomp-hooks';
 import {useEffect, useState} from "react";
 import {useAuth} from "@features/authentication/AuthContext.tsx";
+import { getMockChatPreviews } from '@/mocks/chatData';
 
 // Read on usage here: https://ui.shadcn.com/docs/components/sidebar
 
@@ -32,7 +33,7 @@ const AppSidebar = ({
         const fetchChats = async () => {
             if (!user?.token) return;
             try {
-                setChats(mockChatPreviews);
+                setChats(getMockChatPreviews(user));
             } catch (error) {
                 console.error('Failed to fetch chats:', error);
             }
