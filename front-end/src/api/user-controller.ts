@@ -14,6 +14,7 @@ import type {
     ConnectionResponseDTO,
     CurrentUserResponseDTO,
     PreferencesSettingsRequestDTO,
+    ProfilePictureSettingsRequestDTO,
     ProfileResponseDTO,
     ProfileSettingsRequestDTO,
     UserParametersRequestDTO,
@@ -58,6 +59,16 @@ export const getUserController = () => {
         return axios.default.put(
             `http://localhost:8000/api/users/settings/account`,
             accountSettingsRequestDTO,
+            options
+        );
+    };
+    const uploadProfilePicture = <TData = AxiosResponse<unknown>>(
+        profilePictureSettingsRequestDTO: ProfilePictureSettingsRequestDTO,
+        options?: AxiosRequestConfig
+    ): Promise<TData> => {
+        return axios.default.post(
+            `http://localhost:8000/api/users/profile-picture`,
+            profilePictureSettingsRequestDTO,
             options
         );
     };
@@ -126,6 +137,7 @@ export const getUserController = () => {
         updatePreferences,
         updateAttributes,
         updateAccount,
+        uploadProfilePicture,
         verifyAccount,
         setParameters,
         getUser,
@@ -138,6 +150,7 @@ export type UpdateProfileResult = AxiosResponse<unknown>;
 export type UpdatePreferencesResult = AxiosResponse<unknown>;
 export type UpdateAttributesResult = AxiosResponse<unknown>;
 export type UpdateAccountResult = AxiosResponse<unknown>;
+export type UploadProfilePictureResult = AxiosResponse<unknown>;
 export type VerifyAccountResult = AxiosResponse<unknown>;
 export type SetParametersResult = AxiosResponse<unknown>;
 export type GetUserResult = AxiosResponse<CurrentUserResponseDTO>;

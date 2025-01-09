@@ -34,6 +34,7 @@ export * from './preferenceChangeType';
 export * from './preferencesSettingsRequestDTO';
 export * from './profileChange';
 export * from './profileChangeType';
+export * from './profilePictureSettingsRequestDTO';
 export * from './profileResponseDTO';
 export * from './profileSettingsRequestDTO';
 export * from './settingsResponseDTO';
