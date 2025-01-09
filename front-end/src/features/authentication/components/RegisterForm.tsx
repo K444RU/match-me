@@ -3,19 +3,16 @@ import InputField from '../../../components/ui/forms/InputField';
 import MotionSpinner from '@animations/MotionSpinner';
 import FormResponse from './FormResponse';
 import { register } from '@/features/authentication/services/AuthService';
-import PhoneInput from './PhoneInput';
 import {useNavigate} from "react-router-dom";
+import { CountryCodePhoneInput } from '@ui/country-code-phone-input';
+import {parsePhoneNumber} from "react-phone-number-input";
 
 const RegisterForm = () => {
-    // const [email, setEmail] = useState('admin@kood.tech');
-    // const [phone, setPhone] = useState('5341449');
-    // const [countryCode, setCountryCode] = useState('+372');
-    // const [password, setPassword] = useState('123456');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
-    const [countryCode, setCountryCode] = useState('+372');
+    const [localNumber, setLocalNumber] = useState('');
+    const [countryCode, setCountryCode] = useState('');
     const [password, setPassword] = useState('');
-
     const [loading, setLoading] = useState(false);
     const [resTitle, setResTitle] = useState('');
     const [resSubtitle, setResSubtitle] = useState('');
@@ -23,11 +20,53 @@ const RegisterForm = () => {
 
     const navigate = useNavigate();
 
+    /**
+     * Updates phone-related information when the user changes the phone number input.
+     *
+     * What It Does:
+     * - Takes the phone number the user enters.
+     * - Saves the full phone number (`phone`) for backend use.
+     * - Splits the number into:
+     *   - `countryCode` (e.g., "+372" for the EE).
+     *   - `localNumber` (the rest of the number after the country code).
+     * - If the phone number is invalid or empty, it clears the country code and local number.
+
+     * Why to Use `phone` and `localNumber`:
+     * - `phone` is the complete number, needed for backend systems and international use.
+     * - `localNumber` is just the local part of the number, useful for showing or using it in user-friendly ways.
+
+     * Example:
+     * If the user enters "+37255501444":
+     * - `phone` is "+37255501444".
+     * - `countryCode` is "+372".
+     * - `localNumber` is "55501444".
+     *
+     * This separation helps make the app work smoothly for both backend systems and user-facing features.
+     */
+    const handlePhoneChange = (val: string | undefined) => {
+        const E164Number = val ?? "";
+        setPhone(E164Number);
+
+        let countryCode = "";
+        let localNumber = "";
+
+        if (E164Number) {
+            const parsedPhoneNumber = parsePhoneNumber(E164Number);
+            if (parsedPhoneNumber) {
+                countryCode = "+" + parsedPhoneNumber.countryCallingCode;
+                localNumber = parsedPhoneNumber.nationalNumber;
+            }
+        }
+
+        setCountryCode(countryCode);
+        setLocalNumber(localNumber);
+    };
+
     const submitForm = (e: any) => {
         e.preventDefault();
         setLoading(true);
 
-        register(email, `${countryCode} ${phone}`, password)
+        register(email, `${countryCode} ${localNumber}`, password)
             .then((res) => {
                 // TODO: Don't redirect on register & wait for email verify.
                 // This current approach would cause a unnecessary
@@ -44,7 +83,6 @@ const RegisterForm = () => {
                 setResState('success');
                 setResTitle('Nice! You have been registered.');
                 setResSubtitle('Please verify your email.');
-
                 navigate('/profile-completion');
             })
             .catch((err) => {
@@ -115,17 +153,18 @@ const RegisterForm = () => {
 
             <div className="flex flex-col w-full">
                 <label
-                    htmlFor="phone"
+                    htmlFor="phone2"
                     className="mb-1 text-sm font-medium text-gray-700"
                 >
                     Country Code & Phone Number
                 </label>
-                <div className="flex space-x-2">
-                    <PhoneInput
-                        countryCode={countryCode}
-                        phone={phone}
-                        onCountryCodeChange={setCountryCode}
-                        onPhoneChange={setPhone}
+                <div className="flex space-x-2 w-full">
+                    <CountryCodePhoneInput
+                        value={phone}
+                        defaultCountry="EE"
+                        placeholder="Enter a phone number"
+                        onChange={handlePhoneChange}
+                        className="w-full"
                     />
                 </div>
             </div>

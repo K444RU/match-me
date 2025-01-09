@@ -7,6 +7,7 @@ import { useDebounce } from '@/lib/hooks/useDebounce';
 import { CitySuggestions } from './CitySuggestions';
 import { City, UnifiedFormData } from '../types/types';
 import MotionSpinner from '@/components/animations/MotionSpinner';
+import ProfilePictureUploader from "@ui/forms/ProfilePictureUploader.tsx";
 
 interface AttributesProps {
     onNext: () => void;
@@ -66,170 +67,187 @@ const Attributes: React.FC<AttributesProps> = ({
     };
 
     return (
-        <form
-            onSubmit={(e) => e.preventDefault()}
-            className="w-full max-w-md rounded-lg bg-accent-200 p-6 shadow-md"
-        >
-            <h2 className="border-b-2 border-accent text-center text-2xl font-bold text-text">
-                Personal Information
-            </h2>
-            <div className="flex flex-col gap-4 py-4">
-                {error && <div className="text-sm text-red-500">{error}</div>}
-
-                {/* Names */}
-                <div className="flex gap-2">
-                    <div className="flex flex-col">
-                        <label
-                            className="mb-1 text-sm font-medium text-gray-700"
-                            htmlFor="city"
-                        >
-                            First name
-                        </label>
-                        <InputField
-                            type="text"
-                            name="firstName"
-                            placeholder="Michael"
-                            value={firstName}
-                            onChange={setFirstName}
-                        />
-                    </div>
-                    <div className="flex flex-col">
-                        <label
-                            className="mb-1 text-sm font-medium text-gray-700"
-                            htmlFor="city"
-                        >
-                            Last name
-                        </label>
-                        <InputField
-                            type="text"
-                            name="lastName"
-                            placeholder="Doorstep"
-                            value={lastName}
-                            onChange={setLastName}
-                        />
-                    </div>
-                </div>
-
-                {/* Alias */}
-                <div className="flex flex-col">
-                    {' '}
-                    <label
-                        className="mb-1 text-sm font-medium text-gray-700"
-                        htmlFor="city"
-                    >
-                        Alias
-                    </label>
-                    <InputField
-                        type="text"
-                        name="alias"
-                        placeholder="Shotgunner404"
-                        value={alias}
-                        onChange={setAlias}
-                    />
-                </div>
-
-                {/* Gender Dropdown */}
-                <div>
-                    <label
-                        className="mb-1 text-sm font-medium text-gray-700"
-                        htmlFor="gender"
-                    >
-                        Gender
-                    </label>
-                    <select
-                        id="gender"
-                        name="gender"
-                        value={formData.gender || ''}
-                        onChange={(e) => onChange('gender', e.target.value)}
-                        className="w-full rounded-md border border-gray-300 p-2"
-                        required
-                    >
-                        <option value="" disabled>
-                            Select Gender
-                        </option>
-                        {genderOptions.map((gender) => (
-                            <option key={gender.id} value={gender.id}>
-                                {gender.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                {/* Birth Date Picker */}
-                <div className="flex flex-col">
-                    <label
-                        className="mb-1 text-sm font-medium text-gray-700"
-                        htmlFor="city"
-                    >
-                        Date of Birth
-                    </label>
-                    <DatePicker
-                        selectedDate={
-                            formData.dateOfBirth
-                                ? new Date(formData.dateOfBirth)
-                                : undefined
-                        }
-                        onDateChange={(dateString) =>
-                            onChange('dateOfBirth', dateString)
-                        }
-                    />
-                </div>
-
-                {/* City Input */}
-                <div>
-                    <label
-                        className="mb-1 text-sm font-medium text-gray-700"
-                        htmlFor="city"
-                    >
-                        City
-                    </label>
-                    <InputField
-                        type="text"
-                        name="city"
-                        placeholder="Enter your city"
-                        value={citySearchValue}
-                        onChange={handleCityInputChange}
-                        onFocus={() => setShowSuggestions(true)}
-                        onBlur={() => {
-                            setTimeout(() => {
-                                setShowSuggestions(false);
-                            }, 500);
-                        }}
-                    />
-                    <div
-                        className={`absolute z-10 ${!showSuggestions ? `hidden` : ``}`}
-                    >
-                        <CitySuggestions
-                            searchTerm={debouncedCitySearchValue}
-                            onCitySelect={handleCitySelect}
-                            visible={showSuggestions}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            <button
-                className={`flex w-full items-center justify-center gap-2 self-start rounded-md px-5 py-2 font-semibold tracking-wide text-text transition-colors ${
-                    loading
-                        ? 'cursor-not-allowed bg-gray-400'
-                        : 'bg-primary hover:bg-primary-200 hover:text-text'
-                }`}
-                type="button"
-                disabled={loading}
-                onClick={validateAndProceed}
+        <div className="w-full max-w-md mx-auto bg-accent-200 p-6 shadow-md rounded-lg h-[78vh]">
+            <form
+                onSubmit={(e) => e.preventDefault()}
+                className="h-full flex flex-col"
             >
-                {loading ? (
-                    <>
-                        Saving <MotionSpinner />
-                    </>
-                ) : (
-                    <>
-                        Continue <FaArrowRight />
-                    </>
-                )}
-            </button>
-        </form>
+                <h2 className="border-b-2 border-accent text-center text-2xl font-bold text-text">
+                    Personal Information
+                </h2>
+                <div className="flex flex-col gap-4 py-4 overflow-y-auto no-scrollbar h-full">
+                    {error && <div className="text-sm text-red-500">{error}</div>}
+
+                    {/* Names */}
+                    <div className="flex gap-2">
+                        <div className="flex flex-col">
+                            <label
+                                className="mb-1 text-sm font-medium text-gray-700"
+                                htmlFor="city"
+                            >
+                                First name
+                            </label>
+                            <InputField
+                                type="text"
+                                name="firstName"
+                                placeholder="Michael"
+                                value={firstName}
+                                onChange={setFirstName}
+                            />
+                        </div>
+                        <div className="flex flex-col">
+                            <label
+                                className="mb-1 text-sm font-medium text-gray-700"
+                                htmlFor="city"
+                            >
+                                Last name
+                            </label>
+                            <InputField
+                                type="text"
+                                name="lastName"
+                                placeholder="Doorstep"
+                                value={lastName}
+                                onChange={setLastName}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Profile Picture */}
+                    <div>
+                        <label className="mb-1 text-sm font-medium text-gray-700">
+                            Profile Picture (Optional)
+                        </label>
+                        <ProfilePictureUploader
+                            onUploadSuccess={() => {
+                                console.log('Upload was successful!');
+                            }}
+                        />
+                    </div>
+
+                    {/* Alias */}
+                    <div className="flex flex-col">
+                        <label
+                            className="mb-1 text-sm font-medium text-gray-700"
+                            htmlFor="city"
+                        >
+                            Alias
+                        </label>
+                        <InputField
+                            type="text"
+                            name="alias"
+                            placeholder="Shotgunner404"
+                            value={alias}
+                            onChange={setAlias}
+                        />
+                    </div>
+
+                    {/* Gender Dropdown */}
+                    <div>
+                        <label
+                            className="mb-1 text-sm font-medium text-gray-700"
+                            htmlFor="gender"
+                        >
+                            Gender
+                        </label>
+                        <select
+                            id="gender"
+                            name="gender"
+                            value={formData.gender || ''}
+                            onChange={(e) => onChange('gender', e.target.value)}
+                            className="w-full rounded-md border border-gray-300 p-2"
+                            required
+                        >
+                            <option value="" disabled>
+                                Select Gender
+                            </option>
+                            {genderOptions.map((gender) => (
+                                <option key={gender.id} value={gender.id}>
+                                    {gender.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Birth Date Picker */}
+                    <div className="flex flex-col">
+                        <label
+                            className="mb-1 text-sm font-medium text-gray-700"
+                            htmlFor="city"
+                        >
+                            Date of Birth
+                        </label>
+                        <DatePicker
+                            selectedDate={
+                                formData.dateOfBirth ? new Date(formData.dateOfBirth) : undefined
+                            }
+                            onDateChange={(dateString) =>
+                                onChange('dateOfBirth', dateString)
+                            }
+                        />
+                    </div>
+
+                    {/* City Input */}
+                    <div className="relative">
+                        <label
+                            className="mb-1 text-sm font-medium text-gray-700"
+                            htmlFor="city"
+                        >
+                            City
+                        </label>
+                        <InputField
+                            type="text"
+                            name="city"
+                            placeholder="Enter your city"
+                            value={citySearchValue}
+                            onChange={handleCityInputChange}
+                            onFocus={() => setShowSuggestions(true)}
+                            onBlur={() => {
+                                setTimeout(() => {
+                                    setShowSuggestions(false);
+                                }, 500);
+                            }}
+                        />
+                        {loading && (
+                            <div className="absolute left-0 right-0 top-full mt-2 flex justify-center">
+                                <MotionSpinner />
+                            </div>
+                        )}
+                        <div
+                            className={`absolute z-10 ${!showSuggestions ? `hidden` : ``}`}
+                        >
+                            <CitySuggestions
+                                searchTerm={debouncedCitySearchValue}
+                                onCitySelect={handleCitySelect}
+                                visible={showSuggestions}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <button
+                    className={`flex w-full items-center justify-center gap-2 self-start rounded-md px-5 py-2 font-semibold tracking-wide text-text transition-colors ${
+                        loading
+                            ? 'cursor-not-allowed bg-gray-400'
+                            : 'bg-primary hover:bg-primary-200 hover:text-text'
+                    }`}
+                    type="button"
+                    disabled={loading}
+                    onClick={validateAndProceed}
+                >
+                    {loading ? (
+                        <>
+                            Saving <MotionSpinner />
+                        </>
+                    ) : (
+                        <>
+                            Continue <FaArrowRight />
+                        </>
+                    )}
+                </button>
+            </form>
+        </div>
     );
+
 };
 
 export default Attributes;

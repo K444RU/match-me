@@ -13,5 +13,6 @@ public record CurrentUserResponseDTO(
         String firstName,
         String lastName,
         String alias,
+        String profilePicture,
         Set<UserRoleType> role) {
 }
