@@ -20,16 +20,25 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const UserAccountCard = () => {
     const settingsContext = useContext(SettingsContext);
-    if (!settingsContext) return null;
-    const { settings, refreshSettings } = settingsContext;
     const [email, setEmail] = useState<string>();
     const [countryCode, setCountryCode] = useState<string>();
     const [number, setNumber] = useState<string>();
     const [loading, setLoading] = useState(false);
     const { logout } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!settingsContext?.settings) return
+
+        setEmail(settingsContext.settings.email ?? '');
+        const [code, phoneNumber] = (settingsContext.settings.number ?? '').split(' ');
+        setCountryCode(code ?? '');
+        setNumber(phoneNumber ?? '');
+
+    }, [settingsContext?.settings]);
+
     const handleUpdate = async () => {
-        if (!settings) return;
+        if (!settingsContext?.settings) return;
 
         setLoading(true);
         try {
@@ -38,11 +47,11 @@ const UserAccountCard = () => {
                 email,
                 number: `${countryCode} ${number}`,
             });
-            if (settings.email !== email) {
+            if (settingsContext.settings.email !== email) {
                 logout();
                 navigate('/login');
             }
-            refreshSettings();
+            settingsContext.refreshSettings();
         } catch (error) {
             toast.error('Failed to update account');
             console.error('Error updating account:', error);
@@ -50,15 +59,6 @@ const UserAccountCard = () => {
             setLoading(false);
         }
     };
-
-    useEffect(() => {
-        if (settings) {
-            setEmail(settings.email ?? '');
-            const [code, phoneNumber] = settings.number.split(' ');
-            setCountryCode(code ?? '');
-            setNumber(phoneNumber ?? '');
-        }
-    }, [settings]);
 
     return (
         <Card className="h-[475px] w-full border-none shadow-none">

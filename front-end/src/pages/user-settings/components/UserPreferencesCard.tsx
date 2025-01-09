@@ -27,10 +27,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const UserPreferencesCard = () => {
     const settingsContext = useContext(SettingsContext);
-    if (!settingsContext) return null;
-    const { settings, refreshSettings } = settingsContext;
     const genders = useContext(GenderContext);
-
     const [gender, setGender] = useState<number | null>(null);
     const [distance, setDistance] = useState<number | null>(null);
     const [ageMin, setAgeMin] = useState<number | null>(null);
@@ -41,17 +38,18 @@ const UserPreferencesCard = () => {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (settings) {
-            setGender(settings.genderOther ?? null);
-            setDistance(settings.distance ?? null);
-            setAgeMin(settings.ageMin ?? null);
-            setProbabilityTolerance(settings.probabilityTolerance ?? null);
-            setAgeMax(settings.ageMax ?? null);
-        }
-    }, [settings]);
+        if (!settingsContext?.settings) return;
+
+        setGender(settingsContext.settings.genderOther ?? null);
+        setDistance(settingsContext.settings.distance ?? null);
+        setAgeMin(settingsContext.settings.ageMin ?? null);
+        setProbabilityTolerance(settingsContext.settings.probabilityTolerance ?? null);
+        setAgeMax(settingsContext.settings.ageMax ?? null);
+
+        }, [settingsContext?.settings]);
 
     const handleUpdate = async () => {
-        if (!settings) return;
+        if (!settingsContext?.settings) return;
 
         setLoading(true);
         try {
@@ -70,7 +68,7 @@ const UserPreferencesCard = () => {
                 age_max: ageMax,
                 probability_tolerance: probabilityTolerance,
             });
-            refreshSettings();
+            settingsContext.refreshSettings();
             toast.success('Preferences updated successfully');
         } catch (error) {
             toast.error('Failed to update preferences');

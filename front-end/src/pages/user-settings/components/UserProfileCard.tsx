@@ -19,23 +19,22 @@ import ProfilePictureUploader from '@ui/forms/ProfilePictureUploader.tsx';
 
 const UserProfileCard = () => {
     const settingsContext = useContext(SettingsContext);
-    if (!settingsContext) return null;
-    const { settings, refreshSettings } = settingsContext;
     const [firstName, setFirstName] = useState<string | null>();
     const [lastName, setLastName] = useState<string | null>();
     const [alias, setAlias] = useState<string | null>();
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (settings) {
-            setFirstName(settings.firstName ?? '');
-            setLastName(settings.lastName ?? '');
-            setAlias(settings.alias ?? '');
-        }
-    }, [settings]);
+        if (!settingsContext?.settings) return;
+
+        setFirstName(settingsContext.settings.firstName ?? '');
+        setLastName(settingsContext.settings.lastName ?? '');
+        setAlias(settingsContext.settings.alias ?? '');
+
+    }, [settingsContext?.settings]);
 
     const handleUpdate = async () => {
-        if (!settings) return;
+        if (!settingsContext?.settings) return;
 
         setLoading(true);
         try {
@@ -45,7 +44,7 @@ const UserProfileCard = () => {
                 last_name: lastName,
                 alias,
             });
-            refreshSettings();
+            settingsContext.refreshSettings();
             toast.success('Profile updated successfully');
         } catch (error) {
             toast.error('Failed to update profile');
