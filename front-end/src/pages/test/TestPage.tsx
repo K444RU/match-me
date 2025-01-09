@@ -83,6 +83,7 @@ export default function TestPage() {
                 }
             } catch (parseError) {
                 toast.error('Invalid JSON input. Please check the format.');
+                console.error(parseError);
                 return;
             }
 
