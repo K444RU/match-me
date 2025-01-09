@@ -95,6 +95,10 @@ export default {
 			DEFAULT: 'var(--muted)',
 			foreground: 'var(--muted-foreground)',
 			},
+			popover: {
+				DEFAULT: "hsl(var(--popover))",
+				foreground: "hsl(var(--popover-foreground))",
+			},
   		}
   	}
   },

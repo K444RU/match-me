@@ -11,6 +11,7 @@ const PayloadFormData = (formData: UnifiedFormData) => ({
     first_name: formData.firstName,
     last_name: formData.lastName,
     alias: formData.alias,
+    hobbies: formData.hobbies,
     gender_self: formData.gender,
     birth_date: formData.dateOfBirth,
     city: formData.city.name,

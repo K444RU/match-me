@@ -79,6 +79,8 @@
 
     --muted: #f1f1f1;
     --muted-foreground: #737373;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47.4% 11.2%;
   }
   .dark {
     --text: #d5d3d3;
@@ -156,6 +158,8 @@
 
     --muted: #262626;
     --muted-foreground: #a3a3a3;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47.4% 11.2%;
   }
 }
 
