@@ -8,7 +8,7 @@
 import type { User } from './user';
 
 export interface UserRoleType {
-    id?: number;
-    name?: string;
-    users?: User[];
+  id?: number;
+  name?: string;
+  users?: User[];
 }

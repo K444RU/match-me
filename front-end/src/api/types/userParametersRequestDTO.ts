@@ -7,62 +7,67 @@
  */
 
 export interface UserParametersRequestDTO {
-    /**
-     * @minimum 18
-     * @maximum 120
-     */
-    age_max: number;
-    /**
-     * @minimum 18
-     * @maximum 120
-     */
-    age_min: number;
-    /**
-     * @minLength 2
-     * @maxLength 30
-     * @pattern ^[a-zA-Z0-9\s-_]+$
-     */
-    alias?: string;
-    birth_date: string;
-    /**
-     * @minLength 2
-     * @maxLength 100
-     */
-    city: string;
-    /**
-     * @minimum 50
-     * @maximum 300
-     */
-    distance: number;
-    /**
-     * @minLength 2
-     * @maxLength 50
-     * @pattern ^[a-zA-Z\s-']+$
-     */
-    first_name: string;
-    /** @minimum 1 */
-    gender_other: number;
-    /** @minimum 1 */
-    gender_self: number;
-    /**
-     * @minLength 2
-     * @maxLength 50
-     * @pattern ^[a-zA-Z\s-']+$
-     */
-    last_name: string;
-    /**
-     * @minimum -90
-     * @maximum 90
-     */
-    latitude?: number;
-    /**
-     * @minimum -180
-     * @maximum 180
-     */
-    longitude?: number;
-    /**
-     * @minimum 0
-     * @maximum 1
-     */
-    probability_tolerance: number;
+  /**
+   * @minimum 18
+   * @maximum 120
+   */
+  age_max: number;
+  /**
+   * @minimum 18
+   * @maximum 120
+   */
+  age_min: number;
+  /**
+   * @minLength 2
+   * @maxLength 30
+   * @pattern ^[a-zA-Z0-9\s-_]+$
+   */
+  alias?: string;
+  birth_date: string;
+  /**
+   * @minLength 2
+   * @maxLength 100
+   */
+  city: string;
+  /**
+   * @minimum 50
+   * @maximum 300
+   */
+  distance: number;
+  /**
+   * @minLength 2
+   * @maxLength 50
+   * @pattern ^[a-zA-Z\s-']+$
+   */
+  first_name: string;
+  /** @minimum 1 */
+  gender_other: number;
+  /** @minimum 1 */
+  gender_self: number;
+  /**
+   * @minItems 0
+   * @maxItems 5
+   */
+  hobbies?: number[];
+  /**
+   * @minLength 2
+   * @maxLength 50
+   * @pattern ^[a-zA-Z\s-']+$
+   */
+  last_name: string;
+  /**
+   * @minimum -90
+   * @maximum 90
+   */
+  latitude?: number;
+  /**
+   * @minimum -180
+   * @maximum 180
+   */
+  longitude?: number;
+  /**
+   * @minimum 0
+   * @maximum 1
+   */
+  probability_tolerance: number;
 }

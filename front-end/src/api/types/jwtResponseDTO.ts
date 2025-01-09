@@ -7,9 +7,9 @@
  */
 
 export interface JwtResponseDTO {
-    email?: string;
-    id?: number;
-    role?: string;
-    token?: string;
-    type?: string;
+  email?: string;
+  id?: number;
+  role?: string;
+  token?: string;
+  type?: string;
 }

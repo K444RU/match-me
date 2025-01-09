@@ -8,5 +8,5 @@
 import type { Pageable } from './pageable';
 
 export type GetChatMessagesParams = {
-    pageable: Pageable;
+  pageable: Pageable;
 };

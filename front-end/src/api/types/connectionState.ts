@@ -10,9 +10,9 @@ import type { ConnectionType } from './connectionType';
 import type { User } from './user';
 
 export interface ConnectionState {
-    connection: Connection;
-    connection_type?: ConnectionType;
-    id?: number;
-    timestamp: string;
-    user: User;
+  connection: Connection;
+  connection_type?: ConnectionType;
+  id?: number;
+  timestamp: string;
+  user: User;
 }
