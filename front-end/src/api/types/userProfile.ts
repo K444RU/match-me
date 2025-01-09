@@ -19,5 +19,6 @@ export interface UserProfile {
     last_name?: string;
     preferences?: UserPreferences;
     profileChangeLog?: ProfileChange[];
+    profilePicture?: string;
     user?: User;
 }
