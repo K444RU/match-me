@@ -7,7 +7,7 @@
  */
 
 export interface ProfileResponseDTO {
-    city?: string;
-    first_name?: string;
-    last_name?: string;
+  city?: string;
+  first_name?: string;
+  last_name?: string;
 }

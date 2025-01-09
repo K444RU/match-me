@@ -8,6 +8,6 @@
 import type { UserParametersRequestDTO } from './userParametersRequestDTO';
 
 export interface UserParametersWithEmailsDTO {
-    emails?: string[];
-    parameters?: UserParametersRequestDTO[];
+  emails?: string[];
+  parameters?: UserParametersRequestDTO[];
 }

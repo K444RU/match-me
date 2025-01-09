@@ -7,7 +7,7 @@
  */
 
 export interface UserResponseDTO {
-    email?: string;
-    id?: number;
-    number?: string;
+  email?: string;
+  id?: number;
+  number?: string;
 }

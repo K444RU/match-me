@@ -9,10 +9,10 @@ import type { Connection } from './connection';
 import type { UserScore } from './userScore';
 
 export interface ConnectionResult {
-    blindAfter?: number;
-    connection?: Connection;
-    id?: number;
-    scoreAfter?: number;
-    userScores?: UserScore;
-    vibeAfter?: number;
+  blindAfter?: number;
+  connection?: Connection;
+  id?: number;
+  scoreAfter?: number;
+  userScores?: UserScore;
+  vibeAfter?: number;
 }

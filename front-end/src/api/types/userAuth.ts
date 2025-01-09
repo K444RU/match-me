@@ -8,8 +8,8 @@
 import type { User } from './user';
 
 export interface UserAuth {
-    id?: number;
-    password: string;
-    recovery?: number;
-    user?: User;
+  id?: number;
+  password: string;
+  recovery?: number;
+  user?: User;
 }

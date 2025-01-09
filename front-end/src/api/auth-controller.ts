@@ -8,33 +8,33 @@
 import * as axios from 'axios';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import type {
-    JwtResponseDTO,
-    LoginRequestDTO,
-    SignupRequestDTO,
+  JwtResponseDTO,
+  LoginRequestDTO,
+  SignupRequestDTO,
 } from './types';
 
 export const getAuthController = () => {
-    const registerUser = <TData = AxiosResponse<void>>(
-        signupRequestDTO: SignupRequestDTO,
-        options?: AxiosRequestConfig
-    ): Promise<TData> => {
-        return axios.default.post(
-            `http://localhost:8000/api/auth/signup`,
-            signupRequestDTO,
-            options
-        );
-    };
-    const authenticateUser = <TData = AxiosResponse<JwtResponseDTO>>(
-        loginRequestDTO: LoginRequestDTO,
-        options?: AxiosRequestConfig
-    ): Promise<TData> => {
-        return axios.default.post(
-            `http://localhost:8000/api/auth/signin`,
-            loginRequestDTO,
-            options
-        );
-    };
-    return { registerUser, authenticateUser };
+  const registerUser = <TData = AxiosResponse<void>>(
+    signupRequestDTO: SignupRequestDTO,
+    options?: AxiosRequestConfig
+  ): Promise<TData> => {
+    return axios.default.post(
+      `http://localhost:8000/api/auth/signup`,
+      signupRequestDTO,
+      options
+    );
+  };
+  const authenticateUser = <TData = AxiosResponse<JwtResponseDTO>>(
+    loginRequestDTO: LoginRequestDTO,
+    options?: AxiosRequestConfig
+  ): Promise<TData> => {
+    return axios.default.post(
+      `http://localhost:8000/api/auth/signin`,
+      loginRequestDTO,
+      options
+    );
+  };
+  return { registerUser, authenticateUser };
 };
 export type RegisterUserResult = AxiosResponse<void>;
 export type AuthenticateUserResult = AxiosResponse<JwtResponseDTO>;
