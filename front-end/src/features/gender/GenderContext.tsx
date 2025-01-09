@@ -1,4 +1,4 @@
 import { createContext } from 'react';
-import { Gender } from '@/types/api';
+import { UserGenderType } from '@/api/types';
 
-export const GenderContext = createContext<Gender[] | null>(null);
+export const GenderContext = createContext<UserGenderType[] | null>(null);
