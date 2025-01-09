@@ -15,6 +15,9 @@ import { updateSettings } from '@/features/user/services/UserService';
 import { toast } from 'sonner';
 import MotionSpinner from '@/components/animations/MotionSpinner';
 import { Skeleton } from '@/components/ui/skeleton';
+import { HOBBIES } from '@/assets/hobbies';
+import MultipleSelector, { Option } from '@/components/ui/multi-select';
+import { hobbiesById } from '@/lib/utils/dataConversion';
 import ProfilePictureUploader from "@ui/forms/ProfilePictureUploader.tsx";
 
 const UserProfileCard = () => {
@@ -23,6 +26,7 @@ const UserProfileCard = () => {
     const { settings, refreshSettings } = settingsContext;
     const [firstName, setFirstName] = useState<string | null>();
     const [lastName, setLastName] = useState<string | null>();
+    const [hobbies, setHobbies] = useState<Option[] | undefined>([]);
     const [alias, setAlias] = useState<string | null>();
     const [loading, setLoading] = useState(false);
 
@@ -31,6 +35,7 @@ const UserProfileCard = () => {
             setFirstName(settings.firstName ?? '');
             setLastName(settings.lastName ?? '');
             setAlias(settings.alias ?? '');
+            setHobbies(hobbiesById(settings.hobbies || []))
         }
     }, [settings]);
 
@@ -46,6 +51,7 @@ const UserProfileCard = () => {
                     firstName,
                     lastName,
                     alias,
+                    hobbies: hobbies?.map(hobby => parseInt(hobby.value))
                 },
                 'profile'
             );
@@ -70,35 +76,47 @@ const UserProfileCard = () => {
             <CardContent>
                 <form>
                     <div className="grid w-full items-center gap-4">
-                        <div className="flex flex-col space-y-1.5">
-                            <Label htmlFor="firstName">First Name</Label>
-                            {firstName !== undefined && firstName !== null ? (
-                                <Input
-                                    id="firstName"
-                                    placeholder="First Name"
-                                    value={firstName}
-                                    onChange={(e) =>
-                                        setFirstName(e.target.value)
-                                    }
-                                />
-                            ) : (
-                                <Skeleton className="h-[40px] w-full rounded-md border-[#e5e7eb]" />
-                            )}
+                        <div className="flex gap-2">
+                            <div className="flex flex-col space-y-1.5">
+                                <Label htmlFor="firstName">First Name</Label>
+                                {firstName !== undefined && firstName !== null ? (
+                                    <Input
+                                        id="firstName"
+                                        placeholder="First Name"
+                                        value={firstName}
+                                        onChange={(e) =>
+                                            setFirstName(e.target.value)
+                                        }
+                                    />
+                                ) : (
+                                    <Skeleton className="h-[40px] w-full rounded-md border-[#e5e7eb]" />
+                                )}
+                            </div>
+                            <div className="flex flex-col space-y-1.5">
+                                <Label htmlFor="lastName">Last Name</Label>
+                                {lastName !== undefined && lastName !== null ? (
+                                    <Input
+                                        id="lastName"
+                                        placeholder="Last Name"
+                                        value={lastName}
+                                        onChange={(e) =>
+                                            setLastName(e.target.value)
+                                        }
+                                    />
+                                ) : (
+                                    <Skeleton className="h-[40px] w-full rounded-md border-[#e5e7eb]" />
+                                )}
+                            </div>
                         </div>
                         <div className="flex flex-col space-y-1.5">
-                            <Label htmlFor="lastName">Last Name</Label>
-                            {lastName !== undefined && lastName !== null ? (
-                                <Input
-                                    id="lastName"
-                                    placeholder="Last Name"
-                                    value={lastName}
-                                    onChange={(e) =>
-                                        setLastName(e.target.value)
-                                    }
-                                />
-                            ) : (
-                                <Skeleton className="h-[40px] w-full rounded-md border-[#e5e7eb]" />
-                            )}
+                            <label className="mb-1 text-sm font-medium text-gray-700">
+                                Profile Picture
+                            </label>
+                            <ProfilePictureUploader
+                                onUploadSuccess={() => {
+                                    console.debug('Upload was successful!');
+                                }}
+                            />
                         </div>
                         <div className="flex flex-col space-y-1.5">
                             <label className="mb-1 text-sm font-medium text-gray-700">
@@ -123,10 +141,23 @@ const UserProfileCard = () => {
                                 <Skeleton className="h-[40px] w-full rounded-md border-[#e5e7eb]" />
                             )}
                         </div>
+                        <div className="flex flex-col space-y-1.5">
+                                <Label htmlFor="hobbies">Hobbies</Label>
+                                <MultipleSelector
+                                value={hobbies}
+                                onChange={setHobbies}
+                                placeholder='Select your hobbies...'
+                                defaultOptions={HOBBIES}
+                                groupBy='category'
+                                hideClearAllButton={true}
+                                maxSelected={5}
+                                hidePlaceholderWhenSelected={true}
+                                />
+                        </div>
                     </div>
                 </form>
             </CardContent>
-            <CardFooter className="flex justify-end">
+            <CardFooter className="flex justify-end mt-auto">
                 <Button onClick={handleUpdate} disabled={loading}>
                     {loading ? (
                         <>

@@ -63,6 +63,7 @@ export const updateSettings = async (
                 first_name: settings.firstName,
                 last_name: settings.lastName,
                 alias: settings.alias,
+                hobbies: settings.hobbies,
             };
             break;
         case 'preferences':
