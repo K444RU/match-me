@@ -4,7 +4,6 @@ import MotionSpinner from '@animations/MotionSpinner';
 import InputField from '../../../components/ui/forms/InputField';
 import { useAuth } from '@/features/authentication';
 import FormResponse from './FormResponse';
-import { AxiosError } from 'axios';
 
 const LoginForm = () => {
     const navigate = useNavigate();
