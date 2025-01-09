@@ -5,7 +5,7 @@ import { ProfilePictureSettingsRequestDTO } from '@/api/types';
 
 const userController = getUserController();
 
-export const UserService = {
+export const userService = {
     getUserParameters: async (): Promise<UserProfile> => {
         console.log('📡 Fetching user parameters via JWT');
         try {
