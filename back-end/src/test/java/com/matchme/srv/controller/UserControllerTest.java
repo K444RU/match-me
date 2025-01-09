@@ -74,8 +74,7 @@ public class UserControllerTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         mockMvc = MockMvcBuilders.standaloneSetup(userController)
-                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
-                .build();
+                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver()).build();
     }
 
     /**
@@ -92,20 +91,23 @@ public class UserControllerTest {
         String firstName = "firstName";
         String lastName = "lastName";
         String alias = "alias";
-        String city = "city";
 
         setupAuthenticatedUser(userId, email);
 
-        User mockUser = createMockUser(userId, email, firstName, lastName, alias, city);
+        UserRoleType roleUser = new UserRoleType();
+        roleUser.setId(1L);
+        roleUser.setName("ROLE_USER");
+        Set<UserRoleType> roles = Set.of(roleUser);
 
-        when(userService.getUser(1L)).thenReturn(mockUser);
-        when(userService.getUserProfile(1L)).thenReturn(mockUser.getProfile());
+        CurrentUserResponseDTO responseDTO =
+                CurrentUserResponseDTO.builder().id(userId).email(email).firstName(firstName)
+                        .lastName(lastName).alias(alias).profilePicture(null).role(roles).build();
+
+        when(userService.getUserDTO(userId, userId)).thenReturn(responseDTO);
 
         // When/Then
-        mockMvc.perform(get("/api/users/{targetId}", userId)
-                .principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+        mockMvc.perform(get("/api/users/{targetId}", userId).principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(userId.intValue())))
                 .andExpect(jsonPath("$.email", is(email)))
                 .andExpect(jsonPath("$.firstName", is(firstName)))
@@ -129,13 +131,12 @@ public class UserControllerTest {
         Long target_userId = 2L;
 
         setupAuthenticatedUser(req_userId, req_email);
-        setupConnectionStatus(req_userId, target_userId, false);
+        when(userService.getUserDTO(req_userId, target_userId))
+                .thenThrow(new EntityNotFoundException("User not found or no access rights."));
 
         // When/Then
-        mockMvc.perform(get("/api/users/{targetId}", target_userId)
-                .principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/users/{targetId}", target_userId).principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
     }
 
     /**
@@ -149,30 +150,28 @@ public class UserControllerTest {
         // Given
         Long req_userId = 1L;
         String req_email = "user1@example.com";
-
         Long target_userId = 2L;
         String target_email = "user2@example.com";
         String target_firstName = "firstName";
         String target_lastName = "lastName";
         String target_alias = "alias";
-        String target_city = "city";
 
-        User mockTargetUser = createMockUser(target_userId, target_email, target_firstName, target_lastName,
-                target_alias, target_city);
+        setupAuthenticatedUser(req_userId, req_email);
 
-        when(userService.isConnected(req_userId, target_userId)).thenReturn(true);
+        UserRoleType roleUser = new UserRoleType();
+        roleUser.setId(1L);
+        roleUser.setName("ROLE_USER");
+        Set<UserRoleType> roles = Set.of(roleUser);
 
-        UserDetailsImpl userDetails = new UserDetailsImpl(req_userId, req_email, "password",
-                Collections.emptySet());
-        when(authentication.getPrincipal()).thenReturn(userDetails);
-        when(userService.getUser(target_userId)).thenReturn(mockTargetUser);
-        when(userService.getUserProfile(target_userId)).thenReturn(mockTargetUser.getProfile());
+        CurrentUserResponseDTO responseDTO = CurrentUserResponseDTO.builder().id(target_userId)
+                .email(target_email).firstName(target_firstName).lastName(target_lastName)
+                .alias(target_alias).profilePicture(null).role(roles).build();
+
+        when(userService.getUserDTO(req_userId, target_userId)).thenReturn(responseDTO);
 
         // When/Then
-        mockMvc.perform(get("/api/users/{targetId}", target_userId)
-                .principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+        mockMvc.perform(get("/api/users/{targetId}", target_userId).principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(target_userId.intValue())))
                 .andExpect(jsonPath("$.email", is(target_email)))
                 .andExpect(jsonPath("$.firstName", is(target_firstName)))
@@ -195,21 +194,17 @@ public class UserControllerTest {
         String email = "user1@example.com";
         String firstName = "firstName";
         String lastName = "lastName";
-        String alias = "alias";
         String city = "city";
 
         setupAuthenticatedUser(userId, email);
 
-        User mockUser = createMockUser(userId, email, firstName, lastName, alias, city);
-
-        when(userService.getUser(userId)).thenReturn(mockUser);
-        when(userService.getUserProfile(userId)).thenReturn(mockUser.getProfile());
+        ProfileResponseDTO profileDTO = ProfileResponseDTO.builder().first_name(firstName)
+                .last_name(lastName).city(city).build();
+        when(userService.getUserProfileDTO(userId, userId)).thenReturn(profileDTO);
 
         // When/Then
-        mockMvc.perform(get("/api/users/{targetId}/profile", userId)
-                .principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+        mockMvc.perform(get("/api/users/{targetId}/profile", userId).principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.first_name", is(firstName)))
                 .andExpect(jsonPath("$.last_name", is(lastName)))
                 .andExpect(jsonPath("$.city", is(city)));
@@ -222,12 +217,12 @@ public class UserControllerTest {
         String req_email = "user1@example.com";
         Long target_userId = 2L;
         setupAuthenticatedUser(req_userId, req_email);
-        setupConnectionStatus(req_userId, target_userId, false);
+        when(userService.getUserProfileDTO(req_userId, target_userId))
+                .thenThrow(new EntityNotFoundException("User not found or no access rights."));
 
         // When/Then
         mockMvc.perform(get("/api/users/{targetId}/profile", target_userId)
-                .principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON))
+                .principal(authentication).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
 
@@ -238,22 +233,19 @@ public class UserControllerTest {
         String req_email = "user1@example.com";
 
         Long target_userId = 2L;
-        String target_email = "user2@example.com";
         String target_firstName = "firstName";
         String target_lastName = "lastName";
+        String target_city = "city";
 
         setupAuthenticatedUser(req_userId, req_email);
-        setupConnectionStatus(req_userId, target_userId, true);
 
-        User mockTargetUser = createMockUser(target_userId, target_email, target_firstName, target_lastName, "alias",
-                "city");
-        when(userService.getUser(target_userId)).thenReturn(mockTargetUser);
-        when(userService.getUserProfile(target_userId)).thenReturn(mockTargetUser.getProfile());
+        ProfileResponseDTO profileDTO = ProfileResponseDTO.builder().first_name(target_firstName)
+                .last_name(target_lastName).city(target_city).build();
+        when(userService.getUserProfileDTO(req_userId, target_userId)).thenReturn(profileDTO);
 
         // When/Then
         mockMvc.perform(get("/api/users/{targetId}/profile", target_userId)
-                .principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON))
+                .principal(authentication).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.first_name", is(target_firstName)))
                 .andExpect(jsonPath("$.last_name", is(target_lastName)))
@@ -290,11 +282,12 @@ public class UserControllerTest {
         setupAuthenticatedUser(userId, email);
 
         User mockUser = createMockUser(userId, email, firstName, lastName, alias, city);
-        UserPreferences mockUserPreferences = createMockUserPreferences(ageMin, ageMax, distance, probabilityTolerance,
-                genderOther);
-        UserAttributes mockUserAttributes = createMockUserAttributes(birthDate, location, genderSelf);
-        UserProfile mockUserProfile = createMockUserProfile(mockUser.getProfile(), mockUserPreferences,
-                mockUserAttributes);
+        UserPreferences mockUserPreferences = createMockUserPreferences(ageMin, ageMax, distance,
+                probabilityTolerance, genderOther);
+        UserAttributes mockUserAttributes =
+                createMockUserAttributes(birthDate, location, genderSelf);
+        UserProfile mockUserProfile = createMockUserProfile(mockUser.getProfile(),
+                mockUserPreferences, mockUserAttributes);
         mockUser.setProfile(mockUserProfile);
         mockUserProfile.setHobbies(hobbies);
 
@@ -304,11 +297,9 @@ public class UserControllerTest {
             when(hobbyService.findById(hobby.getId())).thenReturn(hobby);
         }
 
-    // When/Then
-        mockMvc.perform(get("/api/users/{targetId}/bio", userId)
-                .principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+        // When/Then
+        mockMvc.perform(get("/api/users/{targetId}/bio", userId).principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.gender_self.id", is(genderSelf.getId())))
                 .andExpect(jsonPath("$.gender_self.name", is(genderSelf.getName())))
                 .andExpect(jsonPath("$.gender_other.id", is(genderOther.getId())))
@@ -327,13 +318,12 @@ public class UserControllerTest {
         String req_email = "user1@example.com";
         Long target_userId = 2L;
         setupAuthenticatedUser(req_userId, req_email);
-        setupConnectionStatus(req_userId, target_userId, false);
+        when(userService.getUserProfileDTO(req_userId, target_userId))
+                .thenThrow(new EntityNotFoundException("User not found or no access rights."));
 
         // When/Then
-        mockMvc.perform(get("/api/users/{targetId}/bio", target_userId)
-                .principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/users/{targetId}/bio", target_userId).principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
     }
 
     @Test
@@ -362,15 +352,14 @@ public class UserControllerTest {
         setupAuthenticatedUser(req_userId, req_email);
         setupConnectionStatus(req_userId, target_userId, true);
 
-        User mockUser = createMockUser(target_userId, target_email, target_firstName, target_lastName, target_alias,
-                target_city);
-        UserPreferences mockUserPreferences = createMockUserPreferences(target_ageMin, target_ageMax, target_distance,
-                target_probabilityTolerance,
-                target_genderOther);
-        UserAttributes mockUserAttributes = createMockUserAttributes(target_birthDate, target_location,
-                target_genderSelf);
-        UserProfile mockUserProfile = createMockUserProfile(mockUser.getProfile(), mockUserPreferences,
-                mockUserAttributes);
+        User mockUser = createMockUser(target_userId, target_email, target_firstName,
+                target_lastName, target_alias, target_city);
+        UserPreferences mockUserPreferences = createMockUserPreferences(target_ageMin,
+                target_ageMax, target_distance, target_probabilityTolerance, target_genderOther);
+        UserAttributes mockUserAttributes =
+                createMockUserAttributes(target_birthDate, target_location, target_genderSelf);
+        UserProfile mockUserProfile = createMockUserProfile(mockUser.getProfile(),
+                mockUserPreferences, mockUserAttributes);
         mockUser.setProfile(mockUserProfile);
         mockUserProfile.setHobbies(hobbies);
 
@@ -381,10 +370,8 @@ public class UserControllerTest {
         }
 
         // When/Then
-        mockMvc.perform(get("/api/users/{targetId}/bio", target_userId)
-                .principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+        mockMvc.perform(get("/api/users/{targetId}/bio", target_userId).principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.gender_self.id", is(target_genderSelf.getId())))
                 .andExpect(jsonPath("$.gender_self.name", is(target_genderSelf.getName())))
                 .andExpect(jsonPath("$.gender_other.id", is(target_genderOther.getId())))
@@ -425,23 +412,22 @@ public class UserControllerTest {
 
         setupAuthenticatedUser(req_userId, req_email);
 
-        User mockRequestingUser = createMockUser(req_userId, req_email, req_firstName, req_lastName, req_alias,
-                req_city, req_number);
-        User mockTargetUser = createMockUser(target_userId, target_email, target_firstName, target_lastName,
-                target_alias, target_city, target_number);
+        User mockRequestingUser = createMockUser(req_userId, req_email, req_firstName, req_lastName,
+                req_alias, req_city, req_number);
+        User mockTargetUser = createMockUser(target_userId, target_email, target_firstName,
+                target_lastName, target_alias, target_city, target_number);
 
         Connection mockConnection = new Connection();
         mockConnection.setId(connectionId);
         mockConnection.setUsers(Set.of(mockRequestingUser, mockTargetUser));
 
         when(userService.getUser(req_userId)).thenReturn(mockRequestingUser);
-        when(connectionService.getUserConnections(mockRequestingUser)).thenReturn(List.of(mockConnection));
+        when(connectionService.getUserConnections(mockRequestingUser))
+                .thenReturn(List.of(mockConnection));
 
         mockMvc.perform(get("/api/users/{targetId}/connections", req_userId)
-                .principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
+                .principal(authentication).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(connectionId.intValue())))
                 .andExpect(jsonPath("$[0].users[0].id", is(target_userId.intValue())))
                 .andExpect(jsonPath("$[0].users[0].email", is(target_email)))
@@ -461,8 +447,7 @@ public class UserControllerTest {
 
         // When/Then
         mockMvc.perform(get("/api/users/{targetId}/connections", target_userId)
-                .principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON))
+                .principal(authentication).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
 
@@ -477,8 +462,7 @@ public class UserControllerTest {
 
         // When/Then
         mockMvc.perform(get("/api/users/{targetId}/connections", target_userId)
-                .principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON))
+                .principal(authentication).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
 
@@ -490,12 +474,11 @@ public class UserControllerTest {
         String validBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...";
 
         // When/Then
-        mockMvc.perform(post("/api/users/profile-picture")
-                        .principal(authentication)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{ \"base64Image\": \"" + validBase64 + "\" }"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Profile picture uploaded successfully.")));
+        mockMvc.perform(post("/api/users/profile-picture").principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{ \"base64Image\": \"" + validBase64 + "\" }")).andExpect(status().isOk())
+                .andExpect(
+                        content().string(containsString("Profile picture uploaded successfully.")));
     }
 
     @Test
@@ -508,11 +491,10 @@ public class UserControllerTest {
                 .when(userService).saveProfilePicture(eq(userId), eq(null));
 
         // When/Then
-        mockMvc.perform(post("/api/users/profile-picture")
-                        .principal(authentication)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("No valid base64 image found in the request.")));
+        mockMvc.perform(post("/api/users/profile-picture").principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest())
+                .andExpect(content()
+                        .string(containsString("No valid base64 image found in the request.")));
     }
 
     @Test
@@ -526,16 +508,15 @@ public class UserControllerTest {
         request.setBase64Image(emptyBase64);
 
         doThrow(new IllegalArgumentException("Base64 image data cannot be null or empty."))
-                .when(userService).saveProfilePicture(eq(userId), argThat(requestDto ->
-                        requestDto != null && "".equals(requestDto.getBase64Image())));
+                .when(userService)
+                .saveProfilePicture(eq(userId), argThat(requestDto -> requestDto != null
+                        && "".equals(requestDto.getBase64Image())));
 
         // When/Then
-        mockMvc.perform(post("/api/users/profile-picture")
-                        .principal(authentication)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"base64Image\":\"\"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("Base64 image data cannot be null or empty.")));
+        mockMvc.perform(post("/api/users/profile-picture").principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"base64Image\":\"\"}"))
+                .andExpect(status().isBadRequest()).andExpect(content()
+                        .string(containsString("Base64 image data cannot be null or empty.")));
     }
 
     @Test
@@ -545,15 +526,14 @@ public class UserControllerTest {
         setupAuthenticatedUser(userId, "user1@example.com");
         String invalidBase64 = "thisIsNotValid==";
 
-        doThrow(new IllegalArgumentException("Invalid Base64 image data."))
-                .when(userService).saveProfilePicture(eq(userId), argThat(dto ->
-                        dto != null && invalidBase64.equals(dto.getBase64Image())));
+        doThrow(new IllegalArgumentException("Invalid Base64 image data.")).when(userService)
+                .saveProfilePicture(eq(userId),
+                        argThat(dto -> dto != null && invalidBase64.equals(dto.getBase64Image())));
 
         // When/Then
-        mockMvc.perform(post("/api/users/profile-picture")
-                        .principal(authentication)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{ \"base64Image\": \"" + invalidBase64 + "\" }"))
+        mockMvc.perform(post("/api/users/profile-picture").principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{ \"base64Image\": \"" + invalidBase64 + "\" }"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("Invalid Base64 image data.")));
     }
@@ -568,15 +548,15 @@ public class UserControllerTest {
         ProfilePictureSettingsRequestDTO request = new ProfilePictureSettingsRequestDTO();
         request.setBase64Image(validBase64);
 
-        doThrow(new EntityNotFoundException("User not found for ID: " + userId))
-                .when(userService).saveProfilePicture(eq(userId), argThat(dto ->
-                        dto != null && "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...".equals(dto.getBase64Image())));
+        doThrow(new EntityNotFoundException("User not found for ID: " + userId)).when(userService)
+                .saveProfilePicture(eq(userId), argThat(
+                        dto -> dto != null && "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+                                .equals(dto.getBase64Image())));
 
         // When/Then
-        mockMvc.perform(post("/api/users/profile-picture")
-                        .principal(authentication)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{ \"base64Image\": \"" + validBase64 + "\" }"))
+        mockMvc.perform(post("/api/users/profile-picture").principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{ \"base64Image\": \"" + validBase64 + "\" }"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("User not found for ID: 999")));
     }
@@ -591,7 +571,7 @@ public class UserControllerTest {
         hobby1.setId(1L);
         hobby1.setName("3D printing");
         hobby1.setCategory("General");
-    
+
         Hobby hobby2 = new Hobby();
         hobby2.setId(2L);
         hobby2.setName("Acrobatics");
@@ -610,17 +590,14 @@ public class UserControllerTest {
      * @param alias
      * @return {@link User}
      */
-    private User createMockUser(Long id, String email, String firstName, String lastName, String alias, String city) {
+    private User createMockUser(Long id, String email, String firstName, String lastName,
+            String alias, String city) {
         User mockUser = new User();
         mockUser.setId(id);
         mockUser.setEmail(email);
 
-        UserProfile profile = UserProfile.builder()
-                .first_name(firstName)
-                .last_name(lastName)
-                .alias(alias)
-                .city(city)
-                .build();
+        UserProfile profile = UserProfile.builder().first_name(firstName).last_name(lastName)
+                .alias(alias).city(city).build();
 
         UserRoleType defaultRole = new UserRoleType();
         defaultRole.setId(1L);
@@ -643,8 +620,8 @@ public class UserControllerTest {
      * @param number
      * @return {@link User}
      */
-    private User createMockUser(Long id, String email, String firstName, String lastName, String alias, String city,
-            String number) {
+    private User createMockUser(Long id, String email, String firstName, String lastName,
+            String alias, String city, String number) {
         User mockUser = createMockUser(id, email, firstName, lastName, alias, city);
         mockUser.setNumber(number);
         return mockUser;
@@ -656,8 +633,7 @@ public class UserControllerTest {
      * @param profile
      * @param preferences
      * @param attributes
-     * @return {@link UserProfile} with {@link UserPreferences} and
-     *         {@link UserAttributes}
+     * @return {@link UserProfile} with {@link UserPreferences} and {@link UserAttributes}
      */
     private UserProfile createMockUserProfile(UserProfile profile, UserPreferences preferences,
             UserAttributes attributes) {
@@ -684,8 +660,8 @@ public class UserControllerTest {
      * @param gender
      * @return {@link UserPreferences}
      */
-    private UserPreferences createMockUserPreferences(Integer ageMin, Integer ageMax, Integer distance,
-            Double probabilityTolerance, UserGenderType gender) {
+    private UserPreferences createMockUserPreferences(Integer ageMin, Integer ageMax,
+            Integer distance, Double probabilityTolerance, UserGenderType gender) {
         UserPreferences preferences = new UserPreferences();
         preferences.setAge_min(ageMin);
         preferences.setAge_max(ageMax);
@@ -703,7 +679,8 @@ public class UserControllerTest {
      * @param gender
      * @return {@link UserAttributes}
      */
-    private UserAttributes createMockUserAttributes(LocalDate birthDate, List<Double> location, UserGenderType gender) {
+    private UserAttributes createMockUserAttributes(LocalDate birthDate, List<Double> location,
+            UserGenderType gender) {
         UserAttributes attributes = new UserAttributes();
         attributes.setBirth_date(birthDate);
         attributes.setLocation(location);
@@ -741,8 +718,8 @@ public class UserControllerTest {
      * @param email
      */
     private void setupAuthenticatedUser(Long userId, String email) {
-        UserDetailsImpl userDetails = new UserDetailsImpl(userId, email, "password",
-                Collections.emptySet());
+        UserDetailsImpl userDetails =
+                new UserDetailsImpl(userId, email, "password", Collections.emptySet());
         when(authentication.getPrincipal()).thenReturn(userDetails);
     }
 

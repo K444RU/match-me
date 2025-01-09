@@ -47,16 +47,21 @@ public class UserController {
      * <p>
      * Checks if the requester is connected or is the user.
      *
-     * @param targetId       ID of the user to retrieve
+     * @param targetId ID of the user to retrieve
      * @param authentication
      * @return ID, email, first_name, last_name, alias and roles
      * @see CurrentUserResponseDTO
      */
     @GetMapping("/{targetId}")
-    public ResponseEntity<CurrentUserResponseDTO> getUser(@PathVariable Long targetId, Authentication authentication) {
-        Long currentUserId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
-        CurrentUserResponseDTO response = userService.getUserDTO(currentUserId, targetId);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<CurrentUserResponseDTO> getUser(@PathVariable Long targetId,
+            Authentication authentication) {
+        try {
+            Long currentUserId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
+            CurrentUserResponseDTO response = userService.getUserDTO(currentUserId, targetId);
+            return ResponseEntity.ok(response);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     /**
@@ -64,16 +69,21 @@ public class UserController {
      * <p>
      * Checks if the requester is connected or is the user.
      *
-     * @param targetId       ID of the user to retrieve profile for
+     * @param targetId ID of the user to retrieve profile for
      * @param authentication
      * @return first_name, last_name and city
      * @see ProfileResponseDTO
      */
     @GetMapping("/{targetId}/profile")
-    public ResponseEntity<ProfileResponseDTO> getProfile(@PathVariable Long targetId, Authentication authentication) {
-        Long currentUserId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
-        ProfileResponseDTO profile = userService.getUserProfileDTO(currentUserId, targetId);
-        return ResponseEntity.ok(profile);
+    public ResponseEntity<ProfileResponseDTO> getProfile(@PathVariable Long targetId,
+            Authentication authentication) {
+        try {
+            Long currentUserId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
+            ProfileResponseDTO profile = userService.getUserProfileDTO(currentUserId, targetId);
+            return ResponseEntity.ok(profile);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     /**
@@ -81,13 +91,14 @@ public class UserController {
      * <p>
      * Checks if the requester is connected or is the user
      *
-     * @param targetId       ID of the user to retrieve biographical data for
+     * @param targetId ID of the user to retrieve biographical data for
      * @param authentication
      * @return User age, preferences and attributes
      * @see BiographicalResponseDTO
      */
     @GetMapping("/{targetId}/bio")
-    public ResponseEntity<BiographicalResponseDTO> getBio(@PathVariable Long targetId, Authentication authentication) {
+    public ResponseEntity<BiographicalResponseDTO> getBio(@PathVariable Long targetId,
+            Authentication authentication) {
         UserDetailsImpl requesterUserDetails = (UserDetailsImpl) authentication.getPrincipal();
         Long requesterUserId = requesterUserDetails.getId();
 
@@ -97,11 +108,14 @@ public class UserController {
             BiographicalResponseDTO bio = BiographicalResponseDTO.builder()
                     .gender_self(new GenderTypeDTO(userProfile.getAttributes().getGender().getId(),
                             userProfile.getAttributes().getGender().getName()))
-                    .gender_other(new GenderTypeDTO(userProfile.getPreferences().getGender().getId(),
-                            userProfile.getPreferences().getGender().getName()))
-                    .age_self(Period.between(userProfile.getAttributes().getBirth_date(),
-                            LocalDate.now()).getYears())
-              .hobbies(userProfile.getHobbies().stream().map(hobby -> hobby.getId()).collect(Collectors.toSet()))
+                    .gender_other(
+                            new GenderTypeDTO(userProfile.getPreferences().getGender().getId(),
+                                    userProfile.getPreferences().getGender().getName()))
+                    .age_self(Period
+                            .between(userProfile.getAttributes().getBirth_date(), LocalDate.now())
+                            .getYears())
+                    .hobbies(userProfile.getHobbies().stream().map(hobby -> hobby.getId())
+                            .collect(Collectors.toSet()))
                     .age_min(userProfile.getPreferences().getAge_min())
                     .age_max(userProfile.getPreferences().getAge_max())
                     .distance(userProfile.getPreferences().getDistance())
@@ -120,13 +134,13 @@ public class UserController {
      * <p>
      * Checks if the requester is the user.
      *
-     * @param targetId       ID of the user to retrieve connections for
+     * @param targetId ID of the user to retrieve connections for
      * @param authentication
      * @return List of {@link ConnectionResponseDTO}
      */
     @GetMapping("/{targetId}/connections")
     public ResponseEntity<List<ConnectionResponseDTO>> getConnections(@PathVariable Long targetId,
-                                                                      Authentication authentication) {
+            Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         Long userId = userDetails.getId();
 
@@ -135,14 +149,11 @@ public class UserController {
             List<Connection> connections = connectionService.getUserConnections(user);
             List<ConnectionResponseDTO> connectionResponse = new ArrayList<>();
             for (Connection connection : connections) {
-                Set<UserResponseDTO> users = connection.getUsers()
-                        .stream()
-                        .map(u -> new UserResponseDTO(
-                                u.getId(),
-                                u.getEmail(),
-                                u.getNumber()))
+                Set<UserResponseDTO> users = connection.getUsers().stream()
+                        .map(u -> new UserResponseDTO(u.getId(), u.getEmail(), u.getNumber()))
                         .collect(Collectors.toSet());
-                connectionResponse.add(ConnectionResponseDTO.builder().id(connection.getId()).users(users).build());
+                connectionResponse.add(ConnectionResponseDTO.builder().id(connection.getId())
+                        .users(users).build());
             }
 
             return ResponseEntity.ok(connectionResponse);
@@ -174,7 +185,8 @@ public class UserController {
     // }
 
     @PatchMapping("/verify/{userId}")
-    public ResponseEntity<?> verifyAccount(@PathVariable Long userId, @RequestParam int verificationCode) {
+    public ResponseEntity<?> verifyAccount(@PathVariable Long userId,
+            @RequestParam int verificationCode) {
 
         userService.verifyAccount(userId, verificationCode);
 
@@ -189,7 +201,8 @@ public class UserController {
     // }
 
     @PatchMapping("/complete-registration")
-    public ResponseEntity<?> setParameters(@Validated @RequestBody UserParametersRequestDTO parameters) {
+    public ResponseEntity<?> setParameters(
+            @Validated @RequestBody UserParametersRequestDTO parameters) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         Long userId = userDetails.getId();
@@ -202,7 +215,7 @@ public class UserController {
     @PutMapping("/settings/account")
     @Validated
     public ResponseEntity<?> updateAccount(Authentication authentication,
-                                           @Validated @RequestBody AccountSettingsRequestDTO settings) {
+            @Validated @RequestBody AccountSettingsRequestDTO settings) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         Long userId = userDetails.getId();
 
@@ -214,7 +227,7 @@ public class UserController {
     @PutMapping("/settings/profile")
     @Validated
     public ResponseEntity<?> updateProfile(Authentication authentication,
-                                           @Validated @RequestBody ProfileSettingsRequestDTO settings) {
+            @Validated @RequestBody ProfileSettingsRequestDTO settings) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         Long userId = userDetails.getId();
 
@@ -226,7 +239,7 @@ public class UserController {
     @PutMapping("/settings/attributes")
     @Validated
     public ResponseEntity<?> updateAttributes(Authentication authentication,
-                                              @Validated @RequestBody AttributesSettingsRequestDTO settings) {
+            @Validated @RequestBody AttributesSettingsRequestDTO settings) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         Long userId = userDetails.getId();
 
@@ -238,7 +251,7 @@ public class UserController {
     @PutMapping("/settings/preferences")
     @Validated
     public ResponseEntity<?> updatePreferences(Authentication authentication,
-                                               @Validated @RequestBody PreferencesSettingsRequestDTO settings) {
+            @Validated @RequestBody PreferencesSettingsRequestDTO settings) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         Long userId = userDetails.getId();
 
@@ -250,10 +263,10 @@ public class UserController {
     /**
      * Endpoint for uploading a user's profile picture.
      *
-     * Delegates validation and business logic to the service layer.
-     * Handles specific exceptions like invalid input, entity not found, and general errors.
+     * Delegates validation and business logic to the service layer. Handles specific exceptions
+     * like invalid input, entity not found, and general errors.
      *
-     * @param request        DTO containing base64 image string (optional).
+     * @param request DTO containing base64 image string (optional).
      * @param authentication Current authenticated user.
      * @return Success or error message wrapped in a ResponseEntity.
      */
