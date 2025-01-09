@@ -1,5 +1,6 @@
 package com.matchme.srv.dto.request.settings;
 
+import java.util.Set;
 import com.matchme.srv.validation.annotations.NotBlankIfPresent;
 
 import jakarta.validation.constraints.NotBlank;
@@ -25,4 +26,7 @@ public class ProfileSettingsRequestDTO {
     @Size(min = 2, max = 30, message = "Alias must be between 2 and 30 characters")
     @Pattern(regexp = "^[a-zA-Z0-9\\s-_]+$", message = "Alias can only contain letters, numbers, spaces, hyphens and underscores")
     private String alias;
+
+    @Size(max = 5, message = "Maximum 5 hobbies allowed")
+    private Set<Long> hobbies;
 }

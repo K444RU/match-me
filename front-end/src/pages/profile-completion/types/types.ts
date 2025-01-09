@@ -9,6 +9,7 @@ export interface UnifiedFormData {
   firstName: string;
   lastName: string;
   alias: string | "";
+  hobbies?: number[] | null;
   gender: string;
   dateOfBirth: string;
   city: City;

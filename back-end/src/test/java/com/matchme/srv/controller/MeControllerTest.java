@@ -28,6 +28,7 @@ import com.matchme.srv.dto.response.ProfileResponseDTO;
 import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.UserRoleType;
+import com.matchme.srv.model.user.profile.Hobby;
 import com.matchme.srv.model.user.profile.UserGenderType;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
@@ -35,6 +36,7 @@ import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
 import com.matchme.srv.security.services.UserDetailsImpl;
 import com.matchme.srv.service.ChatService;
 import com.matchme.srv.service.ConnectionService;
+import com.matchme.srv.service.HobbyService;
 import com.matchme.srv.service.UserService;
 
 import static org.hamcrest.Matchers.empty;
@@ -55,6 +57,9 @@ public class MeControllerTest {
 
     @Mock
     private ConnectionService connectionService;
+
+    @Mock
+    private HobbyService hobbyService;
 
     @Mock
     private Authentication authentication;
@@ -168,6 +173,7 @@ public class MeControllerTest {
         String city = "city";
         UserGenderType genderSelf = createMockGenderType(1L); // MALE
         UserGenderType genderOther = createMockGenderType(2L); // FEMALE
+        Set<Hobby> hobbies = createMockHobbies();
         Integer ageMin = 18;
         Integer ageMax = 100;
         Integer distance = 50;
@@ -186,9 +192,13 @@ public class MeControllerTest {
         UserProfile mockUserProfile = createMockUserProfile(mockUser.getProfile(), mockUserPreferences,
                 mockUserAttributes);
         mockUser.setProfile(mockUserProfile);
+        mockUserProfile.setHobbies(hobbies);
 
         when(userService.getUser(1L)).thenReturn(mockUser);
         when(userService.getUserProfile(1L)).thenReturn(mockUser.getProfile());
+        for (Hobby hobby : hobbies) {
+            when(hobbyService.findById(hobby.getId())).thenReturn(hobby);
+        }
 
         // When/Then
         mockMvc.perform(get("/api/me/bio")
@@ -274,6 +284,25 @@ public class MeControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", empty()));
+    }
+
+    /**
+     * Helper method to create a set of hobbies
+     * 
+     * @return Set<Hobby>
+     */
+    private Set<Hobby> createMockHobbies() {
+        Hobby hobby1 = new Hobby();
+        hobby1.setId(1L);
+        hobby1.setName("3D printing");
+        hobby1.setCategory("General");
+    
+        Hobby hobby2 = new Hobby();
+        hobby2.setId(2L);
+        hobby2.setName("Acrobatics");
+        hobby2.setCategory("General");
+
+        return Set.of(hobby1, hobby2);
     }
 
     /**
