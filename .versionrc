@@ -11,7 +11,7 @@
     {
       "type": "chore",
       "section": "Housekeeping",
-      "hidden": false
+      "hidden": true
     },
     {
       "type": "docs",

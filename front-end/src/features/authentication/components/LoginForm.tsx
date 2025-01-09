@@ -22,7 +22,7 @@ const LoginForm = () => {
     console.log('🚀 LoginForm: Submitting with:', { email, password });
 
     try {
-      const response = await login(email, password);
+      const response = await login({email, password});
       console.log('✅ LoginForm: Login successful:', response);
       if (response.data.token) {
         // Send them back to the page they tried to visit when they were
