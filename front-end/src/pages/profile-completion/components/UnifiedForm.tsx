@@ -5,6 +5,7 @@ import axios from 'axios';
 import { UnifiedFormData } from '../types/types';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import {useAuth} from "@features/authentication/AuthContext.tsx";
 
 const PayloadFormData = (formData: UnifiedFormData) => ({
     first_name: formData.firstName,
@@ -25,6 +26,7 @@ const PayloadFormData = (formData: UnifiedFormData) => ({
 
 const UnifiedForm = () => {
     const navigate = useNavigate();
+    const { fetchCurrentUser } = useAuth();
 
     const [formData, setFormData] = useState<UnifiedFormData>(() => ({
         ...JSON.parse(localStorage.getItem('profileData') || '{}'),
@@ -76,8 +78,9 @@ const UnifiedForm = () => {
                     'Content-Type': 'application/json',
                 },
             })
-            .then(() => {
+            .then(async () => {
                 localStorage.removeItem('profileData');
+                await fetchCurrentUser();
                 navigate('/chats');
             })
             .catch((err) => {

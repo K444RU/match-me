@@ -8,10 +8,14 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
+import com.matchme.srv.dto.request.settings.ProfilePictureSettingsRequestDTO;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -334,6 +338,51 @@ public class UserServiceTest {
     );
 
     assertEquals("LogType not found", exception.getMessage());
+    verify(userRepository, never()).save(any(User.class));
+  }
+
+  @Test
+  void saveProfilePicture_ValidInput_Success() {
+    Long userId = 1L;
+    String base64Image = "data:image/png;base64," + Base64.getEncoder().encodeToString("testImage".getBytes());
+
+    User user = new User();
+    UserProfile profile = new UserProfile();
+    user.setProfile(profile);
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+    userService.saveProfilePicture(userId, new ProfilePictureSettingsRequestDTO(base64Image));
+
+    verify(userRepository).save(user);
+    assertNotNull(user.getProfile().getProfilePicture());
+  }
+
+  @Test
+  void saveProfilePicture_InvalidBase64_ThrowsException() {
+    Long userId = 1L;
+    String invalidBase64Image = "invalidBase64";
+
+    Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+      userService.saveProfilePicture(userId, new ProfilePictureSettingsRequestDTO(invalidBase64Image));
+    });
+
+    assertEquals("Invalid Base64 image data.", exception.getMessage());
+    verify(userRepository, never()).save(any(User.class));
+  }
+
+  @Test
+  void saveProfilePicture_UserNotFound_ThrowsException() {
+    Long userId = 1L;
+    String base64Image = "data:image/png;base64," + Base64.getEncoder().encodeToString("testImage".getBytes());
+
+    when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+    Exception exception = assertThrows(EntityNotFoundException.class, () -> {
+      userService.saveProfilePicture(userId, new ProfilePictureSettingsRequestDTO(base64Image));
+    });
+
+    assertEquals("User not found for ID: " + userId, exception.getMessage());
     verify(userRepository, never()).save(any(User.class));
   }
 
