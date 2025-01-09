@@ -14,7 +14,7 @@ const AllChats = ({
 
     useEffect(() => {
         const fetchChats = async () => {
-            if (!user?.token) return;
+            if (!user) return;
             try {
                 setChats(getMockChatPreviews(user));
             } catch (error) {
@@ -23,7 +23,7 @@ const AllChats = ({
         };
 
         fetchChats();
-    }, [user?.token]);
+    }, [user]);
 
     return (
         <>
