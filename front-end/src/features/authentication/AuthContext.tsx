@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                     lastName: '',
                     alias: '',
                 };
-            } catch (e) {
+            } catch (_e) {
                 localStorage.removeItem('authToken');
                 return null;
             }
