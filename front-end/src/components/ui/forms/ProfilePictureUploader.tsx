@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import ReactAvatarEditor from 'react-avatar-editor';
 import OneHandleSlider from "@ui/forms/OneHandleSlider.tsx";
-import { updateProfilePicture } from '@/features/user/services/UserService';
+import { UserService } from '@/features/user/services/UserService';
 
 interface ProfilePictureUploaderProps {
     onUploadSuccess?: () => void;
@@ -31,7 +31,7 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ onUploa
 
             try {
                 const token = localStorage.getItem('authToken') || '';
-                await updateProfilePicture({ base64Image },
+                await UserService.updateProfilePicture({ base64Image },
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
