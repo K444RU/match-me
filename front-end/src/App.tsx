@@ -1,6 +1,6 @@
 import { RouterProvider } from 'react-router-dom';
 import { router } from './router/router';
-import { AuthProvider } from './features/authentication/AuthContext';
+import { AuthProvider } from '@/features/authentication';
 import { StrictMode } from 'react';
 
 const App = () => {
