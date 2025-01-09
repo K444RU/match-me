@@ -12,9 +12,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SettingsContext } from '../SettingsContext';
 import { toast } from 'sonner';
-import { userService } from '@/features/user/services/user-service';
+import { userService } from '@/features/user';
 import MotionSpinner from '@/components/animations/MotionSpinner';
-import { useAuth } from '@/features/authentication/AuthContext';
+import { useAuth } from '@/features/authentication';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 

@@ -8,7 +8,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Toaster } from '@/components/ui/sonner';
-import { useAuth } from '@/features/authentication/AuthContext';
+import { useAuth } from '@/features/authentication';
 import {
     generateMessagesSendRequestDTO,
     generateSignupRequestDTO,
@@ -36,26 +36,37 @@ export default function TestPage() {
             toast.success('Users created successfully');
 
             const userParameters = generateUserParametersRequestDTO(100);
-            await axios.post(`${API_URL}users/finish`, {
-                parameters: userParameters,
-                emails: emails
-            }, {
-                headers: { Authorization: `Bearer ${user?.token}` },
-            });
+            await axios.post(
+                `${API_URL}users/finish`,
+                {
+                    parameters: userParameters,
+                    emails: emails,
+                },
+                {
+                    headers: { Authorization: `Bearer ${user?.token}` },
+                }
+            );
             toast.success('User parameters set successfully');
-            
-            const userConnections = generateUserPairs(0, 15, emails)
-            const generatedConnections = await axios.post(`${API_URL}connections`, userConnections, {
-                headers: { Authorization: `Bearer ${user?.token}` },
-            })
+
+            const userConnections = generateUserPairs(0, 15, emails);
+            const generatedConnections = await axios.post(
+                `${API_URL}connections`,
+                userConnections,
+                {
+                    headers: { Authorization: `Bearer ${user?.token}` },
+                }
+            );
             toast.success('User connections added successfully');
 
-            const userMessages = generateMessagesSendRequestDTO(0, 100, generatedConnections.data);
+            const userMessages = generateMessagesSendRequestDTO(
+                0,
+                100,
+                generatedConnections.data
+            );
             await axios.post(`${API_URL}messages`, userMessages, {
                 headers: { Authorization: `Bearer ${user?.token}` },
-            })
+            });
             toast.success('User messages added successfully');
-
         } catch (error) {
             console.error('Error creating users:', error);
             toast.error('Failed to create users');
@@ -79,7 +90,7 @@ export default function TestPage() {
                 data: emails,
                 headers: { Authorization: `Bearer ${user?.token}` },
             });
-            
+
             toast.success('Users deleted successfully');
         } catch (error) {
             console.error('Error deleting users:', error);
@@ -114,20 +125,21 @@ export default function TestPage() {
                 <CardHeader>
                     <CardTitle>Delete Users</CardTitle>
                     <CardDescription>
-                        Paste the array of emails to delete users from the system.
+                        Paste the array of emails to delete users from the
+                        system.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="grid w-full items-center gap-4">
                         <div className="flex flex-col space-y-1.5">
-                            <textarea 
-                                className="min-h-[200px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            <textarea
+                                className="border-input focus-visible:ring-ring min-h-[200px] w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
                                 placeholder="Paste email array here..."
                                 value={emailsInput}
                                 onChange={(e) => setEmailsInput(e.target.value)}
                             />
-                            <Button 
-                                onClick={bulkDeleteUsers} 
+                            <Button
+                                onClick={bulkDeleteUsers}
                                 variant="destructive"
                                 disabled={!emailsInput.trim()}
                             >
@@ -137,7 +149,7 @@ export default function TestPage() {
                     </div>
                 </CardContent>
             </Card>
-            <Toaster className='bg-black text-white'/>
+            <Toaster className="bg-black text-white" />
         </div>
     );
 }

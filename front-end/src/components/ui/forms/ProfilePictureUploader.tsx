@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import ReactAvatarEditor from 'react-avatar-editor';
 import OneHandleSlider from '@ui/forms/OneHandleSlider.tsx';
-import { userService } from '@/features/user/services/user-service';
+import { userService } from '@/features/user';
 
 interface ProfilePictureUploaderProps {
     onUploadSuccess?: () => void;

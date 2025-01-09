@@ -1,7 +1,7 @@
 import { createContext, ReactNode, useContext, useState } from 'react';
-import { authService } from '@/features/authentication/services/auth-service';
+import { authService } from '@/features/authentication';
 import { AxiosResponse } from 'axios';
-import { meService } from '@/features/user/services/me-service';
+import { meService } from '@/features/user';
 import { CurrentUserResponseDTO, LoginRequestDTO } from '@/api/types';
 
 interface User extends CurrentUserResponseDTO {
@@ -12,7 +12,7 @@ interface AuthContextType {
     user: User | null;
     login: (credentials: LoginRequestDTO) => Promise<AxiosResponse<any, any>>;
     logout: () => void;
-    fetchCurrentUser: () => Promise<void>
+    fetchCurrentUser: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -33,7 +33,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         const token = localStorage.getItem('authToken');
         if (token) {
             try {
-                meService.getCurrentUser()
+                meService
+                    .getCurrentUser()
                     .then((currentUser) => {
                         setUser({
                             ...currentUser,
@@ -102,23 +103,23 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
 
     const fetchCurrentUser = async () => {
-      try {
-          const token = localStorage.getItem('authToken');
-          if (!token) {
-              setUser(null);
-              return;
-          }
+        try {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                setUser(null);
+                return;
+            }
 
-          const currentUser = await meService.getCurrentUser();
-          setUser({
-              ...currentUser,
-              token,
-          });
-      } catch (error) {
-          console.error('❌ fetchCurrentUser error:', error);
-          localStorage.removeItem('authToken');
-          setUser(null);
-      }
+            const currentUser = await meService.getCurrentUser();
+            setUser({
+                ...currentUser,
+                token,
+            });
+        } catch (error) {
+            console.error('❌ fetchCurrentUser error:', error);
+            localStorage.removeItem('authToken');
+            setUser(null);
+        }
     };
 
     return (

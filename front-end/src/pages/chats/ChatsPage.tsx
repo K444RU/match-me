@@ -3,7 +3,7 @@ import OpenChat from './components/OpenChat';
 import AppSidebar from './components/AppSidebar';
 import { ChatPreview } from '@/types/api';
 import { Toaster } from '@/components/ui/sonner';
-import { useAuth } from '@/features/authentication/AuthContext';
+import { useAuth } from '@/features/authentication';
 import { getMockChatPreviews } from '@/mocks/chatData';
 import { ChatContext } from './ChatContext';
 
@@ -23,15 +23,17 @@ const ChatsPage = () => {
 
     useEffect(() => {
         refreshChats();
-    }, [user?.token])
+    }, [user?.token]);
 
     return (
-        <ChatContext.Provider value={{ chatPreviews: chats, openChat, refreshChats, setOpenChat }}>
+        <ChatContext.Provider
+            value={{ chatPreviews: chats, openChat, refreshChats, setOpenChat }}
+        >
             <div className="flex w-screen">
                 <AppSidebar />
                 <OpenChat />
             </div>
-            <Toaster className='bg-black text-white'/>
+            <Toaster className="bg-black text-white" />
         </ChatContext.Provider>
     );
 };
