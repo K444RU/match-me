@@ -7,6 +7,6 @@
  */
 
 export interface UserStateTypes {
-    id?: number;
-    name?: string;
+  id?: number;
+  name?: string;
 }

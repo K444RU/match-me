@@ -7,22 +7,22 @@
  */
 
 export interface AttributesSettingsRequestDTO {
-    birth_date: string;
-    /**
-     * @minLength 2
-     * @maxLength 100
-     */
-    city: string;
-    /** @minimum 1 */
-    gender_self: number;
-    /**
-     * @minimum -90
-     * @maximum 90
-     */
-    latitude?: number;
-    /**
-     * @minimum -180
-     * @maximum 180
-     */
-    longitude?: number;
+  birth_date: string;
+  /**
+   * @minLength 2
+   * @maxLength 100
+   */
+  city: string;
+  /** @minimum 1 */
+  gender_self: number;
+  /**
+   * @minimum -90
+   * @maximum 90
+   */
+  latitude?: number;
+  /**
+   * @minimum -180
+   * @maximum 180
+   */
+  longitude?: number;
 }

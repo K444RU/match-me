@@ -5,7 +5,7 @@ import Button from '@/components/ui/buttons/Button';
 import { getMockChats } from '@/mocks/chatData';
 import { useContext, useState } from 'react';
 import sendMessage from '../ChatService';
-import { useAuth } from '@/features/authentication/AuthContext';
+import { useAuth } from '@/features/authentication';
 import { ChatContext } from '../ChatContext';
 
 export default function OpenChat() {
@@ -39,7 +39,7 @@ export default function OpenChat() {
     // TODO: Implement Chat message fetching here
 
     return (
-        <div className="flex w-full flex-col bg-background-400 px-4 pb-4  sm:px-6 md:px-8">
+        <div className="flex w-full flex-col bg-background-400 px-4 pb-4 sm:px-6 md:px-8">
             <div className="mt-4 h-full w-full overflow-y-scroll">
                 {connectionChats.map((msg, index) => (
                     <Message

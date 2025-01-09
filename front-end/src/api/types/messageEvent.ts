@@ -9,8 +9,8 @@ import type { UserMessage } from './userMessage';
 import type { MessageEventType } from './messageEventType';
 
 export interface MessageEvent {
-    id?: number;
-    message: UserMessage;
-    messageEventType?: MessageEventType;
-    timestamp: string;
+  id?: number;
+  message: UserMessage;
+  messageEventType?: MessageEventType;
+  timestamp: string;
 }

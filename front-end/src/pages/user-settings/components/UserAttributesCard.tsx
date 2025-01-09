@@ -18,22 +18,19 @@ import {
 } from '@/components/ui/select';
 import { SettingsContext } from '../SettingsContext';
 import DatePicker from '@/components/ui/forms/DatePicker';
-import { GenderContext } from '@/features/gender/GenderContext';
+import { GenderContext } from '@/features/gender';
 import { CitySuggestions } from '@/pages/profile-completion/components/CitySuggestions';
 import { useDebounce } from '@/lib/hooks/useDebounce';
 import { City } from '@/pages/profile-completion/types/types';
 import InputField from '@/components/ui/forms/InputField';
 import { toast } from 'sonner';
-import { updateSettings } from '@/features/user/services/UserService';
+import { userService } from '@/features/user';
 import MotionSpinner from '@/components/animations/MotionSpinner';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const UserAttributesCard = () => {
-    const settingsContext = useContext(SettingsContext);
-    if (!settingsContext) return null;
-    const { settings, refreshSettings } = settingsContext;
     const genders = useContext(GenderContext);
-
+    const settingsContext = useContext(SettingsContext);
     const [city, setCity] = useState<string>();
     const [longitude, setLongitude] = useState<number | null>(null);
     const [latitude, setLatitude] = useState<number | null>(null);
@@ -42,6 +39,19 @@ const UserAttributesCard = () => {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const debouncedCitySearchValue = useDebounce(city as string, 1000);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (!settingsContext?.settings) return;
+
+        setCity(settingsContext.settings.city ?? '');
+        setLongitude(settingsContext.settings.longitude ?? null);
+        setLatitude(settingsContext.settings.latitude ?? null);
+        setGender(settingsContext.settings.genderSelf ?? null);
+        setBirthDate(
+            settingsContext.settings.birthDate ? new Date(settingsContext.settings.birthDate) : undefined
+        );
+        
+    }, [settingsContext?.settings]);
 
     const handleCitySelect = async (city: City) => {
         setShowSuggestions(false);
@@ -56,24 +66,20 @@ const UserAttributesCard = () => {
     };
 
     const handleUpdate = async () => {
-        if (!settings) return;
+        if (!settingsContext?.settings) return;
 
         setLoading(true);
         try {
             if (!city || !latitude || !longitude || !birthDate || !gender)
                 return;
-            await updateSettings(
-                {
-                    ...settings,
-                    city,
-                    longitude,
-                    latitude,
-                    birthDate: birthDate.toISOString().split('T')[0],
-                    genderSelf: gender,
-                },
-                'attributes'
-            );
-            refreshSettings();
+            await userService.updateAttributesSettings({
+                city,
+                longitude,
+                latitude,
+                birth_date: birthDate.toISOString().split('T')[0],
+                gender_self: gender,
+            });
+            settingsContext.refreshSettings();
             toast.success('Attributes updated successfully');
         } catch (error) {
             toast.error('Failed to update attributes');
@@ -82,20 +88,6 @@ const UserAttributesCard = () => {
             setLoading(false);
         }
     };
-
-    useEffect(() => {
-        if (settings) {
-                setCity(settings.city ?? '');
-                setLongitude(settings.longitude ?? null);
-                setLatitude(settings.latitude ?? null);
-                setGender(settings.genderSelf ?? null);
-                setBirthDate(
-                    settings.birthDate
-                        ? new Date(settings.birthDate)
-                        : undefined
-                );
-        }
-    }, [settings]);
 
     return (
         <Card className="h-[475px] w-full border-none shadow-none">

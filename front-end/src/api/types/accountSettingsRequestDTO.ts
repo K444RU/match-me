@@ -7,11 +7,11 @@
  */
 
 export interface AccountSettingsRequestDTO {
-    /**
-     * @minLength 0
-     * @maxLength 320
-     * @pattern ^[^\s@]+@[^\s@]+\.[^\s@]+$
-     */
-    email: string;
-    number: string;
+  /**
+   * @minLength 0
+   * @maxLength 320
+   * @pattern ^[^\s@]+@[^\s@]+\.[^\s@]+$
+   */
+  email: string;
+  number: string;
 }
