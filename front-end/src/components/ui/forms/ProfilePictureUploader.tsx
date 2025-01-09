@@ -1,0 +1,123 @@
+import React, { useState, useRef } from 'react';
+import ReactAvatarEditor from 'react-avatar-editor';
+import axios from 'axios';
+import OneHandleSlider from "@ui/forms/OneHandleSlider.tsx";
+
+interface ProfilePictureUploaderProps {
+    onUploadSuccess?: () => void;
+}
+
+const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ onUploadSuccess }) => {
+    const [image, setImage] = useState<File | string | null>(null);
+    const [scale, setScale] = useState<number | null>(1);
+    const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0.5, y: 0.5 });
+    const editorRef = useRef<ReactAvatarEditor>(null);
+
+    const handleNewImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImage(file);
+        }
+    };
+
+    const handlePositionChange = (pos: { x: number; y: number }) => {
+        setPosition(pos);
+    };
+
+    const handleSubmit = async () => {
+        if (editorRef.current) {
+            const canvas = editorRef.current.getImageScaledToCanvas();
+            const base64Image = canvas.toDataURL();
+
+            try {
+                const token = localStorage.getItem('authToken') || '';
+                await axios.post(
+                    '/api/users/profile-picture',
+                    { base64Image },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
+                alert('Profile picture uploaded!');
+                if (onUploadSuccess) onUploadSuccess();
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('Failed to upload picture.');
+            }
+        }
+    };
+
+    return (
+        <div className="p-6 bg-gray-100 rounded-lg shadow-md flex items-center gap-6">
+            {/* Left: Image Preview */}
+            <div className="flex flex-col items-center">
+                {image ? (
+                    <div className="flex flex-col items-center">
+                        <div className="w-48 h-48 bg-gray-200 rounded-lg flex justify-center items-center ">
+                            <ReactAvatarEditor
+                                ref={editorRef}
+                                image={image}
+                                width={200}
+                                height={200}
+                                border={0}
+                                borderRadius={20}
+                                scale={scale ?? 1}
+                                position={position}
+                                onPositionChange={handlePositionChange}
+                                rotate={0}
+                            />
+                        </div>
+                        <div className="mt-2 w-full">
+                            <OneHandleSlider
+                                name="zoom"
+                                label="Zoom"
+                                min={1}
+                                max={2}
+                                step={0.1}
+                                value={scale}
+                                onChange={setScale}
+                                className="w-full"
+                                showInputField={false}
+                            />
+                        </div>
+                    </div>
+                ) : (
+                    <div
+                        className="w-36 h-24 bg-gray-200 rounded-lg flex justify-center items-center text-gray-500 text-sm">
+                        No image selected
+                    </div>
+                )}
+            </div>
+
+            {/* Right: File Input and Upload Button */}
+            <div className="flex flex-col gap-4 justify-center items-center">
+                <label
+                    htmlFor="image-upload"
+                    className="flex w-full items-center justify-center gap-2 self-start rounded-md px-5 py-2 font-semibold tracking-wide text-text transition-colors bg-primary hover:bg-primary-200 hover:text-text cursor-pointer"
+                >
+                    Choose File
+                    <input
+                        id="image-upload"
+                        type="file"
+                        onChange={handleNewImage}
+                        accept="image/*"
+                        className="hidden"
+                    />
+                </label>
+                {image && (
+                    <button
+                        onClick={handleSubmit}
+                        className="flex w-full items-center justify-center gap-2 self-start rounded-md px-5 py-2 font-semibold tracking-wide text-text transition-colors bg-primary hover:bg-primary-200 hover:text-text"
+                    >
+                        Upload
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default ProfilePictureUploader;

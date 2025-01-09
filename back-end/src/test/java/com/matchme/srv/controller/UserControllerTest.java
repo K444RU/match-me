@@ -1,5 +1,9 @@
 package com.matchme.srv.controller;
 
+import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
@@ -10,6 +14,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import com.matchme.srv.dto.request.settings.ProfilePictureSettingsRequestDTO;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -37,10 +43,8 @@ import com.matchme.srv.service.ChatService;
 import com.matchme.srv.service.ConnectionService;
 import com.matchme.srv.service.UserService;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 public class UserControllerTest {
 
@@ -461,6 +465,105 @@ public class UserControllerTest {
                 .principal(authentication)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testUploadProfilePicture_Success() throws Exception {
+        // Given
+        Long userId = 1L;
+        setupAuthenticatedUser(userId, "user1@example.com");
+        String validBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...";
+
+        // When/Then
+        mockMvc.perform(post("/api/users/profile-picture")
+                        .principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"base64Image\": \"" + validBase64 + "\" }"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Profile picture uploaded successfully.")));
+    }
+
+    @Test
+    void testUploadProfilePicture_NullRequest() throws Exception {
+        // Given
+        Long userId = 1L;
+        setupAuthenticatedUser(userId, "user1@example.com");
+
+        doThrow(new IllegalArgumentException("No valid base64 image found in the request."))
+                .when(userService).saveProfilePicture(eq(userId), eq(null));
+
+        // When/Then
+        mockMvc.perform(post("/api/users/profile-picture")
+                        .principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("No valid base64 image found in the request.")));
+    }
+
+    @Test
+    void testUploadProfilePicture_EmptyBase64() throws Exception {
+        // Given
+        Long userId = 1L;
+        setupAuthenticatedUser(userId, "user1@example.com");
+        String emptyBase64 = "";
+
+        ProfilePictureSettingsRequestDTO request = new ProfilePictureSettingsRequestDTO();
+        request.setBase64Image(emptyBase64);
+
+        doThrow(new IllegalArgumentException("Base64 image data cannot be null or empty."))
+                .when(userService).saveProfilePicture(eq(userId), argThat(requestDto ->
+                        requestDto != null && "".equals(requestDto.getBase64Image())));
+
+        // When/Then
+        mockMvc.perform(post("/api/users/profile-picture")
+                        .principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"base64Image\":\"\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("Base64 image data cannot be null or empty.")));
+    }
+
+    @Test
+    void testUploadProfilePicture_InvalidBase64() throws Exception {
+        // Given
+        Long userId = 1L;
+        setupAuthenticatedUser(userId, "user1@example.com");
+        String invalidBase64 = "thisIsNotValid==";
+
+        doThrow(new IllegalArgumentException("Invalid Base64 image data."))
+                .when(userService).saveProfilePicture(eq(userId), argThat(dto ->
+                        dto != null && invalidBase64.equals(dto.getBase64Image())));
+
+        // When/Then
+        mockMvc.perform(post("/api/users/profile-picture")
+                        .principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"base64Image\": \"" + invalidBase64 + "\" }"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("Invalid Base64 image data.")));
+    }
+
+    @Test
+    void testUploadProfilePicture_UserNotFound() throws Exception {
+        // Given
+        Long userId = 999L;
+        setupAuthenticatedUser(userId, "user1@example.com");
+
+        String validBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...";
+        ProfilePictureSettingsRequestDTO request = new ProfilePictureSettingsRequestDTO();
+        request.setBase64Image(validBase64);
+
+        doThrow(new EntityNotFoundException("User not found for ID: " + userId))
+                .when(userService).saveProfilePicture(eq(userId), argThat(dto ->
+                        dto != null && "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...".equals(dto.getBase64Image())));
+
+        // When/Then
+        mockMvc.perform(post("/api/users/profile-picture")
+                        .principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"base64Image\": \"" + validBase64 + "\" }"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(containsString("User not found for ID: 999")));
     }
 
     /**
