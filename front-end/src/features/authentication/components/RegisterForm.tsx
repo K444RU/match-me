@@ -5,7 +5,7 @@ import FormResponse from './FormResponse';
 import { authService } from '@/features/authentication';
 import { useNavigate } from 'react-router-dom';
 import { CountryCodePhoneInput } from '@ui/country-code-phone-input';
-import { parsePhoneNumber } from 'react-phone-number-input';
+import { parsePhoneNumber, isValidPhoneNumber } from 'react-phone-number-input';
 
 const RegisterForm = () => {
     const [email, setEmail] = useState('');
@@ -14,6 +14,9 @@ const RegisterForm = () => {
     const [countryCode, setCountryCode] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const [phoneError, setPhoneError] = useState('');
+
     const [resTitle, setResTitle] = useState('');
     const [resSubtitle, setResSubtitle] = useState('');
     const [resState, setResState] = useState<'error' | 'success'>('error');
@@ -49,21 +52,32 @@ const RegisterForm = () => {
 
         let countryCode = '';
         let localNumber = '';
+        let validationError = '';
 
         if (E164Number) {
             const parsedPhoneNumber = parsePhoneNumber(E164Number);
-            if (parsedPhoneNumber) {
+            if (parsedPhoneNumber && isValidPhoneNumber(E164Number)) {
                 countryCode = '+' + parsedPhoneNumber.countryCallingCode;
                 localNumber = parsedPhoneNumber.nationalNumber;
+                validationError = '';
+            } else {
+                validationError = 'Invalid phone number';
             }
         }
 
         setCountryCode(countryCode);
         setLocalNumber(localNumber);
+        setPhoneError(validationError);
     };
 
     const submitForm = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        if (phoneError) {
+            alert('Please enter a valid phone number before submitting.');
+            return;
+        }
+
         setLoading(true);
 
         authService
@@ -191,6 +205,7 @@ const RegisterForm = () => {
                         className="w-full"
                     />
                 </div>
+                {phoneError && <p className="text-red-500 text-sm"> {phoneError}</p>}
             </div>
 
             <button
