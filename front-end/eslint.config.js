@@ -1,32 +1,24 @@
 import js from '@eslint/js';
 import globals from 'globals';
-import react from 'eslint-plugin-react'
+import reactPlugin from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
-import tseslint from 'typescript-eslint';
+import ts from 'typescript-eslint';
+import tsParser from "@typescript-eslint/parser";
+import tailwind from 'eslint-plugin-tailwindcss';
+import prettier from 'eslint-config-prettier';
 
-export default tseslint.config(
-  { ignores: ['dist', 'src/mocks'] },
+export default [
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ['**/*.{ts,tsx}'],
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-    settings: { react: { version: '18.3' } },
+    files: ['**/*.ts', '**/*.tsx'],
     plugins: {
-      react,
+      react: reactPlugin,
       'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
     },
     rules: {
-      ...react.configs.recommended.rules,
-      ...react.configs['jsx-runtime'].rules,
+      ...js.configs.recommended.rules,
+      ...reactPlugin.configs.recommended.rules,
+      ...reactPlugin.configs['jsx-runtime'].rules,
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': [
         'warn',
@@ -37,17 +29,55 @@ export default tseslint.config(
         { patterns: ['@/features/*/*'] },
       ],
       "@typescript-eslint/no-unused-vars": [
-      "error",
-      {
-        "args": "all",
-        "argsIgnorePattern": "^_",
-        "caughtErrors": "all",
-        "caughtErrorsIgnorePattern": "^_",
-        "destructuredArrayIgnorePattern": "^_",
-        "varsIgnorePattern": "^_",
-        "ignoreRestSiblings": true
-      }
-    ]
+        "error",
+        {
+          "args": "all",
+          "argsIgnorePattern": "^_",
+          "caughtErrors": "all",
+          "caughtErrorsIgnorePattern": "^_",
+          "destructuredArrayIgnorePattern": "^_",
+          "varsIgnorePattern": "^_",
+          "ignoreRestSiblings": true
+        }
+      ],
     },
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: "module",
+      parser: tsParser,
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      globals: { ...globals.browser },
+    },
+  },
+  reactRefresh.configs.vite,
+  ...ts.configs.recommended,
+  ...tailwind.configs["flat/recommended"],
+  prettier,
+  {
+    rules: {
+      "tailwindcss/no-custom-classname": "off",
+      "tailwindcss/no-unnecessary-arbitrary-value": "off",
+    },
+  },
+  {
+    settings: { 
+        react: { version: '18.3' },
+        tailwindcss: {
+          "callees": ["cn"],
+          "config": "tailwind.config.js"
+        },
+    }
+  },
+  {
+    ignores: [
+      'dist/*',
+      'public/*',
+      'node_modules/*',
+      'src/api/*',
+      'src/mocks/*',
+    ]
   }
-);
+]
