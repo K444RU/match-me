@@ -1,19 +1,11 @@
 package com.matchme.srv.controller;
 
-import java.time.LocalDate;
-import java.time.Period;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.matchme.srv.dto.request.settings.*;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,13 +13,8 @@ import com.matchme.srv.dto.request.UserParametersRequestDTO;
 import com.matchme.srv.dto.response.BiographicalResponseDTO;
 import com.matchme.srv.dto.response.ConnectionResponseDTO;
 import com.matchme.srv.dto.response.CurrentUserResponseDTO;
-import com.matchme.srv.dto.response.GenderTypeDTO;
 import com.matchme.srv.dto.response.ProfileResponseDTO;
-import com.matchme.srv.dto.response.UserResponseDTO;
-import com.matchme.srv.model.connection.Connection;
-import com.matchme.srv.model.user.User;
-import com.matchme.srv.model.user.profile.UserProfile;
-import com.matchme.srv.security.services.UserDetailsImpl;
+import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.service.ConnectionService;
 import com.matchme.srv.service.UserService;
 
@@ -42,6 +29,9 @@ public class UserController {
     @Autowired
     private ConnectionService connectionService;
 
+    @Autowired
+    private SecurityUtils securityUtils;
+
     /**
      * Retrieves a users basic information by ID
      * <p>
@@ -55,13 +45,9 @@ public class UserController {
     @GetMapping("/{targetId}")
     public ResponseEntity<CurrentUserResponseDTO> getUser(@PathVariable Long targetId,
             Authentication authentication) {
-        try {
-            Long currentUserId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
-            CurrentUserResponseDTO response = userService.getUserDTO(currentUserId, targetId);
-            return ResponseEntity.ok(response);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+        Long currentUserId = securityUtils.getCurrentUserId(authentication);
+        CurrentUserResponseDTO response = userService.getUserDTO(currentUserId, targetId);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -77,13 +63,9 @@ public class UserController {
     @GetMapping("/{targetId}/profile")
     public ResponseEntity<ProfileResponseDTO> getProfile(@PathVariable Long targetId,
             Authentication authentication) {
-        try {
-            Long currentUserId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
-            ProfileResponseDTO profile = userService.getUserProfileDTO(currentUserId, targetId);
-            return ResponseEntity.ok(profile);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+        Long currentUserId = securityUtils.getCurrentUserId(authentication);
+        ProfileResponseDTO response = userService.getUserProfileDTO(currentUserId, targetId);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -99,34 +81,10 @@ public class UserController {
     @GetMapping("/{targetId}/bio")
     public ResponseEntity<BiographicalResponseDTO> getBio(@PathVariable Long targetId,
             Authentication authentication) {
-        UserDetailsImpl requesterUserDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long requesterUserId = requesterUserDetails.getId();
-
-        if (requesterUserId == targetId || userService.isConnected(requesterUserId, targetId)) {
-            UserProfile userProfile = userService.getUserProfile(targetId);
-
-            BiographicalResponseDTO bio = BiographicalResponseDTO.builder()
-                    .gender_self(new GenderTypeDTO(userProfile.getAttributes().getGender().getId(),
-                            userProfile.getAttributes().getGender().getName()))
-                    .gender_other(
-                            new GenderTypeDTO(userProfile.getPreferences().getGender().getId(),
-                                    userProfile.getPreferences().getGender().getName()))
-                    .age_self(Period
-                            .between(userProfile.getAttributes().getBirth_date(), LocalDate.now())
-                            .getYears())
-                    .hobbies(userProfile.getHobbies().stream().map(hobby -> hobby.getId())
-                            .collect(Collectors.toSet()))
-                    .age_min(userProfile.getPreferences().getAge_min())
-                    .age_max(userProfile.getPreferences().getAge_max())
-                    .distance(userProfile.getPreferences().getDistance())
-                    .probability_tolerance(userProfile.getPreferences().getProbability_tolerance())
-                    .build();
-
-            return ResponseEntity.ok(bio);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-
+        Long currentUserId = securityUtils.getCurrentUserId(authentication);
+        BiographicalResponseDTO response =
+                userService.getBiographicalResponseDTO(currentUserId, targetId);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -141,36 +99,11 @@ public class UserController {
     @GetMapping("/{targetId}/connections")
     public ResponseEntity<List<ConnectionResponseDTO>> getConnections(@PathVariable Long targetId,
             Authentication authentication) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long userId = userDetails.getId();
-
-        if (userId == targetId) {
-            User user = userService.getUser(userId);
-            List<Connection> connections = connectionService.getUserConnections(user);
-            List<ConnectionResponseDTO> connectionResponse = new ArrayList<>();
-            for (Connection connection : connections) {
-                Set<UserResponseDTO> users = connection.getUsers().stream()
-                        .map(u -> new UserResponseDTO(u.getId(), u.getEmail(), u.getNumber()))
-                        .collect(Collectors.toSet());
-                connectionResponse.add(ConnectionResponseDTO.builder().id(connection.getId())
-                        .users(users).build());
-            }
-
-            return ResponseEntity.ok(connectionResponse);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-
+        Long currentUserId = securityUtils.getCurrentUserId(authentication);
+        List<ConnectionResponseDTO> response =
+                connectionService.getConnectionResponseDTO(currentUserId, targetId);
+        return ResponseEntity.ok(response);
     }
-
-    // @GetMapping("/settings/{userId}")
-    // public ResponseEntity<SettingsResponseDTO> getSettings(@PathVariable Long
-    // userId) {
-
-    // SettingsResponseDTO settings = userService.getSettings(userId);
-
-    // return ResponseEntity.ok(settings);
-    // }
 
     // @GetMapping("/attributes/{userId}")
     // public ResponseEntity<AttributesResponseDTO> getAttributes(@PathVariable Long
@@ -185,78 +118,54 @@ public class UserController {
     // }
 
     @PatchMapping("/verify/{userId}")
-    public ResponseEntity<?> verifyAccount(@PathVariable Long userId,
+    public ResponseEntity<Void> verifyAccount(@PathVariable Long userId,
             @RequestParam int verificationCode) {
-
         userService.verifyAccount(userId, verificationCode);
-
-        return ResponseEntity.ok("Account verified successfully.");
+        return ResponseEntity.ok().build();
     }
 
-    // @PatchMapping("/settings/{userId}")
-    // public ResponseEntity<?> updateSettings(@PathVariable Long userId, @Validated
-    // @RequestBody SettingsRequestDTO request) {
-
-    // return ResponseEntity.ok("Settings updated successfully");
-    // }
-
     @PatchMapping("/complete-registration")
-    public ResponseEntity<?> setParameters(
-            @Validated @RequestBody UserParametersRequestDTO parameters) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long userId = userDetails.getId();
-
-        userService.setUserParameters(userId, parameters);
-
-        return ResponseEntity.ok("Account set-up was successful");
+    public ResponseEntity<Void> setParameters(
+            @Validated @RequestBody UserParametersRequestDTO parameters,
+            Authentication authentication) {
+        Long currentUserId = securityUtils.getCurrentUserId(authentication);
+        userService.setUserParameters(currentUserId, parameters);
+        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/settings/account")
     @Validated
-    public ResponseEntity<?> updateAccount(Authentication authentication,
+    public ResponseEntity<Void> updateAccount(Authentication authentication,
             @Validated @RequestBody AccountSettingsRequestDTO settings) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long userId = userDetails.getId();
-
-        userService.updateAccountSettings(userId, settings);
-
+        Long currentUserId = securityUtils.getCurrentUserId(authentication);
+        userService.updateAccountSettings(currentUserId, settings);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/settings/profile")
     @Validated
-    public ResponseEntity<?> updateProfile(Authentication authentication,
+    public ResponseEntity<Void> updateProfile(Authentication authentication,
             @Validated @RequestBody ProfileSettingsRequestDTO settings) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long userId = userDetails.getId();
-
-        userService.updateProfileSettings(userId, settings);
-
+        Long currentUserId = securityUtils.getCurrentUserId(authentication);
+        userService.updateProfileSettings(currentUserId, settings);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/settings/attributes")
     @Validated
-    public ResponseEntity<?> updateAttributes(Authentication authentication,
+    public ResponseEntity<Void> updateAttributes(Authentication authentication,
             @Validated @RequestBody AttributesSettingsRequestDTO settings) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long userId = userDetails.getId();
-
-        userService.updateAttributesSettings(userId, settings);
-
+        Long currentUserId = securityUtils.getCurrentUserId(authentication);
+        userService.updateAttributesSettings(currentUserId, settings);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/settings/preferences")
     @Validated
-    public ResponseEntity<?> updatePreferences(Authentication authentication,
+    public ResponseEntity<Void> updatePreferences(Authentication authentication,
             @Validated @RequestBody PreferencesSettingsRequestDTO settings) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long userId = userDetails.getId();
-
-        userService.updatePreferencesSettings(userId, settings);
-
+        Long currentUserId = securityUtils.getCurrentUserId(authentication);
+        userService.updatePreferencesSettings(currentUserId, settings);
         return ResponseEntity.noContent().build();
     }
 
@@ -271,24 +180,12 @@ public class UserController {
      * @return Success or error message wrapped in a ResponseEntity.
      */
     @PostMapping("/profile-picture")
-    public ResponseEntity<?> uploadProfilePicture(
+    public ResponseEntity<Void> uploadProfilePicture(
             @RequestBody(required = false) ProfilePictureSettingsRequestDTO request,
             Authentication authentication) {
-
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long userId = userDetails.getId();
-
-        try {
-            userService.saveProfilePicture(userId, request);
-            return ResponseEntity.ok("Profile picture uploaded successfully.");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to upload picture: " + e.getMessage());
-        }
+        Long currentUserId = securityUtils.getCurrentUserId(authentication);
+        userService.saveProfilePicture(currentUserId, request);
+        return ResponseEntity.ok().build();
     }
 
 }
