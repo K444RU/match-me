@@ -4,13 +4,12 @@ import com.matchme.srv.dto.request.MessagesSendRequestDTO;
 import com.matchme.srv.dto.request.TypingStatusRequestDTO;
 import com.matchme.srv.dto.response.ChatMessageResponseDTO;
 import com.matchme.srv.model.user.User;
-import com.matchme.srv.security.services.UserDetailsImpl;
+import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.service.ChatService;
 import com.matchme.srv.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -38,6 +37,7 @@ public class ChatWebSocketController {
     private final UserService userService;
     private final ChatService chatService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final SecurityUtils securityUtils;
 
     /**
      * Send a chat message from one user to another.
@@ -51,8 +51,7 @@ public class ChatWebSocketController {
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Payload MessagesSendRequestDTO messageDTO,
                             Authentication authentication) {
-        UserDetailsImpl senderDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long senderId = senderDetails.getId();
+        Long senderId = securityUtils.getCurrentUserId(authentication);
         User sender = userService.getUser(senderId);
 
         log.info("Received chat message from user ID: {} for connection ID: {}",
@@ -95,8 +94,7 @@ public class ChatWebSocketController {
     @MessageMapping("/chat.typing")
     public void typingStatus(@Payload TypingStatusRequestDTO typingStatusRequest,
                              Authentication authentication) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long senderId = userDetails.getId();
+        Long senderId = securityUtils.getCurrentUserId(authentication);
 
         // Ensure the sender in the request matches the authenticated user
         if (!senderId.equals(typingStatusRequest.getSenderId())) {
