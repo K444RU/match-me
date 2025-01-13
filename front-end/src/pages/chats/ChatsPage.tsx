@@ -5,7 +5,7 @@ import { ChatPreview } from '@/types/api';
 import { Toaster } from '@/components/ui/sonner';
 import { useAuth } from '@/features/authentication';
 import { getMockChatPreviews } from '@/mocks/chatData';
-import { ChatContext } from './ChatContext';
+import { ChatContext } from '@/features/chat';
 
 const ChatsPage = () => {
     const [chats, setChats] = useState<ChatPreview[]>([]);
