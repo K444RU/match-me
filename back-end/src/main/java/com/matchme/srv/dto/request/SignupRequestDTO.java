@@ -1,5 +1,6 @@
 package com.matchme.srv.dto.request;
 
+import com.matchme.srv.validation.annotations.ValidPhoneNumber;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +16,7 @@ public class SignupRequestDTO {
 
   @NotBlank(message = "Phone number cannot be empty")
   @Size(max = 20)
+  @ValidPhoneNumber
   private String number;
 
   @NotBlank(message = "Password cannot be empty")
