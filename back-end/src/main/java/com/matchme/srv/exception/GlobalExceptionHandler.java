@@ -9,11 +9,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
+import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     // Handles validation errors, e.g. @NotBlank, @Size, @Email, etc.
@@ -25,7 +27,7 @@ public class GlobalExceptionHandler {
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+        return ResponseEntity.badRequest().body(errors);
     }
 
     // Thrown if user has supplied an invalid password or a non-existing email on login
@@ -40,31 +42,23 @@ public class GlobalExceptionHandler {
     // Thrown if user has insufficient permissions (must be authenticated)
     // "error": "Access Denied"
     @ExceptionHandler(AuthorizationDeniedException.class)
-    public ResponseEntity<Map<String, String>> handleAuthorizationDeniedException(AuthorizationDeniedException ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("error", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    public ResponseEntity<Void> handleAuthorizationDeniedException(AuthorizationDeniedException ex) {
+        log.error("AuthorizationDeniedException occured: {}", ex.getMessage()/* , ex */);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
-    // Shouldn't be thrown at all, but I think this is used on some package (not by us)
-    // Reason is because someone can see if a certain email has made an account
-    // "error": "User not found"
+    // Thrown by spring-security
     @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleUsernameNotFoundException(UsernameNotFoundException ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("error", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    public ResponseEntity<Void> handleUsernameNotFoundException(UsernameNotFoundException ex) {
+        log.error("UsernameNotFoundException occured: {}", ex.getMessage()/* , ex */);
+        return ResponseEntity.notFound().build();
     }
 
     // Handles runtime exceptions
-    // TODO: HIDE BODY IN PRODUCTION
-    // In production this should just throw status 500 with body error: internal server error
-    // "error": error
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("error", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    public ResponseEntity<Void> handleRuntimeException(RuntimeException ex) {
+        log.error("RuntimeException occured: {}", ex.getMessage(), ex);
+        return ResponseEntity.internalServerError().build();
     }
 
     // SignUpRequest validation for alreadying existing emails/numbers
@@ -74,17 +68,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleDuplicateEmailException(DuplicateFieldException ex) {
         Map<String, String> error = new HashMap<>();
         error.put(ex.getFieldName(), ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        return ResponseEntity.badRequest().body(error);
     }
 
     // Repository doesn't find a value/resource/entity
     // Example: repo.findById orElseThrow -> this
     // "error": "Match not found"
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleResourceNotFoundException(ResourceNotFoundException ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("error", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    public ResponseEntity<Void> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        log.error("ResourceNotFoundException occured: {}", ex.getMessage(), ex);
+        return ResponseEntity.notFound().build();
     }
 
     // Supplied verification code is invalid
@@ -92,9 +85,8 @@ public class GlobalExceptionHandler {
     // "error": "Invalid Verification Code 123"
     @ExceptionHandler(InvalidVerificationException.class)
     public ResponseEntity<Map<String, String>> handleInvalidVerificationException(InvalidVerificationException ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("error", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        log.error("InvalidVerificationException occured: {}", ex.getMessage()/* , ex */);
+        return ResponseEntity.badRequest().build();
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -103,6 +95,24 @@ public class GlobalExceptionHandler {
         // For dev \/ shows backend shit
         // error.put("Invalid payload", ex.getMessage());
         error.put("error", "Please check your input fields.");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Void> handleEntityNotFound(EntityNotFoundException ex) {
+        log.error("EntityNotFoundException occured: {}", ex.getMessage()/* , ex */);
+        return ResponseEntity.notFound().build();
+    }
+    
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Void> handleIllegalArgument(IllegalArgumentException ex) {
+        log.error("IllegalArgumentException occured: {}", ex.getMessage()/* , ex */);
+        return ResponseEntity.badRequest().build();
+    }
+    
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Void> handleGeneral(Exception ex) {
+        log.error("Exception occured: {}", ex.getMessage()/* , ex */);
+        return ResponseEntity.internalServerError().build();
     }
 }
