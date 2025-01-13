@@ -4,9 +4,9 @@ import InputField from '@/components/ui/forms/InputField';
 import Button from '@/components/ui/buttons/Button';
 import { getMockChats } from '@/mocks/chatData';
 import { useContext, useState } from 'react';
-import sendMessage from '../ChatService';
+import { chatService } from '@/features/chat';
 import { useAuth } from '@/features/authentication';
-import { ChatContext } from '../ChatContext';
+import { ChatContext } from '@/features/chat';
 
 export default function OpenChat() {
     const { user } = useAuth();
@@ -26,7 +26,7 @@ export default function OpenChat() {
 
     const handleSendMessage = () => {
         if (!message) return;
-        sendMessage(message, openChat, user.token);
+        chatService.sendMessage(message, openChat, user.token);
         setMessage('');
     };
 
