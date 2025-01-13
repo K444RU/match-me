@@ -21,9 +21,7 @@ export const getMeController = () => {
   ): Promise<TData> => {
     return axios.default.get(`http://localhost:8000/api/me`, options);
   };
-  const getParameters = <TData = AxiosResponse<SettingsResponseDTO>>(
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
+  const getParameters = <TData = AxiosResponse<SettingsResponseDTO>>(options?: AxiosRequestConfig): Promise<TData> => {
     return axios.default.get(`http://localhost:8000/api/me/settings`, options);
   };
   const getCurrentProfile = <TData = AxiosResponse<ProfileResponseDTO>>(
@@ -41,13 +39,7 @@ export const getMeController = () => {
   ): Promise<TData> => {
     return axios.default.get(`http://localhost:8000/api/connections`, options);
   };
-  return {
-    getCurrentUser,
-    getParameters,
-    getCurrentProfile,
-    getCurrentBio,
-    getConnections1,
-  };
+  return { getCurrentUser, getParameters, getCurrentProfile, getCurrentBio, getConnections1 };
 };
 export type GetCurrentUserResult = AxiosResponse<CurrentUserResponseDTO>;
 export type GetParametersResult = AxiosResponse<SettingsResponseDTO>;

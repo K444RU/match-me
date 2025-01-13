@@ -5,8 +5,8 @@
  * kood/Jõhvi match-me task API
  * OpenAPI spec version: v0.0.1
  */
-import type { UserMessage } from './userMessage';
 import type { MessageEventType } from './messageEventType';
+import type { UserMessage } from './userMessage';
 
 export interface MessageEvent {
   id?: number;
