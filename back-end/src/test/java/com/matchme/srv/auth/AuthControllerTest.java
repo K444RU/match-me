@@ -98,7 +98,7 @@ public class AuthControllerTest {
     void shouldSuccessfullySignUpAndIn() throws Exception {
         String VALID_EMAIL = "signupandin@test.com";
         String VALID_PASSWORD = "testtest";
-        String VALID_PHONE = "+372 3454443";
+        String VALID_PHONE = "+372 5341 4494";
 
         SignupRequestDTO signUpRequest = new SignupRequestDTO();
         signUpRequest.setEmail(VALID_EMAIL);
