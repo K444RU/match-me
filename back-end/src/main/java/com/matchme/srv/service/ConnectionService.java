@@ -13,7 +13,7 @@ import com.matchme.srv.dto.response.UserResponseDTO;
 import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.repository.ConnectionRepository;
-
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -59,7 +59,9 @@ public class ConnectionService {
     }
 
     public List<ConnectionResponseDTO> getConnectionResponseDTO(Long currentUserId, Long targetUserId) {
-        validateUserAccess(currentUserId, targetUserId);
+        if (!currentUserId.equals(targetUserId)) {
+            throw new EntityNotFoundException("User not found or no access rights.");
+        }
         List<Connection> connections = getUserConnections(targetUserId);
         List<ConnectionResponseDTO> connectionResponse = new ArrayList<>();
         for (Connection connection : connections) {
