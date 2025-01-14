@@ -43,7 +43,7 @@ const UserAccountCard = () => {
         logout();
         navigate('/login');
       }
-      settingsContext.refreshSettings();
+      await settingsContext.refreshSettings();
       toast.success('Account updated successfully');
     } catch (error) {
       toast.error('Failed to update account');
