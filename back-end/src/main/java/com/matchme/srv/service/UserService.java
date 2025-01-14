@@ -1,5 +1,7 @@
 package com.matchme.srv.service;
 
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.Base64;
 import java.util.List;
 import java.util.Set;
@@ -17,7 +19,6 @@ import com.matchme.srv.exception.ResourceNotFoundException;
 import com.matchme.srv.mapper.AttributesMapper;
 import com.matchme.srv.mapper.PreferencesMapper;
 import com.matchme.srv.mapper.UserParametersMapper;
-import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.UserAuth;
 import com.matchme.srv.model.user.UserRoleType;
@@ -47,9 +48,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
   private final UserRepository userRepository;
+  private final AccessValidationService accessValidationService;
   private final UserGenderTypeRepository genderRepository;
   private final UserRoleTypeRepository roleRepository;
-  private final ConnectionRepository connectionRepository;
   private final HobbyRepository hobbyRepository;
 
   private final AttributesMapper attributesMapper;
@@ -79,9 +80,8 @@ public class UserService {
   }
 
   public UserGenderType getGender(Long genderId) {
-    UserGenderType gender = genderRepository.findById(genderId)
-        .orElseThrow(() -> new RuntimeException("Gender not found!"));
-    return gender;
+      return genderRepository.findById(genderId)
+              .orElseThrow(() -> new RuntimeException("Gender not found!"));
   }
 
   // Creates User entity and UserAuth entity for user, sends verification e-mail
@@ -125,7 +125,7 @@ public class UserService {
 
   // Verifies e-mail, creates UserProfile, UserAttributes and UserPreferences
   // entities for the user
-  public boolean verifyAccount(Long userId, int verificationCode) {
+  public void verifyAccount(Long userId, int verificationCode) {
 
     // Get user entity
     User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -166,8 +166,6 @@ public class UserService {
 
     // Should cascade everything
     userRepository.save(user);
-
-    return true;
   }
 
   // Finish setting up account data after verifying email.
@@ -182,7 +180,7 @@ public class UserService {
       user.setProfile(profile);
 
       ProfileChangeType profileType = profileChangeTypeRepository.findByName("CREATED")
-          .orElseThrow(() -> new ResourceNotFoundException("Profile Change Type"));
+          .orElseThrow(() -> new ResourceNotFoundException("Profile Change Type not found"));
       new ProfileChange(profile, profileType, null);
     }
 
@@ -245,7 +243,7 @@ public class UserService {
     return newEntry;
   }
 
-  public boolean updateAccountSettings(Long userId, AccountSettingsRequestDTO settings) {
+  public void updateAccountSettings(Long userId, AccountSettingsRequestDTO settings) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new EntityNotFoundException("User not found!"));
 
@@ -254,10 +252,9 @@ public class UserService {
 
     // TODO: Add logging
     userRepository.save(user);
-    return true;
   }
 
-  public boolean updateProfileSettings(Long userId, ProfileSettingsRequestDTO settings) {
+  public void updateProfileSettings(Long userId, ProfileSettingsRequestDTO settings) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new EntityNotFoundException("User not found!"));
 
@@ -278,10 +275,9 @@ public class UserService {
 
     // TODO: Add logging
     userRepository.save(user);
-    return true;
   }
 
-  public boolean updateAttributesSettings(Long userId, AttributesSettingsRequestDTO settings) {
+  public void updateAttributesSettings(Long userId, AttributesSettingsRequestDTO settings) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new EntityNotFoundException("User not found!"));
 
@@ -296,10 +292,9 @@ public class UserService {
 
     // TODO: Add logging
     userRepository.save(user);
-    return true;
   }
 
-  public boolean updatePreferencesSettings(Long userId, PreferencesSettingsRequestDTO settings) {
+  public void updatePreferencesSettings(Long userId, PreferencesSettingsRequestDTO settings) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new EntityNotFoundException("User not found!"));
 
@@ -311,7 +306,6 @@ public class UserService {
 
     // TODO: Add logging
     userRepository.save(user);
-    return true;
   }
 
   public UserParametersResponseDTO getParameters(Long userId) {
@@ -325,38 +319,19 @@ public class UserService {
     return parametersMapper.toUserParametersDTO(user, attributes, preferences, auth);
   }
 
-  public UserProfile getUserProfile(Long userId) {
-    User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found!"));
-    return user.getProfile();
-  }
-
   public User getUser(Long userId) {
-    User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found!"));
-    return user;
+      return userRepository.findById(userId)
+              .orElseThrow(() -> new EntityNotFoundException("User not found!"));
   }
 
   public User getUserByEmail(String email) {
-    User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found!"));
-    return user;
+      return userRepository.findByEmail(email)
+              .orElseThrow(() -> new EntityNotFoundException("User not found!"));
   }
 
   public void removeUserByEmail(String email) {
     User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found!"));
     userRepository.delete(user);
-  }
-
-  /**
-   * Checks if two users have an established connection.
-   * <p>
-   * Currently DOES NOT account for inactive connections
-   */
-  public boolean isConnected(Long requesterId, Long targetId) {
-    List<Connection> connections = connectionRepository.findConnectionsByUserId(requesterId);
-    for (Connection connection : connections) {
-      if (connection.getUsers().stream().anyMatch(user -> user.getId().equals(targetId)))
-        return true;
-    }
-    return false;
   }
 
   @Transactional
@@ -401,14 +376,8 @@ public class UserService {
   //TODO: Add validateImageSize method to check Checks if the image exceeds 5 MB
   //TODO: validateImageFormat method to check that the image is either PNG or JPEG method.
 
-  /**
-   * Validate that `currentUserId` can view `targetUserId`.
-   * If not, throw an exception (404 or 403).
-   */
   public void validateUserAccess(Long currentUserId, Long targetUserId) {
-    if (!currentUserId.equals(targetUserId) && !isConnected(currentUserId, targetUserId)) {
-      throw new EntityNotFoundException("User not found or no access rights.");
-    }
+      accessValidationService.validateUserAccess(currentUserId, targetUserId);
   }
 
   /**
@@ -481,6 +450,53 @@ public class UserService {
             .last_name(profile.getLast_name())
             .city(profile.getCity())
             .build();
+  }
+
+  public BiographicalResponseDTO getBiographicalResponseDTO(Long currentUserId, Long targetUserId) {
+      validateUserAccess(currentUserId, targetUserId);
+
+      UserProfile profile = userRepository.findById(targetUserId)
+              .orElseThrow(() -> new EntityNotFoundException("User not found!")).getProfile();
+      if (profile == null)
+          throw new EntityNotFoundException("Profile not found!");
+
+      return BiographicalResponseDTO.builder()
+              .gender_self(new GenderTypeDTO(profile.getAttributes().getGender().getId(),
+                      profile.getAttributes().getGender().getName()))
+              .gender_other(new GenderTypeDTO(profile.getPreferences().getGender().getId(),
+                      profile.getPreferences().getGender().getName()))
+              .hobbies(profile.getHobbies().stream().map(hobby -> hobby.getId())
+                      .collect(Collectors.toSet()))
+              .age_self(Period.between(profile.getAttributes().getBirth_date(), LocalDate.now())
+                      .getYears())
+              .age_min(profile.getPreferences().getAge_min())
+              .age_max(profile.getPreferences().getAge_max())
+              .distance(profile.getPreferences().getDistance())
+              .probability_tolerance(profile.getPreferences().getProbability_tolerance()).build();
+  }
+
+  public SettingsResponseDTO getSettingsResponseDTO(Long currentUserId, Long targetUserId) {
+    validateUserAccess(currentUserId, targetUserId);
+    UserParametersResponseDTO parameters = getParameters(targetUserId);
+
+    return SettingsResponseDTO.builder()
+    .email(parameters.email())
+    .number(parameters.number())
+    .firstName(parameters.first_name())
+    .lastName(parameters.last_name())
+    .alias(parameters.alias())
+    .hobbies(parameters.hobbies())
+    .genderSelf(parameters.gender_self())
+    .birthDate(parameters.birth_date())
+    .city(parameters.city())
+    .longitude(parameters.longitude())
+    .latitude(parameters.latitude())
+    .genderOther(parameters.gender_other())
+    .ageMin(parameters.age_min())
+    .ageMax(parameters.age_max())
+    .distance(parameters.distance())
+    .probabilityTolerance(parameters.probability_tolerance())
+    .build();
   }
 }
 

@@ -22,17 +22,13 @@ import type {
 } from './types';
 
 export const getUserController = () => {
-  const updateProfile = <TData = AxiosResponse<unknown>>(
+  const updateProfile = <TData = AxiosResponse<void>>(
     profileSettingsRequestDTO: ProfileSettingsRequestDTO,
     options?: AxiosRequestConfig
   ): Promise<TData> => {
-    return axios.default.put(
-      `http://localhost:8000/api/users/settings/profile`,
-      profileSettingsRequestDTO,
-      options
-    );
+    return axios.default.put(`http://localhost:8000/api/users/settings/profile`, profileSettingsRequestDTO, options);
   };
-  const updatePreferences = <TData = AxiosResponse<unknown>>(
+  const updatePreferences = <TData = AxiosResponse<void>>(
     preferencesSettingsRequestDTO: PreferencesSettingsRequestDTO,
     options?: AxiosRequestConfig
   ): Promise<TData> => {
@@ -42,7 +38,7 @@ export const getUserController = () => {
       options
     );
   };
-  const updateAttributes = <TData = AxiosResponse<unknown>>(
+  const updateAttributes = <TData = AxiosResponse<void>>(
     attributesSettingsRequestDTO: AttributesSettingsRequestDTO,
     options?: AxiosRequestConfig
   ): Promise<TData> => {
@@ -52,17 +48,13 @@ export const getUserController = () => {
       options
     );
   };
-  const updateAccount = <TData = AxiosResponse<unknown>>(
+  const updateAccount = <TData = AxiosResponse<void>>(
     accountSettingsRequestDTO: AccountSettingsRequestDTO,
     options?: AxiosRequestConfig
   ): Promise<TData> => {
-    return axios.default.put(
-      `http://localhost:8000/api/users/settings/account`,
-      accountSettingsRequestDTO,
-      options
-    );
+    return axios.default.put(`http://localhost:8000/api/users/settings/account`, accountSettingsRequestDTO, options);
   };
-  const uploadProfilePicture = <TData = AxiosResponse<unknown>>(
+  const uploadProfilePicture = <TData = AxiosResponse<void>>(
     profilePictureSettingsRequestDTO: ProfilePictureSettingsRequestDTO,
     options?: AxiosRequestConfig
   ): Promise<TData> => {
@@ -72,21 +64,17 @@ export const getUserController = () => {
       options
     );
   };
-  const verifyAccount = <TData = AxiosResponse<unknown>>(
+  const verifyAccount = <TData = AxiosResponse<void>>(
     userId: number,
     params: VerifyAccountParams,
     options?: AxiosRequestConfig
   ): Promise<TData> => {
-    return axios.default.patch(
-      `http://localhost:8000/api/users/verify/${userId}`,
-      undefined,
-      {
-        ...options,
-        params: { ...params, ...options?.params },
-      }
-    );
+    return axios.default.patch(`http://localhost:8000/api/users/verify/${userId}`, undefined, {
+      ...options,
+      params: { ...params, ...options?.params },
+    });
   };
-  const setParameters = <TData = AxiosResponse<unknown>>(
+  const setParameters = <TData = AxiosResponse<void>>(
     userParametersRequestDTO: UserParametersRequestDTO,
     options?: AxiosRequestConfig
   ): Promise<TData> => {
@@ -100,37 +88,25 @@ export const getUserController = () => {
     targetId: number,
     options?: AxiosRequestConfig
   ): Promise<TData> => {
-    return axios.default.get(
-      `http://localhost:8000/api/users/${targetId}`,
-      options
-    );
+    return axios.default.get(`http://localhost:8000/api/users/${targetId}`, options);
   };
   const getProfile = <TData = AxiosResponse<ProfileResponseDTO>>(
     targetId: number,
     options?: AxiosRequestConfig
   ): Promise<TData> => {
-    return axios.default.get(
-      `http://localhost:8000/api/users/${targetId}/profile`,
-      options
-    );
+    return axios.default.get(`http://localhost:8000/api/users/${targetId}/profile`, options);
   };
   const getConnections = <TData = AxiosResponse<ConnectionResponseDTO[]>>(
     targetId: number,
     options?: AxiosRequestConfig
   ): Promise<TData> => {
-    return axios.default.get(
-      `http://localhost:8000/api/users/${targetId}/connections`,
-      options
-    );
+    return axios.default.get(`http://localhost:8000/api/users/${targetId}/connections`, options);
   };
   const getBio = <TData = AxiosResponse<BiographicalResponseDTO>>(
     targetId: number,
     options?: AxiosRequestConfig
   ): Promise<TData> => {
-    return axios.default.get(
-      `http://localhost:8000/api/users/${targetId}/bio`,
-      options
-    );
+    return axios.default.get(`http://localhost:8000/api/users/${targetId}/bio`, options);
   };
   return {
     updateProfile,
@@ -146,13 +122,13 @@ export const getUserController = () => {
     getBio,
   };
 };
-export type UpdateProfileResult = AxiosResponse<unknown>;
-export type UpdatePreferencesResult = AxiosResponse<unknown>;
-export type UpdateAttributesResult = AxiosResponse<unknown>;
-export type UpdateAccountResult = AxiosResponse<unknown>;
-export type UploadProfilePictureResult = AxiosResponse<unknown>;
-export type VerifyAccountResult = AxiosResponse<unknown>;
-export type SetParametersResult = AxiosResponse<unknown>;
+export type UpdateProfileResult = AxiosResponse<void>;
+export type UpdatePreferencesResult = AxiosResponse<void>;
+export type UpdateAttributesResult = AxiosResponse<void>;
+export type UpdateAccountResult = AxiosResponse<void>;
+export type UploadProfilePictureResult = AxiosResponse<void>;
+export type VerifyAccountResult = AxiosResponse<void>;
+export type SetParametersResult = AxiosResponse<void>;
 export type GetUserResult = AxiosResponse<CurrentUserResponseDTO>;
 export type GetProfileResult = AxiosResponse<ProfileResponseDTO>;
 export type GetConnectionsResult = AxiosResponse<ConnectionResponseDTO[]>;

@@ -5,11 +5,11 @@
  * kood/Jõhvi match-me task API
  * OpenAPI spec version: v0.0.1
  */
-import type { UserAttributes } from './userAttributes';
 import type { Hobby } from './hobby';
-import type { UserPreferences } from './userPreferences';
 import type { ProfileChange } from './profileChange';
 import type { User } from './user';
+import type { UserAttributes } from './userAttributes';
+import type { UserPreferences } from './userPreferences';
 
 export interface UserProfile {
   alias?: string;

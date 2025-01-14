@@ -1,5 +1,6 @@
 package com.matchme.srv.service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,12 +13,13 @@ import com.matchme.srv.dto.response.UserResponseDTO;
 import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.repository.ConnectionRepository;
-
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class ConnectionService {
+    private final AccessValidationService accessValidationService;
     private final ConnectionRepository connectionRepository;
 
     /**
@@ -47,13 +49,41 @@ public class ConnectionService {
 
     /**
      * Gets all connections for a given user
-     * @param user
+     * 
+     * @param userId
      * @return List of {@link Connection} associated with the user
-     * @see User
      */
-    public List<Connection> getUserConnections(User user) {
-        List<Connection> connections = connectionRepository.findConnectionsByUserId(user.getId());
-        return connections;
+    public List<Connection> getUserConnections(Long userId) {
+        return connectionRepository.findConnectionsByUserId(userId);
     }
 
+    public List<ConnectionResponseDTO> getConnectionResponseDTO(Long currentUserId, Long targetUserId) {
+        if (!currentUserId.equals(targetUserId)) {
+            throw new EntityNotFoundException("User not found or no access rights.");
+        }
+        List<Connection> connections = getUserConnections(targetUserId);
+        List<ConnectionResponseDTO> connectionResponse = new ArrayList<>();
+        for (Connection connection : connections) {
+            Set<UserResponseDTO> users = connection.getUsers().stream()
+                    .map(u -> new UserResponseDTO(u.getId(), u.getEmail(), u.getNumber()))
+                    .collect(Collectors.toSet());
+            connectionResponse.add(
+                    ConnectionResponseDTO.builder().id(connection.getId()).users(users).build());
+        }
+        return connectionResponse;
+    }
+
+    /**
+     * Checks if two users have an established connection.
+     * <p>
+     * Currently DOES NOT account for inactive connections
+     */
+    public boolean isConnected(Long requesterId, Long targetId) {
+        List<Connection> connections = connectionRepository.findConnectionsByUserId(requesterId);
+        for (Connection connection : connections) {
+            if (connection.getUsers().stream().anyMatch(user -> user.getId().equals(targetId)))
+                return true;
+        }
+        return false;
+    }
 }

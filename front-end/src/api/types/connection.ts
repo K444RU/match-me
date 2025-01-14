@@ -7,8 +7,8 @@
  */
 import type { ConnectionResult } from './connectionResult';
 import type { ConnectionState } from './connectionState';
-import type { UserMessage } from './userMessage';
 import type { User } from './user';
+import type { UserMessage } from './userMessage';
 
 export interface Connection {
   connectionResults?: ConnectionResult[];

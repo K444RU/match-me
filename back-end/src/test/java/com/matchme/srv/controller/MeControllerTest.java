@@ -1,5 +1,6 @@
 package com.matchme.srv.controller;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
@@ -9,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +27,7 @@ import com.matchme.srv.dto.response.BiographicalResponseDTO;
 import com.matchme.srv.dto.response.ConnectionResponseDTO;
 import com.matchme.srv.dto.response.CurrentUserResponseDTO;
 import com.matchme.srv.dto.response.ProfileResponseDTO;
-import com.matchme.srv.model.connection.Connection;
+import com.matchme.srv.dto.response.UserResponseDTO;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.UserRoleType;
 import com.matchme.srv.model.user.profile.Hobby;
@@ -33,11 +35,13 @@ import com.matchme.srv.model.user.profile.UserGenderType;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
 import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
+import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.security.services.UserDetailsImpl;
 import com.matchme.srv.service.ChatService;
 import com.matchme.srv.service.ConnectionService;
 import com.matchme.srv.service.HobbyService;
 import com.matchme.srv.service.UserService;
+import com.matchme.srv.dto.response.GenderTypeDTO;
 
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
@@ -64,6 +68,9 @@ public class MeControllerTest {
     @Mock
     private Authentication authentication;
 
+    @Mock
+    private SecurityUtils securityUtils;
+
     @InjectMocks
     private MeController meController;
 
@@ -71,8 +78,13 @@ public class MeControllerTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         mockMvc = MockMvcBuilders.standaloneSetup(meController)
-                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
-                .build();
+                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver()).build();
+
+        when(securityUtils.getCurrentUserId(any(Authentication.class))).thenAnswer(invocation -> {
+            UserDetailsImpl userDetails =
+                    (UserDetailsImpl) ((Authentication) invocation.getArgument(0)).getPrincipal();
+            return userDetails.getId();
+        });
     }
 
     /**
@@ -97,23 +109,15 @@ public class MeControllerTest {
 
         setupAuthenticatedUser(userId, email);
 
-        CurrentUserResponseDTO responseDTO = CurrentUserResponseDTO.builder()
-                .id(userId)
-                .email(email)
-                .firstName(firstName)
-                .lastName(lastName)
-                .alias(alias)
-                .profilePicture(profilePicture)
-                .role(roles)
-                .build();
+        CurrentUserResponseDTO responseDTO = CurrentUserResponseDTO.builder().id(userId)
+                .email(email).firstName(firstName).lastName(lastName).alias(alias)
+                .profilePicture(profilePicture).role(roles).build();
 
         when(userService.getCurrentUserDTO(userId)).thenReturn(responseDTO);
 
-        mockMvc.perform(get("/api/me")
-                        .principal(authentication)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(userId))
+        mockMvc.perform(
+                get("/api/me").principal(authentication).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.id").value(userId))
                 .andExpect(jsonPath("$.email").value(email))
                 .andExpect(jsonPath("$.firstName").value(firstName))
                 .andExpect(jsonPath("$.lastName").value(lastName))
@@ -140,18 +144,13 @@ public class MeControllerTest {
 
         setupAuthenticatedUser(userId, email);
 
-        ProfileResponseDTO profileDTO = ProfileResponseDTO.builder()
-            .first_name(firstName)
-            .last_name(lastName)
-            .city(city)
-            .build();
+        ProfileResponseDTO profileDTO = ProfileResponseDTO.builder().first_name(firstName)
+                .last_name(lastName).city(city).build();
         when(userService.getUserProfileDTO(userId, userId)).thenReturn(profileDTO);
 
         // When/Then
-        mockMvc.perform(get("/api/me/profile")
-                .principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+        mockMvc.perform(get("/api/me/profile").principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.first_name", is(firstName)))
                 .andExpect(jsonPath("$.last_name", is(lastName)))
                 .andExpect(jsonPath("$.city", is(city)));
@@ -187,28 +186,30 @@ public class MeControllerTest {
         setupAuthenticatedUser(userId, email);
 
         User mockUser = createMockUser(userId, email, firstName, lastName, alias, city);
-        UserPreferences mockUserPreferences = createMockUserPreferences(ageMin, ageMax, distance, probabilityTolerance,
-                genderOther);
-        UserAttributes mockUserAttributes = createMockUserAttributes(birthDate, location, genderSelf);
-        UserProfile mockUserProfile = createMockUserProfile(mockUser.getProfile(), mockUserPreferences,
-                mockUserAttributes);
+        UserPreferences mockUserPreferences = createMockUserPreferences(ageMin, ageMax, distance,
+                probabilityTolerance, genderOther);
+        UserAttributes mockUserAttributes =
+                createMockUserAttributes(birthDate, location, genderSelf);
+        UserProfile mockUserProfile = createMockUserProfile(mockUser.getProfile(),
+                mockUserPreferences, mockUserAttributes);
         mockUser.setProfile(mockUserProfile);
         mockUserProfile.setHobbies(hobbies);
 
-        when(userService.getUser(1L)).thenReturn(mockUser);
-        when(userService.getUserProfile(1L)).thenReturn(mockUser.getProfile());
-        for (Hobby hobby : hobbies) {
-            when(hobbyService.findById(hobby.getId())).thenReturn(hobby);
-        }
+        BiographicalResponseDTO bioDTO = BiographicalResponseDTO.builder()
+                .gender_self(new GenderTypeDTO(genderSelf.getId(), genderSelf.getName()))
+                .gender_other(new GenderTypeDTO(genderOther.getId(), genderOther.getName()))
+                .hobbies(hobbies.stream().map(hobby -> hobby.getId()).collect(Collectors.toSet()))
+                .age_self(ageSelf).age_min(ageMin).age_max(ageMax).distance(distance)
+                .probability_tolerance(probabilityTolerance).build();
+
+        when(userService.getBiographicalResponseDTO(userId, userId)).thenReturn(bioDTO);
 
         // When/Then
-        mockMvc.perform(get("/api/me/bio")
-                .principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.gender_self.id", is(genderSelf.getId())))
+        mockMvc.perform(get("/api/me/bio").principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.gender_self.id", is(genderSelf.getId().intValue())))
                 .andExpect(jsonPath("$.gender_self.name", is(genderSelf.getName())))
-                .andExpect(jsonPath("$.gender_other.id", is(genderOther.getId())))
+                .andExpect(jsonPath("$.gender_other.id", is(genderOther.getId().intValue())))
                 .andExpect(jsonPath("$.gender_other.name", is(genderOther.getName())))
                 .andExpect(jsonPath("$.age_self", is(ageSelf)))
                 .andExpect(jsonPath("$.age_max", is(ageMax)))
@@ -229,47 +230,35 @@ public class MeControllerTest {
         Long req_userId = 1L;
         String req_email = "user1@example.com";
         String req_number = "+372 55445544";
-        String req_firstName = "firstName";
-        String req_lastName = "lastName";
-        String req_alias = "alias";
-        String req_city = "city";
 
         Long target_userId = 2L;
         String target_email = "user2@example.com";
         String target_number = "+372 44554455";
-        String target_firstName = "firstName";
-        String target_lastName = "lastName";
-        String target_alias = "alias";
-        String target_city = "city";
 
         Long connectionId = 1L;
 
         setupAuthenticatedUser(req_userId, req_email);
 
-        User mockRequestingUser = createMockUser(req_userId, req_email, req_firstName, req_lastName, req_alias,
-                req_city, req_number);
-        User mockTargetUser = createMockUser(target_userId, target_email, target_firstName, target_lastName,
-                target_alias, target_city, target_number);
+        List<ConnectionResponseDTO> connections = Arrays.asList(
+            new ConnectionResponseDTO(connectionId, Set.of(
+                new UserResponseDTO(target_userId, target_email, target_number),
+                new UserResponseDTO(req_userId, req_email, req_number)
+            ))
+        );
 
-        Connection mockConnection = new Connection();
-        mockConnection.setId(connectionId);
-        mockConnection.setUsers(Set.of(mockRequestingUser, mockTargetUser));
+        when(connectionService.getConnectionResponseDTO(req_userId, req_userId))
+        .thenReturn(connections);
 
-        when(userService.getUser(req_userId)).thenReturn(mockRequestingUser);
-        when(connectionService.getUserConnections(mockRequestingUser)).thenReturn(List.of(mockConnection));
-
-        mockMvc.perform(get("/api/connections")
-                .principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+        mockMvc.perform(get("/api/connections").principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(connectionId.intValue())))
-                .andExpect(jsonPath("$[0].users[0].id", is(target_userId.intValue())))
-                .andExpect(jsonPath("$[0].users[0].email", is(target_email)))
-                .andExpect(jsonPath("$[0].users[0].number", is(target_number)))
-                .andExpect(jsonPath("$[0].users[1].id", is(req_userId.intValue())))
-                .andExpect(jsonPath("$[0].users[1].email", is(req_email)))
-                .andExpect(jsonPath("$[0].users[1].number", is(req_number)));
+                .andExpect(jsonPath("$[0].users[0].id", is(req_userId.intValue())))
+                .andExpect(jsonPath("$[0].users[0].email", is(req_email)))
+                .andExpect(jsonPath("$[0].users[0].number", is(req_number)))
+                .andExpect(jsonPath("$[0].users[1].id", is(target_userId.intValue())))
+                .andExpect(jsonPath("$[0].users[1].email", is(target_email)))
+                .andExpect(jsonPath("$[0].users[1].number", is(target_number)));
     }
 
     @Test
@@ -280,10 +269,8 @@ public class MeControllerTest {
         setupAuthenticatedUser(userId, email);
 
         // When/Then
-        mockMvc.perform(get("/api/connections", userId)
-                .principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+        mockMvc.perform(get("/api/connections", userId).principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
                 .andExpect(jsonPath("$", empty()));
     }
 
@@ -297,7 +284,7 @@ public class MeControllerTest {
         hobby1.setId(1L);
         hobby1.setName("3D printing");
         hobby1.setCategory("General");
-    
+
         Hobby hobby2 = new Hobby();
         hobby2.setId(2L);
         hobby2.setName("Acrobatics");
@@ -316,17 +303,14 @@ public class MeControllerTest {
      * @param alias
      * @return {@link User}
      */
-    private User createMockUser(Long id, String email, String firstName, String lastName, String alias, String city) {
+    private User createMockUser(Long id, String email, String firstName, String lastName,
+            String alias, String city) {
         User mockUser = new User();
         mockUser.setId(id);
         mockUser.setEmail(email);
 
-        UserProfile profile = UserProfile.builder()
-                .first_name(firstName)
-                .last_name(lastName)
-                .alias(alias)
-                .city(city)
-                .build();
+        UserProfile profile = UserProfile.builder().first_name(firstName).last_name(lastName)
+                .alias(alias).city(city).build();
 
         UserRoleType defaultRole = new UserRoleType();
         defaultRole.setId(1L);
@@ -339,31 +323,12 @@ public class MeControllerTest {
     }
 
     /**
-     * Helper method to create user
-     * 
-     * @param id
-     * @param email
-     * @param firstName
-     * @param lastName
-     * @param alias
-     * @param number
-     * @return {@link User}
-     */
-    private User createMockUser(Long id, String email, String firstName, String lastName, String alias, String city,
-            String number) {
-        User mockUser = createMockUser(id, email, firstName, lastName, alias, city);
-        mockUser.setNumber(number);
-        return mockUser;
-    }
-
-    /**
      * Helper method to create user with complete profile
      * 
      * @param profile
      * @param preferences
      * @param attributes
-     * @return {@link UserProfile} with {@link UserPreferences} and
-     *         {@link UserAttributes}
+     * @return {@link UserProfile} with {@link UserPreferences} and {@link UserAttributes}
      */
     private UserProfile createMockUserProfile(UserProfile profile, UserPreferences preferences,
             UserAttributes attributes) {
@@ -390,8 +355,8 @@ public class MeControllerTest {
      * @param gender
      * @return {@link UserPreferences}
      */
-    private UserPreferences createMockUserPreferences(Integer ageMin, Integer ageMax, Integer distance,
-            Double probabilityTolerance, UserGenderType gender) {
+    private UserPreferences createMockUserPreferences(Integer ageMin, Integer ageMax,
+            Integer distance, Double probabilityTolerance, UserGenderType gender) {
         UserPreferences preferences = new UserPreferences();
         preferences.setAge_min(ageMin);
         preferences.setAge_max(ageMax);
@@ -409,7 +374,8 @@ public class MeControllerTest {
      * @param gender
      * @return {@link UserAttributes}
      */
-    private UserAttributes createMockUserAttributes(LocalDate birthDate, List<Double> location, UserGenderType gender) {
+    private UserAttributes createMockUserAttributes(LocalDate birthDate, List<Double> location,
+            UserGenderType gender) {
         UserAttributes attributes = new UserAttributes();
         attributes.setBirth_date(birthDate);
         attributes.setLocation(location);
@@ -425,6 +391,7 @@ public class MeControllerTest {
      */
     private UserGenderType createMockGenderType(Long id) {
         UserGenderType genderType = new UserGenderType();
+        genderType.setId(id);
         switch (id.intValue()) {
             case 1:
                 genderType.setName("MALE");
@@ -447,8 +414,8 @@ public class MeControllerTest {
      * @param email
      */
     private void setupAuthenticatedUser(Long userId, String email) {
-        UserDetailsImpl userDetails = new UserDetailsImpl(userId, email, "password",
-                Collections.emptySet());
+        UserDetailsImpl userDetails =
+                new UserDetailsImpl(userId, email, "password", Collections.emptySet());
         when(authentication.getPrincipal()).thenReturn(userDetails);
     }
 }
