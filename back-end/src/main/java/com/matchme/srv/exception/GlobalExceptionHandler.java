@@ -43,21 +43,21 @@ public class GlobalExceptionHandler {
     // "error": "Access Denied"
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<Void> handleAuthorizationDeniedException(AuthorizationDeniedException ex) {
-        log.error("AuthorizationDeniedException occured: {}", ex.getMessage()/* , ex */);
+        log.error("AuthorizationDeniedException occurred: {}", ex.getMessage()/* , ex */);
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     // Thrown by spring-security
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<Void> handleUsernameNotFoundException(UsernameNotFoundException ex) {
-        log.error("UsernameNotFoundException occured: {}", ex.getMessage()/* , ex */);
+        log.error("UsernameNotFoundException occurred: {}", ex.getMessage()/* , ex */);
         return ResponseEntity.notFound().build();
     }
 
     // Handles runtime exceptions
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Void> handleRuntimeException(RuntimeException ex) {
-        log.error("RuntimeException occured: {}", ex.getMessage(), ex);
+        log.error("RuntimeException occurred: {}", ex.getMessage(), ex);
         return ResponseEntity.internalServerError().build();
     }
 
@@ -76,7 +76,7 @@ public class GlobalExceptionHandler {
     // "error": "Match not found"
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Void> handleResourceNotFoundException(ResourceNotFoundException ex) {
-        log.error("ResourceNotFoundException occured: {}", ex.getMessage(), ex);
+        log.error("ResourceNotFoundException occurred: {}", ex.getMessage(), ex);
         return ResponseEntity.notFound().build();
     }
 
@@ -85,7 +85,7 @@ public class GlobalExceptionHandler {
     // "error": "Invalid Verification Code 123"
     @ExceptionHandler(InvalidVerificationException.class)
     public ResponseEntity<Map<String, String>> handleInvalidVerificationException(InvalidVerificationException ex) {
-        log.error("InvalidVerificationException occured: {}", ex.getMessage()/* , ex */);
+        log.error("InvalidVerificationException occurred: {}", ex.getMessage()/* , ex */);
         return ResponseEntity.badRequest().build();
     }
 
@@ -100,19 +100,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<Void> handleEntityNotFound(EntityNotFoundException ex) {
-        log.error("EntityNotFoundException occured: {}", ex.getMessage()/* , ex */);
+        log.error("EntityNotFoundException occurred: {}", ex.getMessage()/* , ex */);
         return ResponseEntity.notFound().build();
     }
     
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Void> handleIllegalArgument(IllegalArgumentException ex) {
-        log.error("IllegalArgumentException occured: {}", ex.getMessage()/* , ex */);
+        log.error("IllegalArgumentException occurred: {}", ex.getMessage()/* , ex */);
         return ResponseEntity.badRequest().build();
     }
     
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Void> handleGeneral(Exception ex) {
-        log.error("Exception occured: {}", ex.getMessage()/* , ex */);
+        log.error("Exception occurred: {}", ex.getMessage()/* , ex */);
         return ResponseEntity.internalServerError().build();
     }
 }
