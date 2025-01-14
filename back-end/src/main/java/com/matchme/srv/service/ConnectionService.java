@@ -54,8 +54,7 @@ public class ConnectionService {
      * @see User
      */
     public List<Connection> getUserConnections(Long userId) {
-        List<Connection> connections = connectionRepository.findConnectionsByUserId(userId);
-        return connections;
+        return connectionRepository.findConnectionsByUserId(userId);
     }
 
     public List<ConnectionResponseDTO> getConnectionResponseDTO(Long currentUserId, Long targetUserId) {

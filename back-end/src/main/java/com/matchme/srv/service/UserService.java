@@ -80,9 +80,8 @@ public class UserService {
   }
 
   public UserGenderType getGender(Long genderId) {
-    UserGenderType gender = genderRepository.findById(genderId)
-        .orElseThrow(() -> new RuntimeException("Gender not found!"));
-    return gender;
+      return genderRepository.findById(genderId)
+              .orElseThrow(() -> new RuntimeException("Gender not found!"));
   }
 
   // Creates User entity and UserAuth entity for user, sends verification e-mail
@@ -332,13 +331,13 @@ public class UserService {
   }
 
   public User getUser(Long userId) {
-    User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found!"));
-    return user;
+      return userRepository.findById(userId)
+              .orElseThrow(() -> new EntityNotFoundException("User not found!"));
   }
 
   public User getUserByEmail(String email) {
-    User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found!"));
-    return user;
+      return userRepository.findByEmail(email)
+              .orElseThrow(() -> new EntityNotFoundException("User not found!"));
   }
 
   public void removeUserByEmail(String email) {
