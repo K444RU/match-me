@@ -1,15 +1,27 @@
 import { FC } from 'react';
 import { SidebarProvider } from '../ui/sidebar';
 import { Outlet } from 'react-router-dom';
+import { WebSocketProvider } from '@/features/chat/websocket-provider';
+import { useAuth } from '@/features/authentication';
 
-// Syntax recommended by Claude after asking about props - kinda cool
+const WS_URL = process.env.REACT_APP_WS_URL || 'http://localhost:8000/ws';
+
 const AuthenticatedLayout: FC = () => {
+    const { user } = useAuth();
+
+    if (!user) return;
+
     return (
-        <SidebarProvider>
-            <div className="flex h-screen w-screen overflow-hidden">
-                <Outlet />
-            </div>
-        </SidebarProvider>
+        <WebSocketProvider
+        wsUrl={WS_URL}
+        token={user?.token}
+        >
+            <SidebarProvider>
+                <div className="flex h-screen w-screen overflow-hidden">
+                    <Outlet />
+                </div>
+            </SidebarProvider>
+        </WebSocketProvider>
     );
 };
 
