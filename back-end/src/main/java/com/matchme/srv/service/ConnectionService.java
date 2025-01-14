@@ -49,9 +49,9 @@ public class ConnectionService {
 
     /**
      * Gets all connections for a given user
-     * @param user
+     * 
+     * @param userId
      * @return List of {@link Connection} associated with the user
-     * @see User
      */
     public List<Connection> getUserConnections(Long userId) {
         return connectionRepository.findConnectionsByUserId(userId);
@@ -85,9 +85,5 @@ public class ConnectionService {
                 return true;
         }
         return false;
-    }
-
-    public void validateUserAccess(Long currentUserId, Long targetUserId) {
-        accessValidationService.validateUserAccess(currentUserId, targetUserId);
     }
 }
