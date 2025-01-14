@@ -5,8 +5,8 @@
  * kood/Jõhvi match-me task API
  * OpenAPI spec version: v0.0.1
  */
-import type { UserGenderType } from './userGenderType';
 import type { PreferenceChange } from './preferenceChange';
+import type { UserGenderType } from './userGenderType';
 import type { UserProfile } from './userProfile';
 
 export interface UserPreferences {

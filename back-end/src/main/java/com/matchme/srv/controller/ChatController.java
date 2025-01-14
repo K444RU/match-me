@@ -3,7 +3,7 @@ package com.matchme.srv.controller;
 import com.matchme.srv.dto.response.ChatMessageResponseDTO;
 import com.matchme.srv.dto.response.ChatPreviewResponseDTO;
 import com.matchme.srv.model.user.User;
-import com.matchme.srv.security.services.UserDetailsImpl;
+import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.service.ChatService;
 import com.matchme.srv.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -24,11 +24,11 @@ public class ChatController {
 
     private final ChatService chatService;
     private final UserService userService;
+    private final SecurityUtils securityUtils;
 
     @GetMapping("/previews")
     public List<ChatPreviewResponseDTO> getChatPreviews(Authentication authentication) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long userId = userDetails.getId();
+        Long userId = securityUtils.getCurrentUserId(authentication);
         User user = userService.getUser(userId);
         return chatService.getChatPreviews(user.getId());
     }
@@ -39,8 +39,7 @@ public class ChatController {
             Pageable pageable,
             Authentication authentication
     ) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long userId = userDetails.getId();
+        Long userId = securityUtils.getCurrentUserId(authentication);
         return chatService.getChatMessages(connectionId, userId, pageable);
     }
 
