@@ -1,8 +1,6 @@
 package com.matchme.srv.service;
 
-import java.util.List;
 import org.springframework.stereotype.Service;
-import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.repository.ConnectionRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -13,17 +11,22 @@ public class AccessValidationService {
     private final ConnectionRepository connectionRepository;
 
     /**
-     * Validate that `currentUserId` can view `targetUserId`. If not, throw an exception (404 or
-     * 403).
+     * Validates if the <code>currentUserId</code> has access to view the <code>targetUserId</code>.
+     * If the users are not the same and there is no connection between them, an
+     * <code>EntityNotFoundException</code> is thrown indicating that the user is not found or the current user
+     * does not have access rights.
+     *
+     * @param currentUserId
+     * @param targetUserId
+     * @throws EntityNotFoundException if the current user does not have access to the target user
      */
     public void validateUserAccess(Long currentUserId, Long targetUserId) {
         if (currentUserId.equals(targetUserId)) {
             return;
         }
 
-        List<Connection> connections = connectionRepository.findConnectionsByUserId(currentUserId);
-        boolean isConnected = connections.stream().anyMatch(connection -> connection.getUsers()
-                .stream().anyMatch(user -> user.getId().equals(targetUserId)));
+        boolean isConnected =
+                connectionRepository.existsConnectionBetween(currentUserId, targetUserId);
 
         if (!isConnected) {
             throw new EntityNotFoundException("User not found or no access rights.");
