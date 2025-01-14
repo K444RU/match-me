@@ -117,10 +117,7 @@ public class MatchingService {
     }
 
     public int calculateUsersOwnScore(int score, double probability) {
-
-        int realScore = (int) Math.round(score * probability);
-
-        return realScore;
+        return (int) Math.round(score * probability);
     }
 
     // TODO: Fix the logic...
@@ -136,8 +133,7 @@ public class MatchingService {
     }
 
     public Set<String> getSuitableGeoHashes(String centralGeoHash, Integer distance) {
-        Set<String> geoHashes = new HashSet<>();
-        return geoHashes;
+        return new HashSet<>();
     }
 
     // TODO: Complete this logic to find matches in DatingPool
