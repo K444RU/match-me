@@ -4,7 +4,7 @@ import { Outlet } from 'react-router-dom';
 import { WebSocketProvider } from '@/features/chat/websocket-provider';
 import { useAuth } from '@/features/authentication';
 
-const WS_URL = 'http://localhost:8000/ws';
+const WS_URL = process.env.REACT_APP_WS_URL || 'http://localhost:8000/ws';
 
 const AuthenticatedLayout: FC = () => {
     const { user } = useAuth();
