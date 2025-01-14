@@ -1,8 +1,7 @@
 import { ReactNode } from "react";
-import { useWebSocketConnection } from "./use-websocket-connection";
-import { WebSocketContext } from "./websocket-context";
 import { StompSessionProvider } from "react-stomp-hooks";
 import { MessagesSendRequestDTOWithSender } from "@/api/types";
+import { InnerWebSocketProvider } from "./InnerWebSocketProvider";
 
 
 interface WebSocketProviderProps {
@@ -29,28 +28,20 @@ export const WebSocketProvider = ({ children, wsUrl, token }: WebSocketProviderP
 
   };
 
-  const InnerProvider = ({ children }: { children: ReactNode }) => {
-    const websocket = useWebSocketConnection({
-      onMessage: handleMessage,
-      onTypingIndicator: handleTypingIndicator,
-      onOnlineIndicator: handleOnlineIndicator,
-      onConnectionChange: handleConnectionChange,
-    });
-
-    return (
-      <WebSocketContext.Provider value={websocket}>
-        {children}
-      </WebSocketContext.Provider>
-    )
-  };
-
   return (
     <StompSessionProvider
       url={wsUrl}
       connectHeaders={{ Authorization: `Bearer ${token}`}}
       debug={import.meta.env.DEV ? console.log : undefined}
     >
-      <InnerProvider>{children}</InnerProvider>
+      	<InnerWebSocketProvider
+	  		onMessage={handleMessage}
+			onTypingIndicator={handleTypingIndicator}
+			onOnlineIndicator={handleOnlineIndicator}
+			onConnectionChange={handleConnectionChange}
+	  	>
+			{children}
+		</InnerWebSocketProvider>
     </StompSessionProvider>
   )
 }

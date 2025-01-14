@@ -1,6 +1,6 @@
 import { MessagesSendRequestDTOWithSender } from "@/api/types";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useStompClient, useSubscription } from "react-stomp-hooks";
+import { IMessage, useStompClient, useSubscription } from "react-stomp-hooks";
 
 
 const TYPING_TIMEOUT = 5000;
@@ -25,35 +25,42 @@ export const useWebSocketConnection = ({
 	const typingTimeout = useRef<ReturnType<typeof setTimeout>>();
 	const reconnectionAttempts = useRef(0);
 
+  const handleConnectionChange = useCallback((connected: boolean) => {
+      setIsConnected(connected);
+      onConnectionChange?.(connected);
+      if (connected) {
+        reconnectionAttempts.current = 0;
+      }
+    }, [onConnectionChange]);
+
+  const handleReconnection = useCallback(() => {
+    if (reconnectionAttempts.current >= MAX_RECONNECTION_ATTEMPTS) {
+      console.error('Reconnection attempts reached, timed out.')
+      return;
+    }
+    setTimeout(() => {
+      reconnectionAttempts.current++;
+      stompClient?.activate();
+    }, RECONNECTION_DELAY * Math.pow(2, reconnectionAttempts.current))
+  }, [stompClient]);
+
+  const safeParseJSON = <T,>(json: string, errorMsg: string): T | null => {
+    try {
+      return JSON.parse(json) as T;
+    } catch (error) {
+      console.error(errorMsg, error);
+      return null;
+    }
+  }
+
 	useEffect(() => {
 		if (!stompClient) return;
-
-		const handleConnectionChange = (connected: boolean) => {
-			setIsConnected(connected)
-			onConnectionChange?.(connected);
-			
-			if (connected) {
-				reconnectionAttempts.current = 0;
-			}
-		};
-
-		const handleReconnection = () => {
-			if (reconnectionAttempts.current >= MAX_RECONNECTION_ATTEMPTS) {
-				console.error('Reconnection attempts reached, timed out.')
-				return;
-			}
-
-			setTimeout(() => {
-				reconnectionAttempts.current++;
-				stompClient.activate();
-			}, RECONNECTION_DELAY * Math.pow(2, reconnectionAttempts.current))
-		};
 
 		const onConnect = () => {
 			handleConnectionChange(true);
 		};
 
-    	const onDisconnect = () => {
+    const onDisconnect = () => {
 			handleConnectionChange(false);
 			handleReconnection();
 		};
@@ -62,32 +69,34 @@ export const useWebSocketConnection = ({
 		stompClient.onDisconnect = onDisconnect;
 
 		return () => {
-		stompClient.onConnect = () => {};
-		stompClient.onDisconnect = () => {};
-		handleConnectionChange(false);
-    	};
+      stompClient.onConnect = () => {};
+      stompClient.onDisconnect = () => {};
+      handleConnectionChange(false);
+    };
 
-	}, [stompClient, onConnectionChange])
+	}, [stompClient, handleConnectionChange, handleReconnection])
 
-	// Message subscription with error handling and retry logic
-	useSubscription(`/user/queue/messages`, (message) => {
-		try {
-			const newMessage: MessagesSendRequestDTOWithSender = JSON.parse(message.body);
-			onMessage(newMessage);
-		} catch (error) {
-			console.error('Error processing message:', error);
-		}
-    });
+  // Message subscription with error handling and retry logic
+  const handleIncomingMessage = (message: IMessage) => {
+    const parsed = safeParseJSON<MessagesSendRequestDTOWithSender>(
+      message.body,
+      'Error processing message:'
+    );
+    if (parsed) onMessage(parsed);
+  }
 
 	// Typing indicator subscription
-	useSubscription(`/user/queue/typing`, (message) => {
-		try {
-			const { userId: typingUserId, isTyping } = JSON.parse(message.body);
-			onTypingIndicator(typingUserId, isTyping);
-		} catch (error) {
-		  	console.error('Error processing typing indicator:', error);
-		}
-	});
+  const handleTypingMessage = (message: IMessage) => {
+    const parsed = safeParseJSON<{ userId: string; isTyping: boolean }>(
+      message.body,
+      'Error processing typing indicator:'
+    );
+    if (parsed) onTypingIndicator(parsed.userId, parsed.isTyping)
+  }
+
+  useSubscription(`/user/queue/messages`, handleIncomingMessage);
+  useSubscription(`/user/queue/typing`, handleTypingMessage);
+
 
 	/**
 	 * Sends a message to the user specific user via Websocket
