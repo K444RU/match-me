@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,20 +26,17 @@ import com.matchme.srv.service.ConnectionService;
 import com.matchme.srv.service.UserService;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/test")
 public class TestController {
 
-  @Autowired
-  UserService userService;
-
-  @Autowired
-  ConnectionService connectionService;
-
-  @Autowired
-  ChatService chatService;
+  private final UserService userService;
+  private final ConnectionService connectionService;
+  private final ChatService chatService;
 
   @GetMapping("/all")
   public String allAccess() {

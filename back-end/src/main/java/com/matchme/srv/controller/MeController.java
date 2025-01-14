@@ -4,7 +4,7 @@ import com.matchme.srv.dto.response.*;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.service.ConnectionService;
 import com.matchme.srv.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,18 +13,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api")
 public class MeController {
 
-    @Autowired
-    UserService userService;
-
-    @Autowired
-    ConnectionService connectionService;
-
-    @Autowired
-    private SecurityUtils securityUtils;
+    private final UserService userService;
+    private final ConnectionService connectionService;
+    private final SecurityUtils securityUtils;
 
     /**
      * Retrieves the current authenticated users basic information.

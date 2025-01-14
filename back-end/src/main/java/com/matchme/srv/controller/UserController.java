@@ -3,7 +3,6 @@ package com.matchme.srv.controller;
 import java.util.List;
 
 import com.matchme.srv.dto.request.settings.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
@@ -17,20 +16,17 @@ import com.matchme.srv.dto.response.ProfileResponseDTO;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.service.ConnectionService;
 import com.matchme.srv.service.UserService;
+import lombok.RequiredArgsConstructor;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/users")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private ConnectionService connectionService;
-
-    @Autowired
-    private SecurityUtils securityUtils;
+    private final UserService userService;
+    private final ConnectionService connectionService;
+    private final SecurityUtils securityUtils;
 
     /**
      * Retrieves a users basic information by ID
@@ -104,18 +100,6 @@ public class UserController {
                 connectionService.getConnectionResponseDTO(currentUserId, targetId);
         return ResponseEntity.ok(response);
     }
-
-    // @GetMapping("/attributes/{userId}")
-    // public ResponseEntity<AttributesResponseDTO> getAttributes(@PathVariable Long
-    // userId) {
-    // return ResponseEntity.ok(userService.getAttributes(userId));
-    // }
-
-    // @GetMapping("/preferences/{userId}")
-    // public ResponseEntity<PreferencesResponseDTO> getPreferences(@PathVariable
-    // Long userId) {
-    // return ResponseEntity.ok(userService.getPreferences(userId));
-    // }
 
     @PatchMapping("/verify/{userId}")
     public ResponseEntity<Void> verifyAccount(@PathVariable Long userId,
