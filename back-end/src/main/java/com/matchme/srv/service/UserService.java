@@ -125,7 +125,7 @@ public class UserService {
 
   // Verifies e-mail, creates UserProfile, UserAttributes and UserPreferences
   // entities for the user
-  public boolean verifyAccount(Long userId, int verificationCode) {
+  public void verifyAccount(Long userId, int verificationCode) {
 
     // Get user entity
     User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -166,8 +166,6 @@ public class UserService {
 
     // Should cascade everything
     userRepository.save(user);
-
-    return true;
   }
 
   // Finish setting up account data after verifying email.
@@ -245,7 +243,7 @@ public class UserService {
     return newEntry;
   }
 
-  public boolean updateAccountSettings(Long userId, AccountSettingsRequestDTO settings) {
+  public void updateAccountSettings(Long userId, AccountSettingsRequestDTO settings) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new EntityNotFoundException("User not found!"));
 
@@ -254,10 +252,9 @@ public class UserService {
 
     // TODO: Add logging
     userRepository.save(user);
-    return true;
   }
 
-  public boolean updateProfileSettings(Long userId, ProfileSettingsRequestDTO settings) {
+  public void updateProfileSettings(Long userId, ProfileSettingsRequestDTO settings) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new EntityNotFoundException("User not found!"));
 
@@ -278,10 +275,9 @@ public class UserService {
 
     // TODO: Add logging
     userRepository.save(user);
-    return true;
   }
 
-  public boolean updateAttributesSettings(Long userId, AttributesSettingsRequestDTO settings) {
+  public void updateAttributesSettings(Long userId, AttributesSettingsRequestDTO settings) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new EntityNotFoundException("User not found!"));
 
@@ -296,10 +292,9 @@ public class UserService {
 
     // TODO: Add logging
     userRepository.save(user);
-    return true;
   }
 
-  public boolean updatePreferencesSettings(Long userId, PreferencesSettingsRequestDTO settings) {
+  public void updatePreferencesSettings(Long userId, PreferencesSettingsRequestDTO settings) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new EntityNotFoundException("User not found!"));
 
@@ -311,7 +306,6 @@ public class UserService {
 
     // TODO: Add logging
     userRepository.save(user);
-    return true;
   }
 
   public UserParametersResponseDTO getParameters(Long userId) {
@@ -323,11 +317,6 @@ public class UserService {
     UserPreferences preferences = profile.getPreferences();
 
     return parametersMapper.toUserParametersDTO(user, attributes, preferences, auth);
-  }
-
-  public UserProfile getUserProfile(Long userId) {
-    User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found!"));
-    return user.getProfile();
   }
 
   public User getUser(Long userId) {
