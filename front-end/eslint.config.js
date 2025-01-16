@@ -40,6 +40,7 @@ export default [
           "ignoreRestSiblings": true
         }
       ],
+      'react/prop-types': 'off',
     },
     languageOptions: {
       ecmaVersion: 2022,
