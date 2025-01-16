@@ -58,7 +58,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ label, selectedDate, onDateChan
                 type="button"
                 ref={datePickerBtnRef}
                 onClick={() => setShowDatePicker(!showDatePicker)}
-                className="flex w-full items-center justify-center gap-2 self-start rounded-md px-5 py-2 font-semibold tracking-wide text-text transition-colors bg-primary hover:bg-primary-200 hover:text-text"
+                className="flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
             >
                 {!localDate ? (
                     <>
@@ -73,7 +73,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ label, selectedDate, onDateChan
             {showDatePicker && (
                 <div
                     ref={datePickerRef}
-                    className="absolute z-10 -top-[300px] left-0 mt-1 ml-7 rounded-md border border-gray-200 bg-white p-2 shadow-lg"
+                    className="absolute -top-[300px] left-0 z-10 ml-7 mt-1 rounded-md border border-gray-200 bg-white p-2 shadow-lg"
                 >
                     <DayPicker
                         mode="single"
@@ -83,10 +83,10 @@ const DatePicker: React.FC<DatePickerProps> = ({ label, selectedDate, onDateChan
                         captionLayout="dropdown"
                         disabled={[{ before: new Date(1900, 0, 1), after: new Date() }]}
                     />
-                    <div className="flex justify-between mt-2">
+                    <div className="mt-2 flex justify-between">
                         <button
                             onClick={() => handleDateChange(undefined)}
-                            className="flex w-full items-center justify-center gap-2 self-start rounded-md px-5 py-2 font-semibold tracking-wide text-text transition-colors bg-primary hover:bg-primary-200 hover:text-text"
+                            className="flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
                         >
                             Clear
                         </button>

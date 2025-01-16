@@ -205,7 +205,7 @@ const RegisterForm = () => {
                         className="w-full"
                     />
                 </div>
-                {phoneError && <p className="text-red-500 text-sm"> {phoneError}</p>}
+                {phoneError && <p className="text-sm text-red-500"> {phoneError}</p>}
             </div>
 
             <button
