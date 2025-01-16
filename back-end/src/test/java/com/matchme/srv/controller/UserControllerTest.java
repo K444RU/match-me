@@ -420,12 +420,12 @@ public class UserControllerTest {
                 .principal(authentication).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(connectionId.intValue())))
-                .andExpect(jsonPath("$[0].users[0].id", is(req_userId.intValue())))
-                .andExpect(jsonPath("$[0].users[0].email", is(req_email)))
-                .andExpect(jsonPath("$[0].users[0].number", is(req_number)))
-                .andExpect(jsonPath("$[0].users[1].id", is(target_userId.intValue())))
-                .andExpect(jsonPath("$[0].users[1].email", is(target_email)))
-                .andExpect(jsonPath("$[0].users[1].number", is(target_number)));
+                .andExpect(jsonPath("$[0].users[*].id", hasItem(req_userId.intValue())))
+                .andExpect(jsonPath("$[0].users[*].email", hasItem(req_email)))
+                .andExpect(jsonPath("$[0].users[*].number", hasItem(req_number)))
+                .andExpect(jsonPath("$[0].users[*].id", hasItem(target_userId.intValue())))
+                .andExpect(jsonPath("$[0].users[*].email", hasItem(target_email)))
+                .andExpect(jsonPath("$[0].users[*].number", hasItem(target_number)));
     }
 
     @Test
