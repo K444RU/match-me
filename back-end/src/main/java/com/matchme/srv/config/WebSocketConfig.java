@@ -14,13 +14,14 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
 import org.springframework.web.socket.handler.WebSocketHandlerDecoratorFactory;
+import lombok.RequiredArgsConstructor;
 
 @Configuration
+@RequiredArgsConstructor
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-  @Autowired
-  private WebSocketAuthInterceptor webSocketAuthInterceptor;
+  private final WebSocketAuthInterceptor webSocketAuthInterceptor;
 
   @Override
   public void configureClientInboundChannel(ChannelRegistration registration) {

@@ -11,14 +11,14 @@ import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.UserAuth;
 import com.matchme.srv.repository.UserAuthRepository;
 import com.matchme.srv.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    UserAuthRepository authRepository;
+   
+    final UserRepository userRepository;
+    final UserAuthRepository authRepository;
 
     @Override
     @Transactional
