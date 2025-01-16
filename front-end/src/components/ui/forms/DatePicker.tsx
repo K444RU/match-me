@@ -73,7 +73,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ label, selectedDate, onDateChan
             {showDatePicker && (
                 <div
                     ref={datePickerRef}
-                    className="absolute -top-[300px] left-0 z-10 ml-7 mt-1 rounded-md border border-gray-200 bg-white p-2 shadow-lg"
+                    className="absolute left-0 top-[-300px] z-10 ml-7 mt-1 rounded-md border border-gray-200 bg-white p-2 shadow-lg"
                 >
                     <DayPicker
                         mode="single"
