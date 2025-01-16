@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ConnectionService {
-    private final AccessValidationService accessValidationService;
     private final ConnectionRepository connectionRepository;
 
     /**
