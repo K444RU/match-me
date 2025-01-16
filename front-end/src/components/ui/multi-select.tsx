@@ -427,7 +427,7 @@ const MultipleSelector = React.forwardRef<
 
     // Create a structure that includes group headers in the virtualization
     const virtualItems = React.useMemo(() => {
-      const items: { type: 'group' | 'item'; data: any; groupKey?: string }[] =
+      const items: { type: 'group' | 'item'; data: string | Option; groupKey?: string }[] =
         [];
 
       Object.entries(selectables).forEach(([groupKey, options]) => {
@@ -542,7 +542,9 @@ const MultipleSelector = React.forwardRef<
               }}
               onFocus={(event) => {
                 setOpen(true);
-                triggerSearchOnFocus && onSearch?.(debouncedSearchTerm);
+                if (triggerSearchOnFocus) {
+                  onSearch?.(debouncedSearchTerm);
+                }
                 inputProps?.onFocus?.(event);
               }}
               placeholder={
@@ -607,7 +609,7 @@ const MultipleSelector = React.forwardRef<
                     {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                       const item = virtualItems[virtualRow.index];
 
-                      if (item.type === 'group') {
+                      if (item.type === 'group' && typeof item.data === 'string') {
                         return (
                           <CommandGroup
                             key={`group-${item.data}`}
@@ -624,6 +626,8 @@ const MultipleSelector = React.forwardRef<
                       }
 
                       return (
+                        <>
+                        {item.type === 'item' && typeof item.data !== 'string' && (
                         <CommandItem
                           key={item.data.value}
                           value={item.data.label}
@@ -647,8 +651,9 @@ const MultipleSelector = React.forwardRef<
                             }
                             setInputValue('');
                             const newOptions = [...selected, item.data];
-                            setSelected(newOptions);
-                            onChange?.(newOptions);
+                            const validOptions = newOptions.filter((opt): opt is Option => typeof opt !== 'string');
+                              setSelected(validOptions);
+                              onChange?.(validOptions);
                           }}
                           className={cn(
                             'absolute w-full cursor-pointer',
@@ -658,6 +663,8 @@ const MultipleSelector = React.forwardRef<
                         >
                           {item.data.label}
                         </CommandItem>
+                      )}
+                        </>
                       );
                     })}
                   </CommandGroup>
