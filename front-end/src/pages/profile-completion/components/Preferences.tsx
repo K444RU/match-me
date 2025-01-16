@@ -44,8 +44,8 @@ const Preferences: React.FC<PreferencesProps> = ({onPrevious, onNext, formData, 
             <h2 className="border-b-2 border-accent text-center text-2xl font-bold text-text">
                 Preferences
             </h2>
-            <div className="flex flex-col gap-4 mt-4">
-                {error && <div className="text-red-500 text-sm">{error}</div>}
+            <div className="mt-4 flex flex-col gap-4">
+                {error && <div className="text-sm text-red-500">{error}</div>}
 
                 {/* Gender Preference Dropdown */}
                 <div>
@@ -112,7 +112,7 @@ const Preferences: React.FC<PreferencesProps> = ({onPrevious, onNext, formData, 
                 </div>
             </div>
 
-            <div className="flex justify-between mt-6">
+            <div className="mt-6 flex justify-between">
                 <button
                     type="button"
                     onClick={onPrevious}
@@ -125,7 +125,7 @@ const Preferences: React.FC<PreferencesProps> = ({onPrevious, onNext, formData, 
                     onClick={handleFinish}
                     disabled={loading}
                     className={`flex items-center gap-2 rounded-md px-5 py-2 font-semibold text-text ${
-                        loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-primary-200'
+                        loading ? 'cursor-not-allowed bg-gray-400' : 'bg-primary hover:bg-primary-200'
                     }`}
                 >
                                     {loading ? (
