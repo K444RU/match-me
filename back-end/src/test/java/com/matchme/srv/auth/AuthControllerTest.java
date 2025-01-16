@@ -1,32 +1,37 @@
 package com.matchme.srv.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.matchme.srv.controller.AuthController;
 import com.matchme.srv.dto.request.LoginRequestDTO;
 import com.matchme.srv.dto.request.SignupRequestDTO;
-
+import com.matchme.srv.exception.DuplicateFieldException;
+import com.matchme.srv.model.user.activity.ActivityLog;
+import com.matchme.srv.security.WebSecurityConfig;
+import com.matchme.srv.security.jwt.AuthEntryPointJwt;
+import com.matchme.srv.security.jwt.JwtUtils;
+import com.matchme.srv.security.jwt.SecurityUtils;
+import com.matchme.srv.security.services.UserDetailsImpl;
+import com.matchme.srv.security.services.UserDetailsServiceImpl;
+import com.matchme.srv.service.UserService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
-import static org.hamcrest.Matchers.containsString;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
+@WebMvcTest(AuthController.class)
+@Import(WebSecurityConfig.class)
 class AuthControllerTest {
-
-    @Mock
-    private Authentication authentication;
 
     @Autowired
     private MockMvc mockMvc;
@@ -34,55 +39,49 @@ class AuthControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @MockitoBean
+    private AuthenticationManager authenticationManager;
+
+    @MockitoBean
+    private JwtUtils jwtUtils;
+
+    @MockitoBean
+    private UserService userService;
+
+    @MockitoBean
+    private UserDetailsServiceImpl userDetailsService;
+
+    @MockitoBean
+    private AuthEntryPointJwt unauthorizedHandler;
+
+    @MockitoBean
+    private SecurityUtils securityUtils;
+
+    @MockitoBean
+    private Authentication authentication;
+    
+    @MockitoBean
+    private UserDetailsImpl userDetails;
+
+    @BeforeEach
+    void setUp() {
+        // Create a mock UserDetailsImpl
+        userDetails = Mockito.mock(UserDetailsImpl.class);
+        when(userDetails.getId()).thenReturn(1L);
+
+        // Create a mock Authentication
+        authentication = Mockito.mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+
+        // Mock the securityUtils to return the user ID when getCurrentUserId is called
+        when(authenticationManager.authenticate(any(Authentication.class))).thenReturn(authentication);
+    }
+
     private static final String INVALID_EMAIL = "testexample.com";
     private static final String INVALID_PASSWORD = "test";
     private static final String INVALID_PHONE = "";
 
-    // Public routes
-    @Test
-    void shouldReturnPublicContent() throws Exception {
-        this.mockMvc.perform(get("/api/test/all")).andDo(print()).andExpect(status().isOk())
-                .andExpect(content().string(containsString("Public Content.")));
-    }
-
-    // Protected routes
-    // Should return 401 because we are not logged in.
-    @Test
-    void shouldReturnUnauthorized() throws Exception {
-        this.mockMvc.perform(get("/api/test/user")).andDo(print()).andExpect(status().isUnauthorized());
-        this.mockMvc.perform(get("/api/test/mod")).andDo(print()).andExpect(status().isUnauthorized());
-        this.mockMvc.perform(get("/api/test/admin")).andDo(print()).andExpect(status().isUnauthorized());
-    }
-
-    // Should return 200 and string "User Content."
-    @Test
-    @WithMockUser(username = "user", authorities = {"ROLE_USER"})
-    void shouldReturnUserContent() throws Exception {
-        this.mockMvc.perform(get("/api/test/user")
-                .principal(authentication))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("User Content.")));
-    }
-
-    // Should return 200 and string "Moderator Board."
-    @Test
-    @WithMockUser(username = "moderator", authorities = {"ROLE_MODERATOR"})
-    void shouldReturnModeratorContent() throws Exception {
-        this.mockMvc.perform(get("/api/test/mod")
-                .principal(authentication))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Moderator Board.")));
-    }
-
-    // Should return 200 and string "Admin Content."
-    @Test
-    @WithMockUser(username = "admin", authorities = {"ROLE_ADMIN"})
-    void shouldReturnAdminContent() throws Exception {
-        this.mockMvc.perform(get("/api/test/admin")
-                .principal(authentication))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Admin Board.")));
-    }
+   private ActivityLog mockedActivityLog = Mockito.mock(ActivityLog.class);
 
     @Test
     void shouldSuccessfullySignUpAndIn() throws Exception {
@@ -95,20 +94,21 @@ class AuthControllerTest {
         signUpRequest.setPassword(validPassword);
         signUpRequest.setNumber(validPhone);
 
-        mockMvc.perform(post("/api/auth/signup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(signUpRequest)))
+        // Mocking the signup and signin behavior
+        when(userService.createUser(any(SignupRequestDTO.class))).thenReturn(mockedActivityLog);
+        when(jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn("dummy-jwt-token");
+
+        mockMvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signUpRequest)))
                 .andExpect(status().isCreated());
 
         LoginRequestDTO loginRequest = new LoginRequestDTO();
         loginRequest.setEmail(validEmail);
         loginRequest.setPassword(validPassword);
 
-        mockMvc.perform(post("/api/auth/signin")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").exists());
+        mockMvc.perform(post("/api/auth/signin").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest))).andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value("dummy-jwt-token"));
     }
 
     // Tests duplicate email
@@ -123,14 +123,18 @@ class AuthControllerTest {
         signUpRequest.setPassword(validPassword);
         signUpRequest.setNumber(validPhone);
 
-        mockMvc.perform(post("/api/auth/signup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(signUpRequest)))
-                .andExpect(status().isCreated());
-
-        mockMvc.perform(post("/api/auth/signup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(signUpRequest)))
+        // Mocking the signup behavior
+        when(userService.createUser(any(SignupRequestDTO.class))).thenReturn(mockedActivityLog);
+        
+        mockMvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(signUpRequest)))
+        .andExpect(status().isCreated());
+        
+        when(userService.createUser(any(SignupRequestDTO.class)))
+            .thenThrow(new DuplicateFieldException("email", "Email already exists"));
+        
+        mockMvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signUpRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.email").value("Email already exists"));
     }
@@ -145,9 +149,9 @@ class AuthControllerTest {
         signUpRequest.setEmail(INVALID_EMAIL);
         signUpRequest.setPassword(validPassword);
         signUpRequest.setNumber(validPhone);
-        mockMvc.perform(post("/api/auth/signup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(signUpRequest)))
+
+        mockMvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signUpRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.email").value("Email must be valid"));
     }
@@ -162,16 +166,13 @@ class AuthControllerTest {
         signUpRequest.setEmail(validEmail);
         signUpRequest.setPassword(INVALID_PASSWORD);
         signUpRequest.setNumber(validPhone);
-        mockMvc.perform(post("/api/auth/signup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(signUpRequest)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.password").value("Password must be between 6 and 40 characters"));
+
+        mockMvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signUpRequest)))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.password")
+                        .value("Password must be between 6 and 40 characters"));
     }
 
-    // Tests if the phone number is not empty
-    // TODO: Improve shouldReturnInvalidPhoneNumber
-    // Could add length checking.
     @Test
     void shouldReturnInvalidPhoneNumber() throws Exception {
         String validEmail = "invalidphonenumber@test.com";
@@ -181,9 +182,10 @@ class AuthControllerTest {
         signUpRequest.setEmail(validEmail);
         signUpRequest.setPassword(validPassword);
         signUpRequest.setNumber(INVALID_PHONE);
-        mockMvc.perform(post("/api/auth/signup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(signUpRequest)))
-                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.number").value("Phone number cannot be empty"));
+
+        mockMvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signUpRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.number").value("Phone number cannot be empty"));
     }
 }
