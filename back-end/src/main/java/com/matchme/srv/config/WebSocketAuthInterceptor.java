@@ -4,8 +4,8 @@ package com.matchme.srv.config;
 import java.util.List;
 
 import org.junit.jupiter.api.Order;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
+import org.springframework.lang.NonNull;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -16,30 +16,29 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
-
+import com.matchme.srv.exception.AuthenticationException;
 import com.matchme.srv.security.jwt.JwtUtils;
 import com.matchme.srv.security.services.UserDetailsImpl;
+import lombok.RequiredArgsConstructor;
 
 
 @Component
+@RequiredArgsConstructor
 @Order(Ordered.HIGHEST_PRECEDENCE + 99)
 public class WebSocketAuthInterceptor implements ChannelInterceptor{
 
-  @Autowired
-  private JwtUtils jwtUtils;
-
-  @Autowired
-  private UserDetailsService userDetailsService;
+  private final JwtUtils jwtUtils;
+  private final UserDetailsService userDetailsService;
 
   @Override
-  public Message<?> preSend(Message<?> message, MessageChannel channel) {
+  public Message<?> preSend(@NonNull Message<?> message, @NonNull MessageChannel channel) {
     StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
-    if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+    if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
       
       String authToken = accessor.getFirstNativeHeader("Authorization");
       if (authToken == null || authToken.isEmpty()) {
-        throw new RuntimeException("No auth token provided");
+        throw new AuthenticationException("No auth token provided");
       }
 
       if (authToken.startsWith("Bearer ")) {
@@ -48,7 +47,7 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor{
 
       try {
         if (!jwtUtils.validateJwtToken(authToken)) {
-          throw new RuntimeException("Invalid JWT token");
+          throw new AuthenticationException("Invalid JWT token");
         }
 
         String username = jwtUtils.getUserNameFromJwtToken(authToken);
@@ -59,11 +58,11 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor{
 
         accessor.setUser(authentication);
       } catch (Exception e) {
-        throw new RuntimeException("Authentication failed:" + e.getMessage());
+        throw new AuthenticationException("Authentication failed:" + e.getMessage());
       }
     }
     return message;
   }
-};
+}
 
 

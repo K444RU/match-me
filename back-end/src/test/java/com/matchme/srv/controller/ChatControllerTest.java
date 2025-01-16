@@ -3,6 +3,7 @@ package com.matchme.srv.controller;
 import com.matchme.srv.dto.response.ChatMessageResponseDTO;
 import com.matchme.srv.dto.response.ChatPreviewResponseDTO;
 import com.matchme.srv.model.user.User;
+import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.security.services.UserDetailsImpl;
 import com.matchme.srv.service.ChatService;
 import com.matchme.srv.service.UserService;
@@ -47,6 +48,9 @@ class ChatControllerTest {
     @Mock
     private Authentication authentication;
 
+    @Mock
+    private SecurityUtils securityUtils;
+
     @InjectMocks
     private ChatController chatController;
 
@@ -56,6 +60,12 @@ class ChatControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(chatController)
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
                 .build();
+
+        when(securityUtils.getCurrentUserId(any(Authentication.class))).thenAnswer(invocation -> {
+            UserDetailsImpl userDetails =
+                    (UserDetailsImpl) ((Authentication) invocation.getArgument(0)).getPrincipal();
+            return userDetails.getId();
+        });
     }
 
     @Test
