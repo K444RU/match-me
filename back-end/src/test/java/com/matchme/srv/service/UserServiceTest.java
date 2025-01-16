@@ -46,7 +46,7 @@ import com.matchme.srv.repository.UserRoleTypeRepository;
 import com.matchme.srv.repository.UserStateTypesRepository;
 
 @ExtendWith(MockitoExtension.class) // equals to openMocks for BeforeEach
-public class UserServiceTest {
+class UserServiceTest {
   
   @InjectMocks
   private UserService userService;
@@ -82,7 +82,6 @@ public class UserServiceTest {
   private UserProfile profile;
   private UserAttributes attributes;
   private UserPreferences preferences;
-  // private UserParametersRequestDTO parameters;
 
   @BeforeEach
   void setUp() {
@@ -159,69 +158,6 @@ public class UserServiceTest {
     verify(preferencesMapper).toEntity(preferences, parameters);
     verify(userRepository).save(user);
   }
-  
-  // @Test
-  // void setUserParameters_UserNotFound() {
-  //     // Arrange
-  //     var parameters = new UserParametersRequestDTO("MALE", "FEMALE");
-  //     when(userRepository.findById(1L)).thenReturn(Optional.empty());
-      
-  //     // Act & Assert
-  //     assertThrows(EntityNotFoundException.class, 
-  //         () -> userService.setUserParameters(1L, parameters));
-      
-  //     verifyNoInteractions(attributesMapper, preferencesMapper);
-  // }
-  
-  // @Test
-  // void setUserParameters_StateNotFound() {
-  //     // Arrange
-  //     var parameters = new UserParametersRequestDTO("MALE", "FEMALE");
-  //     when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-  //     when(userStateTypesRepository.findByName("NEW")).thenReturn(Optional.empty());
-      
-  //     // Act & Assert
-  //     assertThrows(RuntimeException.class, 
-  //         () -> userService.setUserParameters(1L, parameters));
-      
-  //     verify(userRepository, never()).save(any());
-  // }
-  
-  // @Test
-  // void setUserParameters_LogTypeNotFound() {
-  //     // Arrange
-  //     var parameters = new UserParametersRequestDTO("MALE", "FEMALE");
-  //     var newState = new UserStateType();
-      
-  //     when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-  //     when(userStateTypesRepository.findByName("NEW")).thenReturn(Optional.of(newState));
-  //     when(activityLogTypeRepository.findByName("VERIFIED")).thenReturn(Optional.empty());
-      
-  //     // Act & Assert
-  //     assertThrows(RuntimeException.class, 
-  //         () -> userService.setUserParameters(1L, parameters));
-      
-  //     verify(userRepository, never()).save(any());
-  // }
-  
-  // @Test
-  // void setUserParameters_ValidatesGenderMappings() {
-  //     // Arrange
-  //     var parameters = new UserParametersRequestDTO("MALE", "FEMALE");
-  //     var newState = new UserStateType();
-  //     var verifiedLogType = new ActivityLogType();
-      
-  //     when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-  //     when(userStateTypesRepository.findByName("NEW")).thenReturn(Optional.of(newState));
-  //     when(activityLogTypeRepository.findByName("VERIFIED")).thenReturn(Optional.of(verifiedLogType));
-      
-  //     // Act
-  //     userService.setUserParameters(1L, parameters);
-      
-  //     // Assert
-  //     assertEquals("MALE", attributes.getGender());
-  //     assertEquals("FEMALE", preferences.getGender());
-  // }
 
   @Test
   void getGender_validId_returnsGender() {
@@ -362,9 +298,8 @@ public class UserServiceTest {
     Long userId = 1L;
     String base64Image = "data:image/png;base64," + Base64.getEncoder().encodeToString("testImage".getBytes());
 
-    User user = new User();
-    UserProfile profile = new UserProfile();
-    user.setProfile(profile);
+    User testuser = new User();
+    testuser.setProfile(new UserProfile());
 
     when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
@@ -379,11 +314,19 @@ public class UserServiceTest {
     Long userId = 1L;
     String invalidBase64Image = "invalidBase64";
 
+    User mockUser = new User();
+    UserProfile mockProfile = new UserProfile();
+    mockUser.setProfile(mockProfile);
+    when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+
+    ProfilePictureSettingsRequestDTO requestDTO = new ProfilePictureSettingsRequestDTO(invalidBase64Image);
     Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-      userService.saveProfilePicture(userId, new ProfilePictureSettingsRequestDTO(invalidBase64Image));
+        userService.saveProfilePicture(userId, requestDTO);
     });
 
     assertEquals("Invalid Base64 image data.", exception.getMessage());
+    verify(userRepository).findById(userId);
     verify(userRepository, never()).save(any(User.class));
   }
 
@@ -394,8 +337,9 @@ public class UserServiceTest {
 
     when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
+    ProfilePictureSettingsRequestDTO requestDTO = new ProfilePictureSettingsRequestDTO(base64Image);
     Exception exception = assertThrows(EntityNotFoundException.class, () -> {
-      userService.saveProfilePicture(userId, new ProfilePictureSettingsRequestDTO(base64Image));
+      userService.saveProfilePicture(userId, requestDTO);
     });
 
     assertEquals("User not found for ID: " + userId, exception.getMessage());

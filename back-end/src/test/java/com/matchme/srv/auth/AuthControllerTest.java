@@ -3,9 +3,7 @@ package com.matchme.srv.auth;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matchme.srv.dto.request.LoginRequestDTO;
 import com.matchme.srv.dto.request.SignupRequestDTO;
-import com.matchme.srv.model.user.UserRoleType;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-public class AuthControllerTest {
+class AuthControllerTest {
 
     @Mock
     private Authentication authentication;
@@ -39,14 +37,6 @@ public class AuthControllerTest {
     private static final String INVALID_EMAIL = "testexample.com";
     private static final String INVALID_PASSWORD = "test";
     private static final String INVALID_PHONE = "";
-
-    // Runs before running test(s)
-    @BeforeEach
-    void setup() {
-        //Role userRole =
-        new UserRoleType();
-        //userRole.setName(Role.UserRole.ROLE_USER);
-    }
 
     // Public routes
     @Test
@@ -96,14 +86,14 @@ public class AuthControllerTest {
 
     @Test
     void shouldSuccessfullySignUpAndIn() throws Exception {
-        String VALID_EMAIL = "signupandin@test.com";
-        String VALID_PASSWORD = "testtest";
-        String VALID_PHONE = "+372 5341 4494";
+        String validEmail = "signupandin@test.com";
+        String validPassword = "testtest";
+        String validPhone = "+372 5341 4494";
 
         SignupRequestDTO signUpRequest = new SignupRequestDTO();
-        signUpRequest.setEmail(VALID_EMAIL);
-        signUpRequest.setPassword(VALID_PASSWORD);
-        signUpRequest.setNumber(VALID_PHONE);
+        signUpRequest.setEmail(validEmail);
+        signUpRequest.setPassword(validPassword);
+        signUpRequest.setNumber(validPhone);
 
         mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -111,8 +101,8 @@ public class AuthControllerTest {
                 .andExpect(status().isCreated());
 
         LoginRequestDTO loginRequest = new LoginRequestDTO();
-        loginRequest.setEmail(VALID_EMAIL);
-        loginRequest.setPassword(VALID_PASSWORD);
+        loginRequest.setEmail(validEmail);
+        loginRequest.setPassword(validPassword);
 
         mockMvc.perform(post("/api/auth/signin")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -124,14 +114,14 @@ public class AuthControllerTest {
     // Tests duplicate email
     @Test
     void shouldReturnEmailAlreadyExists() throws Exception {
-        String VALID_EMAIL = "emailalreadyexists@test.com";
-        String VALID_PASSWORD = "testtest";
-        String VALID_PHONE = "+372 4556342";
+        String validEmail = "emailalreadyexists@test.com";
+        String validPassword = "testtest";
+        String validPhone = "+372 4556342";
 
         SignupRequestDTO signUpRequest = new SignupRequestDTO();
-        signUpRequest.setEmail(VALID_EMAIL);
-        signUpRequest.setPassword(VALID_PASSWORD);
-        signUpRequest.setNumber(VALID_PHONE);
+        signUpRequest.setEmail(validEmail);
+        signUpRequest.setPassword(validPassword);
+        signUpRequest.setNumber(validPhone);
 
         mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -148,13 +138,13 @@ public class AuthControllerTest {
     // Tests the @Email constraint (which seems to be useless since it only checks if @ is present)
     @Test
     void shouldReturnInvalidEmail() throws Exception {
-        String VALID_PASSWORD = "testtest";
-        String VALID_PHONE = "+372 3246543";
+        String validPassword = "testtest";
+        String validPhone = "+372 3246543";
 
         SignupRequestDTO signUpRequest = new SignupRequestDTO();
         signUpRequest.setEmail(INVALID_EMAIL);
-        signUpRequest.setPassword(VALID_PASSWORD);
-        signUpRequest.setNumber(VALID_PHONE);
+        signUpRequest.setPassword(validPassword);
+        signUpRequest.setNumber(validPhone);
         mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(signUpRequest)))
@@ -165,13 +155,13 @@ public class AuthControllerTest {
     // Tests the @Password constraint (which checks if the password is between 6 and 40 characters)
     @Test
     void shouldReturnInvalidPassword() throws Exception {
-        String VALID_EMAIL = "invalidpassword@test.com";
-        String VALID_PHONE = "+372 3563443";
+        String validEmail = "invalidpassword@test.com";
+        String validPhone = "+372 3563443";
 
         SignupRequestDTO signUpRequest = new SignupRequestDTO();
-        signUpRequest.setEmail(VALID_EMAIL);
+        signUpRequest.setEmail(validEmail);
         signUpRequest.setPassword(INVALID_PASSWORD);
-        signUpRequest.setNumber(VALID_PHONE);
+        signUpRequest.setNumber(validPhone);
         mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(signUpRequest)))
@@ -184,12 +174,12 @@ public class AuthControllerTest {
     // Could add length checking.
     @Test
     void shouldReturnInvalidPhoneNumber() throws Exception {
-        String VALID_EMAIL = "invalidphonenumber@test.com";
-        String VALID_PASSWORD = "testtest";
+        String validEmail = "invalidphonenumber@test.com";
+        String validPassword = "testtest";
 
         SignupRequestDTO signUpRequest = new SignupRequestDTO();
-        signUpRequest.setEmail(VALID_EMAIL);
-        signUpRequest.setPassword(VALID_PASSWORD);
+        signUpRequest.setEmail(validEmail);
+        signUpRequest.setPassword(validPassword);
         signUpRequest.setNumber(INVALID_PHONE);
         mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
