@@ -19,17 +19,16 @@ import org.springframework.stereotype.Component;
 
 import com.matchme.srv.security.jwt.JwtUtils;
 import com.matchme.srv.security.services.UserDetailsImpl;
+import lombok.RequiredArgsConstructor;
 
 
 @Component
+@RequiredArgsConstructor
 @Order(Ordered.HIGHEST_PRECEDENCE + 99)
 public class WebSocketAuthInterceptor implements ChannelInterceptor{
 
-  @Autowired
-  private JwtUtils jwtUtils;
-
-  @Autowired
-  private UserDetailsService userDetailsService;
+  private final JwtUtils jwtUtils;
+  private final UserDetailsService userDetailsService;
 
   @Override
   public Message<?> preSend(Message<?> message, MessageChannel channel) {

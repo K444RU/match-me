@@ -3,6 +3,7 @@ package com.matchme.srv.security;
 import com.matchme.srv.security.jwt.AuthEntryPointJwt;
 import com.matchme.srv.security.jwt.AuthTokenFilter;
 import com.matchme.srv.security.services.UserDetailsServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,13 +24,11 @@ import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class WebSecurityConfig {
 
-    @Autowired
-    UserDetailsServiceImpl userDetailsService;
-
-    @Autowired
-    private AuthEntryPointJwt unauthorizedHandler;
+    final UserDetailsServiceImpl userDetailsService;
+    private final AuthEntryPointJwt unauthorizedHandler;
 
     // This bean is used to filter requests and extract JWT tokens from the request headers.
     // It filters for JWT tokens in the Authorization header.
