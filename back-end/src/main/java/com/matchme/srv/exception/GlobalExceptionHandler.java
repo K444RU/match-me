@@ -92,8 +92,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
         public ResponseEntity<Map<String, String>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
         Map<String, String> error = new HashMap<>();
-        // For dev \/ shows backend shit
-        // error.put("Invalid payload", ex.getMessage());
         error.put("error", "Please check your input fields.");
         return ResponseEntity.badRequest().body(error);
     }
@@ -113,6 +111,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Void> handleGeneral(Exception ex) {
         log.error("Exception occurred: {}", ex.getMessage()/* , ex */);
+        return ResponseEntity.internalServerError().build();
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Void> handleAuthenticationException(AuthenticationException ex) {
+        log.error("AuthenticationException occurred: {}", ex.getMessage()/* , ex */);
         return ResponseEntity.internalServerError().build();
     }
 }
