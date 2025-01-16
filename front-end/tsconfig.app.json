@@ -32,5 +32,5 @@
       "@ui/*": ["src/components/ui/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "orval.config.ts"]
 }
