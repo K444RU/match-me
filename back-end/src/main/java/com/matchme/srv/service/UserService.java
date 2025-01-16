@@ -345,29 +345,25 @@ public class UserService {
 
   @Transactional
   public void saveProfilePicture(Long userId, ProfilePictureSettingsRequestDTO request) {
-
-    validateProfilePictureRequest(request);
-
-    String base64Part = extractBase64Part(request.getBase64Image());
-    byte[] imageBytes = decodeBase64Image(base64Part);
-
     User user = userRepository.findById(userId)
-            .orElseThrow(() -> new EntityNotFoundException("User not found for ID: " + userId));
+      .orElseThrow(() -> new EntityNotFoundException("User not found for ID: " + userId));
 
     UserProfile profile = user.getProfile();
     if (profile == null) {
-      profile = new UserProfile();
-      user.setProfile(profile);
+        profile = new UserProfile();
+        user.setProfile(profile);
     }
 
-    profile.setProfilePicture(imageBytes);
-    userRepository.save(user);
-  }
-
-  private void validateProfilePictureRequest(ProfilePictureSettingsRequestDTO request) {
+    // If request is null or base64Image is null/empty, remove the profile picture
     if (request == null || request.getBase64Image() == null || request.getBase64Image().isEmpty()) {
-      throw new IllegalArgumentException("Invalid base64 image data in the request.");
+        profile.setProfilePicture(null);
+    } else {
+    String base64Part = extractBase64Part(request.getBase64Image());
+    byte[] imageBytes = decodeBase64Image(base64Part);
+    profile.setProfilePicture(imageBytes);
     }
+
+    userRepository.save(user);
   }
 
   private String extractBase64Part(String base64Image) {

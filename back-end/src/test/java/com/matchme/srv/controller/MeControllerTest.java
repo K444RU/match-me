@@ -50,7 +50,7 @@ import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class MeControllerTest {
+class MeControllerTest {
 
     private MockMvc mockMvc;
 
@@ -199,7 +199,7 @@ public class MeControllerTest {
         BiographicalResponseDTO bioDTO = BiographicalResponseDTO.builder()
                 .gender_self(new GenderTypeDTO(genderSelf.getId(), genderSelf.getName()))
                 .gender_other(new GenderTypeDTO(genderOther.getId(), genderOther.getName()))
-                .hobbies(hobbies.stream().map(hobby -> hobby.getId()).collect(Collectors.toSet()))
+                .hobbies(hobbies.stream().map(Hobby::getId).collect(Collectors.toSet()))
                 .age_self(ageSelf).age_min(ageMin).age_max(ageMax).distance(distance)
                 .probability_tolerance(probabilityTolerance).build();
 
@@ -228,39 +228,37 @@ public class MeControllerTest {
     @Test
     void testGetConnections() throws Exception {
         // Given
-        Long req_userId = 1L;
-        String req_email = "user1@example.com";
-        String req_number = "+372 55445544";
+        Long requestingUserId = 1L;
+        String reqUserEmail = "user1@example.com";
+        String reqUserNumber = "+372 55445544";
 
-        Long target_userId = 2L;
-        String target_email = "user2@example.com";
-        String target_number = "+372 44554455";
+        Long targetUserId = 2L;
+        String targetUserEmail = "user2@example.com";
+        String targetUserNumber = "+372 44554455";
 
         Long connectionId = 1L;
 
-        setupAuthenticatedUser(req_userId, req_email);
+        setupAuthenticatedUser(requestingUserId, reqUserEmail);
 
-        List<ConnectionResponseDTO> connections = Arrays.asList(
-            new ConnectionResponseDTO(connectionId, Set.of(
-                new UserResponseDTO(target_userId, target_email, target_number),
-                new UserResponseDTO(req_userId, req_email, req_number)
-            ))
-        );
+        List<ConnectionResponseDTO> connections = Arrays.asList(new ConnectionResponseDTO(
+                connectionId,
+                Set.of(new UserResponseDTO(targetUserId, targetUserEmail, targetUserNumber),
+                        new UserResponseDTO(requestingUserId, reqUserEmail, reqUserNumber))));
 
-        when(connectionService.getConnectionResponseDTO(req_userId, req_userId))
-        .thenReturn(connections);
+        when(connectionService.getConnectionResponseDTO(requestingUserId, requestingUserId))
+                .thenReturn(connections);
 
         mockMvc.perform(get("/api/connections").principal(authentication)
                 .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(connectionId.intValue())))
                 .andExpect(jsonPath("$[0].id", is(connectionId.intValue())))
-                .andExpect(jsonPath("$[0].users[*].id", hasItem(req_userId.intValue())))
-                .andExpect(jsonPath("$[0].users[*].email", hasItem(req_email)))
-                .andExpect(jsonPath("$[0].users[*].number", hasItem(req_number)))
-                .andExpect(jsonPath("$[0].users[*].id", hasItem(target_userId.intValue())))
-                .andExpect(jsonPath("$[0].users[*].email", hasItem(target_email)))
-                .andExpect(jsonPath("$[0].users[*].number", hasItem(target_number)));
+                .andExpect(jsonPath("$[0].users[*].id", hasItem(requestingUserId.intValue())))
+                .andExpect(jsonPath("$[0].users[*].email", hasItem(reqUserEmail)))
+                .andExpect(jsonPath("$[0].users[*].number", hasItem(reqUserNumber)))
+                .andExpect(jsonPath("$[0].users[*].id", hasItem(targetUserId.intValue())))
+                .andExpect(jsonPath("$[0].users[*].email", hasItem(targetUserEmail)))
+                .andExpect(jsonPath("$[0].users[*].number", hasItem(targetUserNumber)));
     }
 
     @Test
@@ -400,6 +398,7 @@ public class MeControllerTest {
                 break;
             case 2:
                 genderType.setName("FEMALE");
+                break;
             default:
                 genderType.setName("OTHER");
                 break;

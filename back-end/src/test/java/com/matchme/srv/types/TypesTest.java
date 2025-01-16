@@ -33,7 +33,7 @@ import com.matchme.srv.repository.UserStateTypesRepository;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-public class TypesTest {
+class TypesTest {
 
     @Autowired
     private UserRoleTypeRepository roleRepository;
@@ -66,9 +66,9 @@ public class TypesTest {
     void testRolesInitialization() {
         List<UserRoleType> roles = roleRepository.findAll();
         assertEquals(3, roles.size());
-        assertTrue(roles.stream().anyMatch(role -> role.getName().toString().equals("ROLE_USER")));
-        assertTrue(roles.stream().anyMatch(role -> role.getName().toString().equals("ROLE_MODERATOR")));
-        assertTrue(roles.stream().anyMatch(role -> role.getName().toString().equals("ROLE_ADMIN")));
+        assertTrue(roles.stream().anyMatch(role -> role.getName().equals("ROLE_USER")));
+        assertTrue(roles.stream().anyMatch(role -> role.getName().equals("ROLE_MODERATOR")));
+        assertTrue(roles.stream().anyMatch(role -> role.getName().equals("ROLE_ADMIN")));
     }
 
     @Test

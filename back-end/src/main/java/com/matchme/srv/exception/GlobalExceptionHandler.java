@@ -117,6 +117,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Void> handleAuthenticationException(AuthenticationException ex) {
         log.error("AuthenticationException occurred: {}", ex.getMessage()/* , ex */);
-        return ResponseEntity.internalServerError().build();
+        return ResponseEntity.badRequest().build();
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Void> handleIllegalStateException(IllegalStateException ex) {
+        log.error("IllegalStateException occurred: {}", ex.getMessage()/* , ex */);
+        return ResponseEntity.badRequest().build();
     }
 }
