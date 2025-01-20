@@ -3,6 +3,7 @@ package com.matchme.srv.controller;
 import com.matchme.srv.dto.request.MessagesSendRequestDTO;
 import com.matchme.srv.dto.request.TypingStatusRequestDTO;
 import com.matchme.srv.dto.response.ChatMessageResponseDTO;
+import com.matchme.srv.dto.response.ChatPreviewResponseDTO;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.service.ChatService;
@@ -13,10 +14,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 
 import java.time.Instant;
+import java.util.List;
 
 /**
  * This controller handles the real-time WebSocket-based chat functionalities:
@@ -43,10 +46,19 @@ public class ChatWebSocketController {
      * Send a chat message from one user to another.
      * send the message payload to /app/chat.sendMessage.
      * <p>
-     * The controller:
+     * The process:
      * 1. Identifies the authenticated user (sender).
      * 2. Saves the message via chatService.
      * 3. Broadcasts the saved message to both the sender and the receiver.
+     * 4. Fetches updated chat previews for both participants.
+     * 5. Broadcasts the updated chat previews to both users.
+     * WebSocket destinations used:
+     * - "/user/{userId}/queue/messages": Sends the new message privately to each user.
+     * - "/user/{userId}/queue/previews": Sends the updated chat previews privately to each user.
+     * <p>
+     * This ensures that both users receive real-time updates for new messages and chat previews.
+     * @param messageDTO The message payload containing the connection ID and content.
+     * @param authentication The authentication object to retrieve the current user's details.
      */
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Payload MessagesSendRequestDTO messageDTO,
@@ -78,6 +90,21 @@ public class ChatWebSocketController {
                 otherUserId.toString(),
                 "/queue/messages",
                 savedMessage
+        );
+
+        List<ChatPreviewResponseDTO> senderPreviews = chatService.getChatPreviews(senderId);
+        List<ChatPreviewResponseDTO> otherUserPreviews = chatService.getChatPreviews(otherUserId);
+
+        messagingTemplate.convertAndSendToUser(
+                senderId.toString(),
+                "/queue/previews",
+                senderPreviews
+        );
+
+        messagingTemplate.convertAndSendToUser(
+                otherUserId.toString(),
+                "/queue/previews",
+                otherUserPreviews
         );
 
         log.debug("Broadcasting message ID: {} to users {} and {}",
@@ -133,4 +160,5 @@ public class ChatWebSocketController {
     *
     * }
     */
+
 }

@@ -3,6 +3,7 @@ package com.matchme.srv.controller;
 import com.matchme.srv.dto.response.ChatMessageResponseDTO;
 import com.matchme.srv.dto.response.ChatPreviewResponseDTO;
 import com.matchme.srv.model.user.User;
+import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.security.services.UserDetailsImpl;
 import com.matchme.srv.service.ChatService;
 import com.matchme.srv.service.UserService;
@@ -47,8 +48,12 @@ class ChatControllerTest {
     @Mock
     private Authentication authentication;
 
+    @Mock
+    private SecurityUtils securityUtils;
+
     @InjectMocks
     private ChatController chatController;
+
 
     @BeforeEach
     void setUp() {
@@ -62,6 +67,7 @@ class ChatControllerTest {
     void testGetChatPreviews() throws Exception {
         UserDetailsImpl userDetails = new UserDetailsImpl(1L, "user1@example.com", "password", Collections.emptySet());
         when(authentication.getPrincipal()).thenReturn(userDetails);
+        when(securityUtils.getCurrentUserId(any(Authentication.class))).thenReturn(1L);
 
         User mockUser = new User();
         mockUser.setId(1L);
@@ -94,6 +100,7 @@ class ChatControllerTest {
     void testGetChatMessages() throws Exception {
         UserDetailsImpl userDetails = new UserDetailsImpl(1L, "user1@example.com", "password", Collections.emptySet());
         when(authentication.getPrincipal()).thenReturn(userDetails);
+        when(securityUtils.getCurrentUserId(any(Authentication.class))).thenReturn(1L);
 
         Pageable pageable = PageRequest.of(0, 10);
         ChatMessageResponseDTO chatMessage = new ChatMessageResponseDTO(

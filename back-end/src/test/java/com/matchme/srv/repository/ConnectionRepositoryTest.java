@@ -39,7 +39,7 @@ class ConnectionRepositoryTest {
         connection.getUsers().add(user2);
         connectionRepository.save(connection);
 
-        List<Connection> connections = connectionRepository.findConnectionsByUserId(user1.getId());
+        List<Connection> connections = connectionRepository.findConnectionsByUserIdWithMessages(user1.getId());
 
         assertThat(connections).isNotEmpty();
         assertThat(connections.get(0).getUsers()).contains(user1, user2);
