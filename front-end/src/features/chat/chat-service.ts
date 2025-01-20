@@ -1,14 +1,25 @@
-// import { getChatController } from '@/api/chat-controller';
-
-// const chatController = getChatController();
+import { ChatPreviewResponseDTO } from '@/api/types';
+import { ChatPreview } from '@/types/api';
 
 export const chatService = {
   sendMessage: (message: string, to: number, from: string) => {
-      // to = connectionId
-  // from = authToken which will get turned into userId in backend
-  // We don't want to let the user pick sender himself.
-  console.log(message);
-  console.log(to);
-  console.log(from);
-  }
-}
+    console.log(message, to, from);
+  },
+
+  mapDtoToChatPreview: (dto: ChatPreviewResponseDTO): ChatPreview => {
+    return {
+      connectionId: dto.connectionId ?? 0,
+      participant: {
+        alias: dto.connectedUserAlias ?? '',
+        avatar: dto.connectedUserProfilePicture ?? '',
+        firstName: dto.connectedUserFirstName ?? '',
+        lastName: dto.connectedUserLastName ?? '',
+      },
+      lastMessage: {
+        content: dto.lastMessageContent ?? '',
+        sentAt: dto.lastMessageTimestamp ? Math.floor(new Date(dto.lastMessageTimestamp).getTime() / 1000) : 0,
+      },
+      unreadCount: dto.unreadMessageCount ?? 0,
+    };
+  },
+};

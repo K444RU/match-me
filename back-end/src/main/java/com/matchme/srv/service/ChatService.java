@@ -30,67 +30,114 @@ public class ChatService {
     public static final String EVENT_TYPE_SEND = "SEND";
 
     /**
-     * Fetches a list of chat previews for the given user.
-     * - Retrieves all chat connections for the user.
-     * - For each connection, determines the other participant and fetches details
-     * like their alias and the last message in the chat.
-     * - Counts unread messages for the user in each chat.
-     * - Sorts the chats by the timestamp of the last message, with the newest first.
-     * - https://docs.oracle.com/javase/8/docs/api/java/util/Comparator.html#compare-T-T-
-     * - Returns a list of chat previews, including the connection ID, alias,
-     * last message, and unread count.
+     * Retrieves chat previews for the specified user.
+     *<p>
+     * The method gathers an overview of all chat conversations for a user, including:
+     * - The connection ID and details of the other participant (alias, name, profile picture).
+     * - The last message exchanged in each chat along with its timestamp.
+     * - The count of unread messages per chat.
+     *<p>
+     * Process Overview:
+     * 1. Fetch all chat connections for the user.
+     * 2. For each connection:
+     *    - Identify the other participant.
+     *    - Retrieve the participant's profile details.
+     *    - Find the most recent message.
+     *    - Count unread messages where no "READ" event exists.
+     * 3. Sort the previews by the timestamp of the last message, with the newest first.
+     * 4. Return a list of `ChatPreviewResponseDTO` objects containing the compiled details.
+     *<p>
+     * @param userId The ID of the user for whom to fetch chat previews.
+     * @return A sorted list of chat previews for the user.
      */
+    @Transactional
     public List<ChatPreviewResponseDTO> getChatPreviews(Long userId) {
-
+        // 1) Fetch connections (without fetching messages)
         List<Connection> connections = connectionRepository.findConnectionsByUserId(userId);
         List<ChatPreviewResponseDTO> chatPreviews = new ArrayList<>();
 
+        // 2) Iterate over each connection
         for (Connection connection : connections) {
-            ChatPreviewResponseDTO chatPreview = new ChatPreviewResponseDTO();
-            chatPreview.setConnectionId(connection.getId());
-
-            Optional<User> optionalOtherParticipant = connection.getUsers().stream()
-                    .filter(user -> !user.getId().equals(userId))
-                    .findFirst();
-
-            if (optionalOtherParticipant.isEmpty()) {
+            User otherParticipant = findOtherParticipant(connection, userId);
+            if (otherParticipant == null) {
                 continue;
             }
 
-            User otherParticipant = optionalOtherParticipant.get();
-            chatPreview.setConnectedUserId(otherParticipant.getId());
-            chatPreview.setConnectedUserAlias(otherParticipant.getProfile().getAlias());
+            // Build the preview object
+            ChatPreviewResponseDTO preview = new ChatPreviewResponseDTO();
+            preview.setConnectionId(connection.getId());
+            preview.setConnectedUserId(otherParticipant.getId());
 
-            Set<UserMessage> messages = connection.getUserMessages();
-            if (!messages.isEmpty()) {
-                Optional<UserMessage> optionalLastMessage = messages.stream()
-                        .max(Comparator.comparing(UserMessage::getCreatedAt));
+            // Fill participant info (alias, name, picture)
+            fillParticipantDetails(preview, otherParticipant);
 
-                if (optionalLastMessage.isPresent()) {
-                    UserMessage lastMessage = optionalLastMessage.get();
-                    chatPreview.setLastMessageContent(lastMessage.getContent());
-                    chatPreview.setLastMessageTimestamp(lastMessage.getCreatedAt());
-                }
+            // Last message
+            UserMessage lastMessage = userMessageRepository
+                    .findTopByConnectionIdOrderByCreatedAtDesc(connection.getId());
+            if (lastMessage != null) {
+                preview.setLastMessageContent(lastMessage.getContent());
+                preview.setLastMessageTimestamp(lastMessage.getCreatedAt());
             }
 
-            int unreadMessageCount = (int) messages.stream()
-                    .filter(userMessage -> !userMessage.getUser().getId().equals(userId))
-                    .filter(userMessage -> userMessage.getMessageEvents().stream()
-                            .noneMatch(messageEvent -> EVENT_TYPE_READ.equals(messageEvent.getMessageEventType().getName())))
-                    .count();
+            // Unread count (DB-level query)
+            int unreadCount = userMessageRepository.countUnreadMessages(connection.getId(), userId);
+            preview.setUnreadMessageCount(unreadCount);
 
-            chatPreview.setUnreadMessageCount(unreadMessageCount);
-            chatPreviews.add(chatPreview);
+            chatPreviews.add(preview);
         }
 
-        chatPreviews.sort(
-                Comparator.comparing(
-                        ChatPreviewResponseDTO::getLastMessageTimestamp,
-                        Comparator.nullsLast(Comparator.reverseOrder())
-                )
-        );
+        // 3) Sort by lastMessageTimestamp descending (nulls last)
+        chatPreviews.sort(Comparator.comparing(
+                ChatPreviewResponseDTO::getLastMessageTimestamp,
+                Comparator.nullsLast(Comparator.reverseOrder())
+        ));
 
         return chatPreviews;
+    }
+
+    private User findOtherParticipant(Connection connection, Long currentUserId) {
+        return connection.getUsers().stream()
+                .filter(u -> !u.getId().equals(currentUserId))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private void fillParticipantDetails(ChatPreviewResponseDTO preview, User participant) {
+        if (participant.getProfile() == null) {
+            preview.setConnectedUserAlias("UNKNOWN_ALIAS");
+            return;
+        }
+
+        String alias = participant.getProfile().getAlias();
+        preview.setConnectedUserAlias(alias != null ? alias : "UNKNOWN_ALIAS");
+
+        preview.setConnectedUserFirstName(participant.getProfile().getFirst_name());
+        preview.setConnectedUserLastName(participant.getProfile().getLast_name());
+
+        byte[] picBytes = participant.getProfile().getProfilePicture();
+        String dataUrl = encodeImageToDataUrl(picBytes, "image/png");
+        if (dataUrl != null) {
+            preview.setConnectedUserProfilePicture(dataUrl);
+        }
+    }
+
+    /**
+     * Converts raw image bytes into a Data URL (data:[imageMimeType];base64,...)
+     * that can be directly used in <img> tags, etc.
+     *<p>
+     * Returns null if the byte array is null or empty.
+     * This helper method can be extended to handle multiple image formats or validations.
+     *
+     * @param imageBytes the raw bytes of the image
+     * @param imageMimeType the MIME type, e.g. "image/png", "image/jpeg"
+     * @return a data URL string, or null if imageBytes are empty
+     */
+    private String encodeImageToDataUrl(byte[] imageBytes, String imageMimeType) {
+        if (imageBytes == null || imageBytes.length == 0) {
+            return null;
+        }
+        return "data:" + imageMimeType + ";base64,"
+                + Base64.getEncoder().encodeToString(imageBytes);
     }
 
     /**
@@ -115,7 +162,7 @@ public class ChatService {
         return messages.map(message -> {
             User sender = message.getUser();
             return new ChatMessageResponseDTO(
-                    connection.getId(),
+                    connectionId,
                     message.getId(),
                     sender.getProfile().getAlias(),
                     message.getContent(),
@@ -123,6 +170,7 @@ public class ChatService {
             );
         });
     }
+
     /**
     * Saves a new chat message and creates a "SENT" event.
     * - Validates that the connection exists and the sender is a participant in it.
