@@ -73,15 +73,15 @@ const Attributes: React.FC<AttributesProps> = ({
     };
 
     return (
-        <div className="w-full max-w-md mx-auto bg-accent-200 p-6 shadow-md rounded-lg h-[78vh]">
+        <div className="mx-auto h-[78vh] w-full max-w-md rounded-lg bg-accent-200 p-6 shadow-md">
             <form
                 onSubmit={(e) => e.preventDefault()}
-                className="h-full flex flex-col"
+                className="flex h-full flex-col"
             >
                 <h2 className="border-b-2 border-accent text-center text-2xl font-bold text-text">
                     Personal Information
                 </h2>
-                <div className="flex flex-col gap-4 py-4 overflow-y-auto no-scrollbar h-full">
+                <div className="no-scrollbar flex h-full flex-col gap-4 overflow-y-auto py-4">
                     {error && <div className="text-sm text-red-500">{error}</div>}
 
                     {/* Names */}
@@ -230,7 +230,7 @@ const Attributes: React.FC<AttributesProps> = ({
                             }}
                         />
                         {loading && (
-                            <div className="absolute left-0 right-0 top-full mt-2 flex justify-center">
+                            <div className="absolute inset-x-0 top-full mt-2 flex justify-center">
                                 <MotionSpinner />
                             </div>
                         )}

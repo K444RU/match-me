@@ -27,7 +27,7 @@ const Login = ({ isLogin = false }) => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
               onClick={() => setShowOverlay(false)}
             ></motion.div>
             <motion.div
@@ -40,7 +40,7 @@ const Login = ({ isLogin = false }) => {
                 {isLogin ? 'Log in' : 'Create account'}
               </h2>
               <IoClose
-                className="absolute -right-3 -top-3 h-8 w-8 rounded-3xl bg-primary-300 p-1.5 text-primary-50 transition-colors hover:cursor-pointer hover:bg-primary-400"
+                className="absolute -right-3 -top-3 size-8 rounded-3xl bg-primary-300 p-1.5 text-primary-50 transition-colors hover:cursor-pointer hover:bg-primary-400"
                 onClick={() => setShowOverlay(false)}
               />
               {/* <p className="text-text-500">Enter your login details</p> */}

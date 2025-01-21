@@ -60,7 +60,7 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({
             <div className="flex flex-col items-center">
                 {image ? (
                     <div className="flex flex-col items-center">
-                        <div className="flex h-48 w-48 items-center justify-center rounded-lg bg-gray-200">
+                        <div className="flex size-48 items-center justify-center rounded-lg bg-gray-200">
                             <ReactAvatarEditor
                                 ref={editorRef}
                                 image={image}

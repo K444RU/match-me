@@ -15,7 +15,7 @@ const ThemeToggler = () => {
   if (!mounted) {
     return (
       <Button variant="ghost" size="icon">
-        <span className="h-4 w-4" />
+        <span className="size-4" />
       </Button>
     );
   }
