@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 @Order(Ordered.HIGHEST_PRECEDENCE + 99)
-public class WebSocketAuthInterceptor implements ChannelInterceptor{
+public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
   private final JwtUtils jwtUtils;
   private final UserDetailsService userDetailsService;
