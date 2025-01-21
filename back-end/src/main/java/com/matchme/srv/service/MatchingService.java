@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Service
+@SuppressWarnings("all")
 public class MatchingService {
 
     private final ConnectionRepository matchingRepository;
