@@ -1,5 +1,6 @@
 package com.matchme.srv.dto.request.settings;
 
+import com.matchme.srv.validation.annotations.ValidPhoneNumber;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -16,9 +17,8 @@ public class AccountSettingsRequestDTO {
     @Pattern(regexp = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", message = "Email format is invalid")
     private String email;
 
-    @NotBlank(message = "Phone number is required")
-    // TODO: add countrycode
-    // @Pattern(regexp = "^\\+?[1-9]\\d{1,14}$", message = "Phone number must follow E.164 format")
-    // @Size(min = 8, max = 15, message = "Phone number must be between 8 and 15 digits")
+    @NotBlank(message = "Phone number cannot be empty")
+    @Size(max = 20)
+    @ValidPhoneNumber
     private String number;
 }

@@ -100,7 +100,7 @@ export default function TestPage() {
     };
 
     return (
-        <div className="h-screen w-full bg-background-900 px-8 py-8">
+        <div className="h-screen w-full bg-background-900 p-8">
             <Card className="w-[350px] bg-white">
                 <CardHeader>
                     <CardTitle>Create project</CardTitle>

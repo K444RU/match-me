@@ -8,4 +8,6 @@ const HowItWorksSection = forwardRef<HTMLDivElement>((_, ref) => {
   );
 });
 
+HowItWorksSection.displayName = 'HowItWorksSection';
+
 export default HowItWorksSection;
