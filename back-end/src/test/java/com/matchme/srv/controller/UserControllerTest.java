@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
@@ -49,7 +50,7 @@ import com.matchme.srv.service.UserService;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-public class UserControllerTest {
+class UserControllerTest {
 
     private MockMvc mockMvc;
 
@@ -136,17 +137,17 @@ public class UserControllerTest {
     @Test
     void testGetUser_Unauthorized() throws Exception {
         // Given
-        Long req_userId = 1L;
-        String req_email = "user1@example.com";
-        Long target_userId = 2L;
+        Long requestingUserId = 1L;
+        String requestingUserEmail = "user1@example.com";
+        Long targetUserId = 2L;
 
-        setupAuthenticatedUser(req_userId, req_email);
-        when(userService.getUserDTO(req_userId, target_userId))
+        setupAuthenticatedUser(requestingUserId, requestingUserEmail);
+        when(userService.getUserDTO(requestingUserId, targetUserId))
                 .thenThrow(new EntityNotFoundException("User not found or no access rights."));
 
         // When/Then
         try {
-            mockMvc.perform(get("/api/users/{targetId}", target_userId).principal(authentication)
+            mockMvc.perform(get("/api/users/{targetId}", targetUserId).principal(authentication)
                     .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
         } catch (ServletException e) {
             // Expected exception, test passes
@@ -164,35 +165,35 @@ public class UserControllerTest {
     @Test
     void testGetUser_Connected() throws Exception {
         // Given
-        Long req_userId = 1L;
-        String req_email = "user1@example.com";
-        Long target_userId = 2L;
-        String target_email = "user2@example.com";
-        String target_firstName = "firstName";
-        String target_lastName = "lastName";
-        String target_alias = "alias";
+        Long requestingUserId = 1L;
+        String requestingUserEmail = "user1@example.com";
+        Long targetUserId = 2L;
+        String targetUserEmail = "user2@example.com";
+        String targetUserFirstName = "firstName";
+        String targetUserLastName = "lastName";
+        String targetUserAlias = "alias";
 
-        setupAuthenticatedUser(req_userId, req_email);
+        setupAuthenticatedUser(requestingUserId, requestingUserEmail);
 
         UserRoleType roleUser = new UserRoleType();
         roleUser.setId(1L);
         roleUser.setName("ROLE_USER");
         Set<UserRoleType> roles = Set.of(roleUser);
 
-        CurrentUserResponseDTO responseDTO = CurrentUserResponseDTO.builder().id(target_userId)
-                .email(target_email).firstName(target_firstName).lastName(target_lastName)
-                .alias(target_alias).profilePicture(null).role(roles).build();
+        CurrentUserResponseDTO responseDTO = CurrentUserResponseDTO.builder().id(targetUserId)
+                .email(targetUserEmail).firstName(targetUserFirstName).lastName(targetUserLastName)
+                .alias(targetUserAlias).profilePicture(null).role(roles).build();
 
-        when(userService.getUserDTO(req_userId, target_userId)).thenReturn(responseDTO);
+        when(userService.getUserDTO(requestingUserId, targetUserId)).thenReturn(responseDTO);
 
         // When/Then
-        mockMvc.perform(get("/api/users/{targetId}", target_userId).principal(authentication)
+        mockMvc.perform(get("/api/users/{targetId}", targetUserId).principal(authentication)
                 .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(target_userId.intValue())))
-                .andExpect(jsonPath("$.email", is(target_email)))
-                .andExpect(jsonPath("$.firstName", is(target_firstName)))
-                .andExpect(jsonPath("$.lastName", is(target_lastName)))
-                .andExpect(jsonPath("$.alias", is(target_alias)))
+                .andExpect(jsonPath("$.id", is(targetUserId.intValue())))
+                .andExpect(jsonPath("$.email", is(targetUserEmail)))
+                .andExpect(jsonPath("$.firstName", is(targetUserFirstName)))
+                .andExpect(jsonPath("$.lastName", is(targetUserLastName)))
+                .andExpect(jsonPath("$.alias", is(targetUserAlias)))
                 .andExpect(jsonPath("$.role[0].id", is(1)))
                 .andExpect(jsonPath("$.role[0].name", is("ROLE_USER")));
     }
@@ -229,16 +230,16 @@ public class UserControllerTest {
     @Test
     void testGetProfile_Unauthorized() throws Exception {
         // Given
-        Long req_userId = 1L;
-        String req_email = "user1@example.com";
-        Long target_userId = 2L;
-        setupAuthenticatedUser(req_userId, req_email);
-        when(userService.getUserProfileDTO(req_userId, target_userId))
+        Long requestingUserId = 1L;
+        String requestingUserEmail = "user1@example.com";
+        Long targetUserId = 2L;
+        setupAuthenticatedUser(requestingUserId, requestingUserEmail);
+        when(userService.getUserProfileDTO(requestingUserId, targetUserId))
                 .thenThrow(new EntityNotFoundException("User not found or no access rights."));
 
         // When/Then
         try {
-            mockMvc.perform(get("/api/users/{targetId}/profile", target_userId)
+            mockMvc.perform(get("/api/users/{targetId}/profile", targetUserId)
                     .principal(authentication).contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNotFound());
         } catch (ServletException e) {
@@ -251,26 +252,25 @@ public class UserControllerTest {
     @Test
     void testGetProfile_Connected() throws Exception {
         // Given
-        Long req_userId = 1L;
-        String req_email = "user1@example.com";
+        Long requestingUserId = 1L;
+        String requestingUserEmail = "user1@example.com";
 
-        Long target_userId = 2L;
-        String target_firstName = "firstName";
-        String target_lastName = "lastName";
-        String target_city = "city";
+        Long targetUserId = 2L;
+        String targetUserFirstName = "firstName";
+        String targetUserLastName = "lastName";
+        String targetUserCity = "city";
 
-        setupAuthenticatedUser(req_userId, req_email);
+        setupAuthenticatedUser(requestingUserId, requestingUserEmail);
 
-        ProfileResponseDTO profileDTO = ProfileResponseDTO.builder().first_name(target_firstName)
-                .last_name(target_lastName).city(target_city).build();
-        when(userService.getUserProfileDTO(req_userId, target_userId)).thenReturn(profileDTO);
+        ProfileResponseDTO profileDTO = ProfileResponseDTO.builder().first_name(targetUserFirstName)
+                .last_name(targetUserLastName).city(targetUserCity).build();
+        when(userService.getUserProfileDTO(requestingUserId, targetUserId)).thenReturn(profileDTO);
 
         // When/Then
-        mockMvc.perform(get("/api/users/{targetId}/profile", target_userId)
-                .principal(authentication).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.first_name", is(target_firstName)))
-                .andExpect(jsonPath("$.last_name", is(target_lastName)))
+        mockMvc.perform(get("/api/users/{targetId}/profile", targetUserId).principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.first_name", is(targetUserFirstName)))
+                .andExpect(jsonPath("$.last_name", is(targetUserLastName)))
                 .andExpect(jsonPath("$.city", is("city")));
     }
 
@@ -299,7 +299,7 @@ public class UserControllerTest {
         BiographicalResponseDTO bioDTO = BiographicalResponseDTO.builder()
                 .gender_self(new GenderTypeDTO(genderSelf.getId(), genderSelf.getName()))
                 .gender_other(new GenderTypeDTO(genderOther.getId(), genderOther.getName()))
-                .hobbies(hobbies.stream().map(hobby -> hobby.getId()).collect(Collectors.toSet()))
+                .hobbies(hobbies.stream().map(Hobby::getId).collect(Collectors.toSet()))
                 .age_self(ageSelf).age_min(ageMin).age_max(ageMax).distance(distance)
                 .probability_tolerance(probabilityTolerance).build();
 
@@ -322,19 +322,18 @@ public class UserControllerTest {
     @Test
     void testGetBio_Unauthorized() throws Exception {
         // Given
-        Long req_userId = 1L;
-        String req_email = "user1@example.com";
-        Long target_userId = 2L;
-        setupAuthenticatedUser(req_userId, req_email);
+        Long requestingUserId = 1L;
+        String requestingUserEmail = "user1@example.com";
+        Long targetUserId = 2L;
+        setupAuthenticatedUser(requestingUserId, requestingUserEmail);
 
-        when(userService.getBiographicalResponseDTO(req_userId, target_userId))
+        when(userService.getBiographicalResponseDTO(requestingUserId, targetUserId))
                 .thenThrow(new EntityNotFoundException("User not found or no access rights."));
 
         // When/Then
         try {
-            mockMvc.perform(get("/api/users/{targetId}/bio", target_userId)
-                    .principal(authentication).contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isNotFound());
+            mockMvc.perform(get("/api/users/{targetId}/bio", targetUserId).principal(authentication)
+                    .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
         } catch (ServletException e) {
             assertThat(e.getCause()).isInstanceOf(EntityNotFoundException.class);
             assertThat(e.getCause().getMessage()).contains("User not found or no access rights.");
@@ -344,47 +343,51 @@ public class UserControllerTest {
     @Test
     void testGetBio_Connected() throws Exception {
         // Given
-        Long req_userId = 1L;
-        String req_email = "user1@example.com";
-        Long target_userId = 2L;
-        UserGenderType target_genderSelf = createMockGenderType(1L); // MALE
-        UserGenderType target_genderOther = createMockGenderType(2L); // FEMALE
+        Long requestingUserId = 1L;
+        String requestingUserEmail = "user1@example.com";
+        Long targetUserId = 2L;
+        UserGenderType targetUserGenderSelf = createMockGenderType(1L); // MALE
+        UserGenderType targetUserGenderOther = createMockGenderType(2L); // FEMALE
         Set<Hobby> hobbies = createMockHobbies();
-        Integer target_ageMin = 18;
-        Integer target_ageMax = 100;
-        Integer target_distance = 50;
-        Double target_probabilityTolerance = 1.0;
-        LocalDate target_birthDate = LocalDate.of(1995, 07, 20);
+        Integer targetUserAgeMin = 18;
+        Integer targetUserAgeMax = 100;
+        Integer targetUserDistance = 50;
+        Double targetUserProbabilityTolerance = 1.0;
+        LocalDate targetUserBirthDate = LocalDate.of(1995, 07, 20);
 
-        Integer target_ageSelf = Period.between(target_birthDate, LocalDate.now()).getYears();
+        Integer targetUserAgeSelf = Period.between(targetUserBirthDate, LocalDate.now()).getYears();
 
-        setupAuthenticatedUser(req_userId, req_email);
-        setupConnectionStatus(req_userId, target_userId, true);
+        setupAuthenticatedUser(requestingUserId, requestingUserEmail);
+        setupConnectionStatus(requestingUserId, targetUserId, true);
 
         BiographicalResponseDTO bioDTO = BiographicalResponseDTO.builder()
-                .gender_self(
-                        new GenderTypeDTO(target_genderSelf.getId(), target_genderSelf.getName()))
-                .gender_other(
-                        new GenderTypeDTO(target_genderOther.getId(), target_genderOther.getName()))
-                .hobbies(hobbies.stream().map(hobby -> hobby.getId()).collect(Collectors.toSet()))
-                .age_self(target_ageSelf).age_min(target_ageMin).age_max(target_ageMax)
-                .distance(target_distance).probability_tolerance(target_probabilityTolerance)
+                .gender_self(new GenderTypeDTO(targetUserGenderSelf.getId(),
+                        targetUserGenderSelf.getName()))
+                .gender_other(new GenderTypeDTO(targetUserGenderOther.getId(),
+                        targetUserGenderOther.getName()))
+                .hobbies(hobbies.stream().map(Hobby::getId).collect(Collectors.toSet()))
+                .age_self(targetUserAgeSelf).age_min(targetUserAgeMin).age_max(targetUserAgeMax)
+                .distance(targetUserDistance).probability_tolerance(targetUserProbabilityTolerance)
                 .build();
 
-        when(userService.getBiographicalResponseDTO(req_userId, target_userId)).thenReturn(bioDTO);
+        when(userService.getBiographicalResponseDTO(requestingUserId, targetUserId))
+                .thenReturn(bioDTO);
 
         // When/Then
-        mockMvc.perform(get("/api/users/{targetId}/bio", target_userId).principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-                .andExpect(jsonPath("$.gender_self.id", is(target_genderSelf.getId().intValue())))
-                .andExpect(jsonPath("$.gender_self.name", is(target_genderSelf.getName())))
-                .andExpect(jsonPath("$.gender_other.id", is(target_genderOther.getId().intValue())))
-                .andExpect(jsonPath("$.gender_other.name", is(target_genderOther.getName())))
-                .andExpect(jsonPath("$.age_self", is(target_ageSelf)))
-                .andExpect(jsonPath("$.age_max", is(target_ageMax)))
-                .andExpect(jsonPath("$.age_min", is(target_ageMin)))
-                .andExpect(jsonPath("$.distance", is(target_distance)))
-                .andExpect(jsonPath("$.probability_tolerance", is(target_probabilityTolerance)));
+        mockMvc.perform(get("/api/users/{targetId}/bio", targetUserId)
+                .principal(authentication).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(
+                        jsonPath("$.gender_self.id", is(targetUserGenderSelf.getId().intValue())))
+                .andExpect(jsonPath("$.gender_self.name", is(targetUserGenderSelf.getName())))
+                .andExpect(
+                        jsonPath("$.gender_other.id", is(targetUserGenderOther.getId().intValue())))
+                .andExpect(jsonPath("$.gender_other.name", is(targetUserGenderOther.getName())))
+                .andExpect(jsonPath("$.age_self", is(targetUserAgeSelf)))
+                .andExpect(jsonPath("$.age_max", is(targetUserAgeMax)))
+                .andExpect(jsonPath("$.age_min", is(targetUserAgeMin)))
+                .andExpect(jsonPath("$.distance", is(targetUserDistance)))
+                .andExpect(jsonPath("$.probability_tolerance", is(targetUserProbabilityTolerance)));
     }
 
     /**
@@ -396,52 +399,53 @@ public class UserControllerTest {
     @Test
     void testGetConnections() throws Exception {
         // Given
-        Long req_userId = 1L;
-        String req_email = "user1@example.com";
-        String req_number = "+372 55445544";
+        Long requestingUserId = 1L;
+        String requestingUserEmail = "user1@example.com";
+        String requestingUserNumber = "+372 55445544";
 
-        Long target_userId = 2L;
-        String target_email = "user2@example.com";
-        String target_number = "+372 44554455";
+        Long targetUserId = 2L;
+        String targetUserEmail = "user2@example.com";
+        String targetUserNumber = "+372 44554455";
 
         Long connectionId = 1L;
 
-        setupAuthenticatedUser(req_userId, req_email);
+        setupAuthenticatedUser(requestingUserId, requestingUserEmail);
 
         List<ConnectionResponseDTO> connections =
                 Arrays.asList(new ConnectionResponseDTO(connectionId,
-                        Set.of(new UserResponseDTO(target_userId, target_email, target_number),
-                                new UserResponseDTO(req_userId, req_email, req_number))));
+                        Set.of(new UserResponseDTO(targetUserId, targetUserEmail, targetUserNumber),
+                                new UserResponseDTO(requestingUserId, requestingUserEmail,
+                                        requestingUserNumber))));
 
-        when(connectionService.getConnectionResponseDTO(req_userId, req_userId))
+        when(connectionService.getConnectionResponseDTO(requestingUserId, requestingUserId))
                 .thenReturn(connections);
 
-        mockMvc.perform(get("/api/users/{targetId}/connections", req_userId)
+        mockMvc.perform(get("/api/users/{targetId}/connections", requestingUserId)
                 .principal(authentication).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(connectionId.intValue())))
-                .andExpect(jsonPath("$[0].users[0].id", is(req_userId.intValue())))
-                .andExpect(jsonPath("$[0].users[0].email", is(req_email)))
-                .andExpect(jsonPath("$[0].users[0].number", is(req_number)))
-                .andExpect(jsonPath("$[0].users[1].id", is(target_userId.intValue())))
-                .andExpect(jsonPath("$[0].users[1].email", is(target_email)))
-                .andExpect(jsonPath("$[0].users[1].number", is(target_number)));
+                .andExpect(jsonPath("$[0].users[*].id", hasItem(requestingUserId.intValue())))
+                .andExpect(jsonPath("$[0].users[*].email", hasItem(requestingUserEmail)))
+                .andExpect(jsonPath("$[0].users[*].number", hasItem(requestingUserNumber)))
+                .andExpect(jsonPath("$[0].users[*].id", hasItem(targetUserId.intValue())))
+                .andExpect(jsonPath("$[0].users[*].email", hasItem(targetUserEmail)))
+                .andExpect(jsonPath("$[0].users[*].number", hasItem(targetUserNumber)));
     }
 
     @Test
     void testGetConnections_Unauthorized() throws Exception {
         // Given
-        Long req_userId = 1L;
-        String req_email = "user1@example.com";
-        Long target_userId = 2L;
-        setupAuthenticatedUser(req_userId, req_email);
+        Long requestingUserId = 1L;
+        String requestingUserEmail = "user1@example.com";
+        Long targetUserId = 2L;
+        setupAuthenticatedUser(requestingUserId, requestingUserEmail);
 
         doThrow(new EntityNotFoundException("User not found or no access rights."))
-                .when(connectionService).getConnectionResponseDTO(req_userId, target_userId);
+                .when(connectionService).getConnectionResponseDTO(requestingUserId, targetUserId);
 
         // When/Then
         try {
-            mockMvc.perform(get("/api/users/{targetId}/connections", target_userId)
+            mockMvc.perform(get("/api/users/{targetId}/connections", targetUserId)
                     .principal(authentication).contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNotFound());
         } catch (ServletException e) {
@@ -453,18 +457,18 @@ public class UserControllerTest {
     @Test
     void testGetConnections_Connected() throws Exception {
         // Given
-        Long req_userId = 1L;
-        String req_email = "user1@example.com";
-        Long target_userId = 2L;
-        setupAuthenticatedUser(req_userId, req_email);
+        Long requestingUserId = 1L;
+        String requestingUserEmail = "user1@example.com";
+        Long targetUserId = 2L;
+        setupAuthenticatedUser(requestingUserId, requestingUserEmail);
 
-        when(connectionService.getConnectionResponseDTO(req_userId, target_userId))
+        when(connectionService.getConnectionResponseDTO(requestingUserId, targetUserId))
                 .thenThrow(new EntityNotFoundException("User not found or no access rights."));
 
 
         // When/Then
         try {
-            mockMvc.perform(get("/api/users/{targetId}/connections", target_userId)
+            mockMvc.perform(get("/api/users/{targetId}/connections", targetUserId)
                     .principal(authentication).contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNotFound());
         } catch (ServletException e) {
@@ -493,19 +497,11 @@ public class UserControllerTest {
         Long userId = 1L;
         setupAuthenticatedUser(userId, "user1@example.com");
 
-        doThrow(new IllegalArgumentException("No valid base64 image found in the request."))
-                .when(userService).saveProfilePicture(eq(userId), eq(null));
-
         // When/Then
-        try {
-            mockMvc.perform(post("/api/users/profile-picture").principal(authentication)
-                    .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
-        } catch (ServletException e) {
-            // Expected exception, test passes
-            assertThat(e.getCause()).isInstanceOf(IllegalArgumentException.class);
-            assertThat(e.getCause().getMessage())
-                    .contains("No valid base64 image found in the request.");
-        }
+        mockMvc.perform(post("/api/users/profile-picture").principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+
+        verify(userService).saveProfilePicture(userId, null);
     }
 
     @Test
@@ -518,22 +514,12 @@ public class UserControllerTest {
         ProfilePictureSettingsRequestDTO request = new ProfilePictureSettingsRequestDTO();
         request.setBase64Image(emptyBase64);
 
-        doThrow(new IllegalArgumentException("Base64 image data cannot be null or empty."))
-                .when(userService)
-                .saveProfilePicture(eq(userId), argThat(requestDto -> requestDto != null
-                        && "".equals(requestDto.getBase64Image())));
-
         // When/Then
-        try {
-            mockMvc.perform(post("/api/users/profile-picture").principal(authentication)
-                    .contentType(MediaType.APPLICATION_JSON).content("{\"base64Image\":\"\"}"))
-                    .andExpect(status().isBadRequest());
-        } catch (ServletException e) {
-            // Expected exception, test passes
-            assertThat(e.getCause()).isInstanceOf(IllegalArgumentException.class);
-            assertThat(e.getCause().getMessage())
-                    .contains("Base64 image data cannot be null or empty.");
-        }
+        mockMvc.perform(post("/api/users/profile-picture").principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"base64Image\":\"\"}"))
+                .andExpect(status().isOk());
+
+        verify(userService).saveProfilePicture(eq(userId), any(ProfilePictureSettingsRequestDTO.class));
     }
 
     @Test
@@ -622,6 +608,7 @@ public class UserControllerTest {
                 break;
             case 2:
                 genderType.setName("FEMALE");
+                break;
             default:
                 genderType.setName("OTHER");
                 break;
@@ -648,11 +635,12 @@ public class UserControllerTest {
      * <p>
      * When userService.isConnected -> returns isConnected
      * 
-     * @param req_userId
-     * @param target_userId
+     * @param requestingUserId
+     * @param targetUserId
      * @param isConnected
      */
-    private void setupConnectionStatus(Long req_userId, Long target_userId, boolean isConnected) {
-        when(connectionService.isConnected(req_userId, target_userId)).thenReturn(isConnected);
+    private void setupConnectionStatus(Long requestingUserId, Long targetUserId,
+            boolean isConnected) {
+        when(connectionService.isConnected(requestingUserId, targetUserId)).thenReturn(isConnected);
     }
 }

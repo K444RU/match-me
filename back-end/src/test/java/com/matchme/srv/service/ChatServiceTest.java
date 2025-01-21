@@ -87,7 +87,7 @@ class ChatServiceTest {
         ChatPreviewResponseDTO preview = chatPreviews.get(0);
         assertThat(preview.getConnectedUserAlias()).isEqualTo("TestNickName123321");
         assertThat(preview.getLastMessageContent()).isEqualTo("Hello!");
-        assertThat(preview.getUnreadMessageCount()).isEqualTo(0);
+        assertThat(preview.getUnreadMessageCount()).isZero();
     }
 
     @Test
@@ -119,10 +119,11 @@ class ChatServiceTest {
 
         when(connectionRepository.findById(connectionId)).thenReturn(Optional.of(connection));
 
-        when(userMessageRepository.findByConnectionIdOrderByCreatedAtDesc(anyLong(), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(userMessage)));
+        when(userMessageRepository.findByConnectionIdOrderByCreatedAtDesc(anyLong(),
+                any(Pageable.class))).thenReturn(new PageImpl<>(List.of(userMessage)));
 
-        Page<ChatMessageResponseDTO> result = chatService.getChatMessages(connectionId, userId, PageRequest.of(0, 10));
+        Page<ChatMessageResponseDTO> result =
+                chatService.getChatMessages(connectionId, userId, PageRequest.of(0, 10));
 
         assertThat(result.getContent()).hasSize(1);
         ChatMessageResponseDTO messageDTO = result.getContent().get(0);
@@ -141,8 +142,9 @@ class ChatServiceTest {
 
         when(connectionRepository.findById(connectionId)).thenReturn(Optional.of(connection));
 
+        PageRequest pageRequest = PageRequest.of(0, 10);
         assertThrows(RuntimeException.class, () -> {
-            chatService.getChatMessages(connectionId, userId, PageRequest.of(0, 10));
+            chatService.getChatMessages(connectionId, userId, pageRequest);
         });
     }
 
@@ -159,10 +161,11 @@ class ChatServiceTest {
         connection.setUsers(Set.of(user1));
 
         when(connectionRepository.findById(connectionId)).thenReturn(Optional.of(connection));
-        when(userMessageRepository.findByConnectionIdOrderByCreatedAtDesc(anyLong(), any(Pageable.class)))
-                .thenReturn(Page.empty());
+        when(userMessageRepository.findByConnectionIdOrderByCreatedAtDesc(anyLong(),
+                any(Pageable.class))).thenReturn(Page.empty());
 
-        Page<ChatMessageResponseDTO> result = chatService.getChatMessages(connectionId, userId, PageRequest.of(0, 10));
+        Page<ChatMessageResponseDTO> result =
+                chatService.getChatMessages(connectionId, userId, PageRequest.of(0, 10));
 
         assertThat(result.getContent()).isEmpty();
     }
@@ -193,7 +196,8 @@ class ChatServiceTest {
         when(connectionRepository.findById(connectionId)).thenReturn(Optional.of(connection));
         when(userMessageRepository.save(any(UserMessage.class))).thenReturn(userMessage);
 
-        ChatMessageResponseDTO response = chatService.saveMessage(connectionId, senderId, content, timestamp);
+        ChatMessageResponseDTO response =
+                chatService.saveMessage(connectionId, senderId, content, timestamp);
 
         assertThat(response.getMessageId()).isEqualTo(1L);
         assertThat(response.getConnectionId()).isEqualTo(101L);
