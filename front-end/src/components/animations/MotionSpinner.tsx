@@ -19,4 +19,6 @@ const MotionSpinner = forwardRef((_props, _ref) => {
   );
 });
 
+MotionSpinner.displayName = "MotionSpinner"
+
 export default MotionSpinner;

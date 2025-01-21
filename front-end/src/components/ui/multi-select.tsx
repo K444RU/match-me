@@ -153,6 +153,7 @@ const CommandEmpty = forwardRef<
     <div
       ref={forwardedRef}
       className={cn('py-6 text-center text-sm', className)}
+      // eslint-disable-next-line react/no-unknown-property
       cmdk-empty=""
       role="presentation"
       {...props}
@@ -427,7 +428,7 @@ const MultipleSelector = React.forwardRef<
 
     // Create a structure that includes group headers in the virtualization
     const virtualItems = React.useMemo(() => {
-      const items: { type: 'group' | 'item'; data: any; groupKey?: string }[] =
+      const items: { type: 'group' | 'item'; data: string | Option; groupKey?: string }[] =
         [];
 
       Object.entries(selectables).forEach(([groupKey, options]) => {
@@ -519,7 +520,7 @@ const MultipleSelector = React.forwardRef<
                     }}
                     onClick={() => handleUnselect(option)}
                   >
-                    <X className="hover:text-foreground h-3 w-3 text-muted-foreground" />
+                    <X className="hover:text-foreground size-3 text-muted-foreground" />
                   </button>
                 </Badge>
               );
@@ -542,7 +543,9 @@ const MultipleSelector = React.forwardRef<
               }}
               onFocus={(event) => {
                 setOpen(true);
-                triggerSearchOnFocus && onSearch?.(debouncedSearchTerm);
+                if (triggerSearchOnFocus) {
+                  onSearch?.(debouncedSearchTerm);
+                }
                 inputProps?.onFocus?.(event);
               }}
               placeholder={
@@ -567,7 +570,7 @@ const MultipleSelector = React.forwardRef<
                 onChange?.(selected.filter((s) => s.fixed));
               }}
               className={cn(
-                'absolute right-0 h-6 w-6 p-0',
+                'absolute right-0 size-6 p-0',
                 (hideClearAllButton ||
                   disabled ||
                   selected.length < 1 ||
@@ -583,7 +586,7 @@ const MultipleSelector = React.forwardRef<
           {open && (
             <CommandList
               ref={commandListRef}
-              className="bg-popover text-popover-foreground animate-in absolute top-1 z-10 max-h-[300px] w-full overflow-auto rounded-md border shadow-md outline-none"
+              className="animate-in absolute top-1 z-10 max-h-[300px] w-full overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md outline-none"
               onMouseLeave={() => setOnScrollbar(false)}
               onMouseEnter={() => setOnScrollbar(true)}
               onMouseUp={() => inputRef?.current?.focus()}
@@ -607,7 +610,7 @@ const MultipleSelector = React.forwardRef<
                     {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                       const item = virtualItems[virtualRow.index];
 
-                      if (item.type === 'group') {
+                      if (item.type === 'group' && typeof item.data === 'string') {
                         return (
                           <CommandGroup
                             key={`group-${item.data}`}
@@ -624,6 +627,8 @@ const MultipleSelector = React.forwardRef<
                       }
 
                       return (
+                        <>
+                        {item.type === 'item' && typeof item.data !== 'string' && (
                         <CommandItem
                           key={item.data.value}
                           value={item.data.label}
@@ -647,8 +652,9 @@ const MultipleSelector = React.forwardRef<
                             }
                             setInputValue('');
                             const newOptions = [...selected, item.data];
-                            setSelected(newOptions);
-                            onChange?.(newOptions);
+                            const validOptions = newOptions.filter((opt): opt is Option => typeof opt !== 'string');
+                              setSelected(validOptions);
+                              onChange?.(validOptions);
                           }}
                           className={cn(
                             'absolute w-full cursor-pointer',
@@ -658,6 +664,8 @@ const MultipleSelector = React.forwardRef<
                         >
                           {item.data.label}
                         </CommandItem>
+                      )}
+                        </>
                       );
                     })}
                   </CommandGroup>

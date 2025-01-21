@@ -40,7 +40,7 @@ export default function OpenChat() {
 
     return (
         <div className="flex w-full flex-col bg-background-400 px-4 pb-4 sm:px-6 md:px-8">
-            <div className="mt-4 h-full w-full overflow-y-scroll">
+            <div className="mt-4 size-full overflow-y-scroll">
                 {connectionChats.map((msg, index) => (
                     <Message
                         key={index}
