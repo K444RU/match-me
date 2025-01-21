@@ -30,18 +30,21 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
   private final JwtUtils jwtUtils;
   private final UserDetailsService userDetailsService;
 
+  private static final String AUTHORIZATION_HEADER = "Authorization";
+  private static final String BEARER_PREFIX = "Bearer ";
+
   @Override
   public Message<?> preSend(@NonNull Message<?> message, @NonNull MessageChannel channel) {
     StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
     if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
       
-      String authToken = accessor.getFirstNativeHeader("Authorization");
+      String authToken = accessor.getFirstNativeHeader(AUTHORIZATION_HEADER);
       if (authToken == null || authToken.isEmpty()) {
         throw new AuthenticationException("No auth token provided");
       }
 
-      if (authToken.startsWith("Bearer ")) {
+      if (authToken.startsWith(BEARER_PREFIX)) {
         authToken = authToken.substring(7);
       }
 
