@@ -36,36 +36,44 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
   @Override
   public Message<?> preSend(@NonNull Message<?> message, @NonNull MessageChannel channel) {
     StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-
     if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
-      
-      String authToken = accessor.getFirstNativeHeader(AUTHORIZATION_HEADER);
-      if (authToken == null || authToken.isEmpty()) {
-        throw new AuthenticationException("No auth token provided");
-      }
-
-      if (authToken.startsWith(BEARER_PREFIX)) {
-        authToken = authToken.substring(7);
-      }
-
-      try {
-        if (!jwtUtils.validateJwtToken(authToken)) {
-          throw new AuthenticationException("Invalid JWT token");
-        }
-
-        String username = jwtUtils.getUserNameFromJwtToken(authToken);
-
-        List<GrantedAuthority> authorities = jwtUtils.getAuthoritiesFromJwtToken(authToken);
-        UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(username);
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
-
-        accessor.setUser(authentication);
-      } catch (Exception e) {
-        throw new AuthenticationException("Authentication failed:" + e.getMessage());
-      }
+      processAuthentication(accessor);
     }
     return message;
   }
+
+  private void processAuthentication(StompHeaderAccessor accessor) {
+    String authToken = extractToken(accessor);
+    try {
+      validateToken(authToken);
+      UsernamePasswordAuthenticationToken authentication = createAuthentication(authToken);
+      accessor.setUser(authentication);
+    } catch (Exception e) {
+      throw new AuthenticationException("Authentication failed: " + e.getMessage());
+    }
+  }
+
+  private String extractToken(StompHeaderAccessor accessor) {
+    String authToken = accessor.getFirstNativeHeader(AUTHORIZATION_HEADER);
+    if (authToken == null || authToken.isEmpty()) {
+      throw new AuthenticationException("No auth token provided");
+    }
+    return authToken.startsWith(BEARER_PREFIX) ? authToken.substring(7) : authToken;
+  }
+
+  private void validateToken(String token) {
+    if (!jwtUtils.validateJwtToken(token)) {
+      throw new AuthenticationException("Invalid JWT token");
+    }
+  }
+
+  private UsernamePasswordAuthenticationToken createAuthentication(String token) {
+    String username = jwtUtils.getUserNameFromJwtToken(token);
+    List<GrantedAuthority> authorities = jwtUtils.getAuthoritiesFromJwtToken(token);
+    UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(username);
+    return new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+  }
+
 }
 
 
