@@ -22,6 +22,17 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
   private final WebSocketAuthInterceptor webSocketAuthInterceptor;
 
+  private static final String WS_ENDPOINT = "/ws";
+  private static final String CSRF_TOKEN_ATTR = "CSRF_TOKEN";
+  private static final String[] ALLOWED_ORIGINS = {
+      "http://localhost:8000", 
+      "http://localhost:3000", 
+      "http://127.0.0.1:3000"
+  };
+  private static final String APPLICATION_DESTINATION_PREFIX = "/app";
+  private static final String USER_DESTINATION_PREFIX = "/user";
+  private static final String[] SIMPLE_BROKER_DESTINATIONS = {"/topic", USER_DESTINATION_PREFIX};
+
   @Override
   public void configureClientInboundChannel(@NonNull ChannelRegistration registration) {
     registration.interceptors(webSocketAuthInterceptor);
@@ -29,15 +40,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
   
   @Override
   public void configureMessageBroker(@NonNull MessageBrokerRegistry config) {
-    config.enableSimpleBroker("/topic", "/user"); // the client subscribes
-    config.setApplicationDestinationPrefixes("/app"); //These go to server
-    config.setUserDestinationPrefix("/user");
+    config.enableSimpleBroker(SIMPLE_BROKER_DESTINATIONS); // the client subscribes
+    config.setApplicationDestinationPrefixes(APPLICATION_DESTINATION_PREFIX); //These go to server
+    config.setUserDestinationPrefix(USER_DESTINATION_PREFIX);
   }
 
   @Override
   public void registerStompEndpoints(@NonNull StompEndpointRegistry registry) {
-    registry.addEndpoint("/ws") //connects to the configured endpoint here
-      .setAllowedOrigins("http://localhost:8000", "http://localhost:3000", "http://127.0.0.1:3000")
+    registry.addEndpoint(WS_ENDPOINT) //connects to the configured endpoint here
+      .setAllowedOrigins(ALLOWED_ORIGINS)
       .withSockJS()
       .setSessionCookieNeeded(true);
   }
@@ -48,7 +59,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
       @Override
       public void afterConnectionEstablished(@NonNull WebSocketSession session) throws Exception {
         String csrfToken = UUID.randomUUID().toString();
-        session.getAttributes().put("CSRF_TOKEN", csrfToken);
+        session.getAttributes().put(CSRF_TOKEN_ATTR, csrfToken);
         super.afterConnectionEstablished(session);
       }
     };
