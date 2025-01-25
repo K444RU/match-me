@@ -3,12 +3,19 @@
     "front-end": {
       "component": "front-end",
       "release-type": "node",
-      "package-name": "match-me-frontend"
+      "package-name": "match-me-frontend",
+      "versionFile": "front-end/package.json"
     },
     "back-end": {
       "component": "back-end",
       "release-type": "maven",
-      "package-name": "srv"
+      "package-name": "srv",
+      "handleSnapshotRelease": "maven-snapshot",
+      "versionFile": "back-end/pom.xml"
     }
-  }
+  },
+  "bumpMinorPreMajor": true,
+  "plugins": ["node-workspace", "maven-workspace"],
+  "snapshot": true,
+  "pullRequestTitlePattern": "chore: release ${branch}"
 }
