@@ -15,10 +15,7 @@
       "release-type": "maven",
       "path": "back-end",
       "package-name": "srv",
-      "changelog-path": "back-end/CHANGELOG.md",
-      "extra-files": [
-        "./.release-please-manifest.json"
-      ]
+      "changelog-path": "back-end/CHANGELOG.md"
     }
   }
 }
