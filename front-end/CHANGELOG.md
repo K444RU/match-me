@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/karlromets/match-me/compare/front-end-v0.1.0...front-end-v0.2.0) (2025-01-25)
+
+
+### Features
+
+* **errorboundary:** update string ([ebdd45e](https://github.com/karlromets/match-me/commit/ebdd45e30f5e2bc4f56eaa8e1a7ca8f9c5518102))
+
 ## [0.1.0](https://github.com/karlromets/match-me/compare/front-end-v0.0.8...front-end-v0.1.0) (2025-01-25)
 
 
