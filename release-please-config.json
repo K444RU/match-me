@@ -7,15 +7,15 @@
       "component": "front-end",
       "release-type": "node",
       "path": "front-end",
-      "package-name": "match-me-frontend"
+      "package-name": "match-me-frontend",
+      "changelog-path": "front-end/CHANGELOG.md"
     },
     "back-end": {
       "component": "back-end",
       "release-type": "maven",
       "path": "back-end",
       "package-name": "srv",
-      "handleSnapshotRelease": "maven-snapshot",
-      "snapshotLabel": "SNAPSHOT"
+      "changelog-path": "back-end/CHANGELOG.md"
     }
   }
 }
