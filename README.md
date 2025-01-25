@@ -1,11 +1,20 @@
-### Blind
+# Blind
 
-Amazing...
+A modern matching platform for connecting people.
 
-wooow.
+## Features
 
-release! please!!!
+- 🚀 Spring Boot backend with OpenAPI documentation
+- ⚛️ React frontend with Tailwind CSS
+- 🔐 JWT authentication system
+- 💬 Real-time chat functionality
 
-## release! please!!!
+## Getting Started
 
-#### MAYBE
+### Prerequisites
+
+- Docker
+
+### Installation
+
+1. Run docker
