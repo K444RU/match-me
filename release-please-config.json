@@ -1,17 +1,14 @@
 {
-    "packages": {
-      "frontend": {
-        "component": "frontend",
-        "release-type": "node",
-        "package-name": "match-me-frontend",
-        "path": "front-end"
-      },
-      "backend": {
-        "component": "backend",
-        "release-type": "maven",
-        "package-name": "srv",
-        "path": "back-end"
-      }
+  "packages": {
+    "front-end": {
+      "component": "frontend",
+      "release-type": "node",
+      "package-name": "match-me-frontend"
+    },
+    "back-end": {
+      "component": "backend",
+      "release-type": "maven",
+      "package-name": "srv"
     }
   }
-  
+}
