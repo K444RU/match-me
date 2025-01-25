@@ -12,6 +12,8 @@ public class OpenApiConfig {
     // use Reusable Enums for Swagger generation:
     // see https://springdoc.org/#how-can-i-apply-enumasref-true-to-all-enums
     io.swagger.v3.core.jackson.ModelResolver.enumsAsRef = true;
+
+    // Testing releaseplease
   }
 
   // ... you can also describe your api bellow
