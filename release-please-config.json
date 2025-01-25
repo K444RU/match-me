@@ -1,12 +1,12 @@
 {
   "packages": {
     "front-end": {
-      "component": "frontend",
+      "component": "front-end",
       "release-type": "node",
       "package-name": "match-me-frontend"
     },
     "back-end": {
-      "component": "backend",
+      "component": "back-end",
       "release-type": "maven",
       "package-name": "srv"
     }
