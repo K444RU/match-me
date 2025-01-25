@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import com.matchme.srv.dto.request.settings.*;
+import com.matchme.srv.exception.ImageValidationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -71,6 +72,7 @@ public class UserService {
   private static final String USER_NOT_FOUND_MESSAGE = "User not found!";
   private static final String VERIFIED = "VERIFIED";
   private static final String CREATED = "CREATED";
+  private static final long MAX_IMAGE_SIZE = 5L * 1024 * 1024;
 
   public UserRoleType getDefaultRole() {
 
@@ -276,7 +278,7 @@ public class UserService {
             .map(hobbyId -> hobbyRepository.findById(hobbyId)
                 .orElseThrow(() -> new EntityNotFoundException("Hobby not found with id: " + hobbyId)))
             .collect(Collectors.toSet());
-        
+
         profile.setHobbies(foundHobbies);
     } else {
         profile.setHobbies(new HashSet<>());
@@ -358,9 +360,14 @@ public class UserService {
     if (request == null || request.getBase64Image() == null || request.getBase64Image().isEmpty()) {
         profile.setProfilePicture(null);
     } else {
-    String base64Part = extractBase64Part(request.getBase64Image());
-    byte[] imageBytes = decodeBase64Image(base64Part);
-    profile.setProfilePicture(imageBytes);
+      validateImageFormat(request.getBase64Image());
+
+      String base64Part = extractBase64Part(request.getBase64Image());
+      byte[] imageBytes = decodeBase64Image(base64Part);
+
+      validateImageSize(imageBytes);
+
+      profile.setProfilePicture(imageBytes);
     }
 
     userRepository.save(user);
@@ -374,12 +381,32 @@ public class UserService {
     try {
       return Base64.getDecoder().decode(base64Part);
     } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("Invalid Base64 image data.", e);
+      throw new ImageValidationException("Invalid Base64 image data.");
     }
   }
 
-  //TODO: Add validateImageSize method to check Checks if the image exceeds 5 MB
-  //TODO: validateImageFormat method to check that the image is either PNG or JPEG method.
+  private void validateImageFormat(String base64Image) {
+    if (!base64Image.startsWith("data:")){
+      throw new ImageValidationException("Invalid format: missing 'data:' prefix.");
+    }
+
+    int delimiterIndex = base64Image.indexOf(";base64,");
+    if (delimiterIndex == -1) {
+      throw new ImageValidationException("Invalid Base64 format: missing ';base64,' segment.");
+    }
+
+    String mimeType = base64Image.substring("data:".length(), delimiterIndex);
+
+    if (!mimeType.equalsIgnoreCase("image/png") && !mimeType.equalsIgnoreCase("image/jpeg")) {
+      throw new ImageValidationException("Only PNG or JPEG images are allowed.");
+    }
+  }
+
+  private void validateImageSize(byte[] imageBytes) {
+    if (imageBytes.length > MAX_IMAGE_SIZE) {
+      throw new ImageValidationException("Image size exceeds maximum allowed of " + MAX_IMAGE_SIZE + " bytes");
+    }
+  }
 
   public void validateUserAccess(Long currentUserId, Long targetUserId) {
       accessValidationService.validateUserAccess(currentUserId, targetUserId);
