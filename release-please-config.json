@@ -1,21 +1,21 @@
 {
+  "include-component-in-tag": true,
+  "include-v-in-tag": false,
+  "separate-pull-requests": true,
   "packages": {
     "front-end": {
       "component": "front-end",
       "release-type": "node",
-      "package-name": "match-me-frontend",
-      "versionFile": "front-end/package.json"
+      "path": "front-end",
+      "package-name": "match-me-frontend"
     },
     "back-end": {
       "component": "back-end",
       "release-type": "maven",
+      "path": "back-end",
       "package-name": "srv",
       "handleSnapshotRelease": "maven-snapshot",
-      "versionFile": "back-end/pom.xml"
+      "snapshotLabel": "SNAPSHOT"
     }
-  },
-  "bumpMinorPreMajor": true,
-  "plugins": ["node-workspace", "maven-workspace"],
-  "snapshot": true,
-  "pullRequestTitlePattern": "chore: release ${branch}"
+  }
 }
