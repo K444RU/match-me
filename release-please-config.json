@@ -3,13 +3,13 @@
       "frontend": {
         "component": "frontend",
         "release-type": "node",
-        "package-name": "frontend",
+        "package-name": "match-me-frontend",
         "path": "front-end"
       },
       "backend": {
         "component": "backend",
         "release-type": "maven",
-        "package-name": "backend",
+        "package-name": "srv",
         "path": "back-end"
       }
     }
