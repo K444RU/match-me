@@ -8,8 +8,7 @@
     "back-end": {
       "component": "back-end",
       "release-type": "maven",
-      "package-name": "srv",
-      "snapshot": false
+      "package-name": "srv"
     }
   }
 }
