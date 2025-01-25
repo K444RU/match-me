@@ -16,12 +16,6 @@ jobs:
       - uses: googleapis/release-please-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          release-type: "multiple"
           config-file: "release-please-config.json"
-          release-type: node
-          path: front-end
-      - uses: googleapis/release-please-action@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          config-file: "release-please-config.json"
-          release-type: maven
-          path: back-end
+          manifest-file: ".release-please-manifest.json"
