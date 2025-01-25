@@ -19,7 +19,7 @@
       "extra-files": [
         {
           "type": "json",
-          "path": ".release-please-manifest.json",
+          "path": "../.release-please-manifest.json",
           "jsonpath": "$.back-end"
         }
       ]
