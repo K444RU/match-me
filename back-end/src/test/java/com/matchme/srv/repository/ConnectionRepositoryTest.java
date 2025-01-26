@@ -23,15 +23,13 @@ class ConnectionRepositoryTest {
     private UserRepository userRepository;
 
     @Test
-    void testFindConnectionsByUserId() {
+    void ConnectionRepository_FindConnectionsById_ReturnListConnection() {
 
         // Arrange
-        User user1 = new User();
-        user1.setEmail("user1@example.com");
+        User user1 = User.builder().email("user1@example.com").build();
         userRepository.save(user1);
 
-        User user2 = new User();
-        user2.setEmail("user2@example.com");
+        User user2 = User.builder().email("user2@example.com").build();
         userRepository.save(user2);
 
         Connection connection = Connection.builder().users(Set.of(user1, user2)).build();
@@ -43,5 +41,41 @@ class ConnectionRepositoryTest {
         // Assert
         Assertions.assertThat(connections).isNotEmpty();
         Assertions.assertThat(connections.get(0).getUsers()).contains(user1, user2);
+    }
+
+    @Test
+    void ConnectionRepository_ExistsConnectionBetween_ReturnFalse() {
+        // Arrange
+        User user1 = User.builder().email("user1@example.com").build();
+        userRepository.save(user1);
+
+        User user2 = User.builder().email("user2@example.com").build();
+        userRepository.save(user2);
+
+        // Act
+        boolean result = connectionRepository.existsConnectionBetween(user1.getId(), user2.getId());
+
+        // Assert
+        Assertions.assertThat(result).isFalse();
+
+    }
+
+    @Test
+    void ConnectionRepository_ExistsConnectionBetween_ReturnTrue() {
+        // Arrange
+        User user1 = User.builder().email("user1@example.com").build();
+        userRepository.save(user1);
+
+        User user2 = User.builder().email("user2@example.com").build();
+        userRepository.save(user2);
+
+        Connection connection = Connection.builder().users(Set.of(user1, user2)).build();
+        connectionRepository.save(connection);
+
+        // Act
+        boolean result = connectionRepository.existsConnectionBetween(user1.getId(), user2.getId());
+
+        // Assert
+        Assertions.assertThat(result).isTrue();
     }
 }
