@@ -29,7 +29,7 @@ class UserMessageRepositoryTest {
     private ConnectionRepository connectionRepository;
 
     @Test
-    void UserMessageRepository_findByConnectionIdOrderByCreatedAtDesc_ReturnPageableUserMessage() {
+    void UserMessageRepository_FindByConnectionIdOrderByCreatedAtDesc_ReturnPageUserMessage() {
 
         // Arrange
         Connection connection = Connection.builder().build();
@@ -59,13 +59,13 @@ class UserMessageRepositoryTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // Act
-        Page<UserMessage> messages =
+        Page<UserMessage> result =
                 userMessageRepository.findByConnectionIdOrderByCreatedAtDesc(1L, pageable);
 
         // Assert
-        Assertions.assertThat(messages).hasSize(2);
-        Assertions.assertThat(messages.getContent().get(0).getContent()).isEqualTo("Message 2");
-        Assertions.assertThat(messages.getContent().get(1).getContent()).isEqualTo("Message 1");
+        Assertions.assertThat(result).hasSize(2);
+        Assertions.assertThat(result.getContent().get(0).getContent()).isEqualTo("Message 2");
+        Assertions.assertThat(result.getContent().get(1).getContent()).isEqualTo("Message 1");
 
     }
 }
