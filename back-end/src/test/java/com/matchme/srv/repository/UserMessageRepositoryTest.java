@@ -32,7 +32,7 @@ class UserMessageRepositoryTest {
     void UserMessageRepository_findByConnectionIdOrderByCreatedAtDesc_ReturnPageableUserMessage() {
 
         // Arrange
-        Connection connection = new Connection();
+        Connection connection = Connection.builder().build();
         connection = connectionRepository.save(connection);
 
         User user = new User();
