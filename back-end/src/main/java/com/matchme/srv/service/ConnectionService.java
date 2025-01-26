@@ -36,11 +36,9 @@ public class ConnectionService {
             throw new IllegalStateException("Connection already exists between these users");
         }
         
-        Connection connection = new Connection();
-        Set<User> users = new HashSet<>();
-        users.add(user1);
-        users.add(user2);
-        connection.setUsers(users);
+        Connection connection = Connection.builder()
+                .users(Set.of(user1, user2))
+                .build();
         Connection savedConnection = connectionRepository.save(connection);
         return ConnectionResponseDTO.builder()
                 .id(savedConnection.getId())
