@@ -390,20 +390,14 @@ class MeControllerTest {
      * @return {@link UserGenderType}
      */
     private UserGenderType createMockGenderType(Long id) {
-        UserGenderType genderType = new UserGenderType();
-        genderType.setId(id);
-        switch (id.intValue()) {
-            case 1:
-                genderType.setName("MALE");
-                break;
-            case 2:
-                genderType.setName("FEMALE");
-                break;
-            default:
-                genderType.setName("OTHER");
-                break;
-        }
-        return genderType;
+        return UserGenderType.builder()
+                .id(id)
+                .name(switch (id.intValue()) {
+                    case 1 -> "MALE";
+                    case 2 -> "FEMALE";
+                    default -> "OTHER";
+                })
+                .build();
     }
 
     /**

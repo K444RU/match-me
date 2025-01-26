@@ -120,13 +120,15 @@ class UserServiceTest {
     var newState = new UserStateTypes();
     var verifiedLogType = new ActivityLogType();
     
-    UserGenderType maleGender = new UserGenderType();
-    maleGender.setId(1L);
-    maleGender.setName("MALE");
+    UserGenderType maleGender = UserGenderType.builder()
+            .id(1L)
+            .name("MALE")
+            .build();
     
-    UserGenderType femaleGender = new UserGenderType();
-    maleGender.setId(2L);
-    maleGender.setName("FEMALE");
+    UserGenderType femaleGender = UserGenderType.builder()
+            .id(2L)
+            .name("FEMALE")
+            .build();
 
     Hobby hobby1 = new Hobby();
     hobby1.setId(1L);
@@ -162,9 +164,10 @@ class UserServiceTest {
   @Test
   void getGender_validId_returnsGender() {
     Long genderId = 1L;
-    UserGenderType mockGender = new UserGenderType();
-    mockGender.setId(genderId);
-    mockGender.setName("MALE");
+    UserGenderType mockGender = UserGenderType.builder()
+            .id(genderId)
+            .name("MALE")
+            .build();
 
     when(genderRepository.findById(genderId)).thenReturn(Optional.of(mockGender));
 
