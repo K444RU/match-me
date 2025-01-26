@@ -115,11 +115,12 @@ public class UserCreationServiceImpl implements UserCreationService {
     User user =
         userRepository
             .findById(userId)
-            .orElseThrow(() -> new EntityNotFoundException("User not found"));
+            .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_MESSAGE));
     UserAuth auth = user.getUserAuth();
 
     // Verify account
-    if (auth.getRecovery() == verificationCode) {
+    if (auth.getRecovery() != null && 
+    auth.getRecovery().equals(verificationCode)) {
       user.setState(userStateTypesService.getByName(VERIFIED));
       auth.setRecovery(null);
       ActivityLogType logType = activityLogTypeService.getByName(VERIFIED);
@@ -220,7 +221,6 @@ public class UserCreationServiceImpl implements UserCreationService {
     return newEntry;
   }
 
-  // Required, because we can't fetch default role from repository in entity class
   public void assignDefaultRole(User user) {
     UserRoleType defaultRole = userRoleTypeService.getByName("ROLE_USER");
     user.setRole(defaultRole);
