@@ -82,6 +82,7 @@ public class UserSettingsServiceImpl implements UserSettingsService {
         attributesMapper.toEntity(attributes, settings);
         attributes.setGender(userGenderTypeService.getById(settings.getGender_self()));
         attributes.setLocation(List.of(settings.getLongitude(), settings.getLatitude()));
+        attributes.setBirth_date(settings.getBirth_date());
 
         profile.setCity(settings.getCity());
 
@@ -98,6 +99,10 @@ public class UserSettingsServiceImpl implements UserSettingsService {
 
         preferencesMapper.toEntity(preferences, settings);
         preferences.setGender(userGenderTypeService.getById(settings.getGender_other()));
+        preferences.setAge_min(settings.getAge_min());
+        preferences.setAge_max(settings.getAge_max());
+        preferences.setDistance(settings.getDistance());
+        preferences.setProbability_tolerance(settings.getProbability_tolerance());
 
         // TODO: Add logging
         userRepository.save(user);
