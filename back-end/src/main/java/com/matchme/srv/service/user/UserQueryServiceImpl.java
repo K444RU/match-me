@@ -32,6 +32,7 @@ public class UserQueryServiceImpl implements UserQueryService {
   private final UserParametersMapper parametersMapper;
 
   private static final String USER_NOT_FOUND_MESSAGE = "User not found!";
+  private static final String PROFILE_NOT_FOUND_MESSAGE = "Profile not found!";
 
   /**
    * Return a user’s basic info, first checks whether the current user can access the target’s data.
@@ -73,11 +74,14 @@ public class UserQueryServiceImpl implements UserQueryService {
   public ProfileResponseDTO getUserProfileDTO(Long currentUserId, Long targetUserId) {
     accessValidationService.validateUserAccess(currentUserId, targetUserId);
 
-    UserProfile profile =
-        userRepository
-            .findById(targetUserId)
-            .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_MESSAGE))
-            .getProfile();
+    User user = userRepository
+        .findById(targetUserId)
+        .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_MESSAGE));
+
+    UserProfile profile = user.getProfile();
+    if (profile == null) {
+        throw new EntityNotFoundException(PROFILE_NOT_FOUND_MESSAGE);
+    }
 
     return userDtoMapper.toProfileResponseDTO(profile);
   }
@@ -90,7 +94,7 @@ public class UserQueryServiceImpl implements UserQueryService {
             .findById(targetUserId)
             .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_MESSAGE))
             .getProfile();
-    if (profile == null) throw new EntityNotFoundException("Profile not found!");
+    if (profile == null) throw new EntityNotFoundException(PROFILE_NOT_FOUND_MESSAGE);
 
     return userDtoMapper.tobBiographicalResponseDTO(profile);
   }
