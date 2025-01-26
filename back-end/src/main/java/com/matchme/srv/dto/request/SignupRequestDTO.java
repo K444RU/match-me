@@ -2,11 +2,13 @@ package com.matchme.srv.dto.request;
 
 import com.matchme.srv.validation.annotations.ValidPhoneNumber;
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 public class SignupRequestDTO {
 
   @NotBlank(message = "Email cannot be empty")

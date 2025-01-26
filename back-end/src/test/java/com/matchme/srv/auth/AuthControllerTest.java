@@ -90,10 +90,11 @@ class AuthControllerTest {
         String validPassword = "testtest";
         String validPhone = "+372 5341 4494";
 
-        SignupRequestDTO signUpRequest = new SignupRequestDTO();
-        signUpRequest.setEmail(validEmail);
-        signUpRequest.setPassword(validPassword);
-        signUpRequest.setNumber(validPhone);
+        SignupRequestDTO signUpRequest = SignupRequestDTO.builder()
+                .email(validEmail)
+                .password(validPassword)
+                .number(validPhone)
+                .build();
 
         // Mocking the signup and signin behavior
         when(creationService.createUser(any(SignupRequestDTO.class))).thenReturn(mockedActivityLog);
@@ -119,10 +120,11 @@ class AuthControllerTest {
         String validPassword = "testtest";
         String validPhone = "+372 4556342";
 
-        SignupRequestDTO signUpRequest = new SignupRequestDTO();
-        signUpRequest.setEmail(validEmail);
-        signUpRequest.setPassword(validPassword);
-        signUpRequest.setNumber(validPhone);
+        SignupRequestDTO signUpRequest = SignupRequestDTO.builder()
+                .email(validEmail)
+                .password(validPassword)
+                .number(validPhone)
+                .build();
 
         // Mocking the signup behavior
         when(creationService.createUser(any(SignupRequestDTO.class))).thenReturn(mockedActivityLog);
@@ -146,10 +148,11 @@ class AuthControllerTest {
         String validPassword = "testtest";
         String validPhone = "+372 3246543";
 
-        SignupRequestDTO signUpRequest = new SignupRequestDTO();
-        signUpRequest.setEmail(INVALID_EMAIL);
-        signUpRequest.setPassword(validPassword);
-        signUpRequest.setNumber(validPhone);
+        SignupRequestDTO signUpRequest = SignupRequestDTO.builder()
+            .email(INVALID_EMAIL)
+            .password(validPassword)
+            .number(validPhone)
+            .build();
 
         mockMvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(signUpRequest)))
@@ -163,10 +166,11 @@ class AuthControllerTest {
         String validEmail = "invalidpassword@test.com";
         String validPhone = "+372 3563443";
 
-        SignupRequestDTO signUpRequest = new SignupRequestDTO();
-        signUpRequest.setEmail(validEmail);
-        signUpRequest.setPassword(INVALID_PASSWORD);
-        signUpRequest.setNumber(validPhone);
+        SignupRequestDTO signUpRequest = SignupRequestDTO.builder()
+                .email(validEmail)
+                .password(INVALID_PASSWORD)
+                .number(validPhone)
+                .build();
 
         mockMvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(signUpRequest)))
@@ -179,10 +183,11 @@ class AuthControllerTest {
         String validEmail = "invalidphonenumber@test.com";
         String validPassword = "testtest";
 
-        SignupRequestDTO signUpRequest = new SignupRequestDTO();
-        signUpRequest.setEmail(validEmail);
-        signUpRequest.setPassword(validPassword);
-        signUpRequest.setNumber(INVALID_PHONE);
+        SignupRequestDTO signUpRequest = SignupRequestDTO.builder()
+            .email(validEmail)
+            .password(validPassword)
+            .number(INVALID_PHONE)
+            .build();
 
         mockMvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(signUpRequest)))
