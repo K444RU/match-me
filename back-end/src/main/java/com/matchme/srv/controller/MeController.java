@@ -3,7 +3,8 @@ package com.matchme.srv.controller;
 import com.matchme.srv.dto.response.*;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.service.ConnectionService;
-import com.matchme.srv.service.UserService;
+import com.matchme.srv.service.user.UserQueryService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -18,7 +19,7 @@ import java.util.List;
 @RequestMapping("/api")
 public class MeController {
 
-    private final UserService userService;
+    private final UserQueryService queryService;
     private final ConnectionService connectionService;
     private final SecurityUtils securityUtils;
 
@@ -31,7 +32,7 @@ public class MeController {
     @GetMapping("/me")
     public ResponseEntity<CurrentUserResponseDTO> getCurrentUser(Authentication authentication) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
-        CurrentUserResponseDTO response = userService.getCurrentUserDTO(currentUserId);
+        CurrentUserResponseDTO response = queryService.getCurrentUserDTO(currentUserId, currentUserId);
         return ResponseEntity.ok(response);
     }
 
@@ -44,7 +45,7 @@ public class MeController {
     @GetMapping("/me/profile")
     public ResponseEntity<ProfileResponseDTO> getCurrentProfile(Authentication authentication) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
-        ProfileResponseDTO response = userService.getUserProfileDTO(currentUserId, currentUserId);
+        ProfileResponseDTO response = queryService.getUserProfileDTO(currentUserId, currentUserId);
         return ResponseEntity.ok(response);
     }
 
@@ -58,7 +59,7 @@ public class MeController {
     public ResponseEntity<BiographicalResponseDTO> getCurrentBio(Authentication authentication) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
         BiographicalResponseDTO response =
-                userService.getBiographicalResponseDTO(currentUserId, currentUserId);
+                queryService.getBiographicalResponseDTO(currentUserId, currentUserId);
         return ResponseEntity.ok(response);
     }
 
@@ -72,7 +73,7 @@ public class MeController {
     public ResponseEntity<SettingsResponseDTO> getParameters(Authentication authentication) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
         SettingsResponseDTO response =
-                userService.getSettingsResponseDTO(currentUserId, currentUserId);
+                queryService.getSettingsResponseDTO(currentUserId, currentUserId);
         return ResponseEntity.ok(response);
     }
 

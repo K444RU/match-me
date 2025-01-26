@@ -40,7 +40,7 @@ import com.matchme.srv.security.services.UserDetailsImpl;
 import com.matchme.srv.service.ChatService;
 import com.matchme.srv.service.ConnectionService;
 import com.matchme.srv.service.HobbyService;
-import com.matchme.srv.service.UserService;
+import com.matchme.srv.service.user.UserQueryService;
 import com.matchme.srv.dto.response.GenderTypeDTO;
 
 import static org.hamcrest.Matchers.empty;
@@ -57,8 +57,9 @@ class MeControllerTest {
     @Mock
     private ChatService chatService;
 
+    
     @Mock
-    private UserService userService;
+    private UserQueryService queryService;
 
     @Mock
     private ConnectionService connectionService;
@@ -114,7 +115,7 @@ class MeControllerTest {
                 .email(email).firstName(firstName).lastName(lastName).alias(alias)
                 .profilePicture(profilePicture).role(roles).build();
 
-        when(userService.getCurrentUserDTO(userId)).thenReturn(responseDTO);
+        when(queryService.getCurrentUserDTO(userId, userId)).thenReturn(responseDTO);
 
         mockMvc.perform(
                 get("/api/me").principal(authentication).contentType(MediaType.APPLICATION_JSON))
@@ -147,7 +148,7 @@ class MeControllerTest {
 
         ProfileResponseDTO profileDTO = ProfileResponseDTO.builder().first_name(firstName)
                 .last_name(lastName).city(city).build();
-        when(userService.getUserProfileDTO(userId, userId)).thenReturn(profileDTO);
+        when(queryService.getUserProfileDTO(userId, userId)).thenReturn(profileDTO);
 
         // When/Then
         mockMvc.perform(get("/api/me/profile").principal(authentication)
@@ -203,7 +204,7 @@ class MeControllerTest {
                 .age_self(ageSelf).age_min(ageMin).age_max(ageMax).distance(distance)
                 .probability_tolerance(probabilityTolerance).build();
 
-        when(userService.getBiographicalResponseDTO(userId, userId)).thenReturn(bioDTO);
+        when(queryService.getBiographicalResponseDTO(userId, userId)).thenReturn(bioDTO);
 
         // When/Then
         mockMvc.perform(get("/api/me/bio").principal(authentication)

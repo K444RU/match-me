@@ -12,7 +12,8 @@ import com.matchme.srv.security.jwt.JwtUtils;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.security.services.UserDetailsImpl;
 import com.matchme.srv.security.services.UserDetailsServiceImpl;
-import com.matchme.srv.service.UserService;
+import com.matchme.srv.service.user.UserCreationService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -46,7 +47,7 @@ class AuthControllerTest {
     private JwtUtils jwtUtils;
 
     @MockitoBean
-    private UserService userService;
+    private UserCreationService creationService;
 
     @MockitoBean
     private UserDetailsServiceImpl userDetailsService;
@@ -95,7 +96,7 @@ class AuthControllerTest {
         signUpRequest.setNumber(validPhone);
 
         // Mocking the signup and signin behavior
-        when(userService.createUser(any(SignupRequestDTO.class))).thenReturn(mockedActivityLog);
+        when(creationService.createUser(any(SignupRequestDTO.class))).thenReturn(mockedActivityLog);
         when(jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn("dummy-jwt-token");
 
         mockMvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
@@ -124,13 +125,13 @@ class AuthControllerTest {
         signUpRequest.setNumber(validPhone);
 
         // Mocking the signup behavior
-        when(userService.createUser(any(SignupRequestDTO.class))).thenReturn(mockedActivityLog);
+        when(creationService.createUser(any(SignupRequestDTO.class))).thenReturn(mockedActivityLog);
         
         mockMvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(signUpRequest)))
         .andExpect(status().isCreated());
         
-        when(userService.createUser(any(SignupRequestDTO.class)))
+        when(creationService.createUser(any(SignupRequestDTO.class)))
             .thenThrow(new DuplicateFieldException("email", "Email already exists"));
         
         mockMvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)

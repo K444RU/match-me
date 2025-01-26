@@ -1,10 +1,19 @@
 package com.matchme.srv.controller;
 
-
+import com.matchme.srv.dto.request.SignupRequestDTO;
+import com.matchme.srv.dto.request.UserParametersRequestDTO;
+import com.matchme.srv.dto.response.ChatMessageResponseDTO;
+import com.matchme.srv.dto.response.ConnectionResponseDTO;
+import com.matchme.srv.model.user.User;
+import com.matchme.srv.service.ChatService;
+import com.matchme.srv.service.ConnectionService;
+import com.matchme.srv.service.user.UserCreationService;
+import com.matchme.srv.service.user.UserQueryService;
+import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,25 +25,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.matchme.srv.dto.request.SignupRequestDTO;
-import com.matchme.srv.dto.request.UserParametersRequestDTO;
-import com.matchme.srv.dto.response.ChatMessageResponseDTO;
-import com.matchme.srv.dto.response.ConnectionResponseDTO;
-import com.matchme.srv.model.user.User;
-import com.matchme.srv.service.ChatService;
-import com.matchme.srv.service.ConnectionService;
-import com.matchme.srv.service.UserService;
-
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/test")
 public class TestController {
 
-  private final UserService userService;
+  private final UserCreationService creationService;
+  private final UserQueryService queryService;
   private final ConnectionService connectionService;
   private final ChatService chatService;
 
@@ -62,7 +60,7 @@ public class TestController {
   }
 
   @PostMapping("/users")
-  public ResponseEntity<?> bulkCreateUsers(@Valid @RequestBody List<SignupRequestDTO> users) {
+  public ResponseEntity<Void> bulkCreateUsers(@Valid @RequestBody List<SignupRequestDTO> users) {
     int batchSize = 50;
 
     for (int i = 0; i < users.size(); i += batchSize) {
@@ -70,26 +68,28 @@ public class TestController {
       List<SignupRequestDTO> batch = users.subList(i, endIndex);
 
       for (SignupRequestDTO user : batch) {
-        userService.createUser(user);
+        creationService.createUser(user);
       }
     }
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
   @PostMapping("/users/finish")
-  public ResponseEntity<?> bulkSetUserParameters(@Valid @RequestBody UserParametersWithEmailsDTO request) {
+  public ResponseEntity<Void> bulkSetUserParameters(
+      @Valid @RequestBody UserParametersWithEmailsDTO request) {
     List<UserParametersRequestDTO> users = request.parameters();
     List<String> emails = request.emails();
 
     for (int i = 0; i < users.size(); i++) {
-      User existingUser = userService.getUserByEmail(emails.get(i));
-      userService.setUserParameters(existingUser.getId(), users.get(i));
+      User existingUser = queryService.getUserByEmail(emails.get(i));
+      creationService.setUserParameters(existingUser.getId(), users.get(i));
     }
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
   @PostMapping("/connections")
-  public ResponseEntity<List<ConnectionResponseDTO>> bulkCreateConnections(@Valid @RequestBody List<UserPair> request) {
+  public ResponseEntity<List<ConnectionResponseDTO>> bulkCreateConnections(
+      @Valid @RequestBody List<UserPair> request) {
     List<ConnectionResponseDTO> createdConnections = new ArrayList<>();
     int batchSize = 100;
 
@@ -98,8 +98,8 @@ public class TestController {
       List<UserPair> batch = request.subList(i, endIndex);
 
       for (UserPair pair : batch) {
-        User user1 = userService.getUserByEmail(pair.email1());
-        User user2 = userService.getUserByEmail(pair.email2());
+        User user1 = queryService.getUserByEmail(pair.email1());
+        User user2 = queryService.getUserByEmail(pair.email2());
         createdConnections.add(connectionService.createConnection(user1, user2));
       }
     }
@@ -117,37 +117,28 @@ public class TestController {
       List<MessagesSendRequestDTOWithSender> batch = request.subList(i, endIndex);
 
       for (MessagesSendRequestDTOWithSender message : batch) {
-        User sender = userService.getUserByEmail(message.senderEmail());
-        createdChatMessages.add(chatService.saveMessage(
-            message.connectionId(),
-            sender.getId(),
-            message.content(),
-            message.timestamp()));
+        User sender = queryService.getUserByEmail(message.senderEmail());
+        createdChatMessages.add(
+            chatService.saveMessage(
+                message.connectionId(), sender.getId(), message.content(), message.timestamp()));
       }
     }
     return ResponseEntity.status(HttpStatus.CREATED).body(createdChatMessages);
   }
 
   @DeleteMapping("/users")
-  public ResponseEntity<?> bulkDeleteUsersByEmail(@RequestBody List<String> emails) {
+  public ResponseEntity<Void> bulkDeleteUsersByEmail(@RequestBody List<String> emails) {
     for (int i = 0; i < emails.size(); i++) {
-      userService.removeUserByEmail(emails.get(i));
+      creationService.removeUserByEmail(emails.get(i));
     }
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
   public record UserParametersWithEmailsDTO(
-      List<UserParametersRequestDTO> parameters,
-      List<String> emails) {
-  }
+      List<UserParametersRequestDTO> parameters, List<String> emails) {}
 
-  public record UserPair(String email1, String email2) {
-  };
+  public record UserPair(String email1, String email2) {}
 
   public record MessagesSendRequestDTOWithSender(
-    Long connectionId,
-    String content,
-    String senderEmail,
-    Instant timestamp
-) {}
+      Long connectionId, String content, String senderEmail, Instant timestamp) {}
 }

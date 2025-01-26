@@ -45,7 +45,10 @@ import com.matchme.srv.security.services.UserDetailsImpl;
 import com.matchme.srv.service.ChatService;
 import com.matchme.srv.service.ConnectionService;
 import com.matchme.srv.service.HobbyService;
-import com.matchme.srv.service.UserService;
+import com.matchme.srv.service.user.UserCreationService;
+import com.matchme.srv.service.user.UserProfileService;
+import com.matchme.srv.service.user.UserQueryService;
+import com.matchme.srv.service.user.UserSettingsService;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -58,7 +61,16 @@ class UserControllerTest {
     private ChatService chatService;
 
     @Mock
-    private UserService userService;
+    private UserCreationService creationService;
+    
+    @Mock
+    private UserQueryService queryService;
+
+    @Mock
+    private UserProfileService profileService;
+
+    @Mock
+    private UserSettingsService settingsService;
 
     @Mock
     private ConnectionService connectionService;
@@ -114,7 +126,7 @@ class UserControllerTest {
                 CurrentUserResponseDTO.builder().id(userId).email(email).firstName(firstName)
                         .lastName(lastName).alias(alias).profilePicture(null).role(roles).build();
 
-        when(userService.getUserDTO(userId, userId)).thenReturn(responseDTO);
+        when(queryService.getCurrentUserDTO(userId, userId)).thenReturn(responseDTO);
 
         // When/Then
         mockMvc.perform(get("/api/users/{targetId}", userId).principal(authentication)
@@ -142,7 +154,7 @@ class UserControllerTest {
         Long targetUserId = 2L;
 
         setupAuthenticatedUser(requestingUserId, requestingUserEmail);
-        when(userService.getUserDTO(requestingUserId, targetUserId))
+        when(queryService.getCurrentUserDTO(requestingUserId, targetUserId))
                 .thenThrow(new EntityNotFoundException("User not found or no access rights."));
 
         // When/Then
@@ -184,7 +196,7 @@ class UserControllerTest {
                 .email(targetUserEmail).firstName(targetUserFirstName).lastName(targetUserLastName)
                 .alias(targetUserAlias).profilePicture(null).role(roles).build();
 
-        when(userService.getUserDTO(requestingUserId, targetUserId)).thenReturn(responseDTO);
+        when(queryService.getCurrentUserDTO(requestingUserId, targetUserId)).thenReturn(responseDTO);
 
         // When/Then
         mockMvc.perform(get("/api/users/{targetId}", targetUserId).principal(authentication)
@@ -217,7 +229,7 @@ class UserControllerTest {
 
         ProfileResponseDTO profileDTO = ProfileResponseDTO.builder().first_name(firstName)
                 .last_name(lastName).city(city).build();
-        when(userService.getUserProfileDTO(userId, userId)).thenReturn(profileDTO);
+        when(queryService.getUserProfileDTO(userId, userId)).thenReturn(profileDTO);
 
         // When/Then
         mockMvc.perform(get("/api/users/{targetId}/profile", userId).principal(authentication)
@@ -234,7 +246,7 @@ class UserControllerTest {
         String requestingUserEmail = "user1@example.com";
         Long targetUserId = 2L;
         setupAuthenticatedUser(requestingUserId, requestingUserEmail);
-        when(userService.getUserProfileDTO(requestingUserId, targetUserId))
+        when(queryService.getUserProfileDTO(requestingUserId, targetUserId))
                 .thenThrow(new EntityNotFoundException("User not found or no access rights."));
 
         // When/Then
@@ -264,7 +276,7 @@ class UserControllerTest {
 
         ProfileResponseDTO profileDTO = ProfileResponseDTO.builder().first_name(targetUserFirstName)
                 .last_name(targetUserLastName).city(targetUserCity).build();
-        when(userService.getUserProfileDTO(requestingUserId, targetUserId)).thenReturn(profileDTO);
+        when(queryService.getUserProfileDTO(requestingUserId, targetUserId)).thenReturn(profileDTO);
 
         // When/Then
         mockMvc.perform(get("/api/users/{targetId}/profile", targetUserId).principal(authentication)
@@ -303,7 +315,7 @@ class UserControllerTest {
                 .age_self(ageSelf).age_min(ageMin).age_max(ageMax).distance(distance)
                 .probability_tolerance(probabilityTolerance).build();
 
-        when(userService.getBiographicalResponseDTO(userId, userId)).thenReturn(bioDTO);
+        when(queryService.getBiographicalResponseDTO(userId, userId)).thenReturn(bioDTO);
 
         // When/Then
         mockMvc.perform(get("/api/users/{userId}/bio", userId).principal(authentication)
@@ -327,7 +339,7 @@ class UserControllerTest {
         Long targetUserId = 2L;
         setupAuthenticatedUser(requestingUserId, requestingUserEmail);
 
-        when(userService.getBiographicalResponseDTO(requestingUserId, targetUserId))
+        when(queryService.getBiographicalResponseDTO(requestingUserId, targetUserId))
                 .thenThrow(new EntityNotFoundException("User not found or no access rights."));
 
         // When/Then
@@ -370,7 +382,7 @@ class UserControllerTest {
                 .distance(targetUserDistance).probability_tolerance(targetUserProbabilityTolerance)
                 .build();
 
-        when(userService.getBiographicalResponseDTO(requestingUserId, targetUserId))
+        when(queryService.getBiographicalResponseDTO(requestingUserId, targetUserId))
                 .thenReturn(bioDTO);
 
         // When/Then
@@ -501,7 +513,7 @@ class UserControllerTest {
         mockMvc.perform(post("/api/users/profile-picture").principal(authentication)
                 .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
-        verify(userService).saveProfilePicture(userId, null);
+        verify(profileService).saveProfilePicture(userId, null);
     }
 
     @Test
@@ -519,7 +531,7 @@ class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON).content("{\"base64Image\":\"\"}"))
                 .andExpect(status().isOk());
 
-        verify(userService).saveProfilePicture(eq(userId), any(ProfilePictureSettingsRequestDTO.class));
+        verify(profileService).saveProfilePicture(eq(userId), any(ProfilePictureSettingsRequestDTO.class));
     }
 
     @Test
@@ -529,7 +541,7 @@ class UserControllerTest {
         setupAuthenticatedUser(userId, "user1@example.com");
         String invalidBase64 = "thisIsNotValid==";
 
-        doThrow(new IllegalArgumentException("Invalid Base64 image data.")).when(userService)
+        doThrow(new IllegalArgumentException("Invalid Base64 image data.")).when(profileService)
                 .saveProfilePicture(eq(userId),
                         argThat(dto -> dto != null && invalidBase64.equals(dto.getBase64Image())));
 
@@ -556,7 +568,7 @@ class UserControllerTest {
         ProfilePictureSettingsRequestDTO request = new ProfilePictureSettingsRequestDTO();
         request.setBase64Image(validBase64);
 
-        doThrow(new EntityNotFoundException("User not found for ID: " + userId)).when(userService)
+        doThrow(new EntityNotFoundException("User not found for ID: " + userId)).when(profileService)
                 .saveProfilePicture(eq(userId), argThat(
                         dto -> dto != null && "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
                                 .equals(dto.getBase64Image())));

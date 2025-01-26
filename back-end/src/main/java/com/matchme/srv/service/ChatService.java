@@ -169,7 +169,6 @@ public class ChatService {
 
         MessageEvent deliveredEvent = new MessageEvent();
         deliveredEvent.setMessage(savedMessage);
-        //toDo: Refactor using constants for "SENT" to avoid hardcoding.
         deliveredEvent.setMessageEventType(new MessageEventType(1L, EVENT_TYPE_SEND));
         deliveredEvent.setTimestamp(timestamp);
         savedMessage.getMessageEvents().add(deliveredEvent);

@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.matchme.srv.dto.response.GenderTypeDTO;
 import com.matchme.srv.model.user.profile.UserGenderType;
 import com.matchme.srv.repository.UserGenderTypeRepository;
+import com.matchme.srv.service.type.UserGenderTypeService;
 
 @ExtendWith(MockitoExtension.class)
 class UserGenderTypeServiceTests {
@@ -34,7 +35,7 @@ class UserGenderTypeServiceTests {
         when(userGenderTypeRepository.findAll()).thenReturn(mockGenders);
 
         // Act
-        List<GenderTypeDTO> result = userGenderTypeService.getAllGenders();
+        List<GenderTypeDTO> result = userGenderTypeService.getAll();
 
         // Assert
         Assertions.assertThat(result).hasSize(3);
