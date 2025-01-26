@@ -6,7 +6,8 @@ import com.matchme.srv.model.user.User;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.security.services.UserDetailsImpl;
 import com.matchme.srv.service.ChatService;
-import com.matchme.srv.service.UserService;
+import com.matchme.srv.service.user.UserQueryService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -41,9 +42,9 @@ class ChatControllerTest {
 
     @Mock
     private ChatService chatService;
-
+    
     @Mock
-    private UserService userService;
+    private UserQueryService queryService;
 
     @Mock
     private Authentication authentication;
@@ -76,7 +77,7 @@ class ChatControllerTest {
         User mockUser = new User();
         mockUser.setId(1L);
         mockUser.setEmail("user1@example.com");
-        when(userService.getUser(1L)).thenReturn(mockUser);
+        when(queryService.getUser(1L)).thenReturn(mockUser);
 
         ChatPreviewResponseDTO chatPreview = new ChatPreviewResponseDTO();
         chatPreview.setConnectionId(101L);
