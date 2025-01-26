@@ -23,4 +23,9 @@ public class UserGenderTypeService {
         return genderRepository.findById(genderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Gender"));
     }
+
+    public UserGenderType getByName(String name) {
+        return genderRepository.findByName(name)
+                .orElseThrow(() -> new ResourceNotFoundException("Gender"));
+    }
 }

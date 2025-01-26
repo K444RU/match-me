@@ -119,8 +119,7 @@ public class UserCreationServiceImpl implements UserCreationService {
     UserAuth auth = user.getUserAuth();
 
     // Verify account
-    if (auth.getRecovery() != null && 
-    auth.getRecovery().equals(verificationCode)) {
+    if (auth.getRecovery() != null && auth.getRecovery().equals(verificationCode)) {
       user.setState(userStateTypesService.getByName(VERIFIED));
       auth.setRecovery(null);
       ActivityLogType logType = activityLogTypeService.getByName(VERIFIED);
@@ -188,6 +187,11 @@ public class UserCreationServiceImpl implements UserCreationService {
 
     attributesMapper.toEntity(attributes, parameters);
     attributes.setGender(userGenderTypeService.getById(parameters.gender_self()));
+
+    // Add null check for location coordinates
+    if (parameters.longitude() == null || parameters.latitude() == null) {
+      throw new IllegalArgumentException("Longitude and latitude must be provided");
+    }
     attributes.setLocation(List.of(parameters.longitude(), parameters.latitude()));
 
     preferencesMapper.toEntity(preferences, parameters);
