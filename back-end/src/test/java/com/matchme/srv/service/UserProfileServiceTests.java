@@ -3,6 +3,7 @@ package com.matchme.srv.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -50,7 +51,8 @@ class UserProfileServiceTests {
               assertThat(user.getProfile().getProfilePicture())
                   .as("checking if the profile picture is not null")
                   .isNotNull(),
-          () -> verify(userRepository).save(user));
+          () -> verify(userRepository, times(1)).findById(1L),
+          () -> verify(userRepository, times(1)).save(user));
     }
 
     @Test
@@ -72,7 +74,8 @@ class UserProfileServiceTests {
               assertThat(user.getProfile().getProfilePicture())
                   .as("checking if the profile picture is null")
                   .isNull(),
-          () -> verify(userRepository).save(user));
+          () -> verify(userRepository, times(1)).findById(1L),
+          () -> verify(userRepository, times(1)).save(user));
     }
 
     @Test
@@ -91,7 +94,8 @@ class UserProfileServiceTests {
               assertThatThrownBy(() -> userProfileService.saveProfilePicture(1L, request))
                   .as("checking if the exception is an instance of IllegalArgumentException")
                   .isInstanceOf(IllegalArgumentException.class)
-                  .hasMessageContaining("Invalid Base64 image data."));
+                  .hasMessageContaining("Invalid Base64 image data."),
+          () -> verify(userRepository, times(1)).findById(1L));
     }
 
     @Test
@@ -107,7 +111,8 @@ class UserProfileServiceTests {
               assertThatThrownBy(() -> userProfileService.saveProfilePicture(1L, request))
                   .as("checking if the exception is an instance of EntityNotFoundException")
                   .isInstanceOf(EntityNotFoundException.class)
-                  .hasMessageContaining("User not found for ID: 1"));
+                  .hasMessageContaining("User not found for ID: 1"),
+          () -> verify(userRepository, times(1)).findById(1L));
     }
 
     @Test
@@ -130,7 +135,54 @@ class UserProfileServiceTests {
               assertThat(user.getProfile().getProfilePicture())
                   .as("checking if the profile picture is not null")
                   .isNotNull(),
-          () -> verify(userRepository).save(user));
+          () -> verify(userRepository, times(1)).findById(1L),
+          () -> verify(userRepository, times(1)).save(user));
+    }
+
+    @Test
+    @DisplayName("Should remove picture when empty base64 string")
+    void saveProfilePicture_EmptyBase64_RemovesPicture() {
+      // Arrange
+      User user = new User();
+      UserProfile profile = new UserProfile();
+      profile.setProfilePicture(new byte[] {1, 2, 3});
+      user.setProfile(profile);
+      when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+      // Act
+      userProfileService.saveProfilePicture(1L, new ProfilePictureSettingsRequestDTO(""));
+
+      // Assert
+      assertAll(
+          () ->
+              assertThat(user.getProfile().getProfilePicture())
+                  .as("checking if the profile picture is null")
+                  .isNull(),
+          () -> verify(userRepository, times(1)).findById(1L),
+          () -> verify(userRepository, times(1)).save(user));
+    }
+
+    @Test
+    @DisplayName("Should remove picture when base64 image is null")
+    void saveProfilePicture_NullBase64Image_RemovesPicture() {
+      // Arrange
+      User user = new User();
+      UserProfile profile = new UserProfile();
+      profile.setProfilePicture(new byte[] {1, 2, 3});
+      user.setProfile(profile);
+      when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+      // Act
+      userProfileService.saveProfilePicture(1L, new ProfilePictureSettingsRequestDTO(null));
+
+      // Assert
+      assertAll(
+          () ->
+              assertThat(user.getProfile().getProfilePicture())
+                  .as("checking if the profile picture is null")
+                  .isNull(),
+          () -> verify(userRepository, times(1)).findById(1L),
+          () -> verify(userRepository, times(1)).save(user));
     }
   }
 }

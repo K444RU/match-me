@@ -23,12 +23,10 @@ import com.matchme.srv.repository.UserRepository;
 import com.matchme.srv.service.type.UserGenderTypeService;
 import com.matchme.srv.service.user.UserSettingsServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -70,7 +68,7 @@ class UserSettingsServiceTests {
   }
 
   @Nested
-  @DisplayName("UpdateAccountSettings Tests")
+  @DisplayName("updateAccountSettings Tests")
   class UpdateAccountSettingsTests {
     private AccountSettingsRequestDTO validRequest;
 
@@ -118,7 +116,7 @@ class UserSettingsServiceTests {
   }
 
   @Nested
-  @DisplayName("UpdateProfileSettings Tests")
+  @DisplayName("updateProfileSettings Tests")
   class UpdateProfileSettingsTests {
 
     private ProfileSettingsRequestDTO validRequest;
@@ -180,10 +178,44 @@ class UserSettingsServiceTests {
           .hasMessageContaining("User not found!");
       verify(userRepository, times(1)).findById(INVALID_USER_ID);
     }
+
+    @Test
+    @DisplayName("Should clear hobbies when null hobbies provided")
+    void updateProfileSettings_NullHobbies_ClearsHobbies() {
+      // Arrange
+      validRequest.setHobbies(null);
+      when(userRepository.findById(VALID_USER_ID)).thenReturn(Optional.of(user));
+
+      // Act
+      userSettingsService.updateProfileSettings(VALID_USER_ID, validRequest);
+
+      // Assert
+      assertThat(user.getProfile().getHobbies())
+          .as("checking if hobbies were cleared for null input")
+          .isEmpty();
+      verify(userRepository).save(user);
+    }
+
+    @Test
+    @DisplayName("Should clear hobbies when empty hobbies provided")
+    void updateProfileSettings_EmptyHobbies_ClearsHobbies() {
+      // Arrange
+      validRequest.setHobbies(Set.of());
+      when(userRepository.findById(VALID_USER_ID)).thenReturn(Optional.of(user));
+
+      // Act
+      userSettingsService.updateProfileSettings(VALID_USER_ID, validRequest);
+
+      // Assert
+      assertThat(user.getProfile().getHobbies())
+          .as("checking if hobbies were cleared for empty input")
+          .isEmpty();
+      verify(userRepository).save(user);
+    }
   }
 
   @Nested
-  @DisplayName("UpdateAttributesSettings Tests")
+  @DisplayName("updateAttributesSettings Tests")
   class UpdateAttributesSettingsTests {
     private AttributesSettingsRequestDTO validRequest;
 
@@ -246,7 +278,7 @@ class UserSettingsServiceTests {
   }
 
   @Nested
-  @DisplayName("UpdatePreferencesSettings Tests")
+  @DisplayName("updatePreferencesSettings Tests")
   class UpdatePreferencesSettingsTests {
     private PreferencesSettingsRequestDTO validRequest;
 
@@ -261,7 +293,9 @@ class UserSettingsServiceTests {
     }
 
     @Test
-    @DisplayName("Should update gender_other, age_min, age_max, distance, and probability_tolerance when user exists")
+    @DisplayName(
+        "Should update gender_other, age_min, age_max, distance, and probability_tolerance when"
+            + " user exists")
     void updatePreferencesSettings_ValidRequest_UpdatesFields() {
       // Arrange
       when(userGenderTypeService.getById(1L)).thenReturn(genderType);

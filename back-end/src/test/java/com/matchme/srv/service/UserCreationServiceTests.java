@@ -255,6 +255,27 @@ class UserCreationServiceTests {
                       "Verification code was wrong! Would you like us to generate the code again?"),
           () -> verify(userRepository, times(1)).findById(1L));
     }
+
+    @Test
+    @DisplayName("Should throw exception when recovery code is null")
+    void verifyAccount_WithNullRecovery_ThrowsInvalidVerificationException() {
+      // Arrange
+      User user = new User();
+      UserAuth auth = new UserAuth();
+      auth.setRecovery(null);
+      user.setUserAuth(auth);
+
+      when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+      // Act & Assert
+      assertAll(
+          () ->
+              assertThatThrownBy(() -> userCreationService.verifyAccount(1L, 123))
+                  .as("checking if the exception is an instance of InvalidVerificationException")
+                  .isInstanceOf(InvalidVerificationException.class)
+                  .hasMessageContaining("Verification code was wrong!"),
+          () -> verify(userRepository, times(1)).findById(1L));
+    }
   }
 
   @Nested
@@ -445,6 +466,224 @@ class UserCreationServiceTests {
           () -> assertThat(profile.getLast_name()).as("checking if the last name is null").isNull(),
           () -> assertThat(profile.getCity()).as("checking if the city is null").isNull(),
           () -> verify(userRepository, times(1)).findById(1L));
+    }
+
+    @Test
+    @DisplayName("Should create profile when null")
+    void setUserParameters_WithNullProfile_CreatesProfile() {
+      // Arrange
+      User user = new User();
+      user.setProfile(null);
+      UserParametersRequestDTO request = validRequest();
+
+      when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+      when(userGenderTypeService.getById(anyLong())).thenReturn(new UserGenderType());
+
+      // Act
+      userCreationService.setUserParameters(1L, request);
+
+      // Assert
+      assertAll(
+          () -> assertThat(user.getProfile()).as("checking if the profile is not null").isNotNull(),
+          () -> verify(userRepository, times(1)).findById(1L));
+    }
+
+    @Test
+    @DisplayName("Should create attributes when null")
+    void setUserParameters_WithNullAttributes_CreatesAttributes() {
+      // Arrange
+      User user = new User();
+      user.setProfile(new UserProfile());
+      user.getProfile().setAttributes(null);
+      UserParametersRequestDTO request = validRequest();
+
+      when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+      when(userGenderTypeService.getById(anyLong())).thenReturn(new UserGenderType());
+
+      // Act
+      userCreationService.setUserParameters(1L, request);
+
+      // Assert
+      assertAll(
+          () ->
+              assertThat(user.getProfile().getAttributes())
+                  .as("checking if the attributes are not null")
+                  .isNotNull(),
+          () -> verify(userRepository, times(1)).findById(1L));
+    }
+
+    @Test
+    @DisplayName("Should create preferences when null")
+    void setUserParameters_WithNullPreferences_CreatesPreferences() {
+      // Arrange
+      User user = new User();
+      user.setProfile(new UserProfile());
+      user.getProfile().setPreferences(null);
+      UserParametersRequestDTO request = validRequest();
+
+      when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+      when(userGenderTypeService.getById(anyLong())).thenReturn(new UserGenderType());
+
+      // Act
+      userCreationService.setUserParameters(1L, request);
+
+      // Assert
+      assertAll(
+          () ->
+              assertThat(user.getProfile().getPreferences())
+                  .as("checking if the preferences are not null")
+                  .isNotNull(),
+          () -> verify(userRepository, times(1)).findById(1L));
+    }
+
+    @Test
+    @DisplayName("Should throw exception when longitude is null")
+    void setUserParameters_WithNullLongitude_ThrowsException() {
+      // Arrange
+      UserParametersRequestDTO invalidRequest =
+          UserParametersRequestDTO.builder().longitude(null).latitude(56.78).build();
+
+      when(userRepository.findById(1L)).thenReturn(Optional.of(new User()));
+
+      // Act & Assert
+      assertAll(
+          () ->
+              assertThatThrownBy(() -> userCreationService.setUserParameters(1L, invalidRequest))
+                  .as("checking if the exception is an instance of IllegalArgumentException")
+                  .isInstanceOf(IllegalArgumentException.class)
+                  .hasMessageContaining("Longitude and latitude must be provided"),
+          () -> verify(userRepository, times(1)).findById(1L));
+    }
+
+    @Test
+    @DisplayName("Should throw exception when latitude is null")
+    void setUserParameters_WithNullLatitude_ThrowsException() {
+      // Arrange
+      UserParametersRequestDTO invalidRequest =
+          UserParametersRequestDTO.builder().longitude(12.34).latitude(null).build();
+
+      when(userRepository.findById(1L)).thenReturn(Optional.of(new User()));
+
+      // Act & Assert
+      assertAll(
+          () ->
+              assertThatThrownBy(() -> userCreationService.setUserParameters(1L, invalidRequest))
+                  .as("checking if the exception is an instance of IllegalArgumentException")
+                  .isInstanceOf(IllegalArgumentException.class)
+                  .hasMessageContaining("Longitude and latitude must be provided"),
+          () -> verify(userRepository, times(1)).findById(1L));
+    }
+
+    @Test
+    @DisplayName("Should throw exception when user not found")
+    void setUserParameters_UserNotFound_ThrowsException() {
+      // Arrange
+      when(userRepository.findById(1L)).thenReturn(Optional.empty());
+      UserParametersRequestDTO request = validRequest();
+
+      // Act & Assert
+      assertAll(
+          () ->
+              assertThatThrownBy(() -> userCreationService.setUserParameters(1L, request))
+                  .as("checking if the exception is an instance of EntityNotFoundException")
+                  .isInstanceOf(EntityNotFoundException.class)
+                  .hasMessageContaining("User not found"),
+          () -> verify(userRepository, times(1)).findById(1L));
+    }
+
+    @Test
+    @DisplayName("Should create both attributes and preferences when both are null")
+    void setUserParameters_WithNullAttributesAndPreferences_CreatesBoth() {
+      // Arrange
+      User user = new User();
+      user.setProfile(new UserProfile());
+      user.getProfile().setAttributes(null);
+      user.getProfile().setPreferences(null);
+      UserParametersRequestDTO request = validRequest();
+
+      when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+      when(userGenderTypeService.getById(anyLong())).thenReturn(new UserGenderType());
+
+      // Act
+      userCreationService.setUserParameters(1L, request);
+
+      // Assert
+      assertAll(
+          () ->
+              assertThat(user.getProfile().getAttributes())
+                  .as("checking if attributes are created")
+                  .isNotNull(),
+          () ->
+              assertThat(user.getProfile().getPreferences())
+                  .as("checking if preferences are created")
+                  .isNotNull(),
+          () -> verify(userRepository, times(1)).findById(1L),
+          () -> verify(userRepository, times(1)).save(user));
+    }
+
+    @Test
+    @DisplayName("Should retain existing attributes when present")
+    void setUserParameters_WithExistingAttributes_KeepsOriginalAttributes() {
+      // Arrange
+      User user = new User();
+      UserProfile profile = new UserProfile();
+      UserAttributes existingAttributes = new UserAttributes();
+      profile.setAttributes(existingAttributes);
+      user.setProfile(profile);
+
+      UserParametersRequestDTO request = validRequest();
+
+      when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+      when(userGenderTypeService.getById(anyLong())).thenReturn(new UserGenderType());
+
+      // Act
+      userCreationService.setUserParameters(1L, request);
+
+      // Assert
+      assertAll(
+          () ->
+              assertThat(user.getProfile().getAttributes())
+                  .as("checking if attributes remain the same instance")
+                  .isSameAs(existingAttributes),
+          () -> verify(userRepository, times(1)).findById(1L),
+          () -> verify(userRepository, times(1)).save(user));
+    }
+
+    @Test
+    @DisplayName("Should retain existing preferences when present")
+    void setUserParameters_WithExistingPreferences_KeepsOriginalPreferences() {
+      // Arrange
+      User user = new User();
+      UserProfile profile = new UserProfile();
+      UserPreferences existingPreferences = new UserPreferences();
+      profile.setPreferences(existingPreferences);
+      user.setProfile(profile);
+
+      UserParametersRequestDTO request = validRequest();
+
+      when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+      when(userGenderTypeService.getById(anyLong())).thenReturn(new UserGenderType());
+
+      // Act
+      userCreationService.setUserParameters(1L, request);
+
+      // Assert
+      assertAll(
+          () ->
+              assertThat(user.getProfile().getPreferences())
+                  .as("checking if preferences remain the same instance")
+                  .isSameAs(existingPreferences),
+          () -> verify(userRepository, times(1)).findById(1L),
+          () -> verify(userRepository, times(1)).save(user));
+    }
+
+    private UserParametersRequestDTO validRequest() {
+      return UserParametersRequestDTO.builder()
+          .longitude(12.34)
+          .latitude(56.78)
+          .gender_self(1L)
+          .gender_other(2L)
+          .build();
     }
   }
 
