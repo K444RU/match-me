@@ -592,16 +592,8 @@ class UserControllerTest {
      * @return Set<Hobby>
      */
     private Set<Hobby> createMockHobbies() {
-        Hobby hobby1 = new Hobby();
-        hobby1.setId(1L);
-        hobby1.setName("3D printing");
-        hobby1.setCategory("General");
-
-        Hobby hobby2 = new Hobby();
-        hobby2.setId(2L);
-        hobby2.setName("Acrobatics");
-        hobby2.setCategory("General");
-
+        Hobby hobby1 = Hobby.builder().id(1L).name("3D printing").category("General").build();
+        Hobby hobby2 = Hobby.builder().id(2L).name("Acrobatics").category("General").build();
         return Set.of(hobby1, hobby2);
     }
 
