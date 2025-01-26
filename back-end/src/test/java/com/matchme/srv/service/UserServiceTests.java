@@ -46,7 +46,7 @@ import com.matchme.srv.repository.UserRoleTypeRepository;
 import com.matchme.srv.repository.UserStateTypesRepository;
 
 @ExtendWith(MockitoExtension.class) // equals to openMocks for BeforeEach
-class UserServiceTest {
+class UserServiceTests {
   
   @InjectMocks
   private UserService userService;
