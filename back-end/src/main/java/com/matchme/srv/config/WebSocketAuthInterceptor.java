@@ -3,7 +3,7 @@ package com.matchme.srv.config;
 
 import java.util.List;
 
-import org.junit.jupiter.api.Order;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.Ordered;
 import org.springframework.lang.NonNull;
 import org.springframework.messaging.Message;
@@ -35,7 +35,8 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
   @Override
   public Message<?> preSend(@NonNull Message<?> message, @NonNull MessageChannel channel) {
-    StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+    StompHeaderAccessor accessor =
+        MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
     if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
       processAuthentication(accessor);
     }
