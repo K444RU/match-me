@@ -1,24 +1,23 @@
 package com.matchme.srv.model.user.profile.user_attributes;
 
+import com.matchme.srv.model.user.profile.ProfileChange;
+import com.matchme.srv.model.user.profile.UserGenderType;
+import com.matchme.srv.model.user.profile.UserProfile;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
-import com.matchme.srv.model.user.profile.ProfileChange;
-import com.matchme.srv.model.user.profile.UserGenderType;
-import com.matchme.srv.model.user.profile.UserProfile;
-
-import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 @Data
 @Entity
 @Table(name = "user_attributes")
+@ToString(exclude = "userProfile")
 public class UserAttributes {
-  
-  @Id
-  private Long id;
+
+  @Id private Long id;
 
   @MapsId
   @OneToOne(fetch = FetchType.LAZY)
@@ -31,9 +30,8 @@ public class UserAttributes {
 
   private LocalDate birth_date;
 
-  private List<Double> location = new ArrayList<>(); //Geohash of 6-7 length
+  private List<Double> location = new ArrayList<>(); // Geohash of 6-7 length
 
   @OneToMany(mappedBy = "userAttributes", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   private Set<ProfileChange> attributeChangeLog;
-
 }
