@@ -1,6 +1,11 @@
 package com.matchme.srv.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.matchme.srv.dto.request.SignupRequestDTO;
@@ -36,14 +41,13 @@ import jakarta.persistence.EntityNotFoundException;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
-import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -77,10 +81,12 @@ class UserCreationServiceTests {
   @InjectMocks private UserCreationServiceImpl userCreationService;
 
   @Nested
+  @DisplayName("createUser Tests")
   class CreateUserTests {
 
     @Test
-    void UserCreationService_CreateUser_WithValidRequest_CreatesUser() {
+    @DisplayName("Should create user with valid request")
+    void createUser_ValidRequest_CreatesUser() {
       // Assign
       String email = "test@example.com";
       String number = "123";
@@ -102,47 +108,76 @@ class UserCreationServiceTests {
 
       // Assert
       ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-      Mockito.verify(userRepository).save(userCaptor.capture());
+      verify(userRepository).save(userCaptor.capture());
 
       User savedUser = userCaptor.getValue();
-      Assertions.assertThat(savedUser.getEmail()).isEqualTo(email);
-      Assertions.assertThat(savedUser.getNumber()).isEqualTo(number);
-      Assertions.assertThat(savedUser.getState()).isEqualTo(userStateTypes);
-      Assertions.assertThat(savedUser.getRoles()).contains(role);
-      Assertions.assertThat(savedUser.getUserAuth().getPassword()).isEqualTo("encodedPassword");
+      assertAll(
+          () ->
+              assertThat(savedUser.getEmail())
+                  .as("checking if the email is correct")
+                  .isEqualTo(email),
+          () ->
+              assertThat(savedUser.getNumber())
+                  .as("checking if the number is correct")
+                  .isEqualTo(number),
+          () ->
+              assertThat(savedUser.getState())
+                  .as("checking if the state is correct")
+                  .isEqualTo(userStateTypes),
+          () ->
+              assertThat(savedUser.getRoles())
+                  .as("checking if the roles are correct")
+                  .contains(role),
+          () ->
+              assertThat(savedUser.getUserAuth().getPassword())
+                  .as("checking if the password is correct")
+                  .isEqualTo("encodedPassword"),
+          () -> verify(userRepository, times(1)).save(savedUser));
     }
 
     @Test
-    void UserCreationService_CreateUser_WithExistentEmail_ThrowsDuplicateFieldException() {
+    @DisplayName("Should throw exception when email already exists")
+    void createUser_DuplicateEmail_ThrowsDuplicateFieldException() {
       // Assign
       String email = "test@example.com";
       SignupRequestDTO request = SignupRequestDTO.builder().email(email).build();
       when(userRepository.existsByEmail(email)).thenReturn(true);
 
       // Act & Assert
-      Assertions.assertThatThrownBy(() -> userCreationService.createUser(request))
-          .isInstanceOf(DuplicateFieldException.class)
-          .hasMessageContaining("Email already exists");
+      assertAll(
+          () ->
+              assertThatThrownBy(() -> userCreationService.createUser(request))
+                  .as("checking if the exception is an instance of DuplicateFieldException")
+                  .isInstanceOf(DuplicateFieldException.class)
+                  .hasMessageContaining("Email already exists"),
+          () -> verify(userRepository, times(1)).existsByEmail(email));
     }
 
     @Test
-    void UserCreationService_CreateUser_WithExistentNumber_ThrowsDuplicateFieldException() {
+    @DisplayName("Should throw exception when number already exists")
+    void createUser_DuplicateNumber_ThrowsDuplicateFieldException() {
       // Assign
       String number = "123";
       SignupRequestDTO request = SignupRequestDTO.builder().number(number).build();
       when(userRepository.existsByNumber(number)).thenReturn(true);
 
       // Act & Assert
-      Assertions.assertThatThrownBy(() -> userCreationService.createUser(request))
-          .isInstanceOf(DuplicateFieldException.class)
-          .hasMessageContaining("Phone number already exists");
+      assertAll(
+          () ->
+              assertThatThrownBy(() -> userCreationService.createUser(request))
+                  .as("checking if the exception is an instance of DuplicateFieldException")
+                  .isInstanceOf(DuplicateFieldException.class)
+                  .hasMessageContaining("Phone number already exists"),
+          () -> verify(userRepository, times(1)).existsByNumber(number));
     }
   }
 
   @Nested
+  @DisplayName("verifyAccount Tests")
   class VerifyAccountTests {
     @Test
-    void UserCreationService_VerifyAccount_WithValidVerificationCode_VerifiesAccount() {
+    @DisplayName("Should verify account with valid verification code")
+    void verifyAccount_ValidVerificationCode_VerifiesAccount() {
       // Assign
       User user = new User();
       UserAuth userAuth = new UserAuth();
@@ -166,29 +201,43 @@ class UserCreationServiceTests {
       userCreationService.verifyAccount(1L, 123);
 
       // Assert
-      Assertions.assertThat(user.getState()).isEqualTo(userStateType);
-      Assertions.assertThat(userAuth.getRecovery()).isNull();
-      UserProfile profile = user.getProfile();
-      Assertions.assertThat(profile).isNotNull();
-      Assertions.assertThat(profile.getAttributes()).isNotNull();
-      Assertions.assertThat(profile.getPreferences()).isNotNull();
-      Mockito.verify(userRepository).save(user);
+      assertAll(
+          () ->
+              assertThat(user.getState())
+                  .as("checking if the state is correct")
+                  .isEqualTo(userStateType),
+          () -> assertThat(userAuth.getRecovery()).as("checking if the recovery is null").isNull(),
+          () -> assertThat(user.getProfile()).as("checking if the profile is not null").isNotNull(),
+          () ->
+              assertThat(user.getProfile().getAttributes())
+                  .as("checking if the attributes are not null")
+                  .isNotNull(),
+          () ->
+              assertThat(user.getProfile().getPreferences())
+                  .as("checking if the preferences are not null")
+                  .isNotNull(),
+          () -> verify(userRepository, times(1)).save(user));
     }
 
     @Test
-    void UserCreationService_VerifyAccount_WithNonExistentUser_ThrowsEntityNotFoundException() {
+    @DisplayName("Should throw exception when user not found")
+    void verifyAccount_NonExistentUser_ThrowsEntityNotFoundException() {
       // Assign
       when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
       // Act & Assert
-      Assertions.assertThatThrownBy(() -> userCreationService.verifyAccount(1L, 0))
-          .isInstanceOf(EntityNotFoundException.class)
-          .hasMessageContaining("User not found");
+      assertAll(
+          () ->
+              assertThatThrownBy(() -> userCreationService.verifyAccount(1L, 0))
+                  .as("checking if the exception is an instance of EntityNotFoundException")
+                  .isInstanceOf(EntityNotFoundException.class)
+                  .hasMessageContaining("User not found"),
+          () -> verify(userRepository, times(1)).findById(1L));
     }
 
     @Test
-    void
-        UserCreationService_VerifyAccount_WithInvalidVerificationCode_ThrowsInvalidVerificationException() {
+    @DisplayName("Should throw exception when invalid verification code")
+    void verifyAccount_InvalidVerificationCode_ThrowsInvalidVerificationException() {
       // Assign
       User user = new User();
       UserAuth userAuth = new UserAuth();
@@ -197,17 +246,23 @@ class UserCreationServiceTests {
       when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
       // Act & Assert
-      Assertions.assertThatThrownBy(() -> userCreationService.verifyAccount(1L, 321))
-          .isInstanceOf(InvalidVerificationException.class)
-          .hasMessageContaining(
-              "Verification code was wrong! Would you like us to generate the code again?");
+      assertAll(
+          () ->
+              assertThatThrownBy(() -> userCreationService.verifyAccount(1L, 321))
+                  .as("checking if the exception is an instance of InvalidVerificationException")
+                  .isInstanceOf(InvalidVerificationException.class)
+                  .hasMessageContaining(
+                      "Verification code was wrong! Would you like us to generate the code again?"),
+          () -> verify(userRepository, times(1)).findById(1L));
     }
   }
 
   @Nested
+  @DisplayName("setUserParameters Tests")
   class SetUserParametersTests {
     @Test
-    void UserCreationService_SetUserParameters_WithValidRequest_SetsAllParameters() {
+    @DisplayName("Should set all parameters with valid request")
+    void setUserParameters_ValidRequest_SetsAllParameters() {
       // Assign
       User user = new User();
       UserParametersRequestDTO request =
@@ -241,39 +296,79 @@ class UserCreationServiceTests {
 
       // Assert
       UserProfile profile = user.getProfile();
-      Assertions.assertThat(profile.getFirst_name()).isEqualTo("John");
-      Assertions.assertThat(profile.getLast_name()).isEqualTo("Doe");
-      Assertions.assertThat(profile.getAlias()).isEqualTo("JD");
-      Assertions.assertThat(profile.getCity()).isEqualTo("New York");
-      Assertions.assertThat(profile.getHobbies()).containsExactlyInAnyOrder(hobby1, hobby2);
+      assertAll(
+          () ->
+              assertThat(profile.getFirst_name())
+                  .as("checking if the first name is correct")
+                  .isEqualTo("John"),
+          () ->
+              assertThat(profile.getLast_name())
+                  .as("checking if the last name is correct")
+                  .isEqualTo("Doe"),
+          () ->
+              assertThat(profile.getAlias()).as("checking if the alias is correct").isEqualTo("JD"),
+          () ->
+              assertThat(profile.getCity())
+                  .as("checking if the city is correct")
+                  .isEqualTo("New York"),
+          () ->
+              assertThat(profile.getHobbies())
+                  .as("checking if the hobbies are correct")
+                  .containsExactlyInAnyOrder(hobby1, hobby2),
+          () ->
+              assertThat(user.getState())
+                  .as("checking if the state is correct")
+                  .isEqualTo(userStateType),
+          () -> assertThat(user.getScore()).as("checking if the score is not null").isNotNull(),
+          () -> verify(userRepository, times(1)).save(user));
 
       UserAttributes attributes = profile.getAttributes();
-      Assertions.assertThat(attributes.getLocation()).containsExactly(12.34, 56.78);
-      Assertions.assertThat(attributes.getGender()).isEqualTo(genderType);
+      assertAll(
+          () ->
+              assertThat(attributes.getLocation())
+                  .as("checking if the location is correct")
+                  .containsExactly(12.34, 56.78),
+          () ->
+              assertThat(attributes.getGender())
+                  .as("checking if the gender is correct")
+                  .isEqualTo(genderType));
 
       UserPreferences preferences = profile.getPreferences();
-      Assertions.assertThat(preferences.getGender()).isEqualTo(genderType);
+      assertAll(
+          () ->
+              assertThat(preferences.getGender())
+                  .as("checking if the gender is correct")
+                  .isEqualTo(genderType));
 
-      Assertions.assertThat(user.getState()).isEqualTo(userStateType);
-      Assertions.assertThat(user.getScore()).isNotNull();
+      assertAll(
+          () ->
+              assertThat(user.getState())
+                  .as("checking if the state is correct")
+                  .isEqualTo(userStateType),
+          () -> assertThat(user.getScore()).as("checking if the score is not null").isNotNull());
     }
 
     @Test
-    void
-        UserCreationService_SetUserParameters_WithMissingLocation_ThrowsIllegalArgumentException() {
+    @DisplayName("Should throw exception when missing location")
+    void setUserParameters_WithMissingLocation_ThrowsIllegalArgumentException() {
       // Assign
       UserParametersRequestDTO invalidRequest = UserParametersRequestDTO.builder().build();
 
       when(userRepository.findById(1L)).thenReturn(Optional.of(new User()));
 
       // Act & Assert
-      Assertions.assertThatThrownBy(() -> userCreationService.setUserParameters(1L, invalidRequest))
-          .isInstanceOf(IllegalArgumentException.class)
-          .hasMessageContaining("Longitude and latitude must be provided");
+      assertAll(
+          () ->
+              assertThatThrownBy(() -> userCreationService.setUserParameters(1L, invalidRequest))
+                  .as("checking if the exception is an instance of IllegalArgumentException")
+                  .isInstanceOf(IllegalArgumentException.class)
+                  .hasMessageContaining("Longitude and latitude must be provided"),
+          () -> verify(userRepository, times(1)).findById(1L));
     }
 
     @Test
-    void UserCreationService_SetUserParameters_WithInvalidGender_ThrowsResourceNotFoundException() {
+    @DisplayName("Should throw exception when invalid gender")
+    void setUserParameters_WithInvalidGender_ThrowsResourceNotFoundException() {
       // Assign
       UserParametersRequestDTO request =
           UserParametersRequestDTO.builder().gender_self(99L).gender_other(2L).build();
@@ -282,13 +377,18 @@ class UserCreationServiceTests {
       when(userGenderTypeService.getById(99L)).thenThrow(new ResourceNotFoundException("Gender"));
 
       // Act & Assert
-      Assertions.assertThatThrownBy(() -> userCreationService.setUserParameters(1L, request))
-          .isInstanceOf(ResourceNotFoundException.class)
-          .hasMessageContaining("Gender not found");
+      assertAll(
+          () ->
+              assertThatThrownBy(() -> userCreationService.setUserParameters(1L, request))
+                  .as("checking if the exception is an instance of ResourceNotFoundException")
+                  .isInstanceOf(ResourceNotFoundException.class)
+                  .hasMessageContaining("Gender not found"),
+          () -> verify(userRepository, times(1)).findById(1L));
     }
 
     @Test
-    void UserCreationService_SetUserParameters_WithEmptyHobbies_CreatesEmptySet() {
+    @DisplayName("Should create empty set of hobbies when empty hobbies are provided")
+    void setUserParameters_WithEmptyHobbies_CreatesEmptySet() {
       // Assign
       User user = new User();
       UserParametersRequestDTO request =
@@ -307,11 +407,17 @@ class UserCreationServiceTests {
       userCreationService.setUserParameters(1L, request);
 
       // Assert
-      Assertions.assertThat(user.getProfile().getHobbies()).isEmpty();
+      assertAll(
+          () ->
+              assertThat(user.getProfile().getHobbies())
+                  .as("checking if the hobbies are empty")
+                  .isEmpty(),
+          () -> verify(userRepository, times(1)).findById(1L));
     }
 
     @Test
-    void UserCreationService_SetUserParameters_WithPartialData_SetsAvailableFields() {
+    @DisplayName("Should set available fields with partial data")
+    void setUserParameters_WithPartialData_SetsAvailableFields() {
       // Assign
       User user = new User();
       UserParametersRequestDTO request =
@@ -331,17 +437,23 @@ class UserCreationServiceTests {
 
       // Assert
       UserProfile profile = user.getProfile();
-      Assertions.assertThat(profile.getAlias()).isEqualTo("JD");
-      Assertions.assertThat(profile.getFirst_name()).isNull();
-      Assertions.assertThat(profile.getLast_name()).isNull();
-      Assertions.assertThat(profile.getCity()).isNull();
+      assertAll(
+          () ->
+              assertThat(profile.getAlias()).as("checking if the alias is correct").isEqualTo("JD"),
+          () ->
+              assertThat(profile.getFirst_name()).as("checking if the first name is null").isNull(),
+          () -> assertThat(profile.getLast_name()).as("checking if the last name is null").isNull(),
+          () -> assertThat(profile.getCity()).as("checking if the city is null").isNull(),
+          () -> verify(userRepository, times(1)).findById(1L));
     }
   }
 
   @Nested
+  @DisplayName("assignDefaultRole Tests")
   class AssignDefaultRoleTests {
     @Test
-    void UserCreationService_AssignDefaultRole_WithExistentRole_AssignsRole() {
+    @DisplayName("Should assign default role to user")
+    void assignDefaultRole_WithExistentRole_AssignsRole() {
       // Assign
       User user = new User();
       UserRoleType role = new UserRoleType();
@@ -351,15 +463,18 @@ class UserCreationServiceTests {
       userCreationService.assignDefaultRole(user);
 
       // Assert
-      Assertions.assertThat(user.getRoles()).contains(role);
-      Mockito.verify(userRoleTypeService).getByName("ROLE_USER");
+      assertAll(
+          () -> assertThat(user.getRoles()).as("checking if the role is correct").contains(role),
+          () -> verify(userRoleTypeService, times(1)).getByName("ROLE_USER"));
     }
   }
 
   @Nested
+  @DisplayName("removeUserByEmail Tests")
   class RemoveUserByEmailTests {
     @Test
-    void UserCreationService_RemoveUserByEmail_WithExistentEmail_RemovesUser() {
+    @DisplayName("Should remove user with existent email")
+    void removeUserByEmail_WithExistentEmail_RemovesUser() {
       // Arrange
       User user = new User();
       when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
@@ -368,20 +483,26 @@ class UserCreationServiceTests {
       userCreationService.removeUserByEmail("test@example.com");
 
       // Assert
-      Mockito.verify(userRepository).delete(user);
+      assertAll(
+          () -> verify(userRepository, times(1)).delete(user),
+          () -> verify(userRepository, times(1)).findByEmail("test@example.com"));
     }
 
     @Test
-    void
-        UserCreationService_RemoveUserByEmail_WithNonExistentEmail_ThrowsEntityNotFoundException() {
+    @DisplayName("Should throw exception when user not found")
+    void removeUserByEmail_WithNonExistentEmail_ThrowsEntityNotFoundException() {
       // Arrange
       when(userRepository.findByEmail("nonexistent@example.com")).thenReturn(Optional.empty());
 
       // Act & Assert
-      Assertions.assertThatThrownBy(
-              () -> userCreationService.removeUserByEmail("nonexistent@example.com"))
-          .isInstanceOf(EntityNotFoundException.class)
-          .hasMessageContaining("User not found!");
+      assertAll(
+          () ->
+              assertThatThrownBy(
+                      () -> userCreationService.removeUserByEmail("nonexistent@example.com"))
+                  .as("checking if the exception is an instance of EntityNotFoundException")
+                  .isInstanceOf(EntityNotFoundException.class)
+                  .hasMessageContaining("User not found!"),
+          () -> verify(userRepository, times(1)).findByEmail("nonexistent@example.com"));
     }
   }
 }
