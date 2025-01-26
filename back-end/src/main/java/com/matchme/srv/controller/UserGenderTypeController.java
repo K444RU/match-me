@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.matchme.srv.dto.response.GenderTypeDTO;
-import com.matchme.srv.service.GenderService;
+import com.matchme.srv.service.UserGenderTypeService;
 import lombok.RequiredArgsConstructor;
 
 
@@ -14,12 +14,12 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/genders")
-public class GenderController {
+public class UserGenderTypeController {
 
-    private final GenderService genderService;
+    private final UserGenderTypeService userGenderTypeService;
 
     @GetMapping()
     public List<GenderTypeDTO> getAllGenders() {
-        return genderService.getAllGenders();
+        return userGenderTypeService.getAllGenders();
     }
 }

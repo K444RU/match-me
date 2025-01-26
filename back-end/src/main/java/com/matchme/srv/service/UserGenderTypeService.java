@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class GenderService {
+public class UserGenderTypeService {
     private final UserGenderTypeRepository genderRepository;
 
     public List<GenderTypeDTO> getAllGenders() {
