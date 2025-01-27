@@ -1,4 +1,4 @@
-package com.matchme.srv.service;
+package com.matchme.srv.service.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -11,7 +11,6 @@ import com.matchme.srv.dto.request.settings.ProfilePictureSettingsRequestDTO;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.repository.UserRepository;
-import com.matchme.srv.service.user.UserProfileServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;

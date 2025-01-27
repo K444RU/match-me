@@ -1,4 +1,4 @@
-package com.matchme.srv.service;
+package com.matchme.srv.service.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -29,6 +29,7 @@ import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
 import com.matchme.srv.model.user.profile.user_preferences.PreferenceChangeType;
 import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
 import com.matchme.srv.repository.UserRepository;
+import com.matchme.srv.service.HobbyService;
 import com.matchme.srv.service.type.ActivityLogTypeService;
 import com.matchme.srv.service.type.AttributeChangeTypeService;
 import com.matchme.srv.service.type.PreferenceChangeTypeService;
@@ -36,7 +37,6 @@ import com.matchme.srv.service.type.ProfileChangeTypeService;
 import com.matchme.srv.service.type.UserGenderTypeService;
 import com.matchme.srv.service.type.UserRoleTypeService;
 import com.matchme.srv.service.type.UserStateTypesService;
-import com.matchme.srv.service.user.UserCreationServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.Collections;
 import java.util.Optional;

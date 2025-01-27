@@ -1,4 +1,4 @@
-package com.matchme.srv.service;
+package com.matchme.srv.service.type;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 import com.matchme.srv.dto.response.GenderTypeDTO;
 import com.matchme.srv.model.user.profile.UserGenderType;
 import com.matchme.srv.repository.UserGenderTypeRepository;
-import com.matchme.srv.service.type.UserGenderTypeService;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
