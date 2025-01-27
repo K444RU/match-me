@@ -1,4 +1,4 @@
-package com.matchme.srv.service;
+package com.matchme.srv.service.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -20,8 +20,8 @@ import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
 import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
 import com.matchme.srv.repository.UserRepository;
+import com.matchme.srv.service.HobbyService;
 import com.matchme.srv.service.type.UserGenderTypeService;
-import com.matchme.srv.service.user.UserSettingsServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.util.List;
