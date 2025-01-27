@@ -8,12 +8,14 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import com.matchme.srv.dto.request.settings.ProfilePictureSettingsRequestDTO;
+import com.matchme.srv.exception.ImageValidationException;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -85,16 +87,23 @@ class UserServiceTest {
 
   @BeforeEach
   void setUp() {
+    try {
+      user = new User();
+      profile = new UserProfile();
+      attributes = new UserAttributes();
+      preferences = new UserPreferences();
 
-    user = new User();
-    profile = new UserProfile();
-    attributes = new UserAttributes();
-    preferences = new UserPreferences();
-    
-    attributes.setLocation(List.of(2.22, 3.33));
-    profile.setAttributes(attributes);
-    profile.setPreferences(preferences);
-    user.setProfile(profile);
+      attributes.setLocation(List.of(2.22, 3.33));
+      profile.setAttributes(attributes);
+      profile.setPreferences(preferences);
+      user.setProfile(profile);
+
+      Field maxSizeField = UserService.class.getDeclaredField("maxAvatarSizeMb");
+      maxSizeField.setAccessible(true);
+      maxSizeField.set(userService, 5L);
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      throw new RuntimeException("Failed to set up test environment", e);
+    }
   }
 
   @Test
@@ -319,13 +328,126 @@ class UserServiceTest {
     mockUser.setProfile(mockProfile);
     when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
 
-
     ProfilePictureSettingsRequestDTO requestDTO = new ProfilePictureSettingsRequestDTO(invalidBase64Image);
-    Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-        userService.saveProfilePicture(userId, requestDTO);
+    Exception exception = assertThrows(ImageValidationException.class, () -> {
+      userService.saveProfilePicture(userId, requestDTO);
     });
 
-    assertEquals("Invalid Base64 image data.", exception.getMessage());
+    assertEquals("Invalid format: missing 'data:' prefix.", exception.getMessage());
+    verify(userRepository).findById(userId);
+    verify(userRepository, never()).save(any(User.class));
+  }
+
+  @Test
+  void saveProfilePicture_MissingDataPrefix_ThrowsException() {
+    Long userId = 1L;
+    String base64Image = "image/png;base64," + Base64.getEncoder().encodeToString("testImage".getBytes());
+
+    User mockUser = new User();
+    UserProfile mockProfile = new UserProfile();
+    mockUser.setProfile(mockProfile);
+    when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+    ProfilePictureSettingsRequestDTO requestDTO = new ProfilePictureSettingsRequestDTO(base64Image);
+    ImageValidationException exception = assertThrows(ImageValidationException.class, () -> {
+      userService.saveProfilePicture(userId, requestDTO);
+    });
+
+    assertEquals("Invalid format: missing 'data:' prefix.", exception.getMessage());
+    verify(userRepository).findById(userId);
+    verify(userRepository, never()).save(any(User.class));
+  }
+
+  @Test
+  void saveProfilePicture_MissingBase64Delimiter_ThrowsException() {
+    Long userId = 1L;
+    String base64Image = "data:image/png,testImageBase64String";
+
+    User mockUser = new User();
+    UserProfile mockProfile = new UserProfile();
+    mockUser.setProfile(mockProfile);
+    when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+    ProfilePictureSettingsRequestDTO requestDTO = new ProfilePictureSettingsRequestDTO(base64Image);
+    ImageValidationException exception = assertThrows(ImageValidationException.class, () -> {
+      userService.saveProfilePicture(userId, requestDTO);
+    });
+
+    assertEquals("Invalid Base64 format: missing ';base64,' segment.", exception.getMessage());
+    verify(userRepository).findById(userId);
+    verify(userRepository, never()).save(any(User.class));
+  }
+
+  @Test
+  void saveProfilePicture_ExceedsMaxSize_ThrowsException() throws Exception {
+    Long userId = 1L;
+    // Create a large image byte array (e.g., 6 MB)
+    byte[] largeImageBytes = new byte[6 * 1024 * 1024];
+    String base64LargeImage = "data:image/png;base64," + Base64.getEncoder().encodeToString(largeImageBytes);
+
+    User mockUser = new User();
+    UserProfile mockProfile = new UserProfile();
+    mockUser.setProfile(mockProfile);
+    when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+    ProfilePictureSettingsRequestDTO requestDTO = new ProfilePictureSettingsRequestDTO(base64LargeImage);
+
+    // Use reflection to set maxAvatarSizeMb to 5
+    Field maxSizeField = UserService.class.getDeclaredField("maxAvatarSizeMb");
+    maxSizeField.setAccessible(true);
+    maxSizeField.set(userService, 5L);
+
+    ImageValidationException exception = assertThrows(ImageValidationException.class, () -> {
+      userService.saveProfilePicture(userId, requestDTO);
+    });
+
+    assertEquals("Image size exceeds the maximum allowed of 5 MB", exception.getMessage());
+    verify(userRepository).findById(userId);
+    verify(userRepository, never()).save(any(User.class));
+  }
+
+  @Test
+  void saveProfilePicture_SizeAtMaxLimit_Success() throws Exception {
+    Long userId = 1L;
+    // Create an image byte array of exactly 5 MB
+    byte[] exactSizeImageBytes = new byte[5 * 1024 * 1024];
+    String base64ExactSizeImage = "data:image/png;base64," + Base64.getEncoder().encodeToString(exactSizeImageBytes);
+
+    User mockUser = new User();
+    UserProfile mockProfile = new UserProfile();
+    mockUser.setProfile(mockProfile);
+    when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+    ProfilePictureSettingsRequestDTO requestDTO = new ProfilePictureSettingsRequestDTO(base64ExactSizeImage);
+
+    // Use reflection to set maxAvatarSizeMb to 5
+    Field maxSizeField = UserService.class.getDeclaredField("maxAvatarSizeMb");
+    maxSizeField.setAccessible(true);
+    maxSizeField.set(userService, 5L);
+
+    userService.saveProfilePicture(userId, requestDTO);
+
+    verify(userRepository).save(mockUser);
+    assertNotNull(mockUser.getProfile().getProfilePicture());
+    assertEquals(exactSizeImageBytes.length, mockUser.getProfile().getProfilePicture().length);
+  }
+
+  @Test
+  void saveProfilePicture_UnsupportedMimeType_ThrowsException() {
+    Long userId = 1L;
+    String base64Image = "data:image/gif;base64," + Base64.getEncoder().encodeToString("testImage".getBytes());
+
+    User mockUser = new User();
+    UserProfile mockProfile = new UserProfile();
+    mockUser.setProfile(mockProfile);
+    when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+    ProfilePictureSettingsRequestDTO requestDTO = new ProfilePictureSettingsRequestDTO(base64Image);
+    ImageValidationException exception = assertThrows(ImageValidationException.class, () -> {
+      userService.saveProfilePicture(userId, requestDTO);
+    });
+
+    assertEquals("Only PNG or JPEG images are allowed.", exception.getMessage());
     verify(userRepository).findById(userId);
     verify(userRepository, never()).save(any(User.class));
   }

@@ -16,11 +16,13 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ onUploa
   });
   const editorRef = useRef<ReactAvatarEditor>(null);
 
+  const MAX_AVATAR_SIZE_MB = parseInt(import.meta.env.VITE_MAX_AVATAR_SIZE_MB);
+
   const handleNewImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert('File size exceeds 5 MB, please choose a smaller image.');
+      if (file.size > MAX_AVATAR_SIZE_MB * 1024 * 1024) {
+        alert(`File size exceeds ${MAX_AVATAR_SIZE_MB} MB, please choose a smaller image.`);
         return;
       }
       if (!['image/png', 'image/jpeg'].includes(file.type)) {
