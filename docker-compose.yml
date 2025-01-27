@@ -40,6 +40,10 @@ services:
     build:
       context: ./front-end
       dockerfile: Dockerfile
+      args:
+        VITE_GEOAPI_BASE_URL: ${VITE_GEOAPI_BASE_URL}
+        VITE_GEOAPI_KEY: ${VITE_GEOAPI_KEY}
+        VITE_MAX_AVATAR_SIZE_MB: ${VITE_MAX_AVATAR_SIZE_MB}
     container_name: matchme-frontend
     env_file:
       - .env
