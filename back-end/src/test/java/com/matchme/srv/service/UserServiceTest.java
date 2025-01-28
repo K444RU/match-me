@@ -13,6 +13,8 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import com.matchme.srv.dto.request.settings.AccountSettingsRequestDTO;
 import com.matchme.srv.dto.request.settings.ProfilePictureSettingsRequestDTO;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -211,8 +213,8 @@ class UserServiceTest {
     defaultRole.setId(1L);
     defaultRole.setName("ROLE_USER");
 
-    when(userRepository.existsByEmail("test@example.com")).thenReturn(false);
-    when(userRepository.existsByNumber("+372 55512999")).thenReturn(false);
+    when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
+    when(userRepository.findByNumber("+372 55512999")).thenReturn(Optional.empty());
     when(activityLogTypeRepository.findByName("CREATED")).thenReturn(Optional.of(mockLogType));
     when(userStateTypesRepository.findByName("UNVERIFIED")).thenReturn(Optional.of(mockState));
     when(encoder.encode("password")).thenReturn("encodedPassword");
@@ -233,14 +235,18 @@ class UserServiceTest {
     request.setNumber("+372 55512999");
     request.setPassword("password");
 
-    when(userRepository.existsByEmail("test@example.com")).thenReturn(true);
+    User existingUser = new User();
+    existingUser.setId(42L);
+    existingUser.setEmail("test@example.com");
+
+    when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(existingUser));
 
     DuplicateFieldException ex = assertThrows(
-      DuplicateFieldException.class, () -> userService.createUser(request));
+      DuplicateFieldException.class,
+            () -> userService.createUser(request));
     
     assertEquals("email", ex.getFieldName());
     assertEquals("Email already exists", ex.getMessage());
-
     verify(userRepository, never()).save(any(User.class));
   }
 
@@ -251,8 +257,8 @@ class UserServiceTest {
     request.setNumber("+372 55512999");
     request.setPassword("password");
 
-    when(userRepository.existsByEmail("test@example.com")).thenReturn(false);
-    when(userRepository.existsByNumber("+372 55512999")).thenReturn(false);
+    when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
+    when(userRepository.findByNumber("+372 55512999")).thenReturn(Optional.empty());
     when(userStateTypesRepository.findByName("UNVERIFIED")).thenReturn(Optional.empty());
 
     RuntimeException exception = assertThrows(
@@ -279,8 +285,8 @@ class UserServiceTest {
     defaultRole.setId(1L);
     defaultRole.setName("ROLE_USER");
 
-    when(userRepository.existsByEmail("test@example.com")).thenReturn(false);
-    when(userRepository.existsByNumber("+372 55512999")).thenReturn(false);
+    when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
+    when(userRepository.findByNumber("+372 55512999")).thenReturn(Optional.empty());
     when(userStateTypesRepository.findByName("UNVERIFIED")).thenReturn(Optional.of(state));
     when(activityLogTypeRepository.findByName("CREATED")).thenReturn(Optional.empty());
     when(roleRepository.findByName("ROLE_USER")).thenReturn(Optional.of(defaultRole));
@@ -343,6 +349,133 @@ class UserServiceTest {
     });
 
     assertEquals("User not found for ID: " + userId, exception.getMessage());
+    verify(userRepository, never()).save(any(User.class));
+  }
+
+  @Test
+  void updateUserAccountSettings_EmailOnly_Success() {
+    Long userId = 1L;
+    String oldEmail = "old-test@example.com";
+    String oldNumber = "+372 55512999";
+
+    User user = new User();
+    user.setId(userId);
+    user.setEmail(oldEmail);
+    user.setNumber(oldNumber);
+
+    String newEmail = "new-test@example.com";
+    AccountSettingsRequestDTO settings = new AccountSettingsRequestDTO(newEmail, oldNumber);
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+    when(userRepository.findByEmail(newEmail)).thenReturn(Optional.empty());
+    when(userRepository.findByNumber(oldNumber)).thenReturn(Optional.of(user));
+
+    userService.updateAccountSettings(userId, settings);
+
+    verify(userRepository).save(user);
+    assertEquals(newEmail, user.getEmail());
+    assertEquals(oldNumber, user.getNumber());
+  }
+
+  @Test
+  void updateAccount_PhoneOnly_Success() {
+    Long userId = 1L;
+    String oldEmail = "old-test@example.com";
+    String oldNumber = "+3725551111";
+
+    User user = new User();
+    user.setId(userId);
+    user.setEmail(oldEmail);
+    user.setNumber(oldNumber);
+
+    String newNumber = "+3725559999";
+    AccountSettingsRequestDTO settings = new AccountSettingsRequestDTO(oldEmail, newNumber);
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+    when(userRepository.findByEmail(oldEmail)).thenReturn(Optional.of(user));
+    when(userRepository.findByNumber(newNumber)).thenReturn(Optional.empty());
+
+    userService.updateAccountSettings(userId, settings);
+
+    verify(userRepository).save(user);
+    assertEquals(oldEmail, user.getEmail());
+    assertEquals(newNumber, user.getNumber());
+  }
+
+  @Test
+  void updateAccount_BothFieldsUnique_Success() {
+    Long userId = 1L;
+    User user = new User();
+    user.setId(userId);
+    user.setEmail("old-test@example.com");
+    user.setNumber("+3725551111");
+
+    String newEmail = "new-test@example.com";
+    String newNumber = "+3725552222";
+    AccountSettingsRequestDTO settings = new AccountSettingsRequestDTO(newEmail, newNumber);
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+    when(userRepository.findByEmail(newEmail)).thenReturn(Optional.empty());
+    when(userRepository.findByNumber(newNumber)).thenReturn(Optional.empty());
+
+    userService.updateAccountSettings(userId, settings);
+
+    verify(userRepository).save(user);
+    assertEquals(newEmail, user.getEmail());
+    assertEquals(newNumber, user.getNumber());
+  }
+
+  @Test
+  void updateAccount_EmailBelongsToDifferentUser_ThrowsDuplicateFieldException() {
+    Long userId = 1L;
+    User currentUser = new User();
+    currentUser.setId(userId);
+    currentUser.setEmail("old@example.com");
+    currentUser.setNumber("+3725551111");
+
+    User differentUser = new User();
+    differentUser.setId(2L);
+    differentUser.setEmail("taken@example.com");
+    differentUser.setNumber("+372999000");
+
+    AccountSettingsRequestDTO settings = new AccountSettingsRequestDTO("taken@example.com", currentUser.getNumber());
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(currentUser));
+    when(userRepository.findByEmail("taken@example.com")).thenReturn(Optional.of(differentUser));
+
+    assertThrows(
+            DuplicateFieldException.class,
+            () -> userService.updateAccountSettings(userId, settings)
+    );
+
+    verify(userRepository, never()).save(any(User.class));
+  }
+
+  @Test
+  void updateAccount_PhoneBelongsToDifferentUser_ThrowsDuplicateFieldException() {
+    Long userId = 1L;
+    User currentUser = new User();
+    currentUser.setId(userId);
+    currentUser.setEmail("old@example.com");
+    currentUser.setNumber("+3725551111");
+
+    User differentUser = new User();
+    differentUser.setId(2L);
+    differentUser.setEmail("another@example.com");
+    differentUser.setNumber("+372999000");
+
+    AccountSettingsRequestDTO settings =
+            new AccountSettingsRequestDTO(currentUser.getEmail(), "+372999000");
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(currentUser));
+    when(userRepository.findByEmail("old@example.com")).thenReturn(Optional.of(currentUser));
+    when(userRepository.findByNumber("+372999000")).thenReturn(Optional.of(differentUser));
+
+    assertThrows(
+            DuplicateFieldException.class,
+            () -> userService.updateAccountSettings(userId, settings)
+    );
+
     verify(userRepository, never()).save(any(User.class));
   }
 

@@ -96,22 +96,21 @@ public class UserService {
    * @param number   - new phone number to be used
    * @param userId   - the user doing the update (can be null for new users)
    */
-  private void checkForDuplicateFields(String email, String number, Long userId) {
+  private void validateUniqueEmailAndNumber(String email, String number, Long userId) {
     if (email != null && !email.isBlank()) {
-      userRepository.findByEmail(email).ifPresent(existingUser -> {
-        if (userId == null || !existingUser.getId().equals(userId)) {
-          throw new DuplicateFieldException("email", "Email already exists");
-        }
-      });
+      userRepository.findByEmail(email)
+              .filter(existingUser -> !existingUser.getId().equals(userId))
+              .ifPresent(u -> {
+                throw new DuplicateFieldException("email", "Email already exists");
+              });
     }
 
     if (number != null && !number.isBlank()) {
-      Optional<User> userWithNumber = userRepository.findByNumber(number);
-      if (userWithNumber.isPresent()) {
-        if (userId == null || !userWithNumber.get().getId().equals(userId)) {
-          throw new DuplicateFieldException("number", "Phone number already exists");
-        }
-      }
+      userRepository.findByNumber(number)
+              .filter(existingUser -> !existingUser.getId().equals(userId))
+              .ifPresent(u -> {
+                throw new DuplicateFieldException("number", "Phone number already exists");
+              });
     }
   }
 
@@ -120,7 +119,7 @@ public class UserService {
   public ActivityLog createUser(SignupRequestDTO signUpRequest) {
     log.info("Creating user with email: " + signUpRequest.getEmail());
 
-    checkForDuplicateFields(signUpRequest.getEmail(), signUpRequest.getNumber(), null);
+    validateUniqueEmailAndNumber(signUpRequest.getEmail(), signUpRequest.getNumber(), null);
 
     UserStateTypes state = userStateTypesRepository.findByName("UNVERIFIED")
         .orElseThrow(() -> new RuntimeException("UserState not found"));
@@ -272,13 +271,16 @@ public class UserService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_MESSAGE));
 
-    checkForDuplicateFields(settings.getEmail(), settings.getNumber(), user.getId());
+    log.info("Attempting to update account settings for userId: {}. New email: {}, new number: {}",
+            userId, settings.getEmail(), settings.getNumber());
+
+    validateUniqueEmailAndNumber(settings.getEmail(), settings.getNumber(), user.getId());
 
     user.setEmail(settings.getEmail());
     user.setNumber(settings.getNumber());
 
-    // TODO: Add logging
     userRepository.save(user);
+    log.info("Successfully updated user with ID: {}", userId);
   }
 
   public void updateProfileSettings(Long userId, ProfileSettingsRequestDTO settings) {
