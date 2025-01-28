@@ -5,11 +5,12 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@RequiredArgsConstructor
+@AllArgsConstructor
 public class AccountSettingsRequestDTO {
     @NotBlank(message = "Email is required")
     @Size(max = 320, message = "Email must be less than 320 characters")

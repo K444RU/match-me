@@ -8,8 +8,6 @@ import com.matchme.srv.model.user.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
-    Optional<User> findByNumber(String number);
 
-    Boolean existsByEmail(String email);
-    Boolean existsByNumber(String number);
+    Optional<User> findByNumber(String number);
 }
