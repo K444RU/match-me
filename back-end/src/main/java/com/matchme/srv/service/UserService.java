@@ -97,21 +97,18 @@ public class UserService {
    * @param userId   - the user doing the update (can be null for new users)
    */
   private void validateUniqueEmailAndNumber(String email, String number, Long userId) {
-    if (email != null && !email.isBlank()) {
-      userRepository.findByEmail(email)
+
+      userRepository.findByEmailIgnoreCase(email)
               .filter(existingUser -> !existingUser.getId().equals(userId))
               .ifPresent(u -> {
                 throw new DuplicateFieldException("email", "Email already exists");
               });
-    }
 
-    if (number != null && !number.isBlank()) {
       userRepository.findByNumber(number)
               .filter(existingUser -> !existingUser.getId().equals(userId))
               .ifPresent(u -> {
                 throw new DuplicateFieldException("number", "Phone number already exists");
               });
-    }
   }
 
   // Creates User entity and UserAuth entity for user, sends verification e-mail
