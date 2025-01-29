@@ -213,7 +213,7 @@ class UserServiceTest {
     defaultRole.setId(1L);
     defaultRole.setName("ROLE_USER");
 
-    when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
+    when(userRepository.findByEmailIgnoreCase("test@example.com")).thenReturn(Optional.empty());
     when(userRepository.findByNumber("+372 55512999")).thenReturn(Optional.empty());
     when(activityLogTypeRepository.findByName("CREATED")).thenReturn(Optional.of(mockLogType));
     when(userStateTypesRepository.findByName("UNVERIFIED")).thenReturn(Optional.of(mockState));
@@ -239,7 +239,7 @@ class UserServiceTest {
     existingUser.setId(42L);
     existingUser.setEmail("test@example.com");
 
-    when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(existingUser));
+    when(userRepository.findByEmailIgnoreCase("test@example.com")).thenReturn(Optional.of(existingUser));
 
     DuplicateFieldException ex = assertThrows(
       DuplicateFieldException.class,
@@ -257,7 +257,7 @@ class UserServiceTest {
     request.setNumber("+372 55512999");
     request.setPassword("password");
 
-    when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
+    when(userRepository.findByEmailIgnoreCase("test@example.com")).thenReturn(Optional.empty());
     when(userRepository.findByNumber("+372 55512999")).thenReturn(Optional.empty());
     when(userStateTypesRepository.findByName("UNVERIFIED")).thenReturn(Optional.empty());
 
@@ -285,7 +285,7 @@ class UserServiceTest {
     defaultRole.setId(1L);
     defaultRole.setName("ROLE_USER");
 
-    when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
+    when(userRepository.findByEmailIgnoreCase("test@example.com")).thenReturn(Optional.empty());
     when(userRepository.findByNumber("+372 55512999")).thenReturn(Optional.empty());
     when(userStateTypesRepository.findByName("UNVERIFIED")).thenReturn(Optional.of(state));
     when(activityLogTypeRepository.findByName("CREATED")).thenReturn(Optional.empty());
@@ -367,7 +367,7 @@ class UserServiceTest {
     AccountSettingsRequestDTO settings = new AccountSettingsRequestDTO(newEmail, oldNumber);
 
     when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-    when(userRepository.findByEmail(newEmail)).thenReturn(Optional.empty());
+    when(userRepository.findByEmailIgnoreCase(newEmail)).thenReturn(Optional.empty());
     when(userRepository.findByNumber(oldNumber)).thenReturn(Optional.of(user));
 
     userService.updateAccountSettings(userId, settings);
@@ -392,7 +392,7 @@ class UserServiceTest {
     AccountSettingsRequestDTO settings = new AccountSettingsRequestDTO(oldEmail, newNumber);
 
     when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-    when(userRepository.findByEmail(oldEmail)).thenReturn(Optional.of(user));
+    when(userRepository.findByEmailIgnoreCase(oldEmail)).thenReturn(Optional.of(user));
     when(userRepository.findByNumber(newNumber)).thenReturn(Optional.empty());
 
     userService.updateAccountSettings(userId, settings);
@@ -415,7 +415,7 @@ class UserServiceTest {
     AccountSettingsRequestDTO settings = new AccountSettingsRequestDTO(newEmail, newNumber);
 
     when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-    when(userRepository.findByEmail(newEmail)).thenReturn(Optional.empty());
+    when(userRepository.findByEmailIgnoreCase(newEmail)).thenReturn(Optional.empty());
     when(userRepository.findByNumber(newNumber)).thenReturn(Optional.empty());
 
     userService.updateAccountSettings(userId, settings);
@@ -441,7 +441,7 @@ class UserServiceTest {
     AccountSettingsRequestDTO settings = new AccountSettingsRequestDTO("taken@example.com", currentUser.getNumber());
 
     when(userRepository.findById(userId)).thenReturn(Optional.of(currentUser));
-    when(userRepository.findByEmail("taken@example.com")).thenReturn(Optional.of(differentUser));
+    when(userRepository.findByEmailIgnoreCase("taken@example.com")).thenReturn(Optional.of(differentUser));
 
     assertThrows(
             DuplicateFieldException.class,
@@ -468,7 +468,7 @@ class UserServiceTest {
             new AccountSettingsRequestDTO(currentUser.getEmail(), "+372999000");
 
     when(userRepository.findById(userId)).thenReturn(Optional.of(currentUser));
-    when(userRepository.findByEmail("old@example.com")).thenReturn(Optional.of(currentUser));
+    when(userRepository.findByEmailIgnoreCase("old@example.com")).thenReturn(Optional.of(currentUser));
     when(userRepository.findByNumber("+372999000")).thenReturn(Optional.of(differentUser));
 
     assertThrows(
