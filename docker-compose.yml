@@ -10,7 +10,7 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - matchme-network
+      - backend-network
 
   # =============== BACK-END (Spring Boot) ===============
   backend:
@@ -33,7 +33,7 @@ services:
     depends_on:
       - db
     networks:
-      - matchme-network
+      - backend-network
 
   # =============== FRONT-END (React) ===============
   frontend:
@@ -52,8 +52,25 @@ services:
     depends_on:
       - backend
     networks:
-      - matchme-network
+      - frontend-network
+
+  # =============== NGINX PROXY ===============
+  proxy:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: matchme-proxy
+    ports:
+      - "80:80"     # External port to access everything
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - backend-network
+      - frontend-network
 
 networks:
-  matchme-network:
+  frontend-network:
+    driver: bridge
+  backend-network:
     driver: bridge
