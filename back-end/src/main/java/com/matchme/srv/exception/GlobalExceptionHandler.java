@@ -125,4 +125,11 @@ public class GlobalExceptionHandler {
         log.error("IllegalStateException occurred: {}", ex.getMessage()/* , ex */);
         return ResponseEntity.badRequest().build();
     }
+
+    @ExceptionHandler(ImageValidationException.class)
+    public ResponseEntity<Map<String, String>> handleImageValidationException(ImageValidationException ex) {
+        log.error("ImageValidationException occurred: {}", ex.getMessage());
+        return ResponseEntity.badRequest().build();
+    }
+
 }
