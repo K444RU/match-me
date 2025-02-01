@@ -11,6 +11,7 @@ import com.matchme.srv.dto.request.settings.AccountSettingsRequestDTO;
 import com.matchme.srv.dto.request.settings.AttributesSettingsRequestDTO;
 import com.matchme.srv.dto.request.settings.PreferencesSettingsRequestDTO;
 import com.matchme.srv.dto.request.settings.ProfileSettingsRequestDTO;
+import com.matchme.srv.exception.DuplicateFieldException;
 import com.matchme.srv.mapper.AttributesMapper;
 import com.matchme.srv.mapper.PreferencesMapper;
 import com.matchme.srv.model.user.User;
@@ -24,7 +25,9 @@ import com.matchme.srv.service.type.UserGenderTypeService;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserSettingsServiceImpl implements UserSettingsService {
@@ -39,15 +42,44 @@ public class UserSettingsServiceImpl implements UserSettingsService {
 
     private static final String USER_NOT_FOUND_MESSAGE = "User not found!";
 
+
+    /**
+     * Checks if the given email or phone number is used by a *different* user.
+     * If so, throws a DuplicateFieldException.
+     *
+     * @param email    - new email to be used
+     * @param number   - new phone number to be used
+     * @param userId   - the user doing the update (can be null for new users)
+     */
+    private void validateUniqueEmailAndNumber(String email, String number, Long userId) {
+
+        userRepository.findByEmailIgnoreCase(email)
+                .filter(existingUser -> !existingUser.getId().equals(userId))
+                .ifPresent(u -> {
+                throw new DuplicateFieldException("email", "Email already exists");
+                });
+
+        userRepository.findByNumber(number)
+                .filter(existingUser -> !existingUser.getId().equals(userId))
+                .ifPresent(u -> {
+                throw new DuplicateFieldException("number", "Phone number already exists");
+                });
+    }
+
     public void updateAccountSettings(Long userId, AccountSettingsRequestDTO settings) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_MESSAGE));
 
+        log.info("Attempting to update account settings for userId: {}. New email: {}, new number: {}",
+        userId, settings.getEmail(), settings.getNumber());
+    
+        validateUniqueEmailAndNumber(settings.getEmail(), settings.getNumber(), user.getId());
+    
         user.setEmail(settings.getEmail());
         user.setNumber(settings.getNumber());
-
-        // TODO: Add logging
+    
         userRepository.save(user);
+        log.info("Successfully updated user with ID: {}", userId);
     }
 
     public void updateProfileSettings(Long userId, ProfileSettingsRequestDTO settings) {
