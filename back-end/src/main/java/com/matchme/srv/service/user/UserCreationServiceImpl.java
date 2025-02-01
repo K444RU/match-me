@@ -39,6 +39,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,6 +63,29 @@ public class UserCreationServiceImpl implements UserCreationService {
 
   private final PasswordEncoder encoder;
 
+    /**
+     * Checks if the given email or phone number is used by a *different* user.
+     * If so, throws a DuplicateFieldException.
+     *
+     * @param email    - new email to be used
+     * @param number   - new phone number to be used
+     * @param userId   - the user doing the update (can be null for new users)
+     */
+    private void validateUniqueEmailAndNumber(String email, String number, Long userId) {
+
+      userRepository.findByEmailIgnoreCase(email)
+              .filter(existingUser -> !existingUser.getId().equals(userId))
+              .ifPresent(u -> {
+              throw new DuplicateFieldException("email", "Email already exists");
+              });
+
+      userRepository.findByNumber(number)
+              .filter(existingUser -> !existingUser.getId().equals(userId))
+              .ifPresent(u -> {
+              throw new DuplicateFieldException("number", "Phone number already exists");
+              });
+  }
+
   private final AttributesMapper attributesMapper;
   private final PreferencesMapper preferencesMapper;
 
@@ -73,15 +98,7 @@ public class UserCreationServiceImpl implements UserCreationService {
   public ActivityLog createUser(SignupRequestDTO signUpRequest) {
     log.info("Creating user with email: " + signUpRequest.getEmail());
 
-    boolean emailExists = userRepository.existsByEmail(signUpRequest.getEmail());
-    if (emailExists) {
-      throw new DuplicateFieldException("email", "Email already exists");
-    }
-
-    boolean numberExists = userRepository.existsByNumber(signUpRequest.getNumber());
-    if (numberExists) {
-      throw new DuplicateFieldException("number", "Phone number already exists");
-    }
+    validateUniqueEmailAndNumber(signUpRequest.getEmail(), signUpRequest.getNumber(), null);
 
     UserStateTypes state = userStateTypesService.getByName("UNVERIFIED");
 
