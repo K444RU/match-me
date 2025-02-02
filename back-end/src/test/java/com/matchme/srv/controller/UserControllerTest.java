@@ -85,8 +85,6 @@ class UserControllerTest {
 
   @InjectMocks private UserController userController;
 
-  private ObjectMapper objectMapper = new ObjectMapper();
-
   @BeforeEach
   void setUp() {
     mockMvc =
@@ -107,8 +105,6 @@ class UserControllerTest {
                     (UserDetailsImpl) ((Authentication) invocation.getArgument(0)).getPrincipal();
                 return userDetails.getId();
               });
-
-      //       setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
     }
 
     @Nested

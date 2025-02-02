@@ -228,7 +228,7 @@ class UserProfileServiceTests {
 
     @Test
     @DisplayName("Should throw exception when image size exceeds max size")
-    void saveProfilePicture_ExceedsMaxSize_ThrowsException() throws Exception {
+    void saveProfilePicture_ExceedsMaxSize_ThrowsException() {
       // Arrange
       // Create a large image byte array (e.g., 6 MB)
       byte[] largeImageBytes = new byte[6 * 1024 * 1024];
@@ -285,9 +285,9 @@ class UserProfileServiceTests {
                   .as("checking if the profile picture is not null")
                   .isNotNull(),
           () ->
-              assertThat(mockUser.getProfile().getProfilePicture().length)
+              assertThat(mockUser.getProfile().getProfilePicture())
                   .as("checking if the profile picture length is correct")
-                  .isEqualTo(exactSizeImageBytes.length));
+                  .hasSameSizeAs(exactSizeImageBytes));
     }
 
     @Test
