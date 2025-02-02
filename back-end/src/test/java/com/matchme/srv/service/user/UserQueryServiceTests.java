@@ -41,7 +41,7 @@ class UserQueryServiceTests {
 
   @Mock private UserParametersMapper parametersMapper;
 
-  @InjectMocks private UserQueryServiceImpl userQueryService;
+  @InjectMocks private UserQueryService userQueryService;
 
   private static final Long VALID_USER_ID = 1L;
   private static final Long TARGET_USER_ID = 2L;

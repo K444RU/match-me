@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.matchme.srv.dto.request.settings.ProfilePictureSettingsRequestDTO;
+import com.matchme.srv.exception.ImageValidationException;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.repository.UserRepository;
@@ -26,7 +27,7 @@ class UserProfileServiceTests {
 
   @Mock private UserRepository userRepository;
 
-  @InjectMocks private UserProfileServiceImpl userProfileService;
+  @InjectMocks private UserProfileService userProfileService;
 
   @Nested
   @DisplayName("saveProfilePicture Tests")
@@ -91,9 +92,9 @@ class UserProfileServiceTests {
       assertAll(
           () ->
               assertThatThrownBy(() -> userProfileService.saveProfilePicture(1L, request))
-                  .as("checking if the exception is an instance of IllegalArgumentException")
-                  .isInstanceOf(IllegalArgumentException.class)
-                  .hasMessageContaining("Invalid Base64 image data."),
+                  .as("checking if the exception is an instance of ImageValidationException")
+                  .isInstanceOf(ImageValidationException.class)
+                  .hasMessageContaining("Invalid format: missing 'data:' prefix."),
           () -> verify(userRepository, times(1)).findById(1L));
     }
 
