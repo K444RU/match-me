@@ -1,6 +1,8 @@
 package com.matchme.srv.controller;
 
+import static com.matchme.srv.TestDataFactory.*;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -20,40 +22,36 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-@WebMvcTest(controllers = ChatWebSocketController.class)
+@ExtendWith(MockitoExtension.class)
 public class ChatWebSocketControllerTests {
 
-  @Autowired private ChatWebSocketController chatWebSocketController;
+  @InjectMocks private ChatWebSocketController chatWebSocketController;
 
-  @MockitoBean private ChatService chatService;
+  @Mock private ChatService chatService;
 
-  @MockitoBean private UserQueryService userQueryService;
+  @Mock private UserQueryService userQueryService;
 
-  @MockitoBean private SimpMessagingTemplate messagingTemplate;
+  @Mock private SimpMessagingTemplate messagingTemplate;
 
-  @MockitoBean private SecurityUtils securityUtils;
+  @Mock private SecurityUtils securityUtils;
 
   private User sender;
-  private User receiver;
   private Authentication authentication;
 
   @BeforeEach
   void setUp() {
-    sender = new User();
-    sender.setId(1L);
-    receiver = new User();
-    receiver.setId(2L);
+    sender = createUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
     authentication = new UsernamePasswordAuthenticationToken(sender, null);
 
     when(securityUtils.getCurrentUserId(authentication)).thenReturn(sender.getId());
-    when(userQueryService.getUser(sender.getId())).thenReturn(sender);
   }
 
   @Nested
@@ -76,41 +74,58 @@ public class ChatWebSocketControllerTests {
               .build();
 
       when(chatService.saveMessage(any(), any(), any(), any())).thenReturn(mockResponse);
-      when(chatService.getOtherUserIdInConnection(123L, 1L)).thenReturn(2L);
     }
 
     @Test
-    @DisplayName("sendMessage_ValidRequest_BroadcastsToBothUsers")
+    @DisplayName("Should save message and broadcast to both users")
     void sendMessage_ValidRequest_BroadcastsToBothUsers() {
+      // Arrange
+      when(userQueryService.getUser(DEFAULT_USER_ID)).thenReturn(sender);
+      when(chatService.getOtherUserIdInConnection(123L, DEFAULT_USER_ID))
+          .thenReturn(DEFAULT_TARGET_USER_ID);
+
       // Act
       chatWebSocketController.sendMessage(validRequest, authentication);
 
       // Assert
-      verify(chatService)
-          .saveMessage(
-              eq(validRequest.getConnectionId()),
-              eq(sender.getId()),
-              eq(validRequest.getContent()),
-              any(Instant.class));
-
-      verify(messagingTemplate)
-          .convertAndSendToUser(sender.getId().toString(), "/queue/messages", mockResponse);
-
-      verify(messagingTemplate).convertAndSendToUser("2", "/queue/messages", mockResponse);
+      assertAll(
+          () ->
+              verify(chatService)
+                  .saveMessage(
+                      eq(validRequest.getConnectionId()),
+                      eq(sender.getId()),
+                      eq(validRequest.getContent()),
+                      any(Instant.class)),
+          () ->
+              verify(messagingTemplate)
+                  .convertAndSendToUser(
+                      DEFAULT_USER_ID.toString(), "/queue/messages", mockResponse),
+          () ->
+              verify(messagingTemplate)
+                  .convertAndSendToUser(
+                      DEFAULT_TARGET_USER_ID.toString(), "/queue/messages", mockResponse),
+          () ->
+              verify(chatService)
+                  .getOtherUserIdInConnection(
+                      eq(validRequest.getConnectionId()), eq(sender.getId())));
     }
 
     @Test
-    @DisplayName("sendMessage_InvalidConnection_HandlesError")
+    @DisplayName("Should propagate connection not found error")
     void sendMessage_InvalidConnection_HandlesError() {
       // Arrange
       when(chatService.getOtherUserIdInConnection(any(), any()))
           .thenThrow(new EntityNotFoundException("Connection not found"));
+      when(userQueryService.getUser(sender.getId())).thenReturn(sender);
 
       // Act & Assert
       assertThatThrownBy(() -> chatWebSocketController.sendMessage(validRequest, authentication))
           .as("Should propagate connection not found error")
           .isInstanceOf(EntityNotFoundException.class)
           .hasMessageContaining("Connection not found");
+
+      verify(chatService).saveMessage(any(), any(), any(), any());
+      verify(messagingTemplate, times(0)).convertAndSendToUser(any(), any(), any());
     }
   }
 
@@ -123,33 +138,38 @@ public class ChatWebSocketControllerTests {
     void setUp() {
       validRequest = new TypingStatusRequestDTO();
       validRequest.setConnectionId(123L);
-      validRequest.setSenderId(1L);
+      validRequest.setSenderId(DEFAULT_USER_ID);
       validRequest.setTyping(true);
-
-      when(chatService.getOtherUserIdInConnection(123L, 1L)).thenReturn(2L);
     }
 
     @Test
-    @DisplayName("typingStatus_ValidRequest_SendsToOtherUser")
+    @DisplayName("Should send typing status to other user")
     void typingStatus_ValidRequest_SendsToOtherUser() {
+      // Arrange
+      when(chatService.getOtherUserIdInConnection(123L, DEFAULT_USER_ID))
+          .thenReturn(DEFAULT_TARGET_USER_ID);
+
       // Act
       chatWebSocketController.typingStatus(validRequest, authentication);
 
       // Assert
-      verify(messagingTemplate).convertAndSendToUser("2", "/queue/typing", validRequest);
+      verify(messagingTemplate)
+          .convertAndSendToUser(DEFAULT_TARGET_USER_ID.toString(), "/queue/typing", validRequest);
     }
 
     @Test
-    @DisplayName("typingStatus_MismatchedSender_IgnoresRequest")
+    @DisplayName("Should ignore request if sender ID mismatches")
     void typingStatus_MismatchedSender_IgnoresRequest() {
       // Arrange
-      validRequest.setSenderId(999L);
+      validRequest.setSenderId(INVALID_USER_ID);
 
       // Act
       chatWebSocketController.typingStatus(validRequest, authentication);
 
       // Assert
       verify(messagingTemplate, times(0)).convertAndSendToUser(any(), any(), any());
+      verify(chatService, times(0)).getOtherUserIdInConnection(any(), any());
+      verify(securityUtils, times(1)).getCurrentUserId(any());
     }
   }
 }
