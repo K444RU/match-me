@@ -18,11 +18,8 @@ import java.util.stream.IntStream;
 public class TestDataFactory {
 
   public static final Long DEFAULT_USER_ID = 1L;
-  public static final Long DEFAULT_TARGET_USER_ID = 2L;
   public static final String DEFAULT_EMAIL = "user@example.com";
-  public static final String DEFAULT_TARGET_EMAIL = "user2@example.com";
   public static final String DEFAULT_NUMBER = "+372 55555555";
-  public static final String DEFAULT_TARGET_NUMBER = "+372 44554455";
   public static final String DEFAULT_FIRST_NAME = "John";
   public static final String DEFAULT_LAST_NAME = "Doe";
   public static final String DEFAULT_ALIAS = "johndoe";
@@ -42,6 +39,14 @@ public class TestDataFactory {
   public static final String DEFAULT_BIRTH_DATE = "1995-01-01";
   public static final Double DEFAULT_LONGITUDE = 25.5412;
   public static final Double DEFAULT_LATITUDE = 58.8879;
+  
+  // Target
+  public static final Long DEFAULT_TARGET_USER_ID = 2L;
+  public static final String DEFAULT_TARGET_EMAIL = "user2@example.com";
+  public static final String DEFAULT_TARGET_NUMBER = "+372 44554455";
+  
+  // Invalid
+  public static final Long INVALID_USER_ID = 999L;
 
   public static User createBasicUser() {
     return createUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
