@@ -78,7 +78,7 @@ class UserCreationServiceTests {
 
   @Mock private HobbyService hobbyService;
 
-  @InjectMocks private UserCreationServiceImpl userCreationService;
+  @InjectMocks private UserCreationService userCreationService;
 
   @Nested
   @DisplayName("createUser Tests")
@@ -141,7 +141,8 @@ class UserCreationServiceTests {
       // Assign
       String email = "test@example.com";
       SignupRequestDTO request = SignupRequestDTO.builder().email(email).build();
-      when(userRepository.existsByEmail(email)).thenReturn(true);
+      when(userRepository.findByEmailIgnoreCase("test@example.com")).thenReturn(Optional.empty());
+      when(userRepository.findByNumber("+372 55512999")).thenReturn(Optional.empty());
 
       // Act & Assert
       assertAll(
@@ -150,7 +151,7 @@ class UserCreationServiceTests {
                   .as("checking if the exception is an instance of DuplicateFieldException")
                   .isInstanceOf(DuplicateFieldException.class)
                   .hasMessageContaining("Email already exists"),
-          () -> verify(userRepository, times(1)).existsByEmail(email));
+          () -> verify(userRepository, times(1)).findByEmailIgnoreCase(email));
     }
 
     @Test
@@ -159,7 +160,7 @@ class UserCreationServiceTests {
       // Assign
       String number = "123";
       SignupRequestDTO request = SignupRequestDTO.builder().number(number).build();
-      when(userRepository.existsByNumber(number)).thenReturn(true);
+      when(userRepository.findByNumber(number)).thenReturn(Optional.of(new User()));
 
       // Act & Assert
       assertAll(
@@ -168,7 +169,7 @@ class UserCreationServiceTests {
                   .as("checking if the exception is an instance of DuplicateFieldException")
                   .isInstanceOf(DuplicateFieldException.class)
                   .hasMessageContaining("Phone number already exists"),
-          () -> verify(userRepository, times(1)).existsByNumber(number));
+          () -> verify(userRepository, times(1)).findByNumber(number));
     }
   }
 

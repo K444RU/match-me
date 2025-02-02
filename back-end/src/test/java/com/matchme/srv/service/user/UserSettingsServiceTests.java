@@ -49,7 +49,7 @@ class UserSettingsServiceTests {
 
   @Mock private HobbyService hobbyService;
 
-  @InjectMocks private UserSettingsServiceImpl userSettingsService;
+  @InjectMocks private UserSettingsService userSettingsService;
 
   private static final Long VALID_USER_ID = 1L;
   private static final Long INVALID_USER_ID = 999L;
