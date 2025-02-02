@@ -1,0 +1,245 @@
+package com.matchme.srv;
+
+import com.matchme.srv.dto.response.*;
+import com.matchme.srv.model.user.User;
+import com.matchme.srv.model.user.UserRoleType;
+import com.matchme.srv.model.user.profile.Hobby;
+import com.matchme.srv.model.user.profile.UserGenderType;
+import com.matchme.srv.model.user.profile.UserProfile;
+import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
+import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.IntStream;
+
+public class TestDataFactory {
+
+  public static final Long DEFAULT_USER_ID = 1L;
+  public static final Long DEFAULT_TARGET_USER_ID = 2L;
+  public static final String DEFAULT_EMAIL = "user@example.com";
+  public static final String DEFAULT_TARGET_EMAIL = "user2@example.com";
+  public static final String DEFAULT_NUMBER = "+372 55555555";
+  public static final String DEFAULT_TARGET_NUMBER = "+372 44554455";
+  public static final String DEFAULT_FIRST_NAME = "John";
+  public static final String DEFAULT_LAST_NAME = "Doe";
+  public static final String DEFAULT_ALIAS = "johndoe";
+  public static final String DEFAULT_CITY = "Tallinn";
+  public static final String DEFAULT_PROFILE_PICTURE = "data:image/png;base64,dummy";
+  public static final String DEFAULT_ROLE = "ROLE_USER";
+  public static final int DEFAULT_AGE_SELF = 28;
+  public static final int DEFAULT_AGE_MIN = 25;
+  public static final int DEFAULT_AGE_MAX = 35;
+  public static final int DEFAULT_DISTANCE = 50;
+  public static final double DEFAULT_PROBABILITY_TOLERANCE = 1.0;
+  public static final Long DEFAULT_GENDER_SELF_ID = 1L;
+  public static final String DEFAULT_GENDER_SELF_NAME = "MALE";
+  public static final Long DEFAULT_GENDER_OTHER_ID = 2L;
+  public static final String DEFAULT_GENDER_OTHER_NAME = "FEMALE";
+  public static final Set<Long> DEFAULT_HOBBY_IDS = Set.of(1L, 2L);
+  public static final String DEFAULT_BIRTH_DATE = "1995-01-01";
+  public static final Double DEFAULT_LONGITUDE = 25.5412;
+  public static final Double DEFAULT_LATITUDE = 58.8879;
+
+  public static User createBasicUser() {
+    return createUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+  }
+
+  public static User createUser(Long id, String email) {
+    User user = new User();
+    user.setId(id);
+    user.setEmail(email);
+    user.setProfile(createBasicProfile());
+    user.setRole(createUserRole());
+    return user;
+  }
+
+  public static UserProfile createBasicProfile() {
+    return UserProfile.builder()
+        .first_name(DEFAULT_FIRST_NAME)
+        .last_name(DEFAULT_LAST_NAME)
+        .alias(DEFAULT_ALIAS)
+        .city(DEFAULT_CITY)
+        .build();
+  }
+
+  public static CurrentUserResponseDTO createCurrentUserResponse() {
+    return CurrentUserResponseDTO.builder()
+        .id(DEFAULT_USER_ID)
+        .email(DEFAULT_EMAIL)
+        .firstName(DEFAULT_FIRST_NAME)
+        .lastName(DEFAULT_LAST_NAME)
+        .alias(DEFAULT_ALIAS)
+        .profilePicture(DEFAULT_PROFILE_PICTURE)
+        .role(Set.of(createUserRole()))
+        .build();
+  }
+
+  public static ProfileResponseDTO createProfileResponse() {
+    return ProfileResponseDTO.builder()
+        .first_name(DEFAULT_FIRST_NAME)
+        .last_name(DEFAULT_LAST_NAME)
+        .city(DEFAULT_CITY)
+        .build();
+  }
+
+  public static BiographicalResponseDTO createBiographicalResponse() {
+    return BiographicalResponseDTO.builder()
+        .gender_self(createGenderTypeDTO(DEFAULT_GENDER_SELF_ID))
+        .gender_other(createGenderTypeDTO(DEFAULT_GENDER_OTHER_ID))
+        .hobbies(DEFAULT_HOBBY_IDS)
+        .age_self(DEFAULT_AGE_SELF)
+        .age_min(DEFAULT_AGE_MIN)
+        .age_max(DEFAULT_AGE_MAX)
+        .distance(DEFAULT_DISTANCE)
+        .probability_tolerance(DEFAULT_PROBABILITY_TOLERANCE)
+        .build();
+  }
+
+  public static UserPreferences createUserPreferences() {
+    UserPreferences prefs = new UserPreferences();
+    prefs.setAge_min(DEFAULT_AGE_MIN);
+    prefs.setAge_max(DEFAULT_AGE_MAX);
+    prefs.setDistance(DEFAULT_DISTANCE);
+    prefs.setProbability_tolerance(DEFAULT_PROBABILITY_TOLERANCE);
+    prefs.setGender(createUserGender(DEFAULT_GENDER_OTHER_ID));
+    return prefs;
+  }
+
+  public static UserAttributes createUserAttributes() {
+    UserAttributes attrs = new UserAttributes();
+    attrs.setBirth_date(LocalDate.now().minusYears(DEFAULT_AGE_SELF));
+    attrs.setLocation(Arrays.asList(58.8879, 25.5412));
+    attrs.setGender(createUserGender(DEFAULT_GENDER_SELF_ID));
+    return attrs;
+  }
+
+  public static UserGenderType createUserGender(Long id) {
+    return UserGenderType.builder().id(id).name(id == 1L ? "MALE" : "FEMALE").build();
+  }
+
+  public static GenderTypeDTO createGenderTypeDTO(Long id) {
+    return new GenderTypeDTO(id, id == 1L ? "MALE" : "FEMALE");
+  }
+
+  public static UserRoleType createUserRole() {
+    UserRoleType role = new UserRoleType();
+    role.setId(1L);
+    role.setName(DEFAULT_ROLE);
+    return role;
+  }
+
+  public static Set<Hobby> createHobbies() {
+    return Set.of(
+        Hobby.builder().id(1L).name("3D printing").category("General").build(),
+        Hobby.builder().id(2L).name("Acrobatics").category("General").build());
+  }
+
+  public static User userBuilder() {
+    return User.builder()
+        .id(DEFAULT_USER_ID)
+        .email(DEFAULT_EMAIL)
+        .profile(createBasicProfile())
+        .roles(Set.of(createUserRole()))
+        .build();
+  }
+
+  public static CurrentUserResponseDTO.CurrentUserResponseDTOBuilder currentUserResponseBuilder() {
+    return CurrentUserResponseDTO.builder()
+        .id(DEFAULT_USER_ID)
+        .email(DEFAULT_EMAIL)
+        .firstName(DEFAULT_FIRST_NAME)
+        .lastName(DEFAULT_LAST_NAME)
+        .alias(DEFAULT_ALIAS)
+        .profilePicture(DEFAULT_PROFILE_PICTURE)
+        .role(Set.of(createUserRole()));
+  }
+
+  // Utility method for modifying objects
+  public static <T> T with(T object, Consumer<T> modifier) {
+    modifier.accept(object);
+    return object;
+  }
+
+  public static ConnectionResponseDTO createConnectionResponse(Long user1Id, Long user2Id) {
+    return new ConnectionResponseDTO(
+        1L,
+        Set.of(
+            createUserResponse(user1Id, DEFAULT_EMAIL, DEFAULT_NUMBER),
+            createUserResponse(user2Id, DEFAULT_TARGET_EMAIL, DEFAULT_TARGET_NUMBER)));
+  }
+
+  public static UserResponseDTO createUserResponse(Long id, String email, String number) {
+    return new UserResponseDTO(id, email, number);
+  }
+
+  public static List<ConnectionResponseDTO> createConnectionsResponse(int count) {
+    return IntStream.rangeClosed(1, count)
+        .mapToObj(i -> createConnectionResponse(DEFAULT_USER_ID, DEFAULT_USER_ID + i))
+        .toList();
+  }
+
+  public static BiographicalResponseDTO.BiographicalResponseDTOBuilder
+      biographicalResponseBuilder() {
+    return BiographicalResponseDTO.builder()
+        .gender_self(createGenderTypeDTO(DEFAULT_GENDER_SELF_ID))
+        .gender_other(createGenderTypeDTO(DEFAULT_GENDER_OTHER_ID))
+        .hobbies(DEFAULT_HOBBY_IDS)
+        .age_self(DEFAULT_AGE_SELF)
+        .age_min(DEFAULT_AGE_MIN)
+        .age_max(DEFAULT_AGE_MAX)
+        .distance(DEFAULT_DISTANCE)
+        .probability_tolerance(DEFAULT_PROBABILITY_TOLERANCE);
+  }
+
+  public static UserGenderType createDefaultUserGender() {
+    return createUserGender(DEFAULT_GENDER_SELF_ID);
+  }
+
+  public static GenderTypeDTO createDefaultGenderTypeDTO() {
+    return createGenderTypeDTO(DEFAULT_GENDER_SELF_ID);
+  }
+
+  public static SettingsResponseDTO createSettingsResponse() {
+    return SettingsResponseDTO.builder()
+        .email(DEFAULT_EMAIL)
+        .number(DEFAULT_NUMBER)
+        .firstName(DEFAULT_FIRST_NAME)
+        .lastName(DEFAULT_LAST_NAME)
+        .alias(DEFAULT_ALIAS)
+        .hobbies(DEFAULT_HOBBY_IDS)
+        .genderSelf(DEFAULT_GENDER_SELF_ID)
+        .birthDate(DEFAULT_BIRTH_DATE)
+        .city(DEFAULT_CITY)
+        .longitude(DEFAULT_LONGITUDE)
+        .latitude(DEFAULT_LATITUDE)
+        .genderOther(DEFAULT_GENDER_OTHER_ID)
+        .ageMin(DEFAULT_AGE_MIN)
+        .ageMax(DEFAULT_AGE_MAX)
+        .distance(DEFAULT_DISTANCE)
+        .probabilityTolerance(DEFAULT_PROBABILITY_TOLERANCE)
+        .build();
+  }
+
+  public static SettingsResponseDTO.SettingsResponseDTOBuilder settingsResponseBuilder() {
+    return SettingsResponseDTO.builder()
+        .email(DEFAULT_EMAIL)
+        .number(DEFAULT_NUMBER)
+        .firstName(DEFAULT_FIRST_NAME)
+        .lastName(DEFAULT_LAST_NAME)
+        .alias(DEFAULT_ALIAS)
+        .hobbies(DEFAULT_HOBBY_IDS)
+        .genderSelf(DEFAULT_GENDER_SELF_ID)
+        .birthDate(DEFAULT_BIRTH_DATE)
+        .city(DEFAULT_CITY)
+        .longitude(DEFAULT_LONGITUDE)
+        .latitude(DEFAULT_LATITUDE)
+        .genderOther(DEFAULT_GENDER_OTHER_ID)
+        .ageMin(DEFAULT_AGE_MIN)
+        .ageMax(DEFAULT_AGE_MAX)
+        .distance(DEFAULT_DISTANCE)
+        .probabilityTolerance(DEFAULT_PROBABILITY_TOLERANCE);
+  }
+}
