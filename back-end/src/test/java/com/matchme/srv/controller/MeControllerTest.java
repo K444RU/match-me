@@ -73,8 +73,8 @@ class MeControllerTest {
   }
 
   @Test
-  @DisplayName("User fetches himself")
-  void testGetUser() throws Exception {
+  @DisplayName("Should return current user details when authenticated")
+  void getCurrentUser_WhenAuthenticated_ReturnsUserDetails() throws Exception {
     setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
     CurrentUserResponseDTO response = createCurrentUserResponse();
 
@@ -95,8 +95,8 @@ class MeControllerTest {
   }
 
   @Test
-  @DisplayName("User fetches his profile")
-  void testGetProfile() throws Exception {
+  @DisplayName("Should return user profile when requested")
+  void getProfile_WhenRequested_ReturnsProfileDetails() throws Exception {
     setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
     ProfileResponseDTO profile = createProfileResponse();
 
@@ -115,8 +115,8 @@ class MeControllerTest {
   }
 
   @Test
-  @DisplayName("User fetches his bio")
-  void testGetBio() throws Exception {
+  @DisplayName("Should return biographical data when available")
+  void getBio_WhenDataExists_ReturnsBiographicalInformation() throws Exception {
     // Given
     setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
     BiographicalResponseDTO bioDTO = createBiographicalResponse();
@@ -143,8 +143,8 @@ class MeControllerTest {
   }
 
   @Test
-  @DisplayName("User fetches his connections")
-  void testGetConnections() throws Exception {
+  @DisplayName("Should return connections list when connections exist")
+  void getConnections_WhenConnectionsExist_ReturnsConnectionList() throws Exception {
     // Given
     setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
 
@@ -173,8 +173,8 @@ class MeControllerTest {
   }
 
   @Test
-  @DisplayName("User fetches his connections when empty")
-  void testGetConnections_isEmpty() throws Exception {
+  @DisplayName("Should return empty list when no connections exist")
+  void getConnections_WhenNoConnectionsExist_ReturnsEmptyList() throws Exception {
     // Given
     setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
     when(connectionService.getConnectionResponseDTO(DEFAULT_USER_ID, DEFAULT_USER_ID))
@@ -190,8 +190,8 @@ class MeControllerTest {
   }
 
   @Test
-  @DisplayName("User fetches settings parameters")
-  void testGetSettings() throws Exception {
+  @DisplayName("Should return settings parameters when authorized")
+  void getSettings_WhenAuthorized_ReturnsSettingsParameters() throws Exception {
     // Given
     setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
     SettingsResponseDTO response = createSettingsResponse();
@@ -213,7 +213,10 @@ class MeControllerTest {
             jsonPath("$.lastName", is(DEFAULT_LAST_NAME)),
             jsonPath("$.alias", is(DEFAULT_ALIAS)),
             jsonPath("$.hobbies", hasSize(DEFAULT_HOBBY_IDS.size())),
-            jsonPath("$.hobbies", containsInAnyOrder(DEFAULT_HOBBY_IDS.stream().map(Long::intValue).toArray(Integer[]::new))),
+            jsonPath(
+                "$.hobbies",
+                containsInAnyOrder(
+                    DEFAULT_HOBBY_IDS.stream().map(Long::intValue).toArray(Integer[]::new))),
             jsonPath("$.genderSelf", is(DEFAULT_GENDER_SELF_ID.intValue())),
             jsonPath("$.birthDate", is(DEFAULT_BIRTH_DATE)),
             jsonPath("$.city", is(DEFAULT_CITY)),
