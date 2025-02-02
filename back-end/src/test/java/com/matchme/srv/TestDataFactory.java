@@ -1,5 +1,10 @@
 package com.matchme.srv;
 
+import com.matchme.srv.dto.request.UserParametersRequestDTO;
+import com.matchme.srv.dto.request.settings.AccountSettingsRequestDTO;
+import com.matchme.srv.dto.request.settings.AttributesSettingsRequestDTO;
+import com.matchme.srv.dto.request.settings.PreferencesSettingsRequestDTO;
+import com.matchme.srv.dto.request.settings.ProfileSettingsRequestDTO;
 import com.matchme.srv.dto.response.*;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.UserRoleType;
@@ -17,6 +22,7 @@ import java.util.stream.IntStream;
 
 public class TestDataFactory {
 
+  // Initial user data
   public static final Long DEFAULT_USER_ID = 1L;
   public static final String DEFAULT_EMAIL = "user@example.com";
   public static final String DEFAULT_NUMBER = "+372 55555555";
@@ -39,6 +45,28 @@ public class TestDataFactory {
   public static final String DEFAULT_BIRTH_DATE = "1995-01-01";
   public static final Double DEFAULT_LONGITUDE = 25.5412;
   public static final Double DEFAULT_LATITUDE = 58.8879;
+
+  // Update user data
+  public static final String DEFAULT_UPDATE_EMAIL = "update@example.com";
+  public static final String DEFAULT_UPDATE_NUMBER = "+372 5341 4494";
+  public static final String DEFAULT_UPDATE_FIRST_NAME = "Johnny";
+  public static final String DEFAULT_UPDATE_LAST_NAME = "Doey";
+  public static final String DEFAULT_UPDATE_ALIAS = "johnnydoey";
+  public static final String DEFAULT_UPDATE_CITY = "Tallinn 2";
+  public static final String DEFAULT_UPDATE_PROFILE_PICTURE = "data:image/png;base64,dummy3";
+  public static final int DEFAULT_UPDATE_AGE_SELF = 29;
+  public static final int DEFAULT_UPDATE_AGE_MIN = 26;
+  public static final int DEFAULT_UPDATE_AGE_MAX = 34;
+  public static final int DEFAULT_UPDATE_DISTANCE = 52;
+  public static final double DEFAULT_UPDATE_PROBABILITY_TOLERANCE = 0.9;
+  public static final Long DEFAULT_UPDATE_GENDER_SELF_ID = 2L;
+  public static final String DEFAULT_UPDATE_GENDER_SELF_NAME = "FEMALE";
+  public static final Long DEFAULT_UPDATE_GENDER_OTHER_ID = 1L;
+  public static final String DEFAULT_UPDATE_GENDER_OTHER_NAME = "MALE";
+  public static final Set<Long> DEFAULT_UPDATE_HOBBY_IDS = Set.of(5L, 6L);
+  public static final String DEFAULT_UPDATE_BIRTH_DATE = "1996-03-02";
+  public static final Double DEFAULT_UPDATE_LONGITUDE = 26.5412;
+  public static final Double DEFAULT_UPDATE_LATITUDE = 54.8879;
 
   // Target
   public static final Long DEFAULT_TARGET_USER_ID = 2L;
@@ -294,5 +322,57 @@ public class TestDataFactory {
         .ageMax(DEFAULT_AGE_MAX)
         .distance(DEFAULT_DISTANCE)
         .probabilityTolerance(DEFAULT_PROBABILITY_TOLERANCE);
+  }
+
+  public static UserParametersRequestDTO createValidParametersRequest() {
+    return UserParametersRequestDTO.builder()
+        .first_name(DEFAULT_FIRST_NAME)
+        .last_name(DEFAULT_LAST_NAME)
+        .alias(DEFAULT_ALIAS)
+        .hobbies(DEFAULT_HOBBY_IDS)
+        .gender_other(DEFAULT_GENDER_OTHER_ID)
+        .age_min(DEFAULT_AGE_MIN)
+        .age_max(DEFAULT_AGE_MAX)
+        .distance(DEFAULT_DISTANCE)
+        .probability_tolerance(DEFAULT_PROBABILITY_TOLERANCE)
+        .gender_self(DEFAULT_GENDER_SELF_ID)
+        .birth_date(LocalDate.parse(DEFAULT_BIRTH_DATE))
+        .city(DEFAULT_CITY)
+        .longitude(DEFAULT_LONGITUDE)
+        .latitude(DEFAULT_LATITUDE)
+        .build();
+  }
+
+  public static AccountSettingsRequestDTO createValidAccountSettings() {
+    return AccountSettingsRequestDTO.builder().email(DEFAULT_UPDATE_EMAIL).number(DEFAULT_UPDATE_NUMBER).build();
+  }
+
+  public static ProfileSettingsRequestDTO createValidProfileSettings() {
+    return ProfileSettingsRequestDTO.builder()
+        .first_name(DEFAULT_UPDATE_FIRST_NAME)
+        .last_name(DEFAULT_UPDATE_LAST_NAME)
+        .alias(DEFAULT_UPDATE_ALIAS)
+        .hobbies(DEFAULT_UPDATE_HOBBY_IDS)
+        .build();
+  }
+
+  public static AttributesSettingsRequestDTO createValidAttributesSettings() {
+    return AttributesSettingsRequestDTO.builder()
+        .gender_self(DEFAULT_UPDATE_GENDER_SELF_ID)
+        .birth_date(LocalDate.parse(DEFAULT_UPDATE_BIRTH_DATE))
+        .city(DEFAULT_UPDATE_CITY)
+        .longitude(DEFAULT_UPDATE_LONGITUDE)
+        .latitude(DEFAULT_UPDATE_LATITUDE)
+        .build();
+  }
+
+  public static PreferencesSettingsRequestDTO createValidPreferencesSettings() {
+    return PreferencesSettingsRequestDTO.builder()
+        .gender_other(DEFAULT_UPDATE_GENDER_OTHER_ID)
+        .age_min(DEFAULT_UPDATE_AGE_MIN)
+        .age_max(DEFAULT_UPDATE_AGE_MAX)
+        .distance(DEFAULT_UPDATE_DISTANCE)
+        .probability_tolerance(DEFAULT_UPDATE_PROBABILITY_TOLERANCE)
+        .build();
   }
 }
