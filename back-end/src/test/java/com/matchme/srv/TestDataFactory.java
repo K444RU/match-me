@@ -39,12 +39,27 @@ public class TestDataFactory {
   public static final String DEFAULT_BIRTH_DATE = "1995-01-01";
   public static final Double DEFAULT_LONGITUDE = 25.5412;
   public static final Double DEFAULT_LATITUDE = 58.8879;
-  
+
   // Target
   public static final Long DEFAULT_TARGET_USER_ID = 2L;
   public static final String DEFAULT_TARGET_EMAIL = "user2@example.com";
   public static final String DEFAULT_TARGET_NUMBER = "+372 44554455";
-  
+  public static final String DEFAULT_TARGET_FIRST_NAME = "Jane";
+  public static final String DEFAULT_TARGET_LAST_NAME = "Doom";
+  public static final String DEFAULT_TARGET_ALIAS = "janedoom";
+  public static final String DEFAULT_TARGET_CITY = "Tartu";
+  public static final String DEFAULT_TARGET_PROFILE_PICTURE = "data:image/png;base64,dummy2";
+  public static final Long DEFAULT_TARGET_GENDER_SELF_ID = 2L;
+  public static final String DEFAULT_TARGET_GENDER_SELF_NAME = "FEMALE";
+  public static final Long DEFAULT_TARGET_GENDER_OTHER_ID = 1L;
+  public static final String DEFAULT_TARGET_GENDER_OTHER_NAME = "MALE";
+  public static final Set<Long> DEFAULT_TARGET_HOBBY_IDS = Set.of(3L, 4L);
+  public static final int DEFAULT_TARGET_AGE_SELF = 25;
+  public static final int DEFAULT_TARGET_AGE_MIN = 20;
+  public static final int DEFAULT_TARGET_AGE_MAX = 30;
+  public static final int DEFAULT_TARGET_DISTANCE = 10;
+  public static final double DEFAULT_TARGET_PROBABILITY_TOLERANCE = 0.5;
+
   // Invalid
   public static final Long INVALID_USER_ID = 999L;
 
@@ -82,11 +97,31 @@ public class TestDataFactory {
         .build();
   }
 
+  public static CurrentUserResponseDTO createTargetCurrentUserResponse() {
+    return CurrentUserResponseDTO.builder()
+        .id(DEFAULT_TARGET_USER_ID)
+        .email(DEFAULT_TARGET_EMAIL)
+        .firstName(DEFAULT_TARGET_FIRST_NAME)
+        .lastName(DEFAULT_TARGET_LAST_NAME)
+        .alias(DEFAULT_TARGET_ALIAS)
+        .profilePicture(DEFAULT_TARGET_PROFILE_PICTURE)
+        .role(Set.of(createUserRole()))
+        .build();
+  }
+
   public static ProfileResponseDTO createProfileResponse() {
     return ProfileResponseDTO.builder()
         .first_name(DEFAULT_FIRST_NAME)
         .last_name(DEFAULT_LAST_NAME)
         .city(DEFAULT_CITY)
+        .build();
+  }
+
+  public static ProfileResponseDTO createTargetProfileResponse() {
+    return ProfileResponseDTO.builder()
+        .first_name(DEFAULT_TARGET_FIRST_NAME)
+        .last_name(DEFAULT_TARGET_LAST_NAME)
+        .city(DEFAULT_TARGET_CITY)
         .build();
   }
 
@@ -100,6 +135,19 @@ public class TestDataFactory {
         .age_max(DEFAULT_AGE_MAX)
         .distance(DEFAULT_DISTANCE)
         .probability_tolerance(DEFAULT_PROBABILITY_TOLERANCE)
+        .build();
+  }
+
+  public static BiographicalResponseDTO createTargetBiographicalResponse() {
+    return BiographicalResponseDTO.builder()
+        .gender_self(createGenderTypeDTO(DEFAULT_TARGET_GENDER_SELF_ID))
+        .gender_other(createGenderTypeDTO(DEFAULT_TARGET_GENDER_OTHER_ID))
+        .hobbies(DEFAULT_TARGET_HOBBY_IDS)
+        .age_self(DEFAULT_TARGET_AGE_SELF)
+        .age_min(DEFAULT_TARGET_AGE_MIN)
+        .age_max(DEFAULT_TARGET_AGE_MAX)
+        .distance(DEFAULT_TARGET_DISTANCE)
+        .probability_tolerance(DEFAULT_TARGET_PROBABILITY_TOLERANCE)
         .build();
   }
 
