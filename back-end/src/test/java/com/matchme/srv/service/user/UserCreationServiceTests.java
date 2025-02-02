@@ -141,8 +141,10 @@ class UserCreationServiceTests {
       // Assign
       String email = "test@example.com";
       SignupRequestDTO request = SignupRequestDTO.builder().email(email).build();
-      when(userRepository.findByEmailIgnoreCase("test@example.com")).thenReturn(Optional.empty());
-      when(userRepository.findByNumber("+372 55512999")).thenReturn(Optional.empty());
+
+      User existingUser = new User();
+      existingUser.setId(1L);
+      when(userRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.of(existingUser));
 
       // Act & Assert
       assertAll(
@@ -160,7 +162,11 @@ class UserCreationServiceTests {
       // Assign
       String number = "123";
       SignupRequestDTO request = SignupRequestDTO.builder().number(number).build();
-      when(userRepository.findByNumber(number)).thenReturn(Optional.of(new User()));
+
+      User existingUser = new User();
+      existingUser.setId(1L); // Set non-null ID
+      when(userRepository.findByEmailIgnoreCase(null)).thenReturn(Optional.empty());
+      when(userRepository.findByNumber(number)).thenReturn(Optional.of(existingUser));
 
       // Act & Assert
       assertAll(

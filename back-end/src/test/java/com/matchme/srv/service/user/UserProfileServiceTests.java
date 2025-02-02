@@ -3,6 +3,8 @@ package com.matchme.srv.service.user;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -13,7 +15,10 @@ import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import java.lang.reflect.Field;
+import java.util.Base64;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -28,6 +33,17 @@ class UserProfileServiceTests {
   @Mock private UserRepository userRepository;
 
   @InjectMocks private UserProfileService userProfileService;
+
+  @BeforeEach
+  void setUp() {
+    try {
+      Field maxSizeField = UserProfileService.class.getDeclaredField("maxAvatarSizeMb");
+      maxSizeField.setAccessible(true);
+      maxSizeField.set(userProfileService, 5L);
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      throw new RuntimeException("Failed to set max avatar size", e);
+    }
+  }
 
   @Nested
   @DisplayName("saveProfilePicture Tests")
@@ -183,6 +199,121 @@ class UserProfileServiceTests {
                   .isNull(),
           () -> verify(userRepository, times(1)).findById(1L),
           () -> verify(userRepository, times(1)).save(user));
+    }
+
+    @Test
+    @DisplayName("Should throw exception when missing base64 delimiter")
+    void saveProfilePicture_MissingBase64Delimiter_ThrowsException() {
+      // Arrange
+      String base64Image = "data:image/png,testImageBase64String";
+
+      User mockUser = new User();
+      UserProfile mockProfile = new UserProfile();
+      mockUser.setProfile(mockProfile);
+      when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
+
+      ProfilePictureSettingsRequestDTO requestDTO =
+          new ProfilePictureSettingsRequestDTO(base64Image);
+
+      // Act & Assert
+      assertAll(
+          () ->
+              assertThatThrownBy(() -> userProfileService.saveProfilePicture(1L, requestDTO))
+                  .as("checking if the exception is an instance of ImageValidationException")
+                  .isInstanceOf(ImageValidationException.class)
+                  .hasMessageContaining("Invalid Base64 format: missing ';base64,' segment."),
+          () -> verify(userRepository, times(1)).findById(1L),
+          () -> verify(userRepository, never()).save(any(User.class)));
+    }
+
+    @Test
+    @DisplayName("Should throw exception when image size exceeds max size")
+    void saveProfilePicture_ExceedsMaxSize_ThrowsException() throws Exception {
+      // Arrange
+      // Create a large image byte array (e.g., 6 MB)
+      byte[] largeImageBytes = new byte[6 * 1024 * 1024];
+      String base64LargeImage =
+          "data:image/png;base64," + Base64.getEncoder().encodeToString(largeImageBytes);
+
+      User mockUser = new User();
+      UserProfile mockProfile = new UserProfile();
+      mockUser.setProfile(mockProfile);
+      when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
+
+      ProfilePictureSettingsRequestDTO requestDTO =
+          new ProfilePictureSettingsRequestDTO(base64LargeImage);
+
+      // Act & Assert
+      assertAll(
+          () ->
+              assertThatThrownBy(() -> userProfileService.saveProfilePicture(1L, requestDTO))
+                  .as("checking if the exception is an instance of ImageValidationException")
+                  .isInstanceOf(ImageValidationException.class)
+                  .hasMessageContaining("Image size exceeds the maximum allowed of 5 MB"),
+          () -> verify(userRepository, times(1)).findById(1L),
+          () -> verify(userRepository, never()).save(any(User.class)));
+    }
+
+    @Test
+    @DisplayName("Should save profile picture when size is at max limit")
+    void saveProfilePicture_SizeAtMaxLimit_Success() throws Exception {
+      // Create an image byte array of exactly 5 MB
+      byte[] exactSizeImageBytes = new byte[5 * 1024 * 1024];
+      String base64ExactSizeImage =
+          "data:image/png;base64," + Base64.getEncoder().encodeToString(exactSizeImageBytes);
+
+      User mockUser = new User();
+      UserProfile mockProfile = new UserProfile();
+      mockUser.setProfile(mockProfile);
+      when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
+
+      ProfilePictureSettingsRequestDTO requestDTO =
+          new ProfilePictureSettingsRequestDTO(base64ExactSizeImage);
+
+      // Use reflection to set maxAvatarSizeMb to 5
+      Field maxSizeField = UserProfileService.class.getDeclaredField("maxAvatarSizeMb");
+      maxSizeField.setAccessible(true);
+      maxSizeField.set(userProfileService, 5L);
+
+      userProfileService.saveProfilePicture(1L, requestDTO);
+
+      assertAll(
+          () -> verify(userRepository, times(1)).save(mockUser),
+          () -> verify(userRepository, times(1)).findById(1L),
+          () ->
+              assertThat(mockUser.getProfile().getProfilePicture())
+                  .as("checking if the profile picture is not null")
+                  .isNotNull(),
+          () ->
+              assertThat(mockUser.getProfile().getProfilePicture().length)
+                  .as("checking if the profile picture length is correct")
+                  .isEqualTo(exactSizeImageBytes.length));
+    }
+
+    @Test
+    @DisplayName("Should throw exception when unsupported mime type")
+    void saveProfilePicture_UnsupportedMimeType_ThrowsException() {
+      // Arrange
+      String base64Image =
+          "data:image/gif;base64," + Base64.getEncoder().encodeToString("testImage".getBytes());
+
+      User mockUser = new User();
+      UserProfile mockProfile = new UserProfile();
+      mockUser.setProfile(mockProfile);
+      when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
+
+      ProfilePictureSettingsRequestDTO requestDTO =
+          new ProfilePictureSettingsRequestDTO(base64Image);
+
+      // Act & Assert
+      assertAll(
+          () ->
+              assertThatThrownBy(() -> userProfileService.saveProfilePicture(1L, requestDTO))
+                  .as("checking if the exception is an instance of ImageValidationException")
+                  .isInstanceOf(ImageValidationException.class)
+                  .hasMessageContaining("Only PNG or JPEG images are allowed."),
+          () -> verify(userRepository, times(1)).findById(1L),
+          () -> verify(userRepository, never()).save(any(User.class)));
     }
   }
 }
