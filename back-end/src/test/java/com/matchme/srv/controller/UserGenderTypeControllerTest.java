@@ -37,7 +37,7 @@ class UserGenderTypeControllerTest {
 
   @Test
   @DisplayName("User fetches all user gender types")
-  void getAllGenders_returnsAllGenders() throws Exception {
+  void getAllGenders_WhenRequested_ReturnsAllGenders() throws Exception {
     // Given
     List<GenderTypeDTO> genderTypes =
         Arrays.asList(
