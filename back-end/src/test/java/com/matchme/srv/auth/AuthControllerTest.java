@@ -9,7 +9,6 @@ import com.matchme.srv.model.user.activity.ActivityLog;
 import com.matchme.srv.security.WebSecurityConfig;
 import com.matchme.srv.security.jwt.AuthEntryPointJwt;
 import com.matchme.srv.security.jwt.JwtUtils;
-import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.security.services.UserDetailsImpl;
 import com.matchme.srv.security.services.UserDetailsServiceImpl;
 import com.matchme.srv.service.user.UserCreationService;
@@ -79,7 +78,7 @@ class AuthControllerTest {
     private static final String INVALID_PASSWORD = "test";
     private static final String INVALID_PHONE = "";
 
-   private ActivityLog mockedActivityLog = Mockito.mock(ActivityLog.class);
+    private final ActivityLog mockedActivityLog = Mockito.mock(ActivityLog.class);
 
     @Test
     void shouldSuccessfullySignUpAndIn() throws Exception {
