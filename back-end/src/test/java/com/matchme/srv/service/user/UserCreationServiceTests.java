@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,6 +38,7 @@ import com.matchme.srv.service.type.ProfileChangeTypeService;
 import com.matchme.srv.service.type.UserGenderTypeService;
 import com.matchme.srv.service.type.UserRoleTypeService;
 import com.matchme.srv.service.type.UserStateTypesService;
+import com.matchme.srv.service.user.validation.UserValidationService;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.Collections;
 import java.util.Optional;
@@ -67,6 +69,8 @@ class UserCreationServiceTests {
   @Mock private AttributeChangeTypeService attributeChangeTypeService;
 
   @Mock private PreferenceChangeTypeService preferenceChangeTypeService;
+
+  @Mock private UserValidationService userValidationService;
 
   @Mock private PasswordEncoder encoder;
 
@@ -142,9 +146,9 @@ class UserCreationServiceTests {
       String email = "test@example.com";
       SignupRequestDTO request = SignupRequestDTO.builder().email(email).build();
 
-      User existingUser = new User();
-      existingUser.setId(1L);
-      when(userRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.of(existingUser));
+      doThrow(new DuplicateFieldException("email", "Email already exists"))
+          .when(userValidationService)
+          .validateUniqueEmailAndNumber(email, null, null);
 
       // Act & Assert
       assertAll(
@@ -153,7 +157,9 @@ class UserCreationServiceTests {
                   .as("checking if the exception is an instance of DuplicateFieldException")
                   .isInstanceOf(DuplicateFieldException.class)
                   .hasMessageContaining("Email already exists"),
-          () -> verify(userRepository, times(1)).findByEmailIgnoreCase(email));
+          () ->
+              verify(userValidationService, times(1))
+                  .validateUniqueEmailAndNumber(email, null, null));
     }
 
     @Test
@@ -163,10 +169,9 @@ class UserCreationServiceTests {
       String number = "123";
       SignupRequestDTO request = SignupRequestDTO.builder().number(number).build();
 
-      User existingUser = new User();
-      existingUser.setId(1L); // Set non-null ID
-      when(userRepository.findByEmailIgnoreCase(null)).thenReturn(Optional.empty());
-      when(userRepository.findByNumber(number)).thenReturn(Optional.of(existingUser));
+      doThrow(new DuplicateFieldException("number", "Phone number already exists"))
+          .when(userValidationService)
+          .validateUniqueEmailAndNumber(null, number, null);
 
       // Act & Assert
       assertAll(
@@ -175,7 +180,9 @@ class UserCreationServiceTests {
                   .as("checking if the exception is an instance of DuplicateFieldException")
                   .isInstanceOf(DuplicateFieldException.class)
                   .hasMessageContaining("Phone number already exists"),
-          () -> verify(userRepository, times(1)).findByNumber(number));
+          () ->
+              verify(userValidationService, times(1))
+                  .validateUniqueEmailAndNumber(null, number, null));
     }
   }
 
