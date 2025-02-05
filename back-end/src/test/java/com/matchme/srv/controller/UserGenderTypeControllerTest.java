@@ -30,6 +30,15 @@ class UserGenderTypeControllerTest {
 
   @InjectMocks private UserGenderTypeController userGenderTypeController;
 
+  public static final String BASE_URL = "/api/genders";
+  public static final String GENDER_MALE = "MALE";
+  public static final Long GENDER_MALE_ID = 1L;
+  public static final String GENDER_FEMALE = "FEMALE";
+  public static final Long GENDER_FEMALE_ID = 2L;
+  public static final String GENDER_OTHER = "OTHER";
+  public static final Long GENDER_OTHER_ID = 3L;
+
+
   @BeforeEach
   void setUp() {
     mockMvc = MockMvcBuilders.standaloneSetup(userGenderTypeController).build();
@@ -41,18 +50,18 @@ class UserGenderTypeControllerTest {
     // Given
     List<GenderTypeDTO> genderTypes =
         Arrays.asList(
-            new GenderTypeDTO(1L, "MALE"),
-            new GenderTypeDTO(2L, "FEMALE"),
-            new GenderTypeDTO(3L, "OTHER"));
+            new GenderTypeDTO(GENDER_MALE_ID, GENDER_MALE),
+            new GenderTypeDTO(GENDER_FEMALE_ID, GENDER_FEMALE),
+            new GenderTypeDTO(GENDER_OTHER_ID, GENDER_OTHER));
     when(userGenderTypeService.getAll()).thenReturn(genderTypes);
 
     // When/Then
     mockMvc
-        .perform(get("/api/genders"))
+        .perform(get(BASE_URL))
         .andExpectAll(
             status().isOk(),
             jsonPath("$", hasSize(3)),
-            jsonPath("$[*].id", containsInAnyOrder(1, 2, 3)),
-            jsonPath("$[*].name", containsInAnyOrder("MALE", "FEMALE", "OTHER")));
+            jsonPath("$[*].id", containsInAnyOrder(GENDER_MALE_ID.intValue(), GENDER_FEMALE_ID.intValue(), GENDER_OTHER_ID.intValue())),
+            jsonPath("$[*].name", containsInAnyOrder(GENDER_MALE, GENDER_FEMALE, GENDER_OTHER)));
   }
 }
