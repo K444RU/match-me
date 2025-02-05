@@ -19,7 +19,6 @@ import com.matchme.srv.dto.response.SettingsResponseDTO;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.security.services.UserDetailsImpl;
 import com.matchme.srv.service.ConnectionService;
-import com.matchme.srv.service.HobbyService;
 import com.matchme.srv.service.user.UserQueryService;
 import java.util.Collections;
 import java.util.List;
