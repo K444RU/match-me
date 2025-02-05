@@ -40,7 +40,7 @@ class ConnectionRepositoryTest {
 
         // Assert
         Assertions.assertThat(connections).isNotEmpty();
-        Assertions.assertThat(connections.get(0).getUsers()).contains(user1, user2);
+        Assertions.assertThat(connections.getFirst().getUsers()).contains(user1, user2);
     }
 
     @Test
