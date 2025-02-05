@@ -45,8 +45,6 @@ class MeControllerTest {
 
   @Mock private ConnectionService connectionService;
 
-  @Mock private HobbyService hobbyService;
-
   @Mock private Authentication authentication;
 
   @Mock private SecurityUtils securityUtils;
