@@ -74,7 +74,7 @@ public class UserCreationService {
   // Creates User entity and UserAuth entity for user, sends verification e-mail
   @Transactional
   public ActivityLog createUser(SignupRequestDTO signUpRequest) {
-    log.info("Creating user with email: " + signUpRequest.getEmail());
+    log.info("Creating user with email: {}", signUpRequest.getEmail());
 
     userValidationService.validateUniqueEmailAndNumber(signUpRequest.getEmail(), signUpRequest.getNumber(), null);
 
@@ -98,7 +98,7 @@ public class UserCreationService {
 
     // TODO: Send email verification to email
 
-    log.info("User created: " + newUser);
+    log.info("User created: {}", newUser);
     return newEntry;
   }
 
