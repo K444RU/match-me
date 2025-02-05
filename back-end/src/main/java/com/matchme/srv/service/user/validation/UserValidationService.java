@@ -2,19 +2,13 @@ package com.matchme.srv.service.user.validation;
 
 import com.matchme.srv.exception.DuplicateFieldException;
 import com.matchme.srv.repository.UserRepository;
-import com.matchme.srv.service.AccessValidationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class UserValidationService {
-  private final AccessValidationService accessValidationService;
   private final UserRepository userRepository;
-
-  public void validateUserAccess(Long currentUserId, Long targetUserId) {
-    accessValidationService.validateUserAccess(currentUserId, targetUserId);
-  }
 
   /**
    * Checks if the given email or phone number is used by a *different* user. If so, throws a
