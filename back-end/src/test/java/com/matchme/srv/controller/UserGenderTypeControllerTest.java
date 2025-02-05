@@ -30,14 +30,15 @@ class UserGenderTypeControllerTest {
 
   @InjectMocks private UserGenderTypeController userGenderTypeController;
 
-  public static final String BASE_URL = "/api/genders";
-  public static final String GENDER_MALE = "MALE";
-  public static final Long GENDER_MALE_ID = 1L;
-  public static final String GENDER_FEMALE = "FEMALE";
-  public static final Long GENDER_FEMALE_ID = 2L;
-  public static final String GENDER_OTHER = "OTHER";
-  public static final Long GENDER_OTHER_ID = 3L;
-
+  private static final class GenderConstants {
+    static final String BASE_URL = "/api/genders";
+    static final String MALE = "MALE";
+    static final Long MALE_ID = 1L;
+    static final String FEMALE = "FEMALE";
+    static final Long FEMALE_ID = 2L;
+    static final String OTHER = "OTHER";
+    static final Long OTHER_ID = 3L;
+  }
 
   @BeforeEach
   void setUp() {
@@ -50,18 +51,23 @@ class UserGenderTypeControllerTest {
     // Given
     List<GenderTypeDTO> genderTypes =
         Arrays.asList(
-            new GenderTypeDTO(GENDER_MALE_ID, GENDER_MALE),
-            new GenderTypeDTO(GENDER_FEMALE_ID, GENDER_FEMALE),
-            new GenderTypeDTO(GENDER_OTHER_ID, GENDER_OTHER));
+            new GenderTypeDTO(GenderConstants.MALE_ID, GenderConstants.MALE),
+            new GenderTypeDTO(GenderConstants.FEMALE_ID, GenderConstants.FEMALE),
+            new GenderTypeDTO(GenderConstants.OTHER_ID, GenderConstants.OTHER));
     when(userGenderTypeService.getAll()).thenReturn(genderTypes);
 
     // When/Then
     mockMvc
-        .perform(get(BASE_URL))
+        .perform(get(GenderConstants.BASE_URL))
         .andExpectAll(
             status().isOk(),
             jsonPath("$", hasSize(3)),
-            jsonPath("$[*].id", containsInAnyOrder(GENDER_MALE_ID.intValue(), GENDER_FEMALE_ID.intValue(), GENDER_OTHER_ID.intValue())),
-            jsonPath("$[*].name", containsInAnyOrder(GENDER_MALE, GENDER_FEMALE, GENDER_OTHER)));
+            jsonPath(
+                "$[*].id",
+                containsInAnyOrder(
+                    GenderConstants.MALE_ID.intValue(),
+                    GenderConstants.FEMALE_ID.intValue(),
+                    GenderConstants.OTHER_ID.intValue())),
+            jsonPath("$[*].name", containsInAnyOrder(GenderConstants.MALE, GenderConstants.FEMALE, GenderConstants.OTHER)));
   }
 }
