@@ -3,11 +3,13 @@ package com.matchme.srv.service.user;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.any;
 
 import com.matchme.srv.dto.request.settings.AccountSettingsRequestDTO;
 import com.matchme.srv.dto.request.settings.AttributesSettingsRequestDTO;
@@ -25,6 +27,7 @@ import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
 import com.matchme.srv.repository.UserRepository;
 import com.matchme.srv.service.HobbyService;
 import com.matchme.srv.service.type.UserGenderTypeService;
+import com.matchme.srv.service.user.validation.UserValidationService;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.util.List;
@@ -49,6 +52,8 @@ class UserSettingsServiceTests {
   @Mock private PreferencesMapper preferencesMapper;
 
   @Mock private UserGenderTypeService userGenderTypeService;
+
+  @Mock private UserValidationService userValidationService;
 
   @Mock private HobbyService hobbyService;
 
@@ -126,8 +131,9 @@ class UserSettingsServiceTests {
       AccountSettingsRequestDTO settings = new AccountSettingsRequestDTO(newEmail, oldNumber);
 
       when(userRepository.findById(VALID_USER_ID)).thenReturn(Optional.of(user));
-      when(userRepository.findByEmailIgnoreCase(newEmail)).thenReturn(Optional.empty());
-      when(userRepository.findByNumber(oldNumber)).thenReturn(Optional.of(user));
+      doNothing()
+          .when(userValidationService)
+          .validateUniqueEmailAndNumber(newEmail, oldNumber, VALID_USER_ID);
 
       // Act
       userSettingsService.updateAccountSettings(VALID_USER_ID, settings);
@@ -136,8 +142,6 @@ class UserSettingsServiceTests {
       assertAll(
           () -> verify(userRepository, times(1)).findById(VALID_USER_ID),
           () -> verify(userRepository, times(1)).save(user),
-          () -> verify(userRepository, times(1)).findByEmailIgnoreCase(newEmail),
-          () -> verify(userRepository, times(1)).findByNumber(oldNumber),
           () ->
               assertThat(user.getEmail())
                   .as("checking if the email was updated correctly")
@@ -157,9 +161,9 @@ class UserSettingsServiceTests {
       AccountSettingsRequestDTO settings = new AccountSettingsRequestDTO(oldEmail, newNumber);
 
       when(userRepository.findById(VALID_USER_ID)).thenReturn(Optional.of(user));
-      when(userRepository.findByEmailIgnoreCase(oldEmail)).thenReturn(Optional.of(user));
-      when(userRepository.findByNumber(newNumber)).thenReturn(Optional.empty());
-
+      doNothing()
+          .when(userValidationService)
+          .validateUniqueEmailAndNumber(oldEmail, newNumber, VALID_USER_ID);
       // Act
       userSettingsService.updateAccountSettings(VALID_USER_ID, settings);
 
@@ -167,8 +171,6 @@ class UserSettingsServiceTests {
       assertAll(
           () -> verify(userRepository).save(user),
           () -> verify(userRepository, times(1)).findById(VALID_USER_ID),
-          () -> verify(userRepository, times(1)).findByEmailIgnoreCase(oldEmail),
-          () -> verify(userRepository, times(1)).findByNumber(newNumber),
           () ->
               assertThat(user.getEmail())
                   .as("checking if the email was updated correctly")
@@ -177,6 +179,8 @@ class UserSettingsServiceTests {
               assertThat(user.getNumber())
                   .as("checking if the number was updated correctly")
                   .isEqualTo(newNumber));
+      verify(userValidationService, times(1))
+          .validateUniqueEmailAndNumber(oldEmail, newNumber, VALID_USER_ID);
     }
 
     @Test
@@ -188,8 +192,9 @@ class UserSettingsServiceTests {
       AccountSettingsRequestDTO settings = new AccountSettingsRequestDTO(newEmail, newNumber);
 
       when(userRepository.findById(VALID_USER_ID)).thenReturn(Optional.of(user));
-      when(userRepository.findByEmailIgnoreCase(newEmail)).thenReturn(Optional.empty());
-      when(userRepository.findByNumber(newNumber)).thenReturn(Optional.empty());
+      doNothing()
+          .when(userValidationService)
+          .validateUniqueEmailAndNumber(newEmail, newNumber, VALID_USER_ID);
 
       // Act
       userSettingsService.updateAccountSettings(VALID_USER_ID, settings);
@@ -198,8 +203,6 @@ class UserSettingsServiceTests {
       assertAll(
           () -> verify(userRepository).save(user),
           () -> verify(userRepository, times(1)).findById(VALID_USER_ID),
-          () -> verify(userRepository, times(1)).findByEmailIgnoreCase(newEmail),
-          () -> verify(userRepository, times(1)).findByNumber(newNumber),
           () ->
               assertThat(user.getEmail())
                   .as("checking if the email was updated correctly")
@@ -208,6 +211,8 @@ class UserSettingsServiceTests {
               assertThat(user.getNumber())
                   .as("checking if the number was updated correctly")
                   .isEqualTo(newNumber));
+      verify(userValidationService, times(1))
+          .validateUniqueEmailAndNumber(newEmail, newNumber, VALID_USER_ID);
     }
 
     @Test
@@ -222,17 +227,25 @@ class UserSettingsServiceTests {
           new AccountSettingsRequestDTO(differentUser.getEmail(), user.getNumber());
 
       when(userRepository.findById(VALID_USER_ID)).thenReturn(Optional.of(user));
-      when(userRepository.findByEmailIgnoreCase(differentUser.getEmail()))
-          .thenReturn(Optional.of(differentUser));
+      doThrow(new DuplicateFieldException("email", "Email already exists"))
+          .when(userValidationService)
+          .validateUniqueEmailAndNumber(differentUser.getEmail(), user.getNumber(), VALID_USER_ID);
 
       // Act & Assert
       assertAll(
-          () -> assertThatThrownBy(() -> userSettingsService.updateAccountSettings(VALID_USER_ID, settings))
-              .as("checking if updateAccountSettings throws DuplicateFieldException when email belongs to another user")
-              .isInstanceOf(DuplicateFieldException.class),
+          () ->
+              assertThatThrownBy(
+                      () -> userSettingsService.updateAccountSettings(VALID_USER_ID, settings))
+                  .as(
+                      "checking if updateAccountSettings throws DuplicateFieldException when email"
+                          + " belongs to another user")
+                  .isInstanceOf(DuplicateFieldException.class),
           () -> verify(userRepository, times(1)).findById(VALID_USER_ID),
-          () -> verify(userRepository, times(1)).findByEmailIgnoreCase(differentUser.getEmail()),
-          () -> verify(userRepository, never()).save(any(User.class)));
+          () -> verify(userRepository, never()).save(any(User.class)),
+          () ->
+              verify(userValidationService, times(1))
+                  .validateUniqueEmailAndNumber(
+                      differentUser.getEmail(), user.getNumber(), VALID_USER_ID));
     }
 
     @Test
@@ -246,16 +259,24 @@ class UserSettingsServiceTests {
           new AccountSettingsRequestDTO(user.getEmail(), differentUser.getNumber());
 
       when(userRepository.findById(VALID_USER_ID)).thenReturn(Optional.of(user));
-      when(userRepository.findByNumber(differentUser.getNumber()))
-          .thenReturn(Optional.of(differentUser));
+      doThrow(new DuplicateFieldException("number", "Phone number already exists"))
+          .when(userValidationService)
+          .validateUniqueEmailAndNumber(user.getEmail(), differentUser.getNumber(), VALID_USER_ID);
 
       assertAll(
-          () -> assertThatThrownBy(() -> userSettingsService.updateAccountSettings(VALID_USER_ID, settings))
-              .as("checking if updateAccountSettings throws DuplicateFieldException when phone belongs to another user")
-              .isInstanceOf(DuplicateFieldException.class),
+          () ->
+              assertThatThrownBy(
+                      () -> userSettingsService.updateAccountSettings(VALID_USER_ID, settings))
+                  .as(
+                      "checking if updateAccountSettings throws DuplicateFieldException when phone"
+                          + " belongs to another user")
+                  .isInstanceOf(DuplicateFieldException.class),
           () -> verify(userRepository, times(1)).findById(VALID_USER_ID),
-          () -> verify(userRepository, times(1)).findByNumber(differentUser.getNumber()),
-          () -> verify(userRepository, never()).save(any(User.class)));
+          () -> verify(userRepository, never()).save(any(User.class)),
+          () ->
+              verify(userValidationService, times(1))
+                  .validateUniqueEmailAndNumber(
+                      user.getEmail(), differentUser.getNumber(), VALID_USER_ID));
     }
   }
 
