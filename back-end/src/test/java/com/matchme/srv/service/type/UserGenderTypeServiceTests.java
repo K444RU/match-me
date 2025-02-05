@@ -24,17 +24,24 @@ class UserGenderTypeServiceTests {
 
   @InjectMocks private UserGenderTypeService userGenderTypeService;
 
+  private final List<UserGenderType> mockGenders = List.of(
+    UserGenderType.builder().id(1L).name("MALE").build(),
+    UserGenderType.builder().id(2L).name("FEMALE").build(),
+    UserGenderType.builder().id(3L).name("OTHER").build()
+  );
+
+  private static final class GenderConstants {
+    static final String MALE = "MALE";
+    static final Long MALE_ID = 1L;
+    static final String FEMALE = "FEMALE";
+    static final Long FEMALE_ID = 2L;
+    static final String OTHER = "OTHER";
+    static final Long OTHER_ID = 3L;
+  }
+
   @Test
   @DisplayName("getAllGenders Tests")
   void getAllGenders_ReturnListGenderTypeDTO() {
-
-    // Arrange
-    List<UserGenderType> mockGenders =
-        List.of(
-            UserGenderType.builder().id(1L).name("MALE").build(),
-            UserGenderType.builder().id(2L).name("FEMALE").build(),
-            UserGenderType.builder().id(3L).name("OTHER").build());
-
     when(userGenderTypeRepository.findAll()).thenReturn(mockGenders);
 
     // Act
@@ -46,15 +53,27 @@ class UserGenderTypeServiceTests {
         () ->
             assertThat(result.get(0).getName())
                 .as("checking if the first gender is MALE")
-                .isEqualTo("MALE"),
+                .isEqualTo(GenderConstants.MALE),
+        () ->
+            assertThat(result.get(0).getId())
+                .as("checking if the first gender id is 1")
+                .isEqualTo(GenderConstants.MALE_ID),
         () ->
             assertThat(result.get(1).getName())
                 .as("checking if the second gender is FEMALE")
-                .isEqualTo("FEMALE"),
+                .isEqualTo(GenderConstants.FEMALE),
+        () ->
+            assertThat(result.get(1).getId())
+                .as("checking if the second gender id is 2")
+                .isEqualTo(GenderConstants.FEMALE_ID),
         () ->
             assertThat(result.get(2).getName())
                 .as("checking if the third gender is OTHER")
-                .isEqualTo("OTHER"),
+                .isEqualTo(GenderConstants.OTHER),
+        () ->
+            assertThat(result.get(2).getId())
+                .as("checking if the third gender id is 3")
+                .isEqualTo(GenderConstants.OTHER_ID),
         () -> verify(userGenderTypeRepository, times(1)).findAll());
   }
 }
