@@ -24,7 +24,7 @@ class UserGenderTypeServiceTests {
 
   @InjectMocks private UserGenderTypeService userGenderTypeService;
 
-  private final List<UserGenderType> mockGenders = List.of(
+  private static final List<UserGenderType> mockGenders = List.of(
     UserGenderType.builder().id(1L).name("MALE").build(),
     UserGenderType.builder().id(2L).name("FEMALE").build(),
     UserGenderType.builder().id(3L).name("OTHER").build()
