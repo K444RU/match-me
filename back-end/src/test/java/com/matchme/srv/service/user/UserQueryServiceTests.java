@@ -17,7 +17,7 @@ import com.matchme.srv.model.user.UserAuth;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.repository.UserRepository;
 import com.matchme.srv.service.AccessValidationService;
-import com.matchme.srv.service.user.dto.UserDTOMapper;
+import com.matchme.srv.mapper.user.UserDTOMapper;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.Optional;
 import java.util.Set;

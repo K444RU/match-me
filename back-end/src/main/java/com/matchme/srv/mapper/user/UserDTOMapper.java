@@ -1,4 +1,4 @@
-package com.matchme.srv.service.user.dto;
+package com.matchme.srv.mapper.user;
 
 import com.matchme.srv.dto.response.BiographicalResponseDTO;
 import com.matchme.srv.dto.response.CurrentUserResponseDTO;
