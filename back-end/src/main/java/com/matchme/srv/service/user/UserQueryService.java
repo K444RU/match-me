@@ -13,7 +13,7 @@ import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
 import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
 import com.matchme.srv.repository.UserRepository;
 import com.matchme.srv.service.AccessValidationService;
-import com.matchme.srv.service.user.dto.UserDTOMapper;
+import com.matchme.srv.mapper.user.UserDTOMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
