@@ -2,7 +2,6 @@ package com.matchme.srv.service.user;
 
 import com.matchme.srv.dto.request.SignupRequestDTO;
 import com.matchme.srv.dto.request.UserParametersRequestDTO;
-import com.matchme.srv.exception.DuplicateFieldException;
 import com.matchme.srv.exception.InvalidVerificationException;
 import com.matchme.srv.mapper.AttributesMapper;
 import com.matchme.srv.mapper.PreferencesMapper;
@@ -32,6 +31,8 @@ import com.matchme.srv.service.type.ProfileChangeTypeService;
 import com.matchme.srv.service.type.UserGenderTypeService;
 import com.matchme.srv.service.type.UserRoleTypeService;
 import com.matchme.srv.service.type.UserStateTypesService;
+import com.matchme.srv.service.user.validation.UserValidationService;
+
 import jakarta.persistence.EntityNotFoundException;
 import java.util.HashSet;
 import java.util.List;
@@ -59,31 +60,9 @@ public class UserCreationService {
   private final PreferenceChangeTypeService preferenceChangeTypeService;
   private final HobbyService hobbyService;
   private final UserGenderTypeService userGenderTypeService;
+  private final UserValidationService userValidationService;
 
   private final PasswordEncoder encoder;
-
-    /**
-     * Checks if the given email or phone number is used by a *different* user.
-     * If so, throws a DuplicateFieldException.
-     *
-     * @param email    - new email to be used
-     * @param number   - new phone number to be used
-     * @param userId   - the user doing the update (can be null for new users)
-     */
-    private void validateUniqueEmailAndNumber(String email, String number, Long userId) {
-
-      userRepository.findByEmailIgnoreCase(email)
-              .filter(existingUser -> !existingUser.getId().equals(userId))
-              .ifPresent(u -> {
-              throw new DuplicateFieldException("email", "Email already exists");
-              });
-
-      userRepository.findByNumber(number)
-              .filter(existingUser -> !existingUser.getId().equals(userId))
-              .ifPresent(u -> {
-              throw new DuplicateFieldException("number", "Phone number already exists");
-              });
-  }
 
   private final AttributesMapper attributesMapper;
   private final PreferencesMapper preferencesMapper;
@@ -97,7 +76,7 @@ public class UserCreationService {
   public ActivityLog createUser(SignupRequestDTO signUpRequest) {
     log.info("Creating user with email: " + signUpRequest.getEmail());
 
-    validateUniqueEmailAndNumber(signUpRequest.getEmail(), signUpRequest.getNumber(), null);
+    userValidationService.validateUniqueEmailAndNumber(signUpRequest.getEmail(), signUpRequest.getNumber(), null);
 
     UserStateTypes state = userStateTypesService.getByName("UNVERIFIED");
 
