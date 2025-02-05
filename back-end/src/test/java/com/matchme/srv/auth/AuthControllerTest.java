@@ -56,9 +56,6 @@ class AuthControllerTest {
     private AuthEntryPointJwt unauthorizedHandler;
 
     @MockitoBean
-    private SecurityUtils securityUtils;
-
-    @MockitoBean
     private Authentication authentication;
     
     @MockitoBean
