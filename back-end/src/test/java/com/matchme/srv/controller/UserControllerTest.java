@@ -17,7 +17,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -35,9 +34,7 @@ import com.matchme.srv.dto.response.CurrentUserResponseDTO;
 import com.matchme.srv.dto.response.ProfileResponseDTO;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.security.services.UserDetailsImpl;
-import com.matchme.srv.service.ChatService;
 import com.matchme.srv.service.ConnectionService;
-import com.matchme.srv.service.HobbyService;
 import com.matchme.srv.service.user.UserCreationService;
 import com.matchme.srv.service.user.UserProfileService;
 import com.matchme.srv.service.user.UserQueryService;
@@ -65,8 +62,6 @@ class UserControllerTest {
 
   private MockMvc mockMvc;
 
-  @Mock private ChatService chatService;
-
   @Mock private UserCreationService creationService;
 
   @Mock private UserQueryService queryService;
@@ -76,8 +71,6 @@ class UserControllerTest {
   @Mock private UserSettingsService settingsService;
 
   @Mock private ConnectionService connectionService;
-
-  @Mock private HobbyService hobbyService;
 
   @Mock private Authentication authentication;
 
