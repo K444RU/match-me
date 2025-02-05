@@ -18,7 +18,6 @@ import com.matchme.srv.dto.response.ProfileResponseDTO;
 import com.matchme.srv.dto.response.SettingsResponseDTO;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.security.services.UserDetailsImpl;
-import com.matchme.srv.service.ChatService;
 import com.matchme.srv.service.ConnectionService;
 import com.matchme.srv.service.HobbyService;
 import com.matchme.srv.service.user.UserQueryService;
@@ -41,8 +40,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 class MeControllerTest {
 
   private MockMvc mockMvc;
-
-  @Mock private ChatService chatService;
 
   @Mock private UserQueryService queryService;
 
