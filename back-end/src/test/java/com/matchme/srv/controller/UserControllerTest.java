@@ -41,7 +41,6 @@ import com.matchme.srv.service.user.UserQueryService;
 import com.matchme.srv.service.user.UserSettingsService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.ServletException;
-import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -106,7 +105,7 @@ class UserControllerTest {
       @Test
       @DisplayName("Should return current user details when authenticated")
       void getCurrentUser_WhenAuthenticated_ReturnsUserDetails() throws Exception {
-        setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+        setupAuthenticatedUser(authentication);
         CurrentUserResponseDTO response = createCurrentUserResponse();
 
         when(queryService.getCurrentUserDTO(DEFAULT_USER_ID, DEFAULT_USER_ID)).thenReturn(response);
@@ -130,7 +129,7 @@ class UserControllerTest {
       @Test
       @DisplayName("Should return 404 when user is not connected")
       void getCurrentUser_WhenUnauthorized_Returns404() {
-        setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+        setupAuthenticatedUser(authentication);
         when(queryService.getCurrentUserDTO(DEFAULT_USER_ID, DEFAULT_TARGET_USER_ID))
             .thenThrow(new EntityNotFoundException("User not found or no access rights."));
 
@@ -158,7 +157,7 @@ class UserControllerTest {
       @DisplayName("Should return user info when connected")
       void getCurrentUser_WhenConnected_ReturnsUserDetails() throws Exception {
         // Given
-        setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+        setupAuthenticatedUser(authentication);
 
         CurrentUserResponseDTO responseDTO = createTargetCurrentUserResponse();
 
@@ -190,7 +189,7 @@ class UserControllerTest {
       @DisplayName("Should return user profile")
       void getProfile_WhenRequested_ReturnsUserProfile() throws Exception {
         // Given
-        setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+        setupAuthenticatedUser(authentication);
 
         ProfileResponseDTO profileDTO = createProfileResponse();
         when(queryService.getUserProfileDTO(DEFAULT_USER_ID, DEFAULT_USER_ID))
@@ -212,7 +211,7 @@ class UserControllerTest {
       @Test
       void getProfile_WhenUnauthorized_Returns404() {
         // Given
-        setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+        setupAuthenticatedUser(authentication);
         when(queryService.getUserProfileDTO(DEFAULT_USER_ID, DEFAULT_TARGET_USER_ID))
             .thenThrow(new EntityNotFoundException("User not found or no access rights."));
 
@@ -240,7 +239,7 @@ class UserControllerTest {
       @DisplayName("Should return user profile when connected")
       void getProfile_WhenConnected_ReturnsUserProfile() throws Exception {
         // Given
-        setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+        setupAuthenticatedUser(authentication);
 
         ProfileResponseDTO profileDTO = createTargetProfileResponse();
         when(queryService.getUserProfileDTO(DEFAULT_USER_ID, DEFAULT_TARGET_USER_ID))
@@ -267,7 +266,7 @@ class UserControllerTest {
       @DisplayName("Should return user bio")
       void getBio_WhenRequested_ReturnsUserBio() throws Exception {
         // Given
-        setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+        setupAuthenticatedUser(authentication);
 
         BiographicalResponseDTO bioDTO = createBiographicalResponse();
 
@@ -297,7 +296,7 @@ class UserControllerTest {
       @DisplayName("Should return 404 when user bio is not found")
       void getBio_WhenUnauthorized_Returns404() {
         // Given
-        setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+        setupAuthenticatedUser(authentication);
         when(queryService.getBiographicalResponseDTO(DEFAULT_USER_ID, DEFAULT_TARGET_USER_ID))
             .thenThrow(new EntityNotFoundException("User not found or no access rights."));
 
@@ -326,7 +325,7 @@ class UserControllerTest {
       @DisplayName("Should return user bio when connected")
       void getBio_WhenConnected_ReturnsUserBio() throws Exception {
         // Given
-        setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+        setupAuthenticatedUser(authentication);
 
         BiographicalResponseDTO bioDTO = createTargetBiographicalResponse();
 
@@ -360,7 +359,7 @@ class UserControllerTest {
       @DisplayName("Should return user connections")
       void getConnections_WhenRequested_ReturnsUserConnections() throws Exception {
         // Given
-        setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+        setupAuthenticatedUser(authentication);
 
         List<ConnectionResponseDTO> connections = createConnectionsResponse(1);
 
@@ -388,7 +387,7 @@ class UserControllerTest {
       @DisplayName("Should return 404 when user connections are not found")
       void getConnections_WhenUnauthorized_Returns404() {
         // Given
-        setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+        setupAuthenticatedUser(authentication);
 
         when(connectionService.getConnectionResponseDTO(DEFAULT_USER_ID, DEFAULT_TARGET_USER_ID))
             .thenThrow(new EntityNotFoundException("User not found or no access rights."));
@@ -422,7 +421,7 @@ class UserControllerTest {
       @DisplayName("Should upload user profile picture")
       void uploadProfilePicture_WhenSuccess_Returns200() throws Exception {
         // Given
-        setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+        setupAuthenticatedUser(authentication);
 
         // When/Then
         mockMvc
@@ -441,7 +440,7 @@ class UserControllerTest {
       @DisplayName("Should upload user profile picture when null request")
       void uploadProfilePicture_WhenNullRequest_Returns200() throws Exception {
         // Given
-        setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+        setupAuthenticatedUser(authentication);
 
         // When/Then
         mockMvc
@@ -458,7 +457,7 @@ class UserControllerTest {
       @DisplayName("Should upload user profile picture when empty base64")
       void uploadProfilePicture_WhenEmptyBase64_Returns200() throws Exception {
         // Given
-        setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+        setupAuthenticatedUser(authentication);
         String emptyBase64 = "";
 
         ProfilePictureSettingsRequestDTO request = new ProfilePictureSettingsRequestDTO();
@@ -481,7 +480,7 @@ class UserControllerTest {
       @DisplayName("Should upload user profile picture when invalid base64")
       void uploadProfilePicture_WhenInvalidBase64_Returns400() {
         // Given
-        setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+        setupAuthenticatedUser(authentication);
         String invalidBase64 = "thisIsNotValid==";
 
         doThrow(new IllegalArgumentException("Invalid Base64 image data."))
@@ -518,7 +517,7 @@ class UserControllerTest {
       @DisplayName("Should upload user profile picture when user not found")
       void uploadProfilePicture_WhenUserNotFound_Returns404() {
         // Given
-        setupAuthenticatedUser(INVALID_USER_ID, "user1@example.com");
+        setupAuthenticatedUser(authentication,INVALID_USER_ID, "user1@example.com");
 
         ProfilePictureSettingsRequestDTO request = new ProfilePictureSettingsRequestDTO();
         request.setBase64Image(DEFAULT_PROFILE_PICTURE);
@@ -570,7 +569,7 @@ class UserControllerTest {
                     (UserDetailsImpl) ((Authentication) invocation.getArgument(0)).getPrincipal();
                 return userDetails.getId();
               });
-      setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+      setupAuthenticatedUser(authentication);
       AccountSettingsRequestDTO request = createValidAccountSettings();
 
       mockMvc
@@ -604,7 +603,7 @@ class UserControllerTest {
     @Test
     @DisplayName("Return 404 when user doesn't exist")
     void updateAccount_UserNotFound_Returns404() {
-      setupAuthenticatedUser(INVALID_USER_ID, DEFAULT_EMAIL);
+      setupAuthenticatedUser(authentication, INVALID_USER_ID, DEFAULT_EMAIL);
       AccountSettingsRequestDTO request = createValidAccountSettings();
 
       doThrow(new EntityNotFoundException("User not found"))
@@ -636,7 +635,7 @@ class UserControllerTest {
                     (UserDetailsImpl) ((Authentication) invocation.getArgument(0)).getPrincipal();
                 return userDetails.getId();
               });
-      setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+      setupAuthenticatedUser(authentication);
       ProfileSettingsRequestDTO request = createValidProfileSettings();
 
       mockMvc
@@ -670,7 +669,7 @@ class UserControllerTest {
     @Test
     @DisplayName("Return 404 when user doesn't exist")
     void updateProfile_UserNotFound_Returns404() {
-      setupAuthenticatedUser(INVALID_USER_ID, DEFAULT_EMAIL);
+      setupAuthenticatedUser(authentication, INVALID_USER_ID, DEFAULT_EMAIL);
       ProfileSettingsRequestDTO request = createValidProfileSettings();
 
       doThrow(new EntityNotFoundException("User not found"))
@@ -702,7 +701,7 @@ class UserControllerTest {
                     (UserDetailsImpl) ((Authentication) invocation.getArgument(0)).getPrincipal();
                 return userDetails.getId();
               });
-      setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+      setupAuthenticatedUser(authentication);
       AttributesSettingsRequestDTO request = createValidAttributesSettings();
 
       mockMvc
@@ -736,7 +735,7 @@ class UserControllerTest {
     @Test
     @DisplayName("Return 404 when user doesn't exist")
     void updateAttributes_UserNotFound_Returns404() {
-      setupAuthenticatedUser(INVALID_USER_ID, DEFAULT_EMAIL);
+      setupAuthenticatedUser(authentication, INVALID_USER_ID, DEFAULT_EMAIL);
       AttributesSettingsRequestDTO request = createValidAttributesSettings();
 
       doThrow(new EntityNotFoundException("User not found"))
@@ -768,7 +767,7 @@ class UserControllerTest {
                     (UserDetailsImpl) ((Authentication) invocation.getArgument(0)).getPrincipal();
                 return userDetails.getId();
               });
-      setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+      setupAuthenticatedUser(authentication);
       PreferencesSettingsRequestDTO request = createValidPreferencesSettings();
 
       mockMvc
@@ -802,7 +801,7 @@ class UserControllerTest {
     @Test
     @DisplayName("Return 404 when user doesn't exist")
     void updatePreferences_UserNotFound_Returns404() {
-      setupAuthenticatedUser(INVALID_USER_ID, DEFAULT_EMAIL);
+      setupAuthenticatedUser(authentication, INVALID_USER_ID, DEFAULT_EMAIL);
       PreferencesSettingsRequestDTO request = createValidPreferencesSettings();
 
       doThrow(new EntityNotFoundException("User not found"))
@@ -834,7 +833,7 @@ class UserControllerTest {
                 return userDetails.getId();
               });
 
-      setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+      setupAuthenticatedUser(authentication);
       UserParametersRequestDTO request = createValidParametersRequest();
 
       mockMvc
@@ -904,20 +903,6 @@ class UserControllerTest {
 
       assertThat(exception.getCause()).isInstanceOf(IllegalArgumentException.class);
     }
-  }
-
-  /**
-   * Helper method to setup authenticated status
-   *
-   * <p>When auth.getPrincipal -> returns userDetails
-   *
-   * @param userId
-   * @param email
-   */
-  private void setupAuthenticatedUser(Long userId, String email) {
-    UserDetailsImpl userDetails =
-        new UserDetailsImpl(userId, email, "password", Collections.emptySet());
-    when(authentication.getPrincipal()).thenReturn(userDetails);
   }
 
   private String asJsonString(final Object obj) {
