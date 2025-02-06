@@ -69,7 +69,7 @@ class MeControllerTest {
   @Test
   @DisplayName("Should return current user details when authenticated")
   void getCurrentUser_WhenAuthenticated_ReturnsUserDetails() throws Exception {
-    setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+    setupAuthenticatedUser(authentication);
     CurrentUserResponseDTO response = createCurrentUserResponse();
 
     when(queryService.getCurrentUserDTO(DEFAULT_USER_ID, DEFAULT_USER_ID)).thenReturn(response);
@@ -91,7 +91,7 @@ class MeControllerTest {
   @Test
   @DisplayName("Should return user profile when requested")
   void getProfile_WhenRequested_ReturnsProfileDetails() throws Exception {
-    setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+    setupAuthenticatedUser(authentication);
     ProfileResponseDTO profile = createProfileResponse();
 
     when(queryService.getUserProfileDTO(DEFAULT_USER_ID, DEFAULT_USER_ID)).thenReturn(profile);
@@ -112,7 +112,7 @@ class MeControllerTest {
   @DisplayName("Should return biographical data when available")
   void getBio_WhenDataExists_ReturnsBiographicalInformation() throws Exception {
     // Given
-    setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+    setupAuthenticatedUser(authentication);
     BiographicalResponseDTO bioDTO = createBiographicalResponse();
 
     when(queryService.getBiographicalResponseDTO(DEFAULT_USER_ID, DEFAULT_USER_ID))
@@ -140,7 +140,7 @@ class MeControllerTest {
   @DisplayName("Should return connections list when connections exist")
   void getConnections_WhenConnectionsExist_ReturnsConnectionList() throws Exception {
     // Given
-    setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+    setupAuthenticatedUser(authentication);
 
     List<ConnectionResponseDTO> connections =
         List.of(createConnectionResponse(DEFAULT_USER_ID, DEFAULT_TARGET_USER_ID));
@@ -170,7 +170,7 @@ class MeControllerTest {
   @DisplayName("Should return empty list when no connections exist")
   void getConnections_WhenNoConnectionsExist_ReturnsEmptyList() throws Exception {
     // Given
-    setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+    setupAuthenticatedUser(authentication);
     when(connectionService.getConnectionResponseDTO(DEFAULT_USER_ID, DEFAULT_USER_ID))
         .thenReturn(Collections.emptyList());
 
@@ -187,7 +187,7 @@ class MeControllerTest {
   @DisplayName("Should return settings parameters when authorized")
   void getSettings_WhenAuthorized_ReturnsSettingsParameters() throws Exception {
     // Given
-    setupAuthenticatedUser(DEFAULT_USER_ID, DEFAULT_EMAIL);
+    setupAuthenticatedUser(authentication);
     SettingsResponseDTO response = createSettingsResponse();
 
     when(queryService.getSettingsResponseDTO(DEFAULT_USER_ID, DEFAULT_USER_ID))
@@ -223,17 +223,4 @@ class MeControllerTest {
             jsonPath("$.probabilityTolerance", is(DEFAULT_PROBABILITY_TOLERANCE)));
   }
 
-  /**
-   * Helper method to setup authenticated status
-   *
-   * <p>When auth.getPrincipal -> returns userDetails
-   *
-   * @param userId
-   * @param email
-   */
-  private void setupAuthenticatedUser(Long userId, String email) {
-    UserDetailsImpl userDetails =
-        new UserDetailsImpl(userId, email, "password", Collections.emptySet());
-    when(authentication.getPrincipal()).thenReturn(userDetails);
-  }
 }

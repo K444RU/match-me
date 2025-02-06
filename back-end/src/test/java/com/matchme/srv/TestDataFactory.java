@@ -1,5 +1,7 @@
 package com.matchme.srv;
 
+import static org.mockito.Mockito.when;
+
 import com.matchme.srv.dto.request.UserParametersRequestDTO;
 import com.matchme.srv.dto.request.settings.AccountSettingsRequestDTO;
 import com.matchme.srv.dto.request.settings.AttributesSettingsRequestDTO;
@@ -13,12 +15,16 @@ import com.matchme.srv.model.user.profile.UserGenderType;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
 import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
+import com.matchme.srv.security.services.UserDetailsImpl;
+
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
+import org.springframework.security.core.Authentication;
 
 public class TestDataFactory {
 
@@ -344,7 +350,10 @@ public class TestDataFactory {
   }
 
   public static AccountSettingsRequestDTO createValidAccountSettings() {
-    return AccountSettingsRequestDTO.builder().email(DEFAULT_UPDATE_EMAIL).number(DEFAULT_UPDATE_NUMBER).build();
+    return AccountSettingsRequestDTO.builder()
+        .email(DEFAULT_UPDATE_EMAIL)
+        .number(DEFAULT_UPDATE_NUMBER)
+        .build();
   }
 
   public static ProfileSettingsRequestDTO createValidProfileSettings() {
@@ -374,5 +383,32 @@ public class TestDataFactory {
         .distance(DEFAULT_UPDATE_DISTANCE)
         .probability_tolerance(DEFAULT_UPDATE_PROBABILITY_TOLERANCE)
         .build();
+  }
+
+    /**
+   * Helper method to setup authenticated status
+   *
+   * <p>When auth.getPrincipal -> returns userDetails
+   *
+   * @param authentication
+   * @param userId
+   * @param email
+   */
+  public static void setupAuthenticatedUser(
+      Authentication authentication, Long userId, String email) {
+    UserDetailsImpl userDetails =
+        new UserDetailsImpl(userId, email, "password", Collections.emptySet());
+    when(authentication.getPrincipal()).thenReturn(userDetails);
+  }
+
+  /**
+   * Helper method to setup authenticated status
+   *
+   * <p>When auth.getPrincipal -> returns userDetails
+   *
+   * @param authentication
+   */
+  public static void setupAuthenticatedUser(Authentication authentication) {
+    setupAuthenticatedUser(authentication, DEFAULT_USER_ID, DEFAULT_EMAIL);
   }
 }
