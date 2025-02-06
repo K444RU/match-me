@@ -15,7 +15,11 @@ import com.matchme.srv.dto.response.CurrentUserResponseDTO;
 import com.matchme.srv.dto.response.ProfileResponseDTO;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.service.ConnectionService;
-import com.matchme.srv.service.UserService;
+import com.matchme.srv.service.user.UserCreationService;
+import com.matchme.srv.service.user.UserProfileService;
+import com.matchme.srv.service.user.UserQueryService;
+import com.matchme.srv.service.user.UserSettingsService;
+
 import lombok.RequiredArgsConstructor;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -24,7 +28,10 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/users")
 public class UserController {
 
-    private final UserService userService;
+    private final UserCreationService creationService;
+    private final UserSettingsService settingsService;
+    private final UserProfileService profileService;
+    private final UserQueryService queryService;
     private final ConnectionService connectionService;
     private final SecurityUtils securityUtils;
 
@@ -42,7 +49,7 @@ public class UserController {
     public ResponseEntity<CurrentUserResponseDTO> getUser(@PathVariable Long targetId,
             Authentication authentication) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
-        CurrentUserResponseDTO response = userService.getUserDTO(currentUserId, targetId);
+        CurrentUserResponseDTO response = queryService.getCurrentUserDTO(currentUserId, targetId);
         return ResponseEntity.ok(response);
     }
 
@@ -60,7 +67,7 @@ public class UserController {
     public ResponseEntity<ProfileResponseDTO> getProfile(@PathVariable Long targetId,
             Authentication authentication) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
-        ProfileResponseDTO response = userService.getUserProfileDTO(currentUserId, targetId);
+        ProfileResponseDTO response = queryService.getUserProfileDTO(currentUserId, targetId);
         return ResponseEntity.ok(response);
     }
 
@@ -79,7 +86,7 @@ public class UserController {
             Authentication authentication) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
         BiographicalResponseDTO response =
-                userService.getBiographicalResponseDTO(currentUserId, targetId);
+            queryService.getBiographicalResponseDTO(currentUserId, targetId);
         return ResponseEntity.ok(response);
     }
 
@@ -104,7 +111,7 @@ public class UserController {
     @PatchMapping("/verify/{userId}")
     public ResponseEntity<Void> verifyAccount(@PathVariable Long userId,
             @RequestParam int verificationCode) {
-        userService.verifyAccount(userId, verificationCode);
+            creationService.verifyAccount(userId, verificationCode);
         return ResponseEntity.ok().build();
     }
 
@@ -113,7 +120,7 @@ public class UserController {
             @Validated @RequestBody UserParametersRequestDTO parameters,
             Authentication authentication) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
-        userService.setUserParameters(currentUserId, parameters);
+        creationService.setUserParameters(currentUserId, parameters);
         return ResponseEntity.ok().build();
     }
 
@@ -122,7 +129,7 @@ public class UserController {
     public ResponseEntity<Void> updateAccount(Authentication authentication,
             @Validated @RequestBody AccountSettingsRequestDTO settings) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
-        userService.updateAccountSettings(currentUserId, settings);
+        settingsService.updateAccountSettings(currentUserId, settings);
         return ResponseEntity.noContent().build();
     }
 
@@ -131,7 +138,7 @@ public class UserController {
     public ResponseEntity<Void> updateProfile(Authentication authentication,
             @Validated @RequestBody ProfileSettingsRequestDTO settings) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
-        userService.updateProfileSettings(currentUserId, settings);
+        settingsService.updateProfileSettings(currentUserId, settings);
         return ResponseEntity.noContent().build();
     }
 
@@ -140,7 +147,7 @@ public class UserController {
     public ResponseEntity<Void> updateAttributes(Authentication authentication,
             @Validated @RequestBody AttributesSettingsRequestDTO settings) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
-        userService.updateAttributesSettings(currentUserId, settings);
+        settingsService.updateAttributesSettings(currentUserId, settings);
         return ResponseEntity.noContent().build();
     }
 
@@ -149,7 +156,7 @@ public class UserController {
     public ResponseEntity<Void> updatePreferences(Authentication authentication,
             @Validated @RequestBody PreferencesSettingsRequestDTO settings) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
-        userService.updatePreferencesSettings(currentUserId, settings);
+        settingsService.updatePreferencesSettings(currentUserId, settings);
         return ResponseEntity.noContent().build();
     }
 
@@ -168,7 +175,7 @@ public class UserController {
             @RequestBody(required = false) ProfilePictureSettingsRequestDTO request,
             Authentication authentication) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
-        userService.saveProfilePicture(currentUserId, request);
+        profileService.saveProfilePicture(currentUserId, request);
         return ResponseEntity.ok().build();
     }
 

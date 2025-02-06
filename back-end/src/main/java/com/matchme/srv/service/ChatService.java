@@ -155,20 +155,20 @@ public class ChatService {
             throw new RuntimeException("User is not participant.");
         }
 
-        UserMessage message = new UserMessage();
-        message.setConnection(connection);
-        message.setUser(connection.getUsers().stream()
-                .filter(user -> user.getId().equals(senderId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("User not found")));
-        message.setContent(content);
-        message.setCreatedAt(timestamp);
+        UserMessage message = UserMessage.builder()
+                .connection(connection)
+                .user(connection.getUsers().stream()
+                        .filter(user -> user.getId().equals(senderId))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("User not found")))
+                .content(content)
+                .createdAt(timestamp)
+                .build();
 
         UserMessage savedMessage = userMessageRepository.save(message);
 
         MessageEvent deliveredEvent = new MessageEvent();
         deliveredEvent.setMessage(savedMessage);
-        //toDo: Refactor using constants for "SENT" to avoid hardcoding.
         deliveredEvent.setMessageEventType(new MessageEventType(1L, EVENT_TYPE_SEND));
         deliveredEvent.setTimestamp(timestamp);
         savedMessage.getMessageEvents().add(deliveredEvent);

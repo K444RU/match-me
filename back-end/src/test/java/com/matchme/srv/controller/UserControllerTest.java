@@ -1,646 +1,915 @@
 package com.matchme.srv.controller;
 
+import static com.matchme.srv.TestDataFactory.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.LocalDate;
-import java.time.Period;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.matchme.srv.dto.request.UserParametersRequestDTO;
+import com.matchme.srv.dto.request.settings.AccountSettingsRequestDTO;
+import com.matchme.srv.dto.request.settings.AttributesSettingsRequestDTO;
+import com.matchme.srv.dto.request.settings.PreferencesSettingsRequestDTO;
 import com.matchme.srv.dto.request.settings.ProfilePictureSettingsRequestDTO;
+import com.matchme.srv.dto.request.settings.ProfileSettingsRequestDTO;
+import com.matchme.srv.dto.response.BiographicalResponseDTO;
+import com.matchme.srv.dto.response.ConnectionResponseDTO;
+import com.matchme.srv.dto.response.CurrentUserResponseDTO;
+import com.matchme.srv.dto.response.ProfileResponseDTO;
+import com.matchme.srv.security.jwt.SecurityUtils;
+import com.matchme.srv.security.services.UserDetailsImpl;
+import com.matchme.srv.service.ConnectionService;
+import com.matchme.srv.service.user.UserCreationService;
+import com.matchme.srv.service.user.UserProfileService;
+import com.matchme.srv.service.user.UserQueryService;
+import com.matchme.srv.service.user.UserSettingsService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.ServletException;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import com.matchme.srv.dto.response.BiographicalResponseDTO;
-import com.matchme.srv.dto.response.ConnectionResponseDTO;
-import com.matchme.srv.dto.response.CurrentUserResponseDTO;
-import com.matchme.srv.dto.response.GenderTypeDTO;
-import com.matchme.srv.dto.response.ProfileResponseDTO;
-import com.matchme.srv.dto.response.UserResponseDTO;
-import com.matchme.srv.model.user.UserRoleType;
-import com.matchme.srv.model.user.profile.Hobby;
-import com.matchme.srv.model.user.profile.UserGenderType;
-import com.matchme.srv.security.jwt.SecurityUtils;
-import com.matchme.srv.security.services.UserDetailsImpl;
-import com.matchme.srv.service.ChatService;
-import com.matchme.srv.service.ConnectionService;
-import com.matchme.srv.service.HobbyService;
-import com.matchme.srv.service.UserService;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+@ExtendWith(MockitoExtension.class)
 class UserControllerTest {
 
-    private MockMvc mockMvc;
+  private MockMvc mockMvc;
 
-    @Mock
-    private ChatService chatService;
+  @Mock private UserCreationService creationService;
 
-    @Mock
-    private UserService userService;
+  @Mock private UserQueryService queryService;
 
-    @Mock
-    private ConnectionService connectionService;
+  @Mock private UserProfileService profileService;
 
-    @Mock
-    private HobbyService hobbyService;
+  @Mock private UserSettingsService settingsService;
 
-    @Mock
-    private Authentication authentication;
+  @Mock private ConnectionService connectionService;
 
-    @Mock
-    private SecurityUtils securityUtils;
+  @Mock private Authentication authentication;
 
-    @InjectMocks
-    private UserController userController;
+  @Mock private SecurityUtils securityUtils;
 
+  @InjectMocks private UserController userController;
+
+  @BeforeEach
+  void setUp() {
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(userController)
+            .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
+            .build();
+  }
+
+  @Nested
+  @DisplayName("Tests requiring authentication")
+  class AuthenticatedTests {
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(userController)
-                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver()).build();
-
-        when(securityUtils.getCurrentUserId(any(Authentication.class))).thenAnswer(invocation -> {
-            UserDetailsImpl userDetails =
+      when(securityUtils.getCurrentUserId(any(Authentication.class)))
+          .thenAnswer(
+              invocation -> {
+                UserDetailsImpl userDetails =
                     (UserDetailsImpl) ((Authentication) invocation.getArgument(0)).getPrincipal();
-            return userDetails.getId();
-        });
+                return userDetails.getId();
+              });
     }
 
-    /**
-     * User fetches himself
-     * 
-     * @return {@link CurrentUserResponseDTO}
-     * @throws Exception
-     */
-    @Test
-    void testGetUser() throws Exception {
+    @Nested
+    @DisplayName("getCurrentUser Tests")
+    class GetCurrentUserTests {
+      @Test
+      @DisplayName("Should return current user details when authenticated")
+      void getCurrentUser_WhenAuthenticated_ReturnsUserDetails() throws Exception {
+        setupAuthenticatedUser(authentication);
+        CurrentUserResponseDTO response = createCurrentUserResponse();
+
+        when(queryService.getCurrentUserDTO(DEFAULT_USER_ID, DEFAULT_USER_ID)).thenReturn(response);
+
+        mockMvc
+            .perform(
+                get("/api/users/{targetId}", DEFAULT_USER_ID)
+                    .principal(authentication)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.id", is(DEFAULT_USER_ID.intValue())),
+                jsonPath("$.email", is(DEFAULT_EMAIL)),
+                jsonPath("$.firstName", is(DEFAULT_FIRST_NAME)),
+                jsonPath("$.lastName", is(DEFAULT_LAST_NAME)),
+                jsonPath("$.alias", is(DEFAULT_ALIAS)),
+                jsonPath("$.role[0].id", is(1)),
+                jsonPath("$.role[0].name", is(DEFAULT_ROLE)));
+      }
+
+      @Test
+      @DisplayName("Should return 404 when user is not connected")
+      void getCurrentUser_WhenUnauthorized_Returns404() {
+        setupAuthenticatedUser(authentication);
+        when(queryService.getCurrentUserDTO(DEFAULT_USER_ID, DEFAULT_TARGET_USER_ID))
+            .thenThrow(new EntityNotFoundException("User not found or no access rights."));
+
+        Exception exception =
+            assertThrows(
+                ServletException.class,
+                () ->
+                    mockMvc.perform(
+                        get("/api/users/{targetId}", DEFAULT_TARGET_USER_ID)
+                            .principal(authentication)
+                            .contentType(MediaType.APPLICATION_JSON)));
+
+        assertAll(
+            () ->
+                assertThat(exception.getCause())
+                    .as("check if the exception is an instance of EntityNotFoundException")
+                    .isInstanceOf(EntityNotFoundException.class),
+            () ->
+                assertThat(exception.getCause().getMessage())
+                    .as("check if the exception message contains the expected message")
+                    .contains("User not found or no access rights."));
+      }
+
+      @Test
+      @DisplayName("Should return user info when connected")
+      void getCurrentUser_WhenConnected_ReturnsUserDetails() throws Exception {
         // Given
-        Long userId = 1L;
-        String email = "user1@example.com";
-        String firstName = "firstName";
-        String lastName = "lastName";
-        String alias = "alias";
+        setupAuthenticatedUser(authentication);
 
-        setupAuthenticatedUser(userId, email);
+        CurrentUserResponseDTO responseDTO = createTargetCurrentUserResponse();
 
-        UserRoleType roleUser = new UserRoleType();
-        roleUser.setId(1L);
-        roleUser.setName("ROLE_USER");
-        Set<UserRoleType> roles = Set.of(roleUser);
-
-        CurrentUserResponseDTO responseDTO =
-                CurrentUserResponseDTO.builder().id(userId).email(email).firstName(firstName)
-                        .lastName(lastName).alias(alias).profilePicture(null).role(roles).build();
-
-        when(userService.getUserDTO(userId, userId)).thenReturn(responseDTO);
+        when(queryService.getCurrentUserDTO(DEFAULT_USER_ID, DEFAULT_TARGET_USER_ID))
+            .thenReturn(responseDTO);
 
         // When/Then
-        mockMvc.perform(get("/api/users/{targetId}", userId).principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(userId.intValue())))
-                .andExpect(jsonPath("$.email", is(email)))
-                .andExpect(jsonPath("$.firstName", is(firstName)))
-                .andExpect(jsonPath("$.lastName", is(lastName)))
-                .andExpect(jsonPath("$.alias", is(alias)))
-                .andExpect(jsonPath("$.role[0].id", is(1)))
-                .andExpect(jsonPath("$.role[0].name", is("ROLE_USER")));
+        mockMvc
+            .perform(
+                get("/api/users/{targetId}", DEFAULT_TARGET_USER_ID)
+                    .principal(authentication)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.id", is(DEFAULT_TARGET_USER_ID.intValue())),
+                jsonPath("$.email", is(DEFAULT_TARGET_EMAIL)),
+                jsonPath("$.firstName", is(DEFAULT_TARGET_FIRST_NAME)),
+                jsonPath("$.lastName", is(DEFAULT_TARGET_LAST_NAME)),
+                jsonPath("$.alias", is(DEFAULT_TARGET_ALIAS)),
+                jsonPath("$.role[0].id", is(1)),
+                jsonPath("$.role[0].name", is(DEFAULT_ROLE)));
+      }
     }
 
-    /**
-     * Requesting user fetches a user whom he is not connected with
-     * 
-     * @return HTTP Status code 404 (instead of 401)
-     * @throws Exception
-     */
-    @Test
-    void testGetUser_Unauthorized() throws Exception {
+    @Nested
+    @DisplayName("getProfile Tests")
+    class GetProfileTests {
+      @Test
+      @DisplayName("Should return user profile")
+      void getProfile_WhenRequested_ReturnsUserProfile() throws Exception {
         // Given
-        Long requestingUserId = 1L;
-        String requestingUserEmail = "user1@example.com";
-        Long targetUserId = 2L;
+        setupAuthenticatedUser(authentication);
 
-        setupAuthenticatedUser(requestingUserId, requestingUserEmail);
-        when(userService.getUserDTO(requestingUserId, targetUserId))
-                .thenThrow(new EntityNotFoundException("User not found or no access rights."));
+        ProfileResponseDTO profileDTO = createProfileResponse();
+        when(queryService.getUserProfileDTO(DEFAULT_USER_ID, DEFAULT_USER_ID))
+            .thenReturn(profileDTO);
 
         // When/Then
-        try {
-            mockMvc.perform(get("/api/users/{targetId}", targetUserId).principal(authentication)
-                    .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
-        } catch (ServletException e) {
-            // Expected exception, test passes
-            assertThat(e.getCause()).isInstanceOf(EntityNotFoundException.class);
-            assertThat(e.getCause().getMessage()).contains("User not found or no access rights.");
-        }
-    }
+        mockMvc
+            .perform(
+                get("/api/users/{targetId}/profile", DEFAULT_USER_ID)
+                    .principal(authentication)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.first_name", is(DEFAULT_FIRST_NAME)),
+                jsonPath("$.last_name", is(DEFAULT_LAST_NAME)),
+                jsonPath("$.city", is(DEFAULT_CITY)));
+      }
 
-    /**
-     * Requesting user fetches a users info whom he is connected with
-     * 
-     * @return {@link CurrentUserResponseDTO}
-     * @throws Exception
-     */
-    @Test
-    void testGetUser_Connected() throws Exception {
+      @Test
+      void getProfile_WhenUnauthorized_Returns404() {
         // Given
-        Long requestingUserId = 1L;
-        String requestingUserEmail = "user1@example.com";
-        Long targetUserId = 2L;
-        String targetUserEmail = "user2@example.com";
-        String targetUserFirstName = "firstName";
-        String targetUserLastName = "lastName";
-        String targetUserAlias = "alias";
-
-        setupAuthenticatedUser(requestingUserId, requestingUserEmail);
-
-        UserRoleType roleUser = new UserRoleType();
-        roleUser.setId(1L);
-        roleUser.setName("ROLE_USER");
-        Set<UserRoleType> roles = Set.of(roleUser);
-
-        CurrentUserResponseDTO responseDTO = CurrentUserResponseDTO.builder().id(targetUserId)
-                .email(targetUserEmail).firstName(targetUserFirstName).lastName(targetUserLastName)
-                .alias(targetUserAlias).profilePicture(null).role(roles).build();
-
-        when(userService.getUserDTO(requestingUserId, targetUserId)).thenReturn(responseDTO);
+        setupAuthenticatedUser(authentication);
+        when(queryService.getUserProfileDTO(DEFAULT_USER_ID, DEFAULT_TARGET_USER_ID))
+            .thenThrow(new EntityNotFoundException("User not found or no access rights."));
 
         // When/Then
-        mockMvc.perform(get("/api/users/{targetId}", targetUserId).principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(targetUserId.intValue())))
-                .andExpect(jsonPath("$.email", is(targetUserEmail)))
-                .andExpect(jsonPath("$.firstName", is(targetUserFirstName)))
-                .andExpect(jsonPath("$.lastName", is(targetUserLastName)))
-                .andExpect(jsonPath("$.alias", is(targetUserAlias)))
-                .andExpect(jsonPath("$.role[0].id", is(1)))
-                .andExpect(jsonPath("$.role[0].name", is("ROLE_USER")));
-    }
+        Exception exception =
+            assertThrows(
+                ServletException.class,
+                () ->
+                    mockMvc.perform(
+                        get("/api/users/{targetId}/profile", DEFAULT_TARGET_USER_ID)
+                            .principal(authentication)
+                            .contentType(MediaType.APPLICATION_JSON)));
 
-    /**
-     * User fetches his profile
-     * 
-     * @return {@link ProfileResponseDTO}
-     * @throws Exception
-     */
-    @Test
-    void testGetProfile() throws Exception {
+        assertAll(
+            () ->
+                assertThat(exception.getCause())
+                    .as("check if the exception is an instance of EntityNotFoundException")
+                    .isInstanceOf(EntityNotFoundException.class),
+            () ->
+                assertThat(exception.getCause().getMessage())
+                    .contains("User not found or no access rights."));
+      }
+
+      @Test
+      @DisplayName("Should return user profile when connected")
+      void getProfile_WhenConnected_ReturnsUserProfile() throws Exception {
         // Given
-        Long userId = 1L;
-        String email = "user1@example.com";
-        String firstName = "firstName";
-        String lastName = "lastName";
-        String city = "city";
+        setupAuthenticatedUser(authentication);
 
-        setupAuthenticatedUser(userId, email);
-
-        ProfileResponseDTO profileDTO = ProfileResponseDTO.builder().first_name(firstName)
-                .last_name(lastName).city(city).build();
-        when(userService.getUserProfileDTO(userId, userId)).thenReturn(profileDTO);
+        ProfileResponseDTO profileDTO = createTargetProfileResponse();
+        when(queryService.getUserProfileDTO(DEFAULT_USER_ID, DEFAULT_TARGET_USER_ID))
+            .thenReturn(profileDTO);
 
         // When/Then
-        mockMvc.perform(get("/api/users/{targetId}/profile", userId).principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-                .andExpect(jsonPath("$.first_name", is(firstName)))
-                .andExpect(jsonPath("$.last_name", is(lastName)))
-                .andExpect(jsonPath("$.city", is(city)));
+        mockMvc
+            .perform(
+                get("/api/users/{targetId}/profile", DEFAULT_TARGET_USER_ID)
+                    .principal(authentication)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.first_name", is(DEFAULT_TARGET_FIRST_NAME)),
+                jsonPath("$.last_name", is(DEFAULT_TARGET_LAST_NAME)),
+                jsonPath("$.city", is(DEFAULT_TARGET_CITY)));
+      }
     }
 
-    @Test
-    void testGetProfile_Unauthorized() throws Exception {
+    @Nested
+    @DisplayName("getBio Tests")
+    class GetBioTests {
+      @Test
+      @DisplayName("Should return user bio")
+      void getBio_WhenRequested_ReturnsUserBio() throws Exception {
         // Given
-        Long requestingUserId = 1L;
-        String requestingUserEmail = "user1@example.com";
-        Long targetUserId = 2L;
-        setupAuthenticatedUser(requestingUserId, requestingUserEmail);
-        when(userService.getUserProfileDTO(requestingUserId, targetUserId))
-                .thenThrow(new EntityNotFoundException("User not found or no access rights."));
+        setupAuthenticatedUser(authentication);
+
+        BiographicalResponseDTO bioDTO = createBiographicalResponse();
+
+        when(queryService.getBiographicalResponseDTO(DEFAULT_USER_ID, DEFAULT_USER_ID))
+            .thenReturn(bioDTO);
 
         // When/Then
-        try {
-            mockMvc.perform(get("/api/users/{targetId}/profile", targetUserId)
-                    .principal(authentication).contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isNotFound());
-        } catch (ServletException e) {
-            // Expected exception, test passes
-            assertThat(e.getCause()).isInstanceOf(EntityNotFoundException.class);
-            assertThat(e.getCause().getMessage()).contains("User not found or no access rights.");
-        }
-    }
+        mockMvc
+            .perform(
+                get("/api/users/{userId}/bio", DEFAULT_USER_ID)
+                    .principal(authentication)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.gender_self.id", is(DEFAULT_GENDER_SELF_ID.intValue())),
+                jsonPath("$.gender_self.name", is(DEFAULT_GENDER_SELF_NAME)),
+                jsonPath("$.gender_other.id", is(DEFAULT_GENDER_OTHER_ID.intValue())),
+                jsonPath("$.gender_other.name", is(DEFAULT_GENDER_OTHER_NAME)),
+                jsonPath("$.age_self", is(DEFAULT_AGE_SELF)),
+                jsonPath("$.age_max", is(DEFAULT_AGE_MAX)),
+                jsonPath("$.age_min", is(DEFAULT_AGE_MIN)),
+                jsonPath("$.distance", is(DEFAULT_DISTANCE)),
+                jsonPath("$.probability_tolerance", is(DEFAULT_PROBABILITY_TOLERANCE)));
+      }
 
-    @Test
-    void testGetProfile_Connected() throws Exception {
+      @Test
+      @DisplayName("Should return 404 when user bio is not found")
+      void getBio_WhenUnauthorized_Returns404() {
         // Given
-        Long requestingUserId = 1L;
-        String requestingUserEmail = "user1@example.com";
-
-        Long targetUserId = 2L;
-        String targetUserFirstName = "firstName";
-        String targetUserLastName = "lastName";
-        String targetUserCity = "city";
-
-        setupAuthenticatedUser(requestingUserId, requestingUserEmail);
-
-        ProfileResponseDTO profileDTO = ProfileResponseDTO.builder().first_name(targetUserFirstName)
-                .last_name(targetUserLastName).city(targetUserCity).build();
-        when(userService.getUserProfileDTO(requestingUserId, targetUserId)).thenReturn(profileDTO);
+        setupAuthenticatedUser(authentication);
+        when(queryService.getBiographicalResponseDTO(DEFAULT_USER_ID, DEFAULT_TARGET_USER_ID))
+            .thenThrow(new EntityNotFoundException("User not found or no access rights."));
 
         // When/Then
-        mockMvc.perform(get("/api/users/{targetId}/profile", targetUserId).principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-                .andExpect(jsonPath("$.first_name", is(targetUserFirstName)))
-                .andExpect(jsonPath("$.last_name", is(targetUserLastName)))
-                .andExpect(jsonPath("$.city", is("city")));
-    }
+        Exception exception =
+            assertThrows(
+                ServletException.class,
+                () ->
+                    mockMvc.perform(
+                        get("/api/users/{targetId}/bio", DEFAULT_TARGET_USER_ID)
+                            .principal(authentication)
+                            .contentType(MediaType.APPLICATION_JSON)));
 
-    /**
-     * User fetches his bio
-     * 
-     * @return {@link BiographicalResponseDTO}
-     * @throws Exception
-     */
-    @Test
-    void testGetBio() throws Exception {
+        assertAll(
+            () ->
+                assertThat(exception.getCause())
+                    .as("check if the exception is an instance of EntityNotFoundException")
+                    .isInstanceOf(EntityNotFoundException.class),
+            () ->
+                assertThat(exception.getCause().getMessage())
+                    .as("check if the exception message contains the expected message")
+                    .contains("User not found or no access rights."));
+      }
+
+      @Test
+      @DisplayName("Should return user bio when connected")
+      void getBio_WhenConnected_ReturnsUserBio() throws Exception {
         // Given
-        Long userId = 1L;
-        String email = "user1@example.com";
-        UserGenderType genderSelf = createMockGenderType(1L);
-        UserGenderType genderOther = createMockGenderType(2L);
-        Set<Hobby> hobbies = createMockHobbies();
-        Integer ageMin = 18;
-        Integer ageMax = 100;
-        Integer distance = 50;
-        Double probabilityTolerance = 1.0;
-        Integer ageSelf = 28;
+        setupAuthenticatedUser(authentication);
 
-        setupAuthenticatedUser(userId, email);
+        BiographicalResponseDTO bioDTO = createTargetBiographicalResponse();
 
-        BiographicalResponseDTO bioDTO = BiographicalResponseDTO.builder()
-                .gender_self(new GenderTypeDTO(genderSelf.getId(), genderSelf.getName()))
-                .gender_other(new GenderTypeDTO(genderOther.getId(), genderOther.getName()))
-                .hobbies(hobbies.stream().map(Hobby::getId).collect(Collectors.toSet()))
-                .age_self(ageSelf).age_min(ageMin).age_max(ageMax).distance(distance)
-                .probability_tolerance(probabilityTolerance).build();
-
-        when(userService.getBiographicalResponseDTO(userId, userId)).thenReturn(bioDTO);
+        when(queryService.getBiographicalResponseDTO(DEFAULT_USER_ID, DEFAULT_TARGET_USER_ID))
+            .thenReturn(bioDTO);
 
         // When/Then
-        mockMvc.perform(get("/api/users/{userId}/bio", userId).principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-                .andExpect(jsonPath("$.gender_self.id", is(genderSelf.getId().intValue())))
-                .andExpect(jsonPath("$.gender_self.name", is(genderSelf.getName())))
-                .andExpect(jsonPath("$.gender_other.id", is(genderOther.getId().intValue())))
-                .andExpect(jsonPath("$.gender_other.name", is(genderOther.getName())))
-                .andExpect(jsonPath("$.age_self", is(ageSelf)))
-                .andExpect(jsonPath("$.age_max", is(ageMax)))
-                .andExpect(jsonPath("$.age_min", is(ageMin)))
-                .andExpect(jsonPath("$.distance", is(distance)))
-                .andExpect(jsonPath("$.probability_tolerance", is(probabilityTolerance)));
+        mockMvc
+            .perform(
+                get("/api/users/{targetId}/bio", DEFAULT_TARGET_USER_ID)
+                    .principal(authentication)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.gender_self.id", is(DEFAULT_TARGET_GENDER_SELF_ID.intValue())),
+                jsonPath("$.gender_self.name", is(DEFAULT_TARGET_GENDER_SELF_NAME)),
+                jsonPath("$.gender_other.id", is(DEFAULT_TARGET_GENDER_OTHER_ID.intValue())),
+                jsonPath("$.gender_other.name", is(DEFAULT_TARGET_GENDER_OTHER_NAME)),
+                jsonPath("$.age_self", is(DEFAULT_TARGET_AGE_SELF)),
+                jsonPath("$.age_max", is(DEFAULT_TARGET_AGE_MAX)),
+                jsonPath("$.age_min", is(DEFAULT_TARGET_AGE_MIN)),
+                jsonPath("$.distance", is(DEFAULT_TARGET_DISTANCE)),
+                jsonPath("$.probability_tolerance", is(DEFAULT_TARGET_PROBABILITY_TOLERANCE)));
+      }
     }
 
-    @Test
-    void testGetBio_Unauthorized() throws Exception {
+    @Nested
+    @DisplayName("getConnections Tests")
+    class GetConnectionsTests {
+      @Test
+      @DisplayName("Should return user connections")
+      void getConnections_WhenRequested_ReturnsUserConnections() throws Exception {
         // Given
-        Long requestingUserId = 1L;
-        String requestingUserEmail = "user1@example.com";
-        Long targetUserId = 2L;
-        setupAuthenticatedUser(requestingUserId, requestingUserEmail);
+        setupAuthenticatedUser(authentication);
 
-        when(userService.getBiographicalResponseDTO(requestingUserId, targetUserId))
-                .thenThrow(new EntityNotFoundException("User not found or no access rights."));
+        List<ConnectionResponseDTO> connections = createConnectionsResponse(1);
+
+        when(connectionService.getConnectionResponseDTO(DEFAULT_USER_ID, DEFAULT_USER_ID))
+            .thenReturn(connections);
+
+        mockMvc
+            .perform(
+                get("/api/users/{targetId}/connections", DEFAULT_USER_ID)
+                    .principal(authentication)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$", hasSize(1)),
+                jsonPath("$[0].id", is(1)),
+                jsonPath("$[0].users[*].id", hasItem(DEFAULT_USER_ID.intValue())),
+                jsonPath("$[0].users[*].email", hasItem(DEFAULT_EMAIL)),
+                jsonPath("$[0].users[*].number", hasItem(DEFAULT_NUMBER)),
+                jsonPath("$[0].users[*].id", hasItem(DEFAULT_TARGET_USER_ID.intValue())),
+                jsonPath("$[0].users[*].email", hasItem(DEFAULT_TARGET_EMAIL)),
+                jsonPath("$[0].users[*].number", hasItem(DEFAULT_TARGET_NUMBER)));
+      }
+
+      @Test
+      @DisplayName("Should return 404 when user connections are not found")
+      void getConnections_WhenUnauthorized_Returns404() {
+        // Given
+        setupAuthenticatedUser(authentication);
+
+        when(connectionService.getConnectionResponseDTO(DEFAULT_USER_ID, DEFAULT_TARGET_USER_ID))
+            .thenThrow(new EntityNotFoundException("User not found or no access rights."));
 
         // When/Then
-        try {
-            mockMvc.perform(get("/api/users/{targetId}/bio", targetUserId).principal(authentication)
-                    .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
-        } catch (ServletException e) {
-            assertThat(e.getCause()).isInstanceOf(EntityNotFoundException.class);
-            assertThat(e.getCause().getMessage()).contains("User not found or no access rights.");
-        }
+        Exception exception =
+            assertThrows(
+                ServletException.class,
+                () ->
+                    mockMvc.perform(
+                        get("/api/users/{targetId}/connections", DEFAULT_TARGET_USER_ID)
+                            .principal(authentication)
+                            .contentType(MediaType.APPLICATION_JSON)));
+
+        assertAll(
+            () ->
+                assertThat(exception.getCause())
+                    .as("check if the exception is an instance of EntityNotFoundException")
+                    .isInstanceOf(EntityNotFoundException.class),
+            () ->
+                assertThat(exception.getCause().getMessage())
+                    .as("check if the exception message contains the expected message")
+                    .contains("User not found or no access rights."));
+      }
     }
 
-    @Test
-    void testGetBio_Connected() throws Exception {
+    @Nested
+    @DisplayName("uploadProfilePicture Tests")
+    class UploadProfilePictureTests {
+      @Test
+      @DisplayName("Should upload user profile picture")
+      void uploadProfilePicture_WhenSuccess_Returns200() throws Exception {
         // Given
-        Long requestingUserId = 1L;
-        String requestingUserEmail = "user1@example.com";
-        Long targetUserId = 2L;
-        UserGenderType targetUserGenderSelf = createMockGenderType(1L); // MALE
-        UserGenderType targetUserGenderOther = createMockGenderType(2L); // FEMALE
-        Set<Hobby> hobbies = createMockHobbies();
-        Integer targetUserAgeMin = 18;
-        Integer targetUserAgeMax = 100;
-        Integer targetUserDistance = 50;
-        Double targetUserProbabilityTolerance = 1.0;
-        LocalDate targetUserBirthDate = LocalDate.of(1995, 07, 20);
-
-        Integer targetUserAgeSelf = Period.between(targetUserBirthDate, LocalDate.now()).getYears();
-
-        setupAuthenticatedUser(requestingUserId, requestingUserEmail);
-        setupConnectionStatus(requestingUserId, targetUserId, true);
-
-        BiographicalResponseDTO bioDTO = BiographicalResponseDTO.builder()
-                .gender_self(new GenderTypeDTO(targetUserGenderSelf.getId(),
-                        targetUserGenderSelf.getName()))
-                .gender_other(new GenderTypeDTO(targetUserGenderOther.getId(),
-                        targetUserGenderOther.getName()))
-                .hobbies(hobbies.stream().map(Hobby::getId).collect(Collectors.toSet()))
-                .age_self(targetUserAgeSelf).age_min(targetUserAgeMin).age_max(targetUserAgeMax)
-                .distance(targetUserDistance).probability_tolerance(targetUserProbabilityTolerance)
-                .build();
-
-        when(userService.getBiographicalResponseDTO(requestingUserId, targetUserId))
-                .thenReturn(bioDTO);
+        setupAuthenticatedUser(authentication);
 
         // When/Then
-        mockMvc.perform(get("/api/users/{targetId}/bio", targetUserId)
-                .principal(authentication).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(
-                        jsonPath("$.gender_self.id", is(targetUserGenderSelf.getId().intValue())))
-                .andExpect(jsonPath("$.gender_self.name", is(targetUserGenderSelf.getName())))
-                .andExpect(
-                        jsonPath("$.gender_other.id", is(targetUserGenderOther.getId().intValue())))
-                .andExpect(jsonPath("$.gender_other.name", is(targetUserGenderOther.getName())))
-                .andExpect(jsonPath("$.age_self", is(targetUserAgeSelf)))
-                .andExpect(jsonPath("$.age_max", is(targetUserAgeMax)))
-                .andExpect(jsonPath("$.age_min", is(targetUserAgeMin)))
-                .andExpect(jsonPath("$.distance", is(targetUserDistance)))
-                .andExpect(jsonPath("$.probability_tolerance", is(targetUserProbabilityTolerance)));
-    }
+        mockMvc
+            .perform(
+                post("/api/users/profile-picture")
+                    .principal(authentication)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{ \"base64Image\": \"" + DEFAULT_PROFILE_PICTURE + "\" }"))
+            .andExpect(status().isOk());
 
-    /**
-     * User fetches his connections
-     * 
-     * @return List of {@link ConnectionResponseDTO}
-     * @throws Exception
-     */
-    @Test
-    void testGetConnections() throws Exception {
+        verify(profileService, times(1))
+            .saveProfilePicture(eq(DEFAULT_USER_ID), any(ProfilePictureSettingsRequestDTO.class));
+      }
+
+      @Test
+      @DisplayName("Should upload user profile picture when null request")
+      void uploadProfilePicture_WhenNullRequest_Returns200() throws Exception {
         // Given
-        Long requestingUserId = 1L;
-        String requestingUserEmail = "user1@example.com";
-        String requestingUserNumber = "+372 55445544";
-
-        Long targetUserId = 2L;
-        String targetUserEmail = "user2@example.com";
-        String targetUserNumber = "+372 44554455";
-
-        Long connectionId = 1L;
-
-        setupAuthenticatedUser(requestingUserId, requestingUserEmail);
-
-        List<ConnectionResponseDTO> connections =
-                Arrays.asList(new ConnectionResponseDTO(connectionId,
-                        Set.of(new UserResponseDTO(targetUserId, targetUserEmail, targetUserNumber),
-                                new UserResponseDTO(requestingUserId, requestingUserEmail,
-                                        requestingUserNumber))));
-
-        when(connectionService.getConnectionResponseDTO(requestingUserId, requestingUserId))
-                .thenReturn(connections);
-
-        mockMvc.perform(get("/api/users/{targetId}/connections", requestingUserId)
-                .principal(authentication).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(connectionId.intValue())))
-                .andExpect(jsonPath("$[0].users[*].id", hasItem(requestingUserId.intValue())))
-                .andExpect(jsonPath("$[0].users[*].email", hasItem(requestingUserEmail)))
-                .andExpect(jsonPath("$[0].users[*].number", hasItem(requestingUserNumber)))
-                .andExpect(jsonPath("$[0].users[*].id", hasItem(targetUserId.intValue())))
-                .andExpect(jsonPath("$[0].users[*].email", hasItem(targetUserEmail)))
-                .andExpect(jsonPath("$[0].users[*].number", hasItem(targetUserNumber)));
-    }
-
-    @Test
-    void testGetConnections_Unauthorized() throws Exception {
-        // Given
-        Long requestingUserId = 1L;
-        String requestingUserEmail = "user1@example.com";
-        Long targetUserId = 2L;
-        setupAuthenticatedUser(requestingUserId, requestingUserEmail);
-
-        doThrow(new EntityNotFoundException("User not found or no access rights."))
-                .when(connectionService).getConnectionResponseDTO(requestingUserId, targetUserId);
+        setupAuthenticatedUser(authentication);
 
         // When/Then
-        try {
-            mockMvc.perform(get("/api/users/{targetId}/connections", targetUserId)
-                    .principal(authentication).contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isNotFound());
-        } catch (ServletException e) {
-            assertThat(e.getCause()).isInstanceOf(EntityNotFoundException.class);
-            assertThat(e.getCause().getMessage()).contains("User not found or no access rights.");
-        }
-    }
+        mockMvc
+            .perform(
+                post("/api/users/profile-picture")
+                    .principal(authentication)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
 
-    @Test
-    void testGetConnections_Connected() throws Exception {
+        verify(profileService, times(1)).saveProfilePicture(DEFAULT_USER_ID, null);
+      }
+
+      @Test
+      @DisplayName("Should upload user profile picture when empty base64")
+      void uploadProfilePicture_WhenEmptyBase64_Returns200() throws Exception {
         // Given
-        Long requestingUserId = 1L;
-        String requestingUserEmail = "user1@example.com";
-        Long targetUserId = 2L;
-        setupAuthenticatedUser(requestingUserId, requestingUserEmail);
-
-        when(connectionService.getConnectionResponseDTO(requestingUserId, targetUserId))
-                .thenThrow(new EntityNotFoundException("User not found or no access rights."));
-
-
-        // When/Then
-        try {
-            mockMvc.perform(get("/api/users/{targetId}/connections", targetUserId)
-                    .principal(authentication).contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isNotFound());
-        } catch (ServletException e) {
-            assertThat(e.getCause()).isInstanceOf(EntityNotFoundException.class);
-            assertThat(e.getCause().getMessage()).contains("User not found or no access rights.");
-        }
-    }
-
-    @Test
-    void testUploadProfilePicture_Success() throws Exception {
-        // Given
-        Long userId = 1L;
-        setupAuthenticatedUser(userId, "user1@example.com");
-        String validBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...";
-
-        // When/Then
-        mockMvc.perform(post("/api/users/profile-picture").principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{ \"base64Image\": \"" + validBase64 + "\" }")).andExpect(status().isOk())
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void testUploadProfilePicture_NullRequest() throws Exception {
-        // Given
-        Long userId = 1L;
-        setupAuthenticatedUser(userId, "user1@example.com");
-
-        // When/Then
-        mockMvc.perform(post("/api/users/profile-picture").principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
-
-        verify(userService).saveProfilePicture(userId, null);
-    }
-
-    @Test
-    void testUploadProfilePicture_EmptyBase64() throws Exception {
-        // Given
-        Long userId = 1L;
-        setupAuthenticatedUser(userId, "user1@example.com");
+        setupAuthenticatedUser(authentication);
         String emptyBase64 = "";
 
         ProfilePictureSettingsRequestDTO request = new ProfilePictureSettingsRequestDTO();
         request.setBase64Image(emptyBase64);
 
         // When/Then
-        mockMvc.perform(post("/api/users/profile-picture").principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON).content("{\"base64Image\":\"\"}"))
-                .andExpect(status().isOk());
+        mockMvc
+            .perform(
+                post("/api/users/profile-picture")
+                    .principal(authentication)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"base64Image\":\"\"}"))
+            .andExpect(status().isOk());
 
-        verify(userService).saveProfilePicture(eq(userId), any(ProfilePictureSettingsRequestDTO.class));
-    }
+        verify(profileService, times(1))
+            .saveProfilePicture(eq(DEFAULT_USER_ID), any(ProfilePictureSettingsRequestDTO.class));
+      }
 
-    @Test
-    void testUploadProfilePicture_InvalidBase64() throws Exception {
+      @Test
+      @DisplayName("Should upload user profile picture when invalid base64")
+      void uploadProfilePicture_WhenInvalidBase64_Returns400() {
         // Given
-        Long userId = 1L;
-        setupAuthenticatedUser(userId, "user1@example.com");
+        setupAuthenticatedUser(authentication);
         String invalidBase64 = "thisIsNotValid==";
 
-        doThrow(new IllegalArgumentException("Invalid Base64 image data.")).when(userService)
-                .saveProfilePicture(eq(userId),
-                        argThat(dto -> dto != null && invalidBase64.equals(dto.getBase64Image())));
+        doThrow(new IllegalArgumentException("Invalid Base64 image data."))
+            .when(profileService)
+            .saveProfilePicture(
+                eq(DEFAULT_USER_ID),
+                argThat(dto -> dto != null && invalidBase64.equals(dto.getBase64Image())));
 
         // When/Then
-        try {
-            mockMvc.perform(post("/api/users/profile-picture").principal(authentication)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("{ \"base64Image\": \"" + invalidBase64 + "\" }"))
-                    .andExpect(status().isBadRequest());
-        } catch (ServletException e) {
-            // Expected exception, test passes
-            assertThat(e.getCause()).isInstanceOf(IllegalArgumentException.class);
-            assertThat(e.getCause().getMessage()).contains("Invalid Base64 image data.");
-        }
+        Exception exception =
+            assertThrows(
+                ServletException.class,
+                () ->
+                    mockMvc
+                        .perform(
+                            post("/api/users/profile-picture")
+                                .principal(authentication)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{ \"base64Image\": \"" + invalidBase64 + "\" }"))
+                        .andExpect(status().isBadRequest()));
+
+        assertAll(
+            () ->
+                assertThat(exception.getCause())
+                    .as("check if the exception is an instance of IllegalArgumentException")
+                    .isInstanceOf(IllegalArgumentException.class),
+            () ->
+                assertThat(exception.getCause().getMessage())
+                    .as("check if the exception message contains the expected message")
+                    .contains("Invalid Base64 image data."));
+      }
+
+      @Test
+      @DisplayName("Should upload user profile picture when user not found")
+      void uploadProfilePicture_WhenUserNotFound_Returns404() {
+        // Given
+        setupAuthenticatedUser(authentication,INVALID_USER_ID, "user1@example.com");
+
+        ProfilePictureSettingsRequestDTO request = new ProfilePictureSettingsRequestDTO();
+        request.setBase64Image(DEFAULT_PROFILE_PICTURE);
+
+        doThrow(new EntityNotFoundException("User not found for ID: " + INVALID_USER_ID))
+            .when(profileService)
+            .saveProfilePicture(
+                eq(INVALID_USER_ID),
+                argThat(
+                    dto -> dto != null && DEFAULT_PROFILE_PICTURE.equals(dto.getBase64Image())));
+
+        // When/Then
+        Exception exception =
+            assertThrows(
+                ServletException.class,
+                () ->
+                    mockMvc
+                        .perform(
+                            post("/api/users/profile-picture")
+                                .principal(authentication)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                    "{ \"base64Image\": \"" + DEFAULT_PROFILE_PICTURE + "\" }"))
+                        .andExpect(status().isNotFound()));
+
+        assertAll(
+            () ->
+                assertThat(exception.getCause())
+                    .as("check if the exception is an instance of EntityNotFoundException")
+                    .isInstanceOf(EntityNotFoundException.class),
+            () ->
+                assertThat(exception.getCause().getMessage())
+                    .as("check if the exception message contains the expected message")
+                    .contains("User not found for ID: " + INVALID_USER_ID));
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("updateAccount Tests")
+  class UpdateAccountTests {
+    @Test
+    @DisplayName("Successfully update account settings")
+    void updateAccount_ValidRequest_Returns204() throws Exception {
+      when(securityUtils.getCurrentUserId(any(Authentication.class)))
+          .thenAnswer(
+              invocation -> {
+                UserDetailsImpl userDetails =
+                    (UserDetailsImpl) ((Authentication) invocation.getArgument(0)).getPrincipal();
+                return userDetails.getId();
+              });
+      setupAuthenticatedUser(authentication);
+      AccountSettingsRequestDTO request = createValidAccountSettings();
+
+      mockMvc
+          .perform(
+              put("/api/users/settings/account")
+                  .principal(authentication)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(asJsonString(request)))
+          .andExpect(status().isNoContent());
+
+      verify(settingsService, times(1))
+          .updateAccountSettings(eq(DEFAULT_USER_ID), any(AccountSettingsRequestDTO.class));
     }
 
     @Test
-    void testUploadProfilePicture_UserNotFound() throws Exception {
-        // Given
-        Long userId = 999L;
-        setupAuthenticatedUser(userId, "user1@example.com");
+    @DisplayName("Return 400 for invalid account settings")
+    void updateAccount_InvalidRequest_Returns400() throws Exception {
+      String invalidRequest = "{ \"email\": \"invalid\" }";
 
-        String validBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...";
-        ProfilePictureSettingsRequestDTO request = new ProfilePictureSettingsRequestDTO();
-        request.setBase64Image(validBase64);
+      mockMvc
+          .perform(
+              put("/api/users/settings/account")
+                  .principal(authentication)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(invalidRequest))
+          .andExpect(status().isBadRequest());
 
-        doThrow(new EntityNotFoundException("User not found for ID: " + userId)).when(userService)
-                .saveProfilePicture(eq(userId), argThat(
-                        dto -> dto != null && "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
-                                .equals(dto.getBase64Image())));
-
-        // When/Then
-        try {
-            mockMvc.perform(post("/api/users/profile-picture").principal(authentication)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("{ \"base64Image\": \"" + validBase64 + "\" }"))
-                    .andExpect(status().isNotFound());
-        } catch (ServletException e) {
-            // Expected exception, test passes
-            assertThat(e.getCause()).isInstanceOf(EntityNotFoundException.class);
-            assertThat(e.getCause().getMessage()).contains("User not found for ID: " + userId);
-        }
+      verify(settingsService, never()).updateAccountSettings(any(), any());
     }
 
-    /**
-     * Helper method to create a set of hobbies
-     * 
-     * @return Set<Hobby>
-     */
-    private Set<Hobby> createMockHobbies() {
-        Hobby hobby1 = new Hobby();
-        hobby1.setId(1L);
-        hobby1.setName("3D printing");
-        hobby1.setCategory("General");
+    @Test
+    @DisplayName("Return 404 when user doesn't exist")
+    void updateAccount_UserNotFound_Returns404() {
+      setupAuthenticatedUser(authentication, INVALID_USER_ID, DEFAULT_EMAIL);
+      AccountSettingsRequestDTO request = createValidAccountSettings();
 
-        Hobby hobby2 = new Hobby();
-        hobby2.setId(2L);
-        hobby2.setName("Acrobatics");
-        hobby2.setCategory("General");
+      doThrow(new EntityNotFoundException("User not found"))
+          .when(settingsService)
+          .updateAccountSettings(eq(INVALID_USER_ID), any());
 
-        return Set.of(hobby1, hobby2);
+      assertThrows(
+          ServletException.class,
+          () ->
+              mockMvc.perform(
+                  put("/api/users/settings/account")
+                      .principal(authentication)
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(asJsonString(request))));
+    }
+  }
+
+  @Nested
+  @DisplayName("updateProfile Tests")
+  class UpdateProfileTests {
+
+    @Test
+    @DisplayName("Successfully update profile settings")
+    void updateProfile_ValidRequest_Returns204() throws Exception {
+      when(securityUtils.getCurrentUserId(any(Authentication.class)))
+          .thenAnswer(
+              invocation -> {
+                UserDetailsImpl userDetails =
+                    (UserDetailsImpl) ((Authentication) invocation.getArgument(0)).getPrincipal();
+                return userDetails.getId();
+              });
+      setupAuthenticatedUser(authentication);
+      ProfileSettingsRequestDTO request = createValidProfileSettings();
+
+      mockMvc
+          .perform(
+              put("/api/users/settings/profile")
+                  .principal(authentication)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(asJsonString(request)))
+          .andExpect(status().isNoContent());
+
+      verify(settingsService)
+          .updateProfileSettings(eq(DEFAULT_USER_ID), any(ProfileSettingsRequestDTO.class));
     }
 
-    /**
-     * Helper method to create UserGenderType
-     * 
-     * @param id - 1 MALE | 2 FEMALE | 3 OTHER
-     * @return {@link UserGenderType}
-     */
-    private UserGenderType createMockGenderType(Long id) {
-        UserGenderType genderType = new UserGenderType();
-        genderType.setId(id);
-        switch (id.intValue()) {
-            case 1:
-                genderType.setName("MALE");
-                break;
-            case 2:
-                genderType.setName("FEMALE");
-                break;
-            default:
-                genderType.setName("OTHER");
-                break;
-        }
-        return genderType;
+    @Test
+    @DisplayName("Return 400 for invalid profile settings")
+    void updateProfile_InvalidRequest_Returns400() throws Exception {
+      String invalidRequest = "{ \"first_name\": \"\" }";
+
+      mockMvc
+          .perform(
+              put("/api/users/settings/profile")
+                  .principal(authentication)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(invalidRequest))
+          .andExpect(status().isBadRequest());
+
+      verify(settingsService, never()).updateProfileSettings(any(), any());
     }
 
-    /**
-     * Helper method to setup authenticated status
-     * <p>
-     * When auth.getPrincipal -> returns userDetails
-     * 
-     * @param userId
-     * @param email
-     */
-    private void setupAuthenticatedUser(Long userId, String email) {
-        UserDetailsImpl userDetails =
-                new UserDetailsImpl(userId, email, "password", Collections.emptySet());
-        when(authentication.getPrincipal()).thenReturn(userDetails);
+    @Test
+    @DisplayName("Return 404 when user doesn't exist")
+    void updateProfile_UserNotFound_Returns404() {
+      setupAuthenticatedUser(authentication, INVALID_USER_ID, DEFAULT_EMAIL);
+      ProfileSettingsRequestDTO request = createValidProfileSettings();
+
+      doThrow(new EntityNotFoundException("User not found"))
+          .when(settingsService)
+          .updateProfileSettings(eq(INVALID_USER_ID), any());
+
+      assertThrows(
+          ServletException.class,
+          () ->
+              mockMvc.perform(
+                  put("/api/users/settings/profile")
+                      .principal(authentication)
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(asJsonString(request))));
+    }
+  }
+
+  @Nested
+  @DisplayName("updateAttributes Tests")
+  class UpdateAttributesTests {
+
+    @Test
+    @DisplayName("Successfully update attributes settings")
+    void updateAttributes_ValidRequest_Returns204() throws Exception {
+      when(securityUtils.getCurrentUserId(any(Authentication.class)))
+          .thenAnswer(
+              invocation -> {
+                UserDetailsImpl userDetails =
+                    (UserDetailsImpl) ((Authentication) invocation.getArgument(0)).getPrincipal();
+                return userDetails.getId();
+              });
+      setupAuthenticatedUser(authentication);
+      AttributesSettingsRequestDTO request = createValidAttributesSettings();
+
+      mockMvc
+          .perform(
+              put("/api/users/settings/attributes")
+                  .principal(authentication)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(asJsonString(request)))
+          .andExpect(status().isNoContent());
+
+      verify(settingsService)
+          .updateAttributesSettings(eq(DEFAULT_USER_ID), any(AttributesSettingsRequestDTO.class));
     }
 
-    /**
-     * Helper method to setup connection status
-     * <p>
-     * When userService.isConnected -> returns isConnected
-     * 
-     * @param requestingUserId
-     * @param targetUserId
-     * @param isConnected
-     */
-    private void setupConnectionStatus(Long requestingUserId, Long targetUserId,
-            boolean isConnected) {
-        when(connectionService.isConnected(requestingUserId, targetUserId)).thenReturn(isConnected);
+    @Test
+    @DisplayName("Return 400 for invalid attributes settings")
+    void updateAttributes_InvalidRequest_Returns400() throws Exception {
+      String invalidRequest = "{ \"birth_date\": \"invalid-date\" }";
+
+      mockMvc
+          .perform(
+              put("/api/users/settings/attributes")
+                  .principal(authentication)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(invalidRequest))
+          .andExpect(status().isBadRequest());
+
+      verify(settingsService, never()).updateAttributesSettings(any(), any());
     }
+
+    @Test
+    @DisplayName("Return 404 when user doesn't exist")
+    void updateAttributes_UserNotFound_Returns404() {
+      setupAuthenticatedUser(authentication, INVALID_USER_ID, DEFAULT_EMAIL);
+      AttributesSettingsRequestDTO request = createValidAttributesSettings();
+
+      doThrow(new EntityNotFoundException("User not found"))
+          .when(settingsService)
+          .updateAttributesSettings(eq(INVALID_USER_ID), any());
+
+      assertThrows(
+          ServletException.class,
+          () ->
+              mockMvc.perform(
+                  put("/api/users/settings/attributes")
+                      .principal(authentication)
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(asJsonString(request))));
+    }
+  }
+
+  @Nested
+  @DisplayName("updatePreferences Tests")
+  class UpdatePreferencesTests {
+
+    @Test
+    @DisplayName("Successfully update preferences settings")
+    void updatePreferences_ValidRequest_Returns204() throws Exception {
+      when(securityUtils.getCurrentUserId(any(Authentication.class)))
+          .thenAnswer(
+              invocation -> {
+                UserDetailsImpl userDetails =
+                    (UserDetailsImpl) ((Authentication) invocation.getArgument(0)).getPrincipal();
+                return userDetails.getId();
+              });
+      setupAuthenticatedUser(authentication);
+      PreferencesSettingsRequestDTO request = createValidPreferencesSettings();
+
+      mockMvc
+          .perform(
+              put("/api/users/settings/preferences")
+                  .principal(authentication)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(asJsonString(request)))
+          .andExpect(status().isNoContent());
+
+      verify(settingsService)
+          .updatePreferencesSettings(eq(DEFAULT_USER_ID), any(PreferencesSettingsRequestDTO.class));
+    }
+
+    @Test
+    @DisplayName("Return 400 for invalid preferences settings")
+    void updatePreferences_InvalidRequest_Returns400() throws Exception {
+      String invalidRequest = "{ \"age_min\": -1 }";
+
+      mockMvc
+          .perform(
+              put("/api/users/settings/preferences")
+                  .principal(authentication)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(invalidRequest))
+          .andExpect(status().isBadRequest());
+
+      verify(settingsService, never()).updatePreferencesSettings(any(), any());
+    }
+
+    @Test
+    @DisplayName("Return 404 when user doesn't exist")
+    void updatePreferences_UserNotFound_Returns404() {
+      setupAuthenticatedUser(authentication, INVALID_USER_ID, DEFAULT_EMAIL);
+      PreferencesSettingsRequestDTO request = createValidPreferencesSettings();
+
+      doThrow(new EntityNotFoundException("User not found"))
+          .when(settingsService)
+          .updatePreferencesSettings(eq(INVALID_USER_ID), any());
+
+      assertThrows(
+          ServletException.class,
+          () ->
+              mockMvc.perform(
+                  put("/api/users/settings/preferences")
+                      .principal(authentication)
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(asJsonString(request))));
+    }
+  }
+
+  @Nested
+  @DisplayName("setUserParameters Tests")
+  class SetUserParametersTests {
+    @Test
+    @DisplayName("Should complete registration with valid parameters")
+    void testSetParameters_Success() throws Exception {
+      when(securityUtils.getCurrentUserId(any(Authentication.class)))
+          .thenAnswer(
+              invocation -> {
+                UserDetailsImpl userDetails =
+                    (UserDetailsImpl) ((Authentication) invocation.getArgument(0)).getPrincipal();
+                return userDetails.getId();
+              });
+
+      setupAuthenticatedUser(authentication);
+      UserParametersRequestDTO request = createValidParametersRequest();
+
+      mockMvc
+          .perform(
+              patch("/api/users/complete-registration")
+                  .principal(authentication)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(asJsonString(request)))
+          .andExpect(status().isOk());
+
+      verify(creationService, times(1)).setUserParameters(eq(DEFAULT_USER_ID), any());
+    }
+
+    @Test
+    @DisplayName("Should return 400 for invalid parameters")
+    void testSetParameters_InvalidInput() throws Exception {
+      // Include all required fields except the invalid one being tested
+      String invalidRequest =
+          "{ "
+              + "\"firstName\": \"\", "
+              + "\"lastName\": \"Doe\", "
+              + "\"birth_date\": \"2000-01-01\", "
+              + "\"gender_self\": 1"
+              + " }";
+
+      mockMvc
+          .perform(
+              patch("/api/users/complete-registration")
+                  .principal(authentication)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(invalidRequest))
+          .andExpect(status().isBadRequest());
+
+      verify(creationService, never()).setUserParameters(eq(DEFAULT_USER_ID), any());
+    }
+  }
+
+  @Nested
+  @DisplayName("verifyAccount Tests")
+  class VerifyAccountTests {
+    @Test
+    @DisplayName("Should verify account with valid code")
+    void verifyAccount_WhenValidCode_Returns200() throws Exception {
+      mockMvc
+          .perform(
+              patch("/api/users/verify/{userId}", DEFAULT_USER_ID)
+                  .param("verificationCode", "123456"))
+          .andExpect(status().isOk());
+
+      verify(creationService).verifyAccount(DEFAULT_USER_ID, 123456);
+    }
+
+    @Test
+    @DisplayName("Should return 400 for invalid verification code")
+    void testVerifyAccount_InvalidCode() {
+      doThrow(new IllegalArgumentException("Invalid verification code"))
+          .when(creationService)
+          .verifyAccount(DEFAULT_USER_ID, 000000);
+
+      Exception exception =
+          assertThrows(
+              ServletException.class,
+              () ->
+                  mockMvc.perform(
+                      patch("/api/users/verify/{userId}", DEFAULT_USER_ID)
+                          .param("verificationCode", "000000")));
+
+      assertThat(exception.getCause()).isInstanceOf(IllegalArgumentException.class);
+    }
+  }
+
+  private String asJsonString(final Object obj) {
+    try {
+      return new ObjectMapper().registerModule(new JavaTimeModule()).writeValueAsString(obj);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

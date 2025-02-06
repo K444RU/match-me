@@ -6,7 +6,7 @@ import com.matchme.srv.dto.response.ChatMessageResponseDTO;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.service.ChatService;
-import com.matchme.srv.service.UserService;
+import com.matchme.srv.service.user.UserQueryService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +34,7 @@ import java.time.Instant;
 @Slf4j
 public class ChatWebSocketController {
 
-    private final UserService userService;
+    private final UserQueryService queryService;
     private final ChatService chatService;
     private final SimpMessagingTemplate messagingTemplate;
     private final SecurityUtils securityUtils;
@@ -52,7 +52,7 @@ public class ChatWebSocketController {
     public void sendMessage(@Payload MessagesSendRequestDTO messageDTO,
                             Authentication authentication) {
         Long senderId = securityUtils.getCurrentUserId(authentication);
-        User sender = userService.getUser(senderId);
+        User sender = queryService.getUser(senderId);
 
         log.info("Received chat message from user ID: {} for connection ID: {}",
                         senderId, messageDTO.getConnectionId());

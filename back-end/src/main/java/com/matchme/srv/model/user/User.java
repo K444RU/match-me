@@ -6,6 +6,8 @@ import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_score.UserScore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,6 +19,8 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
+@Builder
+@AllArgsConstructor
 @Table(name = "users")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(onlyExplicitlyIncluded = true)
@@ -38,7 +42,8 @@ public class User {
     @Size(max = 20)
     private String number;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true,
+            fetch = FetchType.LAZY)
     @JsonManagedReference
     private UserAuth userAuth;
 
@@ -50,15 +55,18 @@ public class User {
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @Builder.Default
     private Set<UserRoleType> roles = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<ActivityLog> activity;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true,
+            fetch = FetchType.LAZY)
     private UserProfile profile;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true,
+            fetch = FetchType.LAZY)
     private UserScore score;
 
     public User() {}
@@ -97,6 +105,9 @@ public class User {
     }
 
     public void setRole(UserRoleType role) {
+        if (this.roles == null) {
+            this.roles = new HashSet<>();
+        }
         this.roles.add(role);
     }
 }
