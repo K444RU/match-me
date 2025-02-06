@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.0](https://github.com/karlromets/match-me/compare/back-end-0.0.9...back-end-0.1.0) (2025-02-06)
+
+
+### Features
+
+* **controller:** TERMINATE TESTCONTROLLER ([c5fe9a3](https://github.com/karlromets/match-me/commit/c5fe9a3831e515f8d166bcd9aff6490f4919006b))
+* **dto:** add Builder annotation to ChatMessageResponseDTO ([8c76545](https://github.com/karlromets/match-me/commit/8c765450992fbe15ed5117ac6c7e9378eabf070c))
+* **dto:** add Builder annotation to settings DTOs ([52d957b](https://github.com/karlromets/match-me/commit/52d957b2b14c34afebe538518ae1a31372dd92ef))
+
+
+### Bug Fixes
+
+* **service:** terminate user service helper ([dc71402](https://github.com/karlromets/match-me/commit/dc71402bf100a39ac3c6399f1a32a40be8a5d732))
+
 ## [0.0.9](https://github.com/karlromets/match-me/compare/back-end-0.0.8...back-end-0.0.9) (2025-01-31)
 
 
