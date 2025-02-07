@@ -80,7 +80,7 @@ class ChatServiceTest {
                 .userMessages(Set.of(lastMessage))
                 .build();
 
-        when(connectionRepository.findConnectionsByUserId(userId)).thenReturn(List.of(connection));
+        when(connectionRepository.findConnectionsByUserIdWithMessages(userId)).thenReturn(List.of(connection));
 
         List<ChatPreviewResponseDTO> chatPreviews = chatService.getChatPreviews(userId);
 
