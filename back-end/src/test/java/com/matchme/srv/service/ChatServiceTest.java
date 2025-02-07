@@ -67,17 +67,18 @@ class ChatServiceTest {
         MessageEvent messageEvent = new MessageEvent();
         messageEvent.setMessageEventType(readEventType);
 
-        UserMessage lastMessage = new UserMessage();
-        lastMessage.setContent("Hello!");
-        lastMessage.setCreatedAt(Instant.now());
-        lastMessage.setUser(user2);
-        lastMessage.setMessageEvents(Set.of(messageEvent));
+        UserMessage lastMessage = UserMessage.builder()
+                .content("Hello!")
+                .createdAt(Instant.now())
+                .user(user2)
+                .messageEvents(Set.of(messageEvent))
+                .build();
 
-        Connection connection = new Connection();
-        connection.setId(101L);
-        connection.getUsers().add(user1);
-        connection.getUsers().add(user2);
-        connection.setUserMessages(Set.of(lastMessage));
+        Connection connection = Connection.builder()
+                .id(101L)
+                .users(Set.of(user1, user2))
+                .userMessages(Set.of(lastMessage))
+                .build();
 
         when(connectionRepository.findConnectionsByUserIdWithMessages(userId)).thenReturn(List.of(connection));
 
@@ -87,7 +88,7 @@ class ChatServiceTest {
         ChatPreviewResponseDTO preview = chatPreviews.get(0);
         assertThat(preview.getConnectedUserAlias()).isEqualTo("TestNickName123321");
         assertThat(preview.getLastMessageContent()).isEqualTo("Hello!");
-        assertThat(preview.getUnreadMessageCount()).isEqualTo(0);
+        assertThat(preview.getUnreadMessageCount()).isZero();
     }
 
     @Test
@@ -106,23 +107,25 @@ class ChatServiceTest {
         user2Profile.setAlias("TestNickName123321");
         user2.setProfile(user2Profile);
 
-        UserMessage userMessage = new UserMessage();
-        userMessage.setId(1L);
-        userMessage.setUser(user2);
-        userMessage.setContent("Hello!");
-        userMessage.setCreatedAt(Instant.now());
+        UserMessage userMessage = UserMessage.builder()
+                .id(1L)
+                .user(user2)
+                .content("Hello!")
+                .createdAt(Instant.now())
+                .build();
 
-        Connection connection = new Connection();
-        connection.setId(connectionId);
-        connection.getUsers().add(user1);
-        connection.getUsers().add(user2);
+        Connection connection = Connection.builder()
+                .id(connectionId)
+                .users(Set.of(user1, user2))
+                .build();
 
         when(connectionRepository.findById(connectionId)).thenReturn(Optional.of(connection));
 
-        when(userMessageRepository.findByConnectionIdOrderByCreatedAtDesc(anyLong(), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(userMessage)));
+        when(userMessageRepository.findByConnectionIdOrderByCreatedAtDesc(anyLong(),
+                any(Pageable.class))).thenReturn(new PageImpl<>(List.of(userMessage)));
 
-        Page<ChatMessageResponseDTO> result = chatService.getChatMessages(connectionId, userId, PageRequest.of(0, 10));
+        Page<ChatMessageResponseDTO> result =
+                chatService.getChatMessages(connectionId, userId, PageRequest.of(0, 10));
 
         assertThat(result.getContent()).hasSize(1);
         ChatMessageResponseDTO messageDTO = result.getContent().get(0);
@@ -135,14 +138,13 @@ class ChatServiceTest {
         Long connectionId = 101L;
         Long userId = 1L;
 
-        Connection connection = new Connection();
-        connection.setId(connectionId);
-        connection.setUsers(Set.of(new User()));
+        Connection connection = Connection.builder().id(connectionId).users(Set.of(new User())).build();
 
         when(connectionRepository.findById(connectionId)).thenReturn(Optional.of(connection));
 
+        PageRequest pageRequest = PageRequest.of(0, 10);
         assertThrows(RuntimeException.class, () -> {
-            chatService.getChatMessages(connectionId, userId, PageRequest.of(0, 10));
+            chatService.getChatMessages(connectionId, userId, pageRequest);
         });
     }
 
@@ -154,15 +156,14 @@ class ChatServiceTest {
         User user1 = new User();
         user1.setId(userId);
 
-        Connection connection = new Connection();
-        connection.setId(connectionId);
-        connection.setUsers(Set.of(user1));
+        Connection connection = Connection.builder().id(connectionId).users(Set.of(user1)).build();
 
         when(connectionRepository.findById(connectionId)).thenReturn(Optional.of(connection));
-        when(userMessageRepository.findByConnectionIdOrderByCreatedAtDesc(anyLong(), any(Pageable.class)))
-                .thenReturn(Page.empty());
+        when(userMessageRepository.findByConnectionIdOrderByCreatedAtDesc(anyLong(),
+                any(Pageable.class))).thenReturn(Page.empty());
 
-        Page<ChatMessageResponseDTO> result = chatService.getChatMessages(connectionId, userId, PageRequest.of(0, 10));
+        Page<ChatMessageResponseDTO> result =
+                chatService.getChatMessages(connectionId, userId, PageRequest.of(0, 10));
 
         assertThat(result.getContent()).isEmpty();
     }
@@ -178,22 +179,21 @@ class ChatServiceTest {
         sender.setId(senderId);
         sender.setProfile(UserProfile.builder().alias("TestNickName123321").build());
 
-        Connection connection = new Connection();
-        connection.setId(connectionId);
-        connection.setUsers(Set.of(sender));
+        Connection connection = Connection.builder().id(connectionId).users(Set.of(sender)).build();
 
-        UserMessage userMessage = new UserMessage();
-        userMessage.setId(1L);
-        userMessage.setContent(content);
-        userMessage.setCreatedAt(timestamp);
-        userMessage.setUser(sender);
-        userMessage.setConnection(connection);
-        userMessage.setMessageEvents(new HashSet<>());
+        UserMessage userMessage = UserMessage.builder()
+                .id(1L)
+                .content(content)
+                .createdAt(timestamp)
+                .user(sender)
+                .connection(connection)
+                .build();
 
         when(connectionRepository.findById(connectionId)).thenReturn(Optional.of(connection));
         when(userMessageRepository.save(any(UserMessage.class))).thenReturn(userMessage);
 
-        ChatMessageResponseDTO response = chatService.saveMessage(connectionId, senderId, content, timestamp);
+        ChatMessageResponseDTO response =
+                chatService.saveMessage(connectionId, senderId, content, timestamp);
 
         assertThat(response.getMessageId()).isEqualTo(1L);
         assertThat(response.getConnectionId()).isEqualTo(101L);
@@ -214,8 +214,7 @@ class ChatServiceTest {
         User otherUser = new User();
         otherUser.setId(otherUserId);
 
-        Connection connection = new Connection();
-        connection.setId(connectionId);
+        Connection connection = Connection.builder().id(connectionId).build();
         connection.setUsers(Set.of(sender, otherUser));
 
         when(connectionRepository.findById(connectionId)).thenReturn(Optional.of(connection));
@@ -233,9 +232,7 @@ class ChatServiceTest {
         User sender = new User();
         sender.setId(senderId);
 
-        Connection connection = new Connection();
-        connection.setId(connectionId);
-        connection.setUsers(Set.of(sender));
+        Connection connection = Connection.builder().id(connectionId).users(Set.of(sender)).build();
 
         when(connectionRepository.findById(connectionId)).thenReturn(Optional.of(connection));
 

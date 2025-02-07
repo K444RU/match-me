@@ -20,7 +20,7 @@ import com.matchme.srv.dto.request.SignupRequestDTO;
 import com.matchme.srv.dto.response.JwtResponseDTO;
 import com.matchme.srv.security.jwt.JwtUtils;
 import com.matchme.srv.security.services.UserDetailsImpl;
-import com.matchme.srv.service.UserService;
+import com.matchme.srv.service.user.UserCreationService;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -29,7 +29,7 @@ import com.matchme.srv.service.UserService;
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
-    private final UserService userService;
+    private final UserCreationService creationService;
     private final JwtUtils jwtUtils;
 
 
@@ -52,7 +52,7 @@ public class AuthController {
 
   @PostMapping("/signup")
   public ResponseEntity<Void> registerUser(@Valid @RequestBody SignupRequestDTO signUpRequest) {
-    userService.createUser(signUpRequest);
+    creationService.createUser(signUpRequest);
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 }

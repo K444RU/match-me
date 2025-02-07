@@ -1,7 +1,6 @@
 package com.matchme.srv.service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -19,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ConnectionService {
-    private final AccessValidationService accessValidationService;
     private final ConnectionRepository connectionRepository;
 
     /**
@@ -27,17 +25,19 @@ public class ConnectionService {
      * @param user1
      * @param user2
      * @return The created connection as ConnectionResponseDTO
+     * @throws IllegalStateException if connection already exists between users
      * @see ConnectionResponseDTO
      * @see User
      * @see Connection
      */
     public ConnectionResponseDTO createConnection(User user1, User user2) {
-        // TODO: Check for existing connection
-        Connection connection = new Connection();
-        Set<User> users = new HashSet<>();
-        users.add(user1);
-        users.add(user2);
-        connection.setUsers(users);
+        if (connectionRepository.existsConnectionBetween(user1.getId(), user2.getId())) {
+            throw new IllegalStateException("Connection already exists between these users");
+        }
+        
+        Connection connection = Connection.builder()
+                .users(Set.of(user1, user2))
+                .build();
         Connection savedConnection = connectionRepository.save(connection);
         return ConnectionResponseDTO.builder()
                 .id(savedConnection.getId())

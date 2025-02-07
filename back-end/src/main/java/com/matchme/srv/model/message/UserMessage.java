@@ -9,11 +9,13 @@ import java.util.Set;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
 @Entity
+@Builder
 @EqualsAndHashCode(exclude = "messageEvents")
 @Table(name = "user_messages")
 public class UserMessage {
@@ -40,5 +42,6 @@ public class UserMessage {
   private Instant createdAt;
 
   @OneToMany(mappedBy = "message", cascade = CascadeType.ALL)
+  @Builder.Default
   private Set<MessageEvent> messageEvents = new HashSet<>();
 }

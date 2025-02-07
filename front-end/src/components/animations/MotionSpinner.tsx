@@ -1,6 +1,6 @@
+import { motion } from 'motion/react';
 import { forwardRef } from 'react';
 import { ImSpinner8 } from 'react-icons/im';
-import { motion } from 'motion/react';
 
 const MotionSpinner = forwardRef((_props, _ref) => {
   return (
@@ -18,5 +18,7 @@ const MotionSpinner = forwardRef((_props, _ref) => {
     </motion.div>
   );
 });
+
+MotionSpinner.displayName = 'MotionSpinner';
 
 export default MotionSpinner;

@@ -16,6 +16,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString(exclude = {"user", "preferences", "attributes"})
 public class UserProfile {
 
   @Id

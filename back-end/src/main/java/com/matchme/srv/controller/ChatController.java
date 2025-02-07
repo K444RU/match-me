@@ -6,7 +6,8 @@ import com.matchme.srv.dto.response.ChatPreviewResponseDTO;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.service.ChatService;
-import com.matchme.srv.service.UserService;
+import com.matchme.srv.service.user.UserQueryService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +23,7 @@ import java.util.List;
 public class ChatController {
 
     private final ChatService chatService;
-    private final UserService userService;
+    private final UserQueryService queryService;
     private final SecurityUtils securityUtils;
 
     /**
@@ -41,7 +42,7 @@ public class ChatController {
     @GetMapping("/previews")
     public List<ChatPreviewResponseDTO> getChatPreviews(Authentication authentication) {
         Long userId = securityUtils.getCurrentUserId(authentication);
-        User user = userService.getUser(userId);
+        User user = queryService.getUser(userId);
         return chatService.getChatPreviews(user.getId());
     }
 

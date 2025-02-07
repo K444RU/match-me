@@ -2,17 +2,18 @@ package com.matchme.srv.repository;
 
 import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.model.user.User;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.Set;
 
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 class ConnectionRepositoryTest {
 
     @Autowired
@@ -22,26 +23,59 @@ class ConnectionRepositoryTest {
     private UserRepository userRepository;
 
     @Test
-    void testFindConnectionsByUserId() {
+    void ConnectionRepository_FindConnectionsById_ReturnListConnection() {
 
-        User user1 = new User();
-        user1.setEmail("user1@example.com");
-        user1.setNumber("+37255566777");
+        // Arrange
+        User user1 = User.builder().email("user1@example.com").build();
         userRepository.save(user1);
 
-        User user2 = new User();
-        user2.setEmail("user2@example.com");
-        user2.setNumber("+37255566888");
+        User user2 = User.builder().email("user2@example.com").build();
         userRepository.save(user2);
 
-        Connection connection = new Connection();
-        connection.getUsers().add(user1);
-        connection.getUsers().add(user2);
+        Connection connection = Connection.builder().users(Set.of(user1, user2)).build();
         connectionRepository.save(connection);
 
-        List<Connection> connections = connectionRepository.findConnectionsByUserIdWithMessages(user1.getId());
+        // Act
+        List<Connection> connections = connectionRepository.findConnectionsByUserId(user1.getId());
 
-        assertThat(connections).isNotEmpty();
-        assertThat(connections.get(0).getUsers()).contains(user1, user2);
+        // Assert
+        Assertions.assertThat(connections).isNotEmpty();
+        Assertions.assertThat(connections.getFirst().getUsers()).contains(user1, user2);
+    }
+
+    @Test
+    void ConnectionRepository_ExistsConnectionBetween_ReturnFalse() {
+        // Arrange
+        User user1 = User.builder().email("user1@example.com").build();
+        userRepository.save(user1);
+
+        User user2 = User.builder().email("user2@example.com").build();
+        userRepository.save(user2);
+
+        // Act
+        boolean result = connectionRepository.existsConnectionBetween(user1.getId(), user2.getId());
+
+        // Assert
+        Assertions.assertThat(result).isFalse();
+
+    }
+
+    @Test
+    void ConnectionRepository_ExistsConnectionBetween_ReturnTrue() {
+        // Arrange
+        User user1 = User.builder().email("user1@example.com").build();
+        userRepository.save(user1);
+
+        User user2 = User.builder().email("user2@example.com").build();
+        userRepository.save(user2);
+
+        Connection connection = Connection.builder().users(Set.of(user1, user2)).build();
+        connectionRepository.save(connection);
+
+        // Act
+        boolean result = connectionRepository.existsConnectionBetween(user1.getId(), user2.getId());
+
+        // Assert
+        Assertions.assertThat(result).isTrue();
     }
 }
