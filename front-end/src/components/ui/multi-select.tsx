@@ -1,18 +1,12 @@
+import { Badge } from '@/components/ui/badge';
+import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
+import { useDebounce } from '@/lib/hooks/useDebounce';
+import { cn } from '@/lib/utils';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { Command as CommandPrimitive, useCommandState } from 'cmdk';
 import { X } from 'lucide-react';
 import * as React from 'react';
 import { forwardRef, useEffect } from 'react';
-
-import { Badge } from '@/components/ui/badge';
-import {
-  Command,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
-import { cn } from '@/lib/utils';
-import { useDebounce } from '@/lib/hooks/useDebounce';
-import { useVirtualizer } from '@tanstack/react-virtual';
 
 export interface Option {
   value: string;
@@ -117,18 +111,14 @@ function removePickedOption(groupOption: GroupOption, picked: Option[]) {
   const cloneOption = JSON.parse(JSON.stringify(groupOption)) as GroupOption;
 
   for (const [key, value] of Object.entries(cloneOption)) {
-    cloneOption[key] = value.filter(
-      (val) => !picked.find((p) => p.value === val.value)
-    );
+    cloneOption[key] = value.filter((val) => !picked.find((p) => p.value === val.value));
   }
   return cloneOption;
 }
 
 function isOptionsExist(groupOption: GroupOption, targetOption: Option[]) {
   for (const [, value] of Object.entries(groupOption)) {
-    if (
-      value.some((option) => targetOption.find((p) => p.value === option.value))
-    ) {
+    if (value.some((option) => targetOption.find((p) => p.value === option.value))) {
       return true;
     }
   }
@@ -141,32 +131,28 @@ function isOptionsExist(groupOption: GroupOption, targetOption: Option[]) {
  *
  * @reference: https://github.com/hsuanyi-chou/shadcn-ui-expansions/issues/34#issuecomment-1949561607
  **/
-const CommandEmpty = forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<typeof CommandPrimitive.Empty>
->(({ className, ...props }, forwardedRef) => {
-  const render = useCommandState((state) => state.filtered.count === 0);
+const CommandEmpty = forwardRef<HTMLDivElement, React.ComponentProps<typeof CommandPrimitive.Empty>>(
+  ({ className, ...props }, forwardedRef) => {
+    const render = useCommandState((state) => state.filtered.count === 0);
 
-  if (!render) return null;
+    if (!render) return null;
 
-  return (
-    <div
-      ref={forwardedRef}
-      className={cn('py-6 text-center text-sm', className)}
-      // eslint-disable-next-line react/no-unknown-property
-      cmdk-empty=""
-      role="presentation"
-      {...props}
-    />
-  );
-});
+    return (
+      <div
+        ref={forwardedRef}
+        className={cn('py-6 text-center text-sm', className)}
+        // eslint-disable-next-line react/no-unknown-property
+        cmdk-empty=""
+        role="presentation"
+        {...props}
+      />
+    );
+  }
+);
 
 CommandEmpty.displayName = 'CommandEmpty';
 
-const MultipleSelector = React.forwardRef<
-  MultipleSelectorRef,
-  MultipleSelectorProps
->(
+const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorProps>(
   (
     {
       value,
@@ -202,9 +188,7 @@ const MultipleSelector = React.forwardRef<
     const dropdownRef = React.useRef<HTMLDivElement>(null); // Added this
 
     const [selected, setSelected] = React.useState<Option[]>(value || []);
-    const [options, setOptions] = React.useState<GroupOption>(
-      transToGroupOption(arrayDefaultOptions, groupBy)
-    );
+    const [options, setOptions] = React.useState<GroupOption>(transToGroupOption(arrayDefaultOptions, groupBy));
     const [inputValue, setInputValue] = React.useState('');
     const debouncedSearchTerm = useDebounce(inputValue, delay || 500);
 
@@ -404,10 +388,7 @@ const MultipleSelector = React.forwardRef<
       return <CommandEmpty>{emptyIndicator}</CommandEmpty>;
     }, [creatable, emptyIndicator, onSearch, options]);
 
-    const selectables = React.useMemo<GroupOption>(
-      () => removePickedOption(options, selected),
-      [options, selected]
-    );
+    const selectables = React.useMemo<GroupOption>(() => removePickedOption(options, selected), [options, selected]);
 
     /** Avoid Creatable Selector freezing or lagging when paste a long string. */
     const commandFilter = React.useCallback(() => {
@@ -428,14 +409,13 @@ const MultipleSelector = React.forwardRef<
 
     // Create a structure that includes group headers in the virtualization
     const virtualItems = React.useMemo(() => {
-      const items: { type: 'group' | 'item'; data: string | Option; groupKey?: string }[] =
-        [];
+      const items: { type: 'group' | 'item'; data: string | Option; groupKey?: string }[] = [];
 
       Object.entries(selectables).forEach(([groupKey, options]) => {
         // Filter options if input value provided
         const filteredOptions = inputValue
-        ? options.filter(option => option.label.toLowerCase().includes(inputValue.toLowerCase()))
-        : options;
+          ? options.filter((option) => option.label.toLowerCase().includes(inputValue.toLowerCase()))
+          : options;
 
         // Add group header if groupBy is used, dont if searching
         if (!inputValue && groupBy && groupKey) {
@@ -465,15 +445,8 @@ const MultipleSelector = React.forwardRef<
           handleKeyDown(e);
           commandProps?.onKeyDown?.(e);
         }}
-        className={cn(
-          'h-auto overflow-visible bg-transparent',
-          commandProps?.className
-        )}
-        shouldFilter={
-          commandProps?.shouldFilter !== undefined
-            ? commandProps.shouldFilter
-            : !onSearch
-        } // When onSearch is provided, we don't want to filter the options. You can still override it.
+        className={cn('h-auto overflow-visible bg-transparent', commandProps?.className)}
+        shouldFilter={commandProps?.shouldFilter !== undefined ? commandProps.shouldFilter : !onSearch} // When onSearch is provided, we don't want to filter the options. You can still override it.
         filter={commandFilter()}
       >
         <div
@@ -548,11 +521,7 @@ const MultipleSelector = React.forwardRef<
                 }
                 inputProps?.onFocus?.(event);
               }}
-              placeholder={
-                hidePlaceholderWhenSelected && selected.length !== 0
-                  ? ''
-                  : placeholder
-              }
+              placeholder={hidePlaceholderWhenSelected && selected.length !== 0 ? '' : placeholder}
               className={cn(
                 'flex-1 bg-transparent outline-none placeholder:text-muted-foreground',
                 {
@@ -597,9 +566,7 @@ const MultipleSelector = React.forwardRef<
                 <>
                   {EmptyItem()}
                   {CreatableItem()}
-                  {!selectFirstItem && (
-                    <CommandItem value="-" className="hidden" />
-                  )}
+                  {!selectFirstItem && <CommandItem value="-" className="hidden" />}
                   <CommandGroup
                     style={{
                       height: `${rowVirtualizer.getTotalSize()}px`,
@@ -628,43 +595,42 @@ const MultipleSelector = React.forwardRef<
 
                       return (
                         <>
-                        {item.type === 'item' && typeof item.data !== 'string' && (
-                        <CommandItem
-                          key={item.data.value}
-                          value={item.data.label}
-                          disabled={item.data.disable}
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: `${virtualRow.size}px`,
-                            transform: `translateY(${virtualRow.start}px)`,
-                          }}
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                          }}
-                          onSelect={() => {
-                            if (selected.length >= maxSelected) {
-                              onMaxSelected?.(selected.length);
-                              return;
-                            }
-                            setInputValue('');
-                            const newOptions = [...selected, item.data];
-                            const validOptions = newOptions.filter((opt): opt is Option => typeof opt !== 'string');
-                              setSelected(validOptions);
-                              onChange?.(validOptions);
-                          }}
-                          className={cn(
-                            'absolute w-full cursor-pointer',
-                            item.data.disable &&
-                              'cursor-default text-muted-foreground'
+                          {item.type === 'item' && typeof item.data !== 'string' && (
+                            <CommandItem
+                              key={item.data.value}
+                              value={item.data.label}
+                              disabled={item.data.disable}
+                              style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: `${virtualRow.size}px`,
+                                transform: `translateY(${virtualRow.start}px)`,
+                              }}
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                              }}
+                              onSelect={() => {
+                                if (selected.length >= maxSelected) {
+                                  onMaxSelected?.(selected.length);
+                                  return;
+                                }
+                                setInputValue('');
+                                const newOptions = [...selected, item.data];
+                                const validOptions = newOptions.filter((opt): opt is Option => typeof opt !== 'string');
+                                setSelected(validOptions);
+                                onChange?.(validOptions);
+                              }}
+                              className={cn(
+                                'absolute w-full cursor-pointer',
+                                item.data.disable && 'cursor-default text-muted-foreground'
+                              )}
+                            >
+                              {item.data.label}
+                            </CommandItem>
                           )}
-                        >
-                          {item.data.label}
-                        </CommandItem>
-                      )}
                         </>
                       );
                     })}
