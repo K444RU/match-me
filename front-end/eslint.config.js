@@ -83,20 +83,25 @@ export default [
     ]
   },
   {
-    files: ['e2e/**/*.ts'],
+    files: ['e2e/**/*.ts', 'playwright.config.ts'],
     plugins: {
-      '@typescript-eslint': ts,
       'playwright': playwright
     },
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        project: true,
+        project: './e2e/tsconfig.json',
         tsconfigRootDir: import.meta.dirname,
+      },
+      globals: {
+        ...globals.browser,
+        ...playwright.configs['flat/recommended'].globals
       }
     },
     rules: {
       ...playwright.configs['flat/recommended'].rules,
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-explicit-any': 'off'
     }
   }
 ]
