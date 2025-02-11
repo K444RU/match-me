@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 
 const HowItWorksSection = forwardRef<HTMLDivElement>((_, ref) => {
   return (
-    <div ref={ref} className="min-h-screen bg-background-50 py-20">
+    <div ref={ref} className="min-h-screen bg-background-50 py-20" data-testid="how-it-works-section">
       HowItWorksSection
     </div>
   );
