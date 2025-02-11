@@ -1,0 +1,14 @@
+{
+  "extends": "../tsconfig.node.json",
+  "include": ["./**/*.ts", "../playwright.config.ts"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@/*": ["../src/*"]
+    },
+    "types": ["node", "@playwright/test"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+  }
+} 
