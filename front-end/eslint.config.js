@@ -7,6 +7,7 @@ import ts from 'typescript-eslint';
 import tsParser from "@typescript-eslint/parser";
 import tailwind from 'eslint-plugin-tailwindcss';
 import prettier from 'eslint-config-prettier';
+import playwright from 'eslint-plugin-playwright';
 
 export default [
   {
@@ -80,5 +81,22 @@ export default [
       'src/api/*',
       'src/mocks/*',
     ]
+  },
+  {
+    files: ['e2e/**/*.ts'],
+    plugins: {
+      '@typescript-eslint': ts,
+      'playwright': playwright
+    },
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        project: true,
+        tsconfigRootDir: import.meta.dirname,
+      }
+    },
+    rules: {
+      ...playwright.configs['flat/recommended'].rules,
+    }
   }
 ]
