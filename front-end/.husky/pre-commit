@@ -1,2 +1,2 @@
 cd front-end
-npx lint-staged
+pnpm dlx lint-staged
