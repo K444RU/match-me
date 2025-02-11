@@ -12,7 +12,8 @@
     "server": "json-server --watch src/db.json --port 8000",
     "gen:types": "orval --config ./orval.config.ts",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
-    "prepare": "cd .. && husky front-end/.husky"
+    "prepare": "cd .. && husky front-end/.husky",
+    "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.2",
