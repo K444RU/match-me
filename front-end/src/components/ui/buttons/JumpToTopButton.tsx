@@ -25,9 +25,13 @@ const JumpToTopButton = () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           className="fixed bottom-5 right-5 overflow-hidden"
+          role="presentation"
         >
-          <button className="rounded-full bg-primary p-4 text-xl font-semibold text-background opacity-50 transition-opacity duration-300 hover:opacity-100">
-            <FaArrowUp />
+          <button
+            aria-label="Scroll to top"
+            className="rounded-full bg-primary p-4 text-xl font-semibold text-background opacity-50 transition-opacity duration-300 hover:opacity-100"
+          >
+            <FaArrowUp aria-hidden="true" />
           </button>
         </motion.div>
       )}

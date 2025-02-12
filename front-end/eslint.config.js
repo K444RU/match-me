@@ -7,6 +7,7 @@ import ts from 'typescript-eslint';
 import tsParser from "@typescript-eslint/parser";
 import tailwind from 'eslint-plugin-tailwindcss';
 import prettier from 'eslint-config-prettier';
+import playwright from 'eslint-plugin-playwright';
 
 export default [
   {
@@ -80,5 +81,27 @@ export default [
       'src/api/*',
       'src/mocks/*',
     ]
+  },
+  {
+    files: ['e2e/**/*.ts', 'playwright.config.ts'],
+    plugins: {
+      'playwright': playwright
+    },
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        project: './e2e/tsconfig.json',
+        tsconfigRootDir: import.meta.dirname,
+      },
+      globals: {
+        ...globals.browser,
+        ...playwright.configs['flat/recommended'].globals
+      }
+    },
+    rules: {
+      ...playwright.configs['flat/recommended'].rules,
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-explicit-any': 'off'
+    }
   }
 ]
