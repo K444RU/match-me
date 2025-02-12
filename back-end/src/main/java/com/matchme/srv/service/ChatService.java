@@ -221,8 +221,6 @@ public class ChatService {
         deliveredEvent.setTimestamp(timestamp);
         savedMessage.getMessageEvents().add(deliveredEvent);
 
-        userMessageRepository.save(savedMessage);
-
         return new ChatMessageResponseDTO(
                 savedMessage.getId(),
                 connectionId,
