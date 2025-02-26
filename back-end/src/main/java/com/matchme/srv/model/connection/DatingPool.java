@@ -6,8 +6,6 @@ import java.util.Set;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import com.matchme.srv.model.user.profile.UserProfile;
-
 import jakarta.persistence.Index;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -16,8 +14,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -50,12 +46,8 @@ import lombok.NoArgsConstructor;
 public class DatingPool {
 
     @Id
-    private Long id;
-
-    @MapsId
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private UserProfile user;
+    @Column(name = "user_id")
+    private Long userId;
 
     @NotNull(message = "Gender is required")
     @Column(name = "my_gender_id", nullable = false)
