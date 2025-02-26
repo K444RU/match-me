@@ -50,7 +50,7 @@ public class MatchingService {
         }
         // Calculate match probability, filter and sort
         Map<Long, Double> bestMatches = possibleMatches.stream()
-                .map(pool -> Map.entry(pool.getId(),
+                .map(pool -> Map.entry(pool.getUserId(),
                         calculateProbability(entry.getActualScore(), entry.getHobbyIds(), pool)))
                 .filter(pair -> pair.getValue() > MINIMUM_PROBABILITY)
                 .filter(pair -> pair.getValue() < MAXIMUM_PROBABILITY)
