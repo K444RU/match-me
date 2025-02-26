@@ -2,6 +2,7 @@ package com.matchme.srv.model.user.profile;
 
 import java.util.Set;
 
+import com.matchme.srv.model.connection.DatingPool;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
 import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
@@ -16,56 +17,58 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@ToString(exclude = {"user", "preferences", "attributes"})
+@ToString(exclude = { "user", "preferences", "attributes" })
 public class UserProfile {
 
-  @Id
-  private Long id;
+    @Id
+    private Long id;
 
-  @MapsId
-  @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id")
-  private User user;
+    @MapsId
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
-  @OneToOne(mappedBy = "userProfile", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-  // @NotNull
-  private UserPreferences preferences;
+    @OneToOne(mappedBy = "userProfile", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    // @NotNull
+    private UserPreferences preferences;
 
-  @OneToOne(mappedBy = "userProfile", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-  // @NotNull
-  private UserAttributes attributes;
+    @OneToOne(mappedBy = "userProfile", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    // @NotNull
+    private UserAttributes attributes;
 
-  @OneToMany(mappedBy = "userProfile", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-  private Set<ProfileChange> profileChangeLog;
-  
-  private String first_name;
+    @OneToOne(mappedBy = "userProfile", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    // @NotNull
+    private DatingPool datingEntry;
 
-  private String last_name;
+    @OneToMany(mappedBy = "userProfile", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<ProfileChange> profileChangeLog;
 
-  private String alias;
+    private String first_name;
 
-  private String city;
+    private String last_name;
 
-  private byte[] profilePicture;
+    private String alias;
 
-  @ManyToMany
-  @JoinTable(name = "user_profile_hobbies",
-          joinColumns = @JoinColumn(name = "user_profile_id"),
-          inverseJoinColumns = @JoinColumn(name = "hobby_id"))
-  private Set<Hobby> hobbies;
+    private String city;
 
-  public void setPreferences(UserPreferences preferences) {
-    if (preferences != null) {
-      preferences.setUserProfile(this);
+    private byte[] profilePicture;
+
+    @ManyToMany
+    @JoinTable(name = "user_profile_hobbies", joinColumns = @JoinColumn(name = "user_profile_id"), inverseJoinColumns = @JoinColumn(name = "hobby_id"))
+    private Set<Hobby> hobbies;
+
+    public void setPreferences(UserPreferences preferences) {
+        if (preferences != null) {
+            preferences.setUserProfile(this);
+        }
+        this.preferences = preferences;
     }
-    this.preferences = preferences;
-  }
 
-  public void setAttributes(UserAttributes attributes) {
-    if (attributes != null) {
-      attributes.setUserProfile(this);
+    public void setAttributes(UserAttributes attributes) {
+        if (attributes != null) {
+            attributes.setUserProfile(this);
+        }
+        this.attributes = attributes;
     }
-    this.attributes = attributes;
-  }
 
 }
