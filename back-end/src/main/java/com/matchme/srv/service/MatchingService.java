@@ -1,146 +1,90 @@
 package com.matchme.srv.service;
 
 import com.matchme.srv.model.connection.DatingPool;
-import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
-import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
-import com.matchme.srv.model.user.profile.user_score.UserScore;
-import com.matchme.srv.repository.ConnectionRepository;
-import com.matchme.srv.repository.UserAttributesRepository;
-import com.matchme.srv.repository.UserPreferencesRepository;
-import com.matchme.srv.repository.UserScoreRepository;
+import com.matchme.srv.repository.MatchingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.HashSet;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
-@SuppressWarnings("all")
 public class MatchingService {
 
-    private final ConnectionRepository matchingRepository;
-    private final UserPreferencesRepository preferencesRepository;
-    private final UserAttributesRepository attributesRepository;
-    private final UserScoreRepository scoreRepository;
+    private static final double MINIMUM_PROBABILITY = 0.3;
+    private static final int DEFAULT_MAX_RESULTS = 10;
+    private static final int ELO_K_FACTOR = 1071;
+    private static final double MAXIMUM_PROBABILITY = 0.7;
+
+    private final MatchingRepository matchingRepository;
 
     @Autowired
-    public MatchingService(ConnectionRepository matchingRepository, UserPreferencesRepository userPreferencesRepository, UserAttributesRepository userAttributesRepository, UserScoreRepository userScoreRepository) {
+    public MatchingService(MatchingRepository matchingRepository) {
         this.matchingRepository = matchingRepository;
-        this.preferencesRepository = userPreferencesRepository;
-        this.attributesRepository = userAttributesRepository;
-        this.scoreRepository = userScoreRepository;
     }
 
-    public Long getMatch(Long userId) {
+    /**
+     * Get possible matches for a user with pagination
+     * 
+     * @param userId User ID to find matches for
+     * @return Map of user IDs to match probability scores
+     * @throws RuntimeException if any exceptions occur
+     */
+    public Map<Long, Double> getPossibleMatches(Long userId) {
 
-        // get the users preferences for a match
-        UserPreferences preferences = getPreferences(userId); // gender, age_min, age_max, distance, blind, probabilityTolerance
+        // get the users datingPool entry
+        DatingPool entry = matchingRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found in dating pool"));
 
-        // get the users attributes to reverse-check
-        UserAttributes attributes = getAttributes(userId); // myGender, myBirthDate, location
+        // find users that match parameters
+        List<DatingPool> possibleMatches = matchingRepository.findUsersThatMatchParameters(entry.getLookingForGender(),
+                entry.getMyGender(), entry.getMyAge(), entry.getAgeMin(), entry.getAgeMax(),
+                entry.getSuitableGeoHashes(), entry.getMyLocation());
 
-        // get the users scores
-        UserScore scores = getUserScores(userId); // currentScore, vibeProbability, currentBlind
-
-        // parse users birthdate to correct age.
-        Integer userAge = parseBirthDateToString(attributes.getBirth_date()); // birthdate -> age
-
-        // TODO: Make the location a geohash
-        String geoHash = getGeoHash(attributes.getLocation()); // location -> geoHash
-
-        // TODO: find suitable geohash codes
-        Set<String> suitableGeoHashes = getSuitableGeoHashes(geoHash, preferences.getDistance());
-
-        // Get users current score
-        Integer actualScore = calculateUsersOwnScore(scores.getCurrentScore(), scores.getVibeProbability());
-
-        // Calculate minimum score the other user must have
-        Integer blindScore = calculateBlindLowerBound(scores.getCurrentBlind(), preferences.getProbability_tolerance());
-
-        //TODO: make a search query in the database
-        Long bestMatchId = getDatingPoolBestMatch();
-
-        // TODO: Go over the entity creation and check auto-generated constructor stub in DatingPool
-        if (bestMatchId == null) {
-            DatingPool userRow = new DatingPool(attributes.getId(), attributes.getGender(), userAge, geoHash, actualScore, suitableGeoHashes, preferences.getAge_min(), preferences.getAge_max(), blindScore);
-//      matchingRepository.save(userRow);
-            return null;
-        } else {
-            return bestMatchId;
+        if (possibleMatches.size() == 0) {
+            throw new RuntimeException("No possibible matches found with selected parameters");
         }
-    }
+        // Calculate match probability, filter and sort
+        Map<Long, Double> bestMatches = possibleMatches.stream()
+                .map(pool -> Map.entry(pool.getId(),
+                        calculateProbability(entry.getActualScore(), entry.getHobbyIds(), pool)))
+                .filter(pair -> pair.getValue() > MINIMUM_PROBABILITY)
+                .filter(pair -> pair.getValue() < MAXIMUM_PROBABILITY)
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .limit(DEFAULT_MAX_RESULTS)
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new));
 
-
-    public UserPreferences getPreferences(Long userId) {
-
-        Optional<UserPreferences> userPreferences = preferencesRepository.findById(userId);
-        if (!userPreferences.isPresent()) {
-            // TODO: What happens if user does not have preferences set?
+        if (bestMatches.isEmpty()) {
+            throw new RuntimeException("No compatible matches found within acceptable probability range");
         }
+        return bestMatches;
 
-        return userPreferences.get();
     }
 
-    public UserAttributes getAttributes(Long userId) {
+    private Double calculateProbability(Integer userScore, Set<Long> hobbies, DatingPool entry) {
+        // ELO formula: P(A) = 1 / (1 + 10^((RB - RA)/400))
+        Double probability = 1.0 / (1.0 + Math.pow(10, (userScore - entry.getActualScore()) / ELO_K_FACTOR));
 
-        Optional<UserAttributes> userAttributes = attributesRepository.findById(userId);
+        int mutualhobbies = 0;
 
-        if (!userAttributes.isPresent()) {
-            // TODO: What happens if user does not have attributes set?
+        for (Long hobby : hobbies) {
+            if (entry.getHobbyIds().contains(hobby)) {
+                mutualhobbies++;
+            }
         }
 
-        return userAttributes.get();
-
-    }
-
-    public UserScore getUserScores(Long userId) {
-        Optional<UserScore> userScore = scoreRepository.findById(userId);
-        if (!userScore.isPresent()) {
-            // TODO: What happens if user does not have a score entity?
+        if (mutualhobbies != 0) {
+            probability = probability + (0.2 * (mutualhobbies / hobbies.size()));
         }
 
-        return userScore.get();
+        return probability;
     }
-
-    public Integer parseBirthDateToString(LocalDate birthDate) {
-        LocalDate currentDate = LocalDate.now();
-        Integer age = currentDate.getYear() - birthDate.getYear();
-
-        if (currentDate.getMonthValue() > birthDate.getMonthValue() ||
-                currentDate.getMonth() == birthDate.getMonth() && currentDate.getDayOfMonth() > birthDate.getDayOfMonth()) {
-            age--;
-        }
-
-        return age;
-    }
-
-    public int calculateUsersOwnScore(int score, double probability) {
-        return (int) Math.round(score * probability);
-    }
-
-    // TODO: Fix the logic...
-    public int calculateBlindLowerBound(int currentBlind, double probability) {
-
-        double blind = Math.log10((Math.pow(10, currentBlind) - Math.pow(10, currentBlind) * probability) / probability);
-
-        return (int) Math.round(blind);
-    }
-
-    public String getGeoHash(List<Double> location) {
-        return "geoHash";
-    }
-
-    public Set<String> getSuitableGeoHashes(String centralGeoHash, Integer distance) {
-        return new HashSet<>();
-    }
-
-    // TODO: Complete this logic to find matches in DatingPool
-    public Long getDatingPoolBestMatch() {
-        DatingPool[] allUsers = new DatingPool[10];
-        return allUsers[0].getMyId();
-    }
-
 }
