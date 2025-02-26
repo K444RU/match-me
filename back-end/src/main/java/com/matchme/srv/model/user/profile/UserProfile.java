@@ -2,7 +2,6 @@ package com.matchme.srv.model.user.profile;
 
 import java.util.Set;
 
-import com.matchme.srv.model.connection.DatingPool;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
 import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
@@ -35,10 +34,6 @@ public class UserProfile {
     @OneToOne(mappedBy = "userProfile", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     // @NotNull
     private UserAttributes attributes;
-
-    @OneToOne(mappedBy = "userProfile", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    // @NotNull
-    private DatingPool datingEntry;
 
     @OneToMany(mappedBy = "userProfile", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<ProfileChange> profileChangeLog;
