@@ -2,6 +2,7 @@ package com.matchme.srv.model.user.profile.user_preferences;
 
 import java.util.Set;
 
+import com.matchme.srv.model.connection.DatingPoolSyncListener;
 import com.matchme.srv.model.user.profile.UserGenderType;
 import com.matchme.srv.model.user.profile.UserProfile;
 
@@ -10,32 +11,30 @@ import lombok.Data;
 
 @Data
 @Entity
+@EntityListeners(DatingPoolSyncListener.class)
 @Table(name = "user_preferences")
 public class UserPreferences {
-  
-  @Id // need to look into shared id value with user
-  private Long id;
 
-  @MapsId
-  @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id")
-  private UserProfile userProfile;
+    @Id
+    private Long id;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "gender_id")
-  private UserGenderType gender;
+    @MapsId
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private UserProfile userProfile;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gender_id")
+    private UserGenderType gender;
 
-  private Integer age_min;
+    private Integer age_min;
 
+    private Integer age_max;
 
-  private Integer age_max;
+    private Integer distance;
 
+    private Double probability_tolerance;
 
-  private Integer distance;
-
-  private Double probability_tolerance;
-
-  @OneToMany(mappedBy = "userPreferences", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-  private Set<PreferenceChange> preferenceChangeLog;
+    @OneToMany(mappedBy = "userPreferences", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<PreferenceChange> preferenceChangeLog;
 }
