@@ -76,7 +76,7 @@ public class DatingPool {
     private Integer ageMax;
 
     @NotNull(message = "Location is required")
-    @Pattern(regexp = "^[0-9a-z]{6,7}$", message = "Location must be a valid geohash of length 6-7")
+    @Pattern(regexp = "^[0-9b-hjkmnp-z]{6,7}$", message = "Location must be a valid geohash of length 6-7")
     @Column(name = "my_location", nullable = false)
     private String myLocation; // Geohash of 6-7 length
 
