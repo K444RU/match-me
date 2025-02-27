@@ -19,7 +19,7 @@ public interface MatchingRepository extends JpaRepository<DatingPool, Long> {
             dp.myGender = :gender AND
             dp.myAge BETWEEN :minAge AND :maxAge AND
             dp.myLocation IN :locations AND
-            dp.lookingFor = :lookingForGender AND
+            dp.lookingForGender = :lookingForGender AND
             :userAge BETWEEN dp.ageMin AND dp.ageMax AND
             :userLocation MEMBER OF dp.suitableGeoHashes
             """)
