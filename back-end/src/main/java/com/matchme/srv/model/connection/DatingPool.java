@@ -71,7 +71,7 @@ public class DatingPool {
 
     @NotNull(message = "Maximum age is required")
     @Min(value = 18, message = "Maximum age must be at least 18")
-    @Max(value = 121, message = "Minimum age must be less than 121")
+    @Max(value = 121, message = "Maximum age must be less than 121")
     @Column(name = "age_max", nullable = false)
     private Integer ageMax;
 
