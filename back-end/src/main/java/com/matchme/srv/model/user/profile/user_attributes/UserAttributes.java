@@ -1,5 +1,6 @@
 package com.matchme.srv.model.user.profile.user_attributes;
 
+import com.matchme.srv.model.connection.DatingPoolSyncListener;
 import com.matchme.srv.model.user.profile.ProfileChange;
 import com.matchme.srv.model.user.profile.UserGenderType;
 import com.matchme.srv.model.user.profile.UserProfile;
@@ -13,25 +14,27 @@ import lombok.ToString;
 
 @Data
 @Entity
+@EntityListeners(DatingPoolSyncListener.class)
 @Table(name = "user_attributes")
 @ToString(exclude = "userProfile")
 public class UserAttributes {
 
-  @Id private Long id;
+    @Id
+    private Long id;
 
-  @MapsId
-  @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id")
-  private UserProfile userProfile;
+    @MapsId
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private UserProfile userProfile;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "gender_id")
-  private UserGenderType gender;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gender_id")
+    private UserGenderType gender;
 
-  private LocalDate birth_date;
+    private LocalDate birth_date;
 
-  private List<Double> location = new ArrayList<>(); // Geohash of 6-7 length
+    private List<Double> location = new ArrayList<>(); // Geohash of 6-7 length
 
-  @OneToMany(mappedBy = "userAttributes", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-  private Set<ProfileChange> attributeChangeLog;
+    @OneToMany(mappedBy = "userAttributes", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<ProfileChange> attributeChangeLog;
 }
