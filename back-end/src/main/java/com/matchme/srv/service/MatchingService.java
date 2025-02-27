@@ -1,5 +1,6 @@
 package com.matchme.srv.service;
 
+import com.matchme.srv.exception.ResourceNotFoundException;
 import com.matchme.srv.model.connection.DatingPool;
 import com.matchme.srv.repository.MatchingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,7 @@ public class MatchingService {
 
         // get the users datingPool entry
         DatingPool entry = matchingRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found in dating pool"));
+                .orElseThrow(() -> new ResourceNotFoundException("User " + userId.toString()));
 
         // find users that match parameters
         List<DatingPool> possibleMatches = matchingRepository.findUsersThatMatchParameters(entry.getLookingForGender(),
@@ -46,7 +47,8 @@ public class MatchingService {
                 entry.getSuitableGeoHashes(), entry.getMyLocation());
 
         if (possibleMatches.size() == 0) {
-            throw new RuntimeException("No possible matches found with selected parameters");
+            throw new ResourceNotFoundException(
+                    "No possible matches for user " + userId.toString() + " found with selected parameters");
         }
         // Calculate match probability, filter and sort
         Map<Long, Double> bestMatches = possibleMatches.stream()
