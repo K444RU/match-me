@@ -18,7 +18,7 @@ public class MatchingService {
     private static final double MINIMUM_PROBABILITY = 0.3;
     private static final int DEFAULT_MAX_RESULTS = 10;
     private static final double SCALING_FACTOR = 1071.0;
-    private static final double MAXIMUM_PROBABILITY = 0.7;
+    private static final double MAXIMUM_PROBABILITY = 0.91;
 
     private final MatchingRepository matchingRepository;
 
