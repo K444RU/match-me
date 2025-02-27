@@ -84,7 +84,7 @@ public class MatchingService {
         }
 
         if (mutualhobbies != 0) {
-            probability += (0.2 * ((double) mutualhobbies / hobbies.size()));
+            probability += (0.2 * (Math.log(mutualhobbies + 1) / Math.log(hobbies.size() + 1)));
         }
 
         return probability;
