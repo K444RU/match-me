@@ -17,7 +17,7 @@ public class MatchingService {
 
     private static final double MINIMUM_PROBABILITY = 0.3;
     private static final int DEFAULT_MAX_RESULTS = 10;
-    private static final int ELO_K_FACTOR = 1071;
+    private static final double SCALING_FACTOR = 1071.0;
     private static final double MAXIMUM_PROBABILITY = 0.7;
 
     private final MatchingRepository matchingRepository;
@@ -71,7 +71,7 @@ public class MatchingService {
 
     private Double calculateProbability(Integer userScore, Set<Long> hobbies, DatingPool entry) {
         // ELO formula: P(A) = 1 / (1 + 10^((RB - RA)/400))
-        Double probability = 1.0 / (1.0 + Math.pow(10, (userScore - entry.getActualScore()) / ELO_K_FACTOR));
+        Double probability = 1.0 / (1.0 + Math.pow(10, (userScore - entry.getActualScore()) / SCALING_FACTOR));
 
         int mutualhobbies = 0;
 
