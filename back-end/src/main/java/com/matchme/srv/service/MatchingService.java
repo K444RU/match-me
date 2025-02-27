@@ -46,7 +46,7 @@ public class MatchingService {
                 entry.getSuitableGeoHashes(), entry.getMyLocation());
 
         if (possibleMatches.size() == 0) {
-            throw new RuntimeException("No possibible matches found with selected parameters");
+            throw new RuntimeException("No possible matches found with selected parameters");
         }
         // Calculate match probability, filter and sort
         Map<Long, Double> bestMatches = possibleMatches.stream()
