@@ -48,7 +48,7 @@ public class MatchingService {
 
         if (possibleMatches.size() == 0) {
             throw new ResourceNotFoundException(
-                    "No possible matches for user " + userId.toString() + " found with selected parameters");
+                    "Possible matches with selected parameters for user " + userId.toString());
         }
         // Calculate match probability, filter and sort
         Map<Long, Double> bestMatches = possibleMatches.stream()
