@@ -1,5 +1,6 @@
 package com.matchme.srv.service;
 
+import com.matchme.srv.exception.PotentialMatchesNotFoundException;
 import com.matchme.srv.exception.ResourceNotFoundException;
 import com.matchme.srv.model.connection.DatingPool;
 import com.matchme.srv.repository.MatchingRepository;
@@ -68,10 +69,9 @@ public class MatchingService {
      * @param userId User ID to find matches for
      * @return Map of user IDs to match probability scores, sorted by probability in
      *         descending order
-     * @throws ResourceNotFoundException if the user is not found or no matches are
-     *                                   found
-     * @throws RuntimeException          if no compatible matches are found within
-     *                                   acceptable probability range
+     * @throws ResourceNotFoundException         if the user is not found
+     * @throws PotentialMatchesNotFoundException if no compatible matches are found
+     *                                           within acceptable probability range
      */
     public Map<Long, Double> getPossibleMatches(Long userId) {
 
@@ -85,8 +85,8 @@ public class MatchingService {
                 entry.getSuitableGeoHashes(), entry.getMyLocation());
 
         if (possibleMatches.size() == 0) {
-            throw new ResourceNotFoundException(
-                    "Possible matches with selected parameters for user " + userId.toString());
+            throw new PotentialMatchesNotFoundException(
+                    "Potential matches with selected parameters for user " + userId.toString());
         }
         // Calculate match probability, filter and sort
         Map<Long, Double> bestMatches = possibleMatches.stream()
@@ -103,10 +103,11 @@ public class MatchingService {
                         LinkedHashMap::new));
 
         if (bestMatches.isEmpty()) {
-            throw new RuntimeException("No compatible matches found within acceptable probability range");
+            throw new PotentialMatchesNotFoundException(
+                    "Potential matches within acceptable probability range for user " + userId.toString());
         }
-        return bestMatches;
 
+        return bestMatches;
     }
 
     /**
