@@ -18,7 +18,7 @@ public class GeohashService {
     /**
      * Converts latitude and longitude coordinates to a geohash string.
      * 
-     * @param coordinates List containing exactly 2 elements: [latitude, longitude]
+     * @param coordinates List containing exactly 2 elements: [longitude, latitude]
      * @return geohash string of length GEOHASH_PRECISION
      * @throws IllegalArgumentException if coordinates are null or don't contain
      *                                  two elements, or if latitude/longitude are
@@ -29,8 +29,8 @@ public class GeohashService {
             throw new IllegalArgumentException("Coordinates must contain latitude and longitude");
         }
 
-        double latitude = coordinates.get(0);
-        double longitude = coordinates.get(1);
+        double longitude = coordinates.get(0);
+        double latitude = coordinates.get(1);
 
         if (latitude < -90 || latitude > 90) {
             throw new IllegalArgumentException("Latitude must be between -90 and 90");
