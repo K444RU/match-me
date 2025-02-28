@@ -2,7 +2,7 @@ package com.matchme.srv.model.connection;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
@@ -18,11 +18,20 @@ import com.matchme.srv.repository.UserAttributesRepository;
 import com.matchme.srv.repository.UserPreferencesRepository;
 import com.matchme.srv.repository.UserProfileRepository;
 import com.matchme.srv.repository.UserScoreRepository;
+import com.matchme.srv.service.GeohashService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service responsible for synchronizing UserProfile, UserAttributes,
+ * UserPreferences and UserScore data with the dating pool system.
+ * This service maintains the dating pool entries by updating user attributes,
+ * preferences,
+ * and matching criteria in a consolidated format optimized for the matching
+ * process.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -33,32 +42,47 @@ public class DatingPoolSyncService {
     private final UserPreferencesRepository userPreferencesRepository;
     private final UserScoreRepository userScoreRepository;
     private final UserProfileRepository userProfileRepository;
+    private final GeohashService geohashService;
 
+    /**
+     * Synchronizes a user's dating pool entry with their current profile data.
+     *
+     * @param profileId The unique identifier of the user profile to synchronize
+     * @throws ResourceNotFoundException if any required user data entities cannot
+     *                                   be found
+     */
     @Transactional
     public void synchronizeDatingPool(Long profileId) {
 
         UserAttributes attributes = userAttributesRepository.findById(profileId)
                 .orElseThrow(() -> new ResourceNotFoundException("userAttributes for " + profileId.toString()));
 
+        if (attributes.getGender() == null || attributes.getBirthdate() == null || attributes.getLocation().isEmpty()) {
+            log.debug("Missing required fields in userAttributes {}, skipping sync", profileId);
+            return;
+        }
+
         UserPreferences preferences = userPreferencesRepository.findById(profileId)
                 .orElseThrow(() -> new ResourceNotFoundException("userPreferences for " + profileId.toString()));
 
-        UserScore userScore = userScoreRepository.findById(profileId)
-                .orElseThrow(() -> new ResourceNotFoundException("userScore for " + profileId.toString()));
+        if (preferences.getGender() == null || preferences.getAgeMin() == null || preferences.getAgeMax() == null
+                || preferences.getDistance() == null) {
+            log.debug("Missing required fields in userPreferences {}, skipping sync", profileId);
+            return;
+        }
 
         UserProfile userProfile = userProfileRepository.findById(profileId)
                 .orElseThrow(() -> new ResourceNotFoundException("userProfile for " + profileId.toString()));
 
         DatingPool entry = matchingRepository.findById(profileId)
                 .orElseGet(() -> {
+                    UserScore userScore = userScoreRepository.findById(profileId)
+                            .orElseThrow(() -> new ResourceNotFoundException("userScore for " + profileId.toString()));
+
                     DatingPool newEntry = new DatingPool();
                     newEntry.setUserId(profileId);
                     return newEntry;
                 });
-
-        // If we don't enforce that all fields in UserAttributes and UserPreferences are
-        // not null
-        // then additional checks are needed.
 
         // update gender-related fields
         entry.setMyGender(attributes.getGender().getId());
@@ -70,37 +94,67 @@ public class DatingPoolSyncService {
         entry.setAgeMax(preferences.getAgeMax());
 
         // transform location and distance to geohashes and update
-        entry.setMyLocation(getGeohashFromCoordinates(attributes.getLocation()));
+        String location = geohashService.coordinatesToGeohash(attributes.getLocation());
+        entry.setMyLocation(location);
         entry.setSuitableGeoHashes(
-                getSuitableGeohashesWithinDistance(entry.getMyLocation(), preferences.getDistance()));
+                geohashService.findGeohashesWithinRadius(location, preferences.getDistance()));
 
         // update userScore - possibly should be it's own update due to frequency?
+        // Entity init with default, field cannot be null
         entry.setActualScore(userScore.getCurrentScore());
 
-        // update the hobbyIds
+        // update the hobbyIds - cannot be null
         entry.setHobbyIds(getHobbyIdsFromHobbies(userProfile.getHobbies()));
 
         matchingRepository.save(entry);
         log.debug("DatingPool synchronized for profile ID: {}", profileId);
     }
 
+    /**
+     * Synchronizes only the user's score in the dating pool.
+     * This is optimized for frequent score updates.
+     *
+     * @param profileId The unique identifier of the user profile
+     * @throws ResourceNotFoundException if the user score or dating pool entry
+     *                                   cannot be found
+     */
+    @Transactional
+    public void synchronizeUserScore(Long profileId) {
+        UserScore userScore = userScoreRepository.findById(profileId)
+                .orElseThrow(() -> new ResourceNotFoundException("userScore for " + profileId.toString()));
+
+        DatingPool entry = matchingRepository.findById(profileId)
+                .orElseThrow(() -> new ResourceNotFoundException("DatingPool entry for " + profileId));
+
+        entry.setActualScore(userScore.getCurrentScore());
+        matchingRepository.save(entry);
+        log.debug("DatingPool score synchronized for profile ID: {}", profileId);
+    }
+
+    /**
+     * Calculates the current age of a user based on their birth date.
+     *
+     * @param birthdate The user's date of birth
+     * @return The calculated age in years
+     */
     private Integer getAgeFromBirthDate(LocalDate birthdate) {
         return Period.between(birthdate, LocalDate.now()).getYears();
     }
 
-    private String getGeohashFromCoordinates(List<Double> location) {
-
-        return "bcde234";
-    }
-
-    private Set<String> getSuitableGeohashesWithinDistance(String location, Integer distance) {
-
-        return Set.of();
-    }
-
+    /**
+     * Extracts hobby IDs from a set of Hobby entities.
+     *
+     * @param hobbies Set of Hobby entities to process
+     * @return Set of hobby IDs as Long values
+     */
     private Set<Long> getHobbyIdsFromHobbies(Set<Hobby> hobbies) {
+        Set<Long> hobbyIds = new HashSet<>();
 
-        return Set.of();
+        for (Hobby hobby : hobbies) {
+            hobbyIds.add(hobby.getId());
+        }
+
+        return hobbyIds;
     }
 
 }
