@@ -48,13 +48,13 @@ public class UserSettingsService {
                 .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_MESSAGE));
 
         log.info("Attempting to update account settings for userId: {}. New email: {}, new number: {}",
-        userId, settings.getEmail(), settings.getNumber());
-    
+                userId, settings.getEmail(), settings.getNumber());
+
         userValidationService.validateUniqueEmailAndNumber(settings.getEmail(), settings.getNumber(), user.getId());
-    
+
         user.setEmail(settings.getEmail());
         user.setNumber(settings.getNumber());
-    
+
         userRepository.save(user);
         log.info("Successfully updated user with ID: {}", userId);
     }
@@ -91,7 +91,7 @@ public class UserSettingsService {
         attributesMapper.toEntity(attributes, settings);
         attributes.setGender(userGenderTypeService.getById(settings.getGender_self()));
         attributes.setLocation(List.of(settings.getLongitude(), settings.getLatitude()));
-        attributes.setBirth_date(settings.getBirth_date());
+        attributes.setBirthdate(settings.getBirth_date());
 
         profile.setCity(settings.getCity());
 
@@ -108,8 +108,8 @@ public class UserSettingsService {
 
         preferencesMapper.toEntity(preferences, settings);
         preferences.setGender(userGenderTypeService.getById(settings.getGender_other()));
-        preferences.setAge_min(settings.getAge_min());
-        preferences.setAge_max(settings.getAge_max());
+        preferences.setAgeMin(settings.getAge_min());
+        preferences.setAgeMax(settings.getAge_max());
         preferences.setDistance(settings.getDistance());
         preferences.setProbability_tolerance(settings.getProbability_tolerance());
 
