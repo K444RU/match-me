@@ -42,7 +42,7 @@ public class DatingPoolSyncListener {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
-                    synchronizer.synchronizeProfile(profileId);
+                    synchronizer.synchronizeDatingPool(profileId);
                 }
             });
         }
