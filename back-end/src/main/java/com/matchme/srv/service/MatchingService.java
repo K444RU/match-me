@@ -13,12 +13,40 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Service responsible for finding and ranking potential matches for users.
+ * Implements a sophisticated matching algorithm that considers
+ * multiple factors including:
+ * - ELO-based compatibility scoring
+ * - Mutual hobbies and interests
+ * - Geographic proximity
+ * - Age preferences
+ * - Gender preferences
+ */
 @Service
 public class MatchingService {
 
+    /**
+     * Minimum probability threshold for considering a match.
+     * Matches below this threshold are filtered out.
+     */
     private static final double MINIMUM_PROBABILITY = 0.3;
+
+    /**
+     * Maximum number of matches to return in a single request.
+     */
     private static final int DEFAULT_MAX_RESULTS = 10;
+
+    /**
+     * Scaling factor for ELO probability calculation.
+     * Affects how much score differences impact match probability.
+     */
     private static final double SCALING_FACTOR = 1071.0;
+
+    /**
+     * Maximum probability threshold for considering a match.
+     * Matches above this threshold are filtered out to prevent overmatching.
+     */
     private static final double MAXIMUM_PROBABILITY = 0.91;
 
     private final MatchingRepository matchingRepository;
@@ -29,11 +57,21 @@ public class MatchingService {
     }
 
     /**
-     * Get possible matches for a user with pagination
+     * Retrieves potential matches for a user based on their preferences and
+     * attributes.
+     * The matching process involves:
+     * 1. Retrieving the user's dating pool entry
+     * 2. Finding users that match basic criteria (gender, age, location)
+     * 3. Calculating match probability based on ELO scores and mutual interests
+     * 4. Filtering and sorting matches by probability
      * 
      * @param userId User ID to find matches for
-     * @return Map of user IDs to match probability scores
-     * @throws RuntimeException if any exceptions occur
+     * @return Map of user IDs to match probability scores, sorted by probability in
+     *         descending order
+     * @throws ResourceNotFoundException if the user is not found or no matches are
+     *                                   found
+     * @throws RuntimeException          if no compatible matches are found within
+     *                                   acceptable probability range
      */
     public Map<Long, Double> getPossibleMatches(Long userId) {
 
@@ -71,8 +109,19 @@ public class MatchingService {
 
     }
 
+    /**
+     * Calculates the match probability between two users based on their ELO scores
+     * and mutual interests.
+     * The calculation combines:
+     * - Base probability using ELO formula: P(A) = 1 / (1 + 10^((RB - RA)/1071))
+     * - Hobby similarity bonus using logarithmic scaling
+     *
+     * @param userScore The ELO score of the requesting user
+     * @param hobbies   Set of hobby IDs for the requesting user
+     * @param entry     Dating pool entry of the potential match
+     * @return Calculated match probability between 0.0 and 1.0
+     */
     private Double calculateProbability(Integer userScore, Set<Long> hobbies, DatingPool entry) {
-        // ELO formula: P(A) = 1 / (1 + 10^((RB - RA)/400))
         Double probability = 1.0 / (1.0 + Math.pow(10, (userScore - entry.getActualScore()) / SCALING_FACTOR));
 
         int mutualhobbies = 0;
