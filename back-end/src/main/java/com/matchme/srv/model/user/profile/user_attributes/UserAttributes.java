@@ -31,9 +31,9 @@ public class UserAttributes {
     @JoinColumn(name = "gender_id")
     private UserGenderType gender;
 
-    private LocalDate birth_date;
+    private LocalDate birthdate;
 
-    private List<Double> location = new ArrayList<>(); // Geohash of 6-7 length
+    private List<Double> location = new ArrayList<>(); // coordinates
 
     @OneToMany(mappedBy = "userAttributes", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<ProfileChange> attributeChangeLog;

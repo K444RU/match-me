@@ -27,9 +27,9 @@ public class UserPreferences {
     @JoinColumn(name = "gender_id")
     private UserGenderType gender;
 
-    private Integer age_min;
+    private Integer ageMin;
 
-    private Integer age_max;
+    private Integer ageMax;
 
     private Integer distance;
 
