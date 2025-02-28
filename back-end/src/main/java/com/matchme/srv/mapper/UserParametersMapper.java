@@ -27,7 +27,7 @@ public interface UserParametersMapper {
     @Mapping(source = "userPreferences.ageMin", target = "age_min")
     @Mapping(source = "userPreferences.ageMax", target = "age_max")
     @Mapping(source = "userPreferences.distance", target = "distance")
-    @Mapping(source = "userPreferences.probability_tolerance", target = "probability_tolerance")
+    @Mapping(source = "userPreferences.probabilityTolerance", target = "probability_tolerance")
     @Mapping(source = "userAuth.password", target = "password")
     UserParametersResponseDTO toUserParametersDTO(User user, UserAttributes userAttributes,
             UserPreferences userPreferences, UserAuth userAuth);
