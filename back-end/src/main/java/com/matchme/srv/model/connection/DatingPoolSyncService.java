@@ -85,26 +85,44 @@ public class DatingPoolSyncService {
                     return newEntry;
                 });
 
-        // update gender-related fields
-        entry.setMyGender(attributes.getGender().getId());
-        entry.setLookingForGender(preferences.getGender().getId());
+        // Batch updates
+        updateDatingPoolEntry(entry, attributes, preferences, userProfile);
+        matchingRepository.save(entry);
+        log.debug("DatingPool synchronized for profile ID: {}", profileId);
+    }
 
-        // update age-related fields
-        entry.setMyAge(getAgeFromBirthDate(attributes.getBirthdate()));
+    /**
+     * Synchronizes user preferences with their dating pool entry.
+     * This method only updates preference-related fields if a dating pool entry
+     * exists.
+     *
+     * @param profileId The unique identifier of the user profile
+     */
+    @Transactional
+    public void synchronizeUserPreferences(Long profileId) {
+        DatingPool entry = matchingRepository.findById(profileId).orElse(null);
+        if (entry == null) {
+            return;
+        }
+
+        UserPreferences preferences = userPreferencesRepository.findById(profileId)
+                .orElseThrow(() -> new ResourceNotFoundException("userPreferences for " + profileId.toString()));
+
+        if (preferences.getGender() == null || preferences.getAgeMin() == null || preferences.getAgeMax() == null
+                || preferences.getDistance() == null) {
+            log.debug("Missing required fields in userPreferences {}, skipping sync", profileId);
+            return;
+        }
+
+        entry.setLookingForGender(preferences.getGender().getId());
         entry.setAgeMin(preferences.getAgeMin());
         entry.setAgeMax(preferences.getAgeMax());
 
-        // transform location and distance to geohashes and update
-        String location = geohashService.coordinatesToGeohash(attributes.getLocation());
-        entry.setMyLocation(location);
         entry.setSuitableGeoHashes(
-                geohashService.findGeohashesWithinRadius(location, preferences.getDistance()));
-
-        // update the hobbyIds - cannot be null
-        entry.setHobbyIds(getHobbyIdsFromHobbies(userProfile.getHobbies()));
+                geohashService.findGeohashesWithinRadius(entry.getMyLocation(), preferences.getDistance()));
 
         matchingRepository.save(entry);
-        log.debug("DatingPool synchronized for profile ID: {}", profileId);
+        log.debug("DatingPool UserPreferences synchronized for profile ID: {}", profileId);
     }
 
     /**
@@ -126,6 +144,33 @@ public class DatingPoolSyncService {
         entry.setActualScore(userScore.getCurrentScore());
         matchingRepository.save(entry);
         log.debug("DatingPool score synchronized for profile ID: {}", profileId);
+    }
+
+    /**
+     * Updates a dating pool entry with the latest user data.
+     * This helper method consolidates all update operations for better readability
+     *
+     * @param entry       The dating pool entry to update
+     * @param attributes  The user's attributes
+     * @param preferences The user's preferences
+     * @param userProfile The user's profile
+     */
+    private void updateDatingPoolEntry(DatingPool entry, UserAttributes attributes,
+            UserPreferences preferences, UserProfile userProfile) {
+
+        entry.setMyGender(attributes.getGender().getId());
+        entry.setLookingForGender(preferences.getGender().getId());
+
+        entry.setMyAge(getAgeFromBirthDate(attributes.getBirthdate()));
+        entry.setAgeMin(preferences.getAgeMin());
+        entry.setAgeMax(preferences.getAgeMax());
+
+        String location = geohashService.coordinatesToGeohash(attributes.getLocation());
+        entry.setMyLocation(location);
+        entry.setSuitableGeoHashes(
+                geohashService.findGeohashesWithinRadius(location, preferences.getDistance()));
+
+        entry.setHobbyIds(getHobbyIdsFromHobbies(userProfile.getHobbies()));
     }
 
     /**
@@ -153,5 +198,4 @@ public class DatingPoolSyncService {
 
         return hobbyIds;
     }
-
 }
