@@ -21,7 +21,7 @@ public interface PreferencesMapper {
     @Mapping(source = "age_min", target = "ageMin")
     @Mapping(source = "age_max", target = "ageMax")
     @Mapping(source = "distance", target = "distance")
-    @Mapping(source = "probability_tolerance", target = "probability_tolerance")
+    @Mapping(source = "probability_tolerance", target = "probabilityTolerance")
     UserPreferences toEntity(@MappingTarget UserPreferences entity, UserParametersRequestDTO parameters);
 
     // settings updates
@@ -32,6 +32,6 @@ public interface PreferencesMapper {
     @Mapping(source = "age_min", target = "ageMin")
     @Mapping(source = "age_max", target = "ageMax")
     @Mapping(source = "distance", target = "distance")
-    @Mapping(source = "probability_tolerance", target = "probability_tolerance")
+    @Mapping(source = "probability_tolerance", target = "probabilityTolerance")
     UserPreferences toEntity(@MappingTarget UserPreferences entity, PreferencesSettingsRequestDTO parameters);
 }
