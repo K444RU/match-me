@@ -143,6 +143,11 @@
 			<artifactId>libphonenumber</artifactId>
 			<version>8.13.19</version>
 		</dependency>
+		<dependency>
+			<groupId>ch.hsr</groupId>
+			<artifactId>geohash</artifactId>
+			<version>1.4.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
