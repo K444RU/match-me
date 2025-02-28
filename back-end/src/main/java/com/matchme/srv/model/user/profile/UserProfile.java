@@ -1,5 +1,6 @@
 package com.matchme.srv.model.user.profile;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import com.matchme.srv.model.user.User;
@@ -50,7 +51,8 @@ public class UserProfile {
 
     @ManyToMany
     @JoinTable(name = "user_profile_hobbies", joinColumns = @JoinColumn(name = "user_profile_id"), inverseJoinColumns = @JoinColumn(name = "hobby_id"))
-    private Set<Hobby> hobbies;
+    @Builder.Default
+    private Set<Hobby> hobbies = new HashSet<>();
 
     public void setPreferences(UserPreferences preferences) {
         if (preferences != null) {
