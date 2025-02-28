@@ -81,6 +81,7 @@ public class DatingPoolSyncService {
 
                     DatingPool newEntry = new DatingPool();
                     newEntry.setUserId(profileId);
+                    newEntry.setActualScore(userScore.getCurrentScore());
                     return newEntry;
                 });
 
@@ -98,10 +99,6 @@ public class DatingPoolSyncService {
         entry.setMyLocation(location);
         entry.setSuitableGeoHashes(
                 geohashService.findGeohashesWithinRadius(location, preferences.getDistance()));
-
-        // update userScore - possibly should be it's own update due to frequency?
-        // Entity init with default, field cannot be null
-        entry.setActualScore(userScore.getCurrentScore());
 
         // update the hobbyIds - cannot be null
         entry.setHobbyIds(getHobbyIdsFromHobbies(userProfile.getHobbies()));
