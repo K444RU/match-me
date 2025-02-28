@@ -470,7 +470,7 @@ class UserSettingsServiceTests {
                     () -> assertThat(user.getProfile().getPreferences().getDistance())
                             .as("checking if the user's distance was updated correctly")
                             .isEqualTo(validRequest.getDistance()),
-                    () -> assertThat(user.getProfile().getPreferences().getProbability_tolerance())
+                    () -> assertThat(user.getProfile().getPreferences().getProbabilityTolerance())
                             .as("checking if the user's probability_tolerance was updated correctly")
                             .isEqualTo(validRequest.getProbability_tolerance()),
                     () -> verify(userRepository, times(1)).findById(VALID_USER_ID),

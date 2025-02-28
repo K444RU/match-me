@@ -190,7 +190,7 @@ public class TestDataFactory {
         prefs.setAgeMin(DEFAULT_AGE_MIN);
         prefs.setAgeMax(DEFAULT_AGE_MAX);
         prefs.setDistance(DEFAULT_DISTANCE);
-        prefs.setProbability_tolerance(DEFAULT_PROBABILITY_TOLERANCE);
+        prefs.setProbabilityTolerance(DEFAULT_PROBABILITY_TOLERANCE);
         prefs.setGender(createUserGender(DEFAULT_GENDER_OTHER_ID));
         return prefs;
     }

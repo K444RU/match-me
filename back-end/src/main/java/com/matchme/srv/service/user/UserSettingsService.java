@@ -111,7 +111,7 @@ public class UserSettingsService {
         preferences.setAgeMin(settings.getAge_min());
         preferences.setAgeMax(settings.getAge_max());
         preferences.setDistance(settings.getDistance());
-        preferences.setProbability_tolerance(settings.getProbability_tolerance());
+        preferences.setProbabilityTolerance(settings.getProbability_tolerance());
 
         // TODO: Add logging
         userRepository.save(user);

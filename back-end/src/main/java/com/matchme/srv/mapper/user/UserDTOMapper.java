@@ -78,7 +78,7 @@ public class UserDTOMapper {
                 .age_min(profile.getPreferences().getAgeMin())
                 .age_max(profile.getPreferences().getAgeMax())
                 .distance(profile.getPreferences().getDistance())
-                .probability_tolerance(profile.getPreferences().getProbability_tolerance())
+                .probability_tolerance(profile.getPreferences().getProbabilityTolerance())
                 .build();
     }
 
