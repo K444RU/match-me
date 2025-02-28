@@ -16,13 +16,21 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 // import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
 @Entity
 @EntityListeners(DatingPoolSyncListener.class)
 @Table(name = "user_scores")
+@Getter
+@Setter
+@NoArgsConstructor
 public class UserScore {
+
+    private static final int DEFAULT_SCORE = 1000;
+    private static final double DEFAULT_VIBE_PROBABILITY = 1.0;
+    private static final int DEFAULT_BLIND = 1000;
 
     @Id
     private Long id;
@@ -33,19 +41,17 @@ public class UserScore {
     // @NotNull
     private User user;
 
-    private int currentScore; // ELO of yourself
+    private int currentScore = DEFAULT_SCORE; // ELO of yourself
 
-    private double vibeProbability;
+    private double vibeProbability = DEFAULT_VIBE_PROBABILITY;
 
-    private int currentBlind; // ELO of preference
+    private int currentBlind = DEFAULT_BLIND; // ELO of preference
 
     @OneToMany(mappedBy = "userScores", cascade = CascadeType.ALL)
     private Set<ConnectionResult> results;
 
-    public UserScore() {
-        this.currentScore = 1000;
-        this.vibeProbability = 1;
-        this.currentBlind = 1000;
+    public UserScore(User user) {
+        this.user = user;
     }
 
 }
