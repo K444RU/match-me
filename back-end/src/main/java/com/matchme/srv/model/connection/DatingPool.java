@@ -29,6 +29,11 @@ import lombok.NoArgsConstructor;
  * matching.
  * This entity is optimized for high-performance queries without requiring joins
  * to related tables.
+ * It maintains a cached, flattened view of user attributes, preferences, and
+ * matching criteria.
+ *
+ * The entity uses second-level caching to improve read performance and includes
+ * indexes on frequently queried fields for optimal matching operations.
  */
 @Data
 @Entity
@@ -45,45 +50,80 @@ import lombok.NoArgsConstructor;
 })
 public class DatingPool {
 
+    /**
+     * The unique identifier for this dating pool entry.
+     * Maps directly to the user's ID.
+     */
     @Id
     @Column(name = "user_id")
     private Long userId;
 
+    /**
+     * The user's gender identifier.
+     * Used for primary matching criteria.
+     */
     @NotNull(message = "Gender is required")
     @Column(name = "my_gender_id", nullable = false)
     private Long myGender;
 
+    /**
+     * The gender identifier that the user is interested in matching with.
+     * Used for primary matching criteria.
+     */
     @NotNull(message = "Looking for gender is required")
     @Column(name = "looking_for_gender_id", nullable = false)
     private Long lookingForGender;
 
+    /**
+     * The user's current age.
+     * Calculated from birthdate and updated periodically.
+     */
     @NotNull(message = "Age is required")
     @Min(value = 18, message = "Age must be at least 18")
     @Max(value = 121, message = "Age must be less than 121")
     @Column(name = "my_age", nullable = false)
     private Integer myAge;
 
+    /**
+     * The minimum age preference for potential matches.
+     */
     @NotNull(message = "Minimum age is required")
     @Min(value = 18, message = "Minimum age must be at least 18")
     @Max(value = 121, message = "Minimum age must be less than 121")
     @Column(name = "age_min", nullable = false)
     private Integer ageMin;
 
+    /**
+     * The maximum age preference for potential matches.
+     */
     @NotNull(message = "Maximum age is required")
     @Min(value = 18, message = "Maximum age must be at least 18")
     @Max(value = 121, message = "Maximum age must be less than 121")
     @Column(name = "age_max", nullable = false)
     private Integer ageMax;
 
+    /**
+     * The user's current location as a geohash.
+     * Stored as a 6-7 character precision geohash for efficient proximity searches.
+     * MVP stores only with 6 character precision
+     */
     @NotNull(message = "Location is required")
     @Pattern(regexp = "^[0-9b-hjkmnp-z]{6,7}$", message = "Location must be a valid geohash of length 6-7")
     @Column(name = "my_location", nullable = false)
     private String myLocation; // Geohash of 6-7 length
 
+    /**
+     * The user's current matching score.
+     * Used in the matching algorithm to determine compatibility and ranking.
+     */
     @NotNull(message = "Score is required")
     @Column(name = "actual_score", nullable = false)
     private Integer actualScore;
 
+    /**
+     * Set of geohash areas within the user's preferred matching distance.
+     * Pre-calculated for efficient proximity matching without runtime calculations.
+     */
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "dating_pool_geo_hashes", joinColumns = @JoinColumn(name = "dating_pool_id"), indexes = @Index(name = "idx_geo_hash", columnList = "geo_hash"))
     @Column(name = "geo_hash")
@@ -91,6 +131,10 @@ public class DatingPool {
     @Builder.Default
     private Set<String> suitableGeoHashes = new HashSet<>();
 
+    /**
+     * Set of hobby IDs associated with the user.
+     * Used for interest-based matching and filtering.
+     */
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "dating_pool_hobbies", joinColumns = @JoinColumn(name = "dating_pool_id"), indexes = @Index(name = "idx_hobby_id", columnList = "hobby_id"))
     @Column(name = "hobby_id")
