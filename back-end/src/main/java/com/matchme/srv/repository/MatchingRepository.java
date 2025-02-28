@@ -10,10 +10,36 @@ import org.springframework.data.repository.query.Param;
 
 import com.matchme.srv.model.connection.DatingPool;
 
+/**
+ * Repository interface for managing DatingPool entities.
+ * Provides methods for querying and retrieving potential matches based on user
+ * preferences and attributes.
+ * Implements custom queries optimized for matching operations.
+ */
 public interface MatchingRepository extends JpaRepository<DatingPool, Long> {
 
     Optional<DatingPool> findById(Long userId);
 
+    /**
+     * Finds potential matches based on specified matching parameters.
+     * The query filters users based on:
+     * <ul>
+     * <li>Gender preferences (mutual compatibility)</li>
+     * <li>Age range preferences (mutual compatibility)</li>
+     * <li>Geographic location (using geohash matching)</li>
+     * </ul>
+     *
+     * @param gender           The gender identifier being searched for
+     * @param lookingForGender The gender identifier that should be looking for the
+     *                         user's gender
+     * @param userAge          The age of the user searching for matches
+     * @param minAge           The minimum age preference set by the user
+     * @param maxAge           The maximum age preference set by the user
+     * @param locations        Set of geohash areas within the user's preferred
+     *                         distance
+     * @param userLocation     The user's current geohash location
+     * @return List of dating pool entries matching the specified criteria
+     */
     @Query("""
             SELECT dp FROM DatingPool dp WHERE
             dp.myGender = :gender AND
