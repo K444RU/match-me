@@ -43,7 +43,8 @@ public class UserQueryService {
         userRepository
             .findById(targetUserId)
             .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_MESSAGE));
-    return userDtoMapper.toCurrentUserResponseDTO(user);
+    boolean isOwner = currentUserId.equals(targetUserId);
+    return userDtoMapper.toCurrentUserResponseDTO(user, isOwner);
   }
 
   public UserParametersResponseDTO getParameters(Long userId) {

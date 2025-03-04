@@ -1,10 +1,9 @@
 package com.matchme.srv.dto.response;
 
-import java.util.Set;
-
 import com.matchme.srv.model.user.UserRoleType;
-
 import lombok.Builder;
+
+import java.util.Set;
 
 @Builder
 public record CurrentUserResponseDTO(
@@ -14,5 +13,6 @@ public record CurrentUserResponseDTO(
         String lastName,
         String alias,
         String profilePicture,
-        Set<UserRoleType> role) {
-}
+        Set<UserRoleType> role,
+        String profileLink
+) {}

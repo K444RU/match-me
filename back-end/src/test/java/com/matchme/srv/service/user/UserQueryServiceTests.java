@@ -49,6 +49,8 @@ class UserQueryServiceTests {
 
   private User user;
   private User user2;
+  private User user3;
+  private User user4;
   private UserProfile profile;
   private UserProfile profile2;
   private UserAuth userAuth;
@@ -75,6 +77,14 @@ class UserQueryServiceTests {
     user.setProfile(profile);
     userAuth = new UserAuth();
     user.setUserAuth(userAuth);
+
+    user3 = new User();
+    user3.setId(VALID_USER_ID);
+    user3.setEmail("emailowner@example.com");
+
+    user4 = new User();
+    user4.setId(TARGET_USER_ID);
+    user4.setEmail("target@example.com");
 
     userParametersDTO =
         new UserParametersResponseDTO(
@@ -106,13 +116,74 @@ class UserQueryServiceTests {
   @DisplayName("getCurrentUserDTO Tests")
   class GetCurrentUserDTOTests {
 
+
+    @Test
+    @DisplayName("Should return email since requested currentUserId == targetUserId")
+    void shouldReturnEmailSinceRequestedCurrentUserId() {
+      // Arrange
+      Long currentUserId = VALID_USER_ID;
+      Long targetUserId = TARGET_USER_ID;
+      doNothing().when(accessValidationService).validateUserAccess(currentUserId, targetUserId);
+      when(userRepository.findById(targetUserId)).thenReturn(Optional.of(user));
+
+      CurrentUserResponseDTO expected = CurrentUserResponseDTO.builder()
+              .id(user3.getId())
+              .email(user3.getEmail())
+              .build();
+
+      when(userDtoMapper.toCurrentUserResponseDTO(user, true)).thenReturn(expected);
+
+      // Act
+      CurrentUserResponseDTO result = userQueryService.getCurrentUserDTO(currentUserId, targetUserId);
+
+      // Assert
+      assertThat(result.email())
+              .as("Email should be included when currentUserId equals targetUserId")
+              .isEqualTo(user.getEmail());
+
+      // Verify interactions
+      verify(accessValidationService, times(1)).validateUserAccess(currentUserId, targetUserId);
+      verify(userRepository, times(1)).findById(targetUserId);
+      verify(userDtoMapper, times(1)).toCurrentUserResponseDTO(user, true);
+    }
+
+    @Test
+    @DisplayName("Should omit email for non-owners requests since currentUserId != targetUserId")
+    void shouldOmitEmailForNonOwnersSinceCurrentUserIdNotEqualTargetUserId() {
+      // Arrange
+      Long currentUserId = VALID_USER_ID;
+      Long targetUserId = TARGET_USER_ID; // Different from currentUserId
+      doNothing().when(accessValidationService).validateUserAccess(currentUserId, targetUserId);
+      when(userRepository.findById(targetUserId)).thenReturn(Optional.of(user2));
+
+      CurrentUserResponseDTO expectedDTO = CurrentUserResponseDTO.builder()
+              .id(user2.getId())
+              .email(null) // Email should be null since isOwner is false
+              .build();
+
+      when(userDtoMapper.toCurrentUserResponseDTO(user2, false)).thenReturn(expectedDTO);
+
+      // Act
+      CurrentUserResponseDTO result = userQueryService.getCurrentUserDTO(currentUserId, targetUserId);
+
+      // Assert
+      assertThat(result.email())
+              .as("Email should be null when currentUserId does not equal targetUserId")
+              .isNull();
+
+      // Verify interactions
+      verify(accessValidationService, times(1)).validateUserAccess(currentUserId, targetUserId);
+      verify(userRepository, times(1)).findById(targetUserId);
+      verify(userDtoMapper, times(1)).toCurrentUserResponseDTO(user2, false);
+    }
+
     @Test
     @DisplayName("Should return CurrentUserResponseDTO when user exists and access is valid")
     void getCurrentUserDTO_ValidUser_ReturnsDTO() {
       // Arrange
       doNothing().when(accessValidationService).validateUserAccess(VALID_USER_ID, TARGET_USER_ID);
       when(userRepository.findById(TARGET_USER_ID)).thenReturn(Optional.of(user));
-      when(userDtoMapper.toCurrentUserResponseDTO(user)).thenReturn(currentUserDTO);
+      when(userDtoMapper.toCurrentUserResponseDTO(user, true)).thenReturn(currentUserDTO);
 
       // Act
       CurrentUserResponseDTO result =
@@ -128,7 +199,7 @@ class UserQueryServiceTests {
               verify(accessValidationService, times(1))
                   .validateUserAccess(VALID_USER_ID, TARGET_USER_ID),
           () -> verify(userRepository, times(1)).findById(TARGET_USER_ID),
-          () -> verify(userDtoMapper, times(1)).toCurrentUserResponseDTO(user));
+          () -> verify(userDtoMapper, times(1)).toCurrentUserResponseDTO(user, true));
     }
 
     @Test
@@ -149,7 +220,7 @@ class UserQueryServiceTests {
               verify(accessValidationService, times(1))
                   .validateUserAccess(VALID_USER_ID, INVALID_USER_ID),
           () -> verify(userRepository, times(1)).findById(INVALID_USER_ID),
-          () -> verify(userDtoMapper, never()).toCurrentUserResponseDTO(any()));
+          () -> verify(userDtoMapper, never()).toCurrentUserResponseDTO(any(), false));
     }
 
     @Test
@@ -158,7 +229,7 @@ class UserQueryServiceTests {
       // Arrange
       doNothing().when(accessValidationService).validateUserAccess(VALID_USER_ID, TARGET_USER_ID);
       when(userRepository.findById(TARGET_USER_ID)).thenReturn(Optional.of(user));
-      when(userDtoMapper.toCurrentUserResponseDTO(user)).thenReturn(currentUserDTO);
+      when(userDtoMapper.toCurrentUserResponseDTO(user, true)).thenReturn(currentUserDTO);
 
       // Act
       userQueryService.getCurrentUserDTO(VALID_USER_ID, TARGET_USER_ID);
