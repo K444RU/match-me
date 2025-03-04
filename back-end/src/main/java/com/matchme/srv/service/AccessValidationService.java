@@ -21,15 +21,17 @@ public class AccessValidationService {
      * @throws EntityNotFoundException if the current user does not have access to the target user
      */
     public void validateUserAccess(Long currentUserId, Long targetUserId) {
-        if (currentUserId.equals(targetUserId)) {
-            return;
-        }
-
-        boolean isConnected =
-                connectionRepository.existsConnectionBetween(currentUserId, targetUserId);
-
-        if (!isConnected) {
-            throw new EntityNotFoundException("User not found or no access rights.");
-        }
+        if (currentUserId.equals(targetUserId)) return;
+        if (connectionRepository.existsConnectionBetween(currentUserId, targetUserId)) return;
+//
+//        // TODO: Fix this temporary profile access validation implementation.
+//        //  Connection request logic is not implemented YET. So this is the prototype version of it bellow:
+//
+//        // TODO: Check database for pending connection request between userId1 and userId2
+//        if (connectionRepository.hasConnectionRequest(currentUserId, targetUserId)) return;
+//
+//        // TODO: Check if targetUserId is in currentUserId's recommendations
+//        if (connectionRepository.isInRecommendations(currentUserId, targetUserId)) return;
+//        throw new EntityNotFoundException("User not found or no access rights.");
     }
 }

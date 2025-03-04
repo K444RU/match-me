@@ -38,4 +38,14 @@ public interface ConnectionRepository extends JpaRepository<Connection, Long> {
     """)
     List<Connection> findConnectionsByUserId(Long userId);
 
+    /*TODO:
+    Create a @Query that fetches database result for existing pending connection request
+    @Query("SELECT COUNT(r) > 0 FROM ConnectionRequest r WHERE " +
+       "((r.sender.id = :userId1 AND r.receiver.id = :userId2) OR " +
+       "(r.sender.id = :userId2 AND r.receiver.id = :userId1)) AND " +
+       "r.status = 'PENDING'")
+    */
+//    boolean hasConnectionRequest(Long currentUserId, Long targetUserId);
+//
+//    boolean isInRecommendations(Long currentUserId, Long targetUserId);
 }
