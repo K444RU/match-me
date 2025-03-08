@@ -42,6 +42,11 @@ public class UserDTOMapper {
     }
 
     public SettingsResponseDTO toSettingsResponseDTO(UserParametersResponseDTO parameters) {
+        String base64Picture = null;
+        if (parameters.profilePicture() != null && parameters.profilePicture().length > 0) {
+            base64Picture = "data:image/png;base64," + Base64.getEncoder().encodeToString(parameters.profilePicture());
+        }
+
         return SettingsResponseDTO.builder()
                 .email(parameters.email())
                 .number(parameters.number())
@@ -59,6 +64,7 @@ public class UserDTOMapper {
                 .ageMax(parameters.age_max())
                 .distance(parameters.distance())
                 .probabilityTolerance(parameters.probability_tolerance())
+                .profilePicture(base64Picture)
                 .build();
     }
 

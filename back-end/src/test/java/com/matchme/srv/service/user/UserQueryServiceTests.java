@@ -104,7 +104,8 @@ class UserQueryServiceTests {
             18, // age_min
             99, // age_max
             100, // distance
-            0.5 // probability_tolerance
+            0.5, // probability_tolerance
+            null
             );
     currentUserDTO = CurrentUserResponseDTO.builder().build();
     profileDTO = ProfileResponseDTO.builder().build();

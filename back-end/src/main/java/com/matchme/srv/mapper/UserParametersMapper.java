@@ -29,6 +29,7 @@ public interface UserParametersMapper {
   @Mapping(source = "userPreferences.distance", target = "distance")
   @Mapping(source = "userPreferences.probability_tolerance", target = "probability_tolerance")
   @Mapping(source = "userAuth.password", target = "password")
+  @Mapping(source = "user.profile.profilePicture", target = "profilePicture")
   UserParametersResponseDTO toUserParametersDTO(User user, UserAttributes userAttributes,
       UserPreferences userPreferences, UserAuth userAuth);
 
