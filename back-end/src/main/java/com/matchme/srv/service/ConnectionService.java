@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.matchme.srv.model.connection.ConnectionState;
+import com.matchme.srv.model.enums.ConnectionStatus;
 import org.springframework.stereotype.Service;
 
 import com.matchme.srv.dto.response.ConnectionResponseDTO;
@@ -34,10 +36,17 @@ public class ConnectionService {
         if (connectionRepository.existsConnectionBetween(user1.getId(), user2.getId())) {
             throw new IllegalStateException("Connection already exists between these users");
         }
-        
+
         Connection connection = Connection.builder()
                 .users(Set.of(user1, user2))
                 .build();
+        ConnectionState state = new ConnectionState();
+        state.setConnection(connection);
+        state.setStatus(ConnectionStatus.ACCEPTED); // Default to ACCEPTED for now
+        state.setRequesterId(user1.getId());
+        state.setTargetId(user2.getId());
+        connection.getConnectionStates().add(state);
+
         Connection savedConnection = connectionRepository.save(connection);
         return ConnectionResponseDTO.builder()
                 .id(savedConnection.getId())
@@ -49,7 +58,7 @@ public class ConnectionService {
 
     /**
      * Gets all connections for a given user
-     * 
+     *
      * @param userId
      * @return List of {@link Connection} associated with the user
      */

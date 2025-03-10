@@ -15,24 +15,27 @@ import { SettingsContext } from '../SettingsContext';
 
 const UserProfileCard = () => {
   const settingsContext = useContext(SettingsContext);
-  const [firstName, setFirstName] = useState<string | null>();
-  const [lastName, setLastName] = useState<string | null>();
+
+  const [firstName, setFirstName] = useState<string | null>('');
+  const [lastName, setLastName] = useState<string | null>('');
   const [hobbies, setHobbies] = useState<Option[] | undefined>([]);
-  const [alias, setAlias] = useState<string | null>();
+  const [alias, setAlias] = useState<string | null>('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!settingsContext?.settings) return;
-
     setFirstName(settingsContext.settings.firstName ?? '');
     setLastName(settingsContext.settings.lastName ?? '');
     setAlias(settingsContext.settings.alias ?? '');
     setHobbies(hobbiesById(settingsContext.settings.hobbies || []));
   }, [settingsContext?.settings]);
 
-  const handleUpdate = async () => {
-    if (!settingsContext?.settings) return;
+  if (!settingsContext || !settingsContext.settings) {
+    return <div className="flex min-h-screen items-center justify-center text-text">Loading settings...</div>;
+  }
 
+  const handleUpdate = async () => {
+    if (!settingsContext.settings) return;
     setLoading(true);
     try {
       if (!firstName || !lastName || !alias) return;
@@ -92,8 +95,9 @@ const UserProfileCard = () => {
             <div className="flex flex-col space-y-1.5">
               <label className="mb-1 text-sm font-medium text-gray-700">Profile Picture</label>
               <ProfilePictureUploader
-                onUploadSuccess={() => {
-                  console.debug('Upload was successful!');
+                currentImage={settingsContext.settings.profilePicture ?? null}
+                onUploadSuccess={async () => {
+                  await settingsContext.refreshSettings();
                 }}
               />
             </div>

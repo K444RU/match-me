@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SidebarMenuButton } from '@/components/ui/sidebar';
 import { useAuth } from '@/features/authentication';
-import { Bell, ChevronsUpDown, CreditCard, LogOut, Settings, Sparkles } from 'lucide-react';
+import { Bell, ChevronsUpDown, CreditCard, LogOut, Settings, Sparkles, User } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SettingsDialog from './SettingsDialog';
@@ -80,6 +80,10 @@ const UserInfo = () => {
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
+            <DropdownMenuItem onSelect={() => navigate('/me')} className="cursor-pointer">
+              <User />
+              Profile
+            </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={(e) => {
                 e.preventDefault();

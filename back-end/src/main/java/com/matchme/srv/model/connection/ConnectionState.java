@@ -3,6 +3,7 @@ package com.matchme.srv.model.connection;
 
 import java.time.Instant;
 
+import com.matchme.srv.model.enums.ConnectionStatus;
 import com.matchme.srv.model.user.User;
 
 import jakarta.persistence.*;
@@ -34,5 +35,15 @@ public class ConnectionState {
 
   @NotNull
   private Instant timestamp;
+
+  @Column(name = "status", nullable = false)
+  @Enumerated(EnumType.STRING)
+  private ConnectionStatus status;
+
+  @Column(name = "requester_id")
+  private Long requesterId;
+
+  @Column(name = "target_id")
+  private Long targetId;
 
 }
