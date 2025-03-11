@@ -2,7 +2,7 @@ package com.matchme.srv.model.user.profile;
 
 import java.util.Set;
 
-import com.matchme.srv.model.connection.DatingPoolSyncListener;
+import com.matchme.srv.model.connection.UserProfileListener;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
 import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
@@ -22,7 +22,7 @@ import lombok.*;
  */
 @Data
 @Entity
-@EntityListeners(DatingPoolSyncListener.class)
+@EntityListeners(UserProfileListener.class)
 @Table(name = "user_profile")
 @AllArgsConstructor
 @NoArgsConstructor
