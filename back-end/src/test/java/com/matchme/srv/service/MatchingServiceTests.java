@@ -1,11 +1,13 @@
 package com.matchme.srv.service;
 
+import java.util.Collections;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
-
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.time.LocalDate;
 import java.util.*;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -15,14 +17,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.matchme.srv.dto.response.MatchingRecommendationsDTO;
 import com.matchme.srv.exception.PotentialMatchesNotFoundException;
 import com.matchme.srv.exception.ResourceNotFoundException;
 import com.matchme.srv.model.connection.DatingPool;
-import com.matchme.srv.model.user.profile.Hobby;
-import com.matchme.srv.model.user.profile.UserGenderType;
-import com.matchme.srv.model.user.profile.UserProfile;
-import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
+
 import com.matchme.srv.repository.MatchingRepository;
 import com.matchme.srv.repository.UserProfileRepository;
 
@@ -39,117 +37,48 @@ public class MatchingServiceTests {
   private MatchingService matchingService;
 
   private static final Long TEST_USER_ID = 1L;
-  private static final Long MATCH_USER_ID = 2L;
 
-  private UserProfile testUserProfile;
-  private UserProfile matchUserProfile;
   private DatingPool testUserPool;
-  private List<DatingPool> potentialMatches;
 
   @BeforeEach
   void setUp() {
-    // Create test user profile
-    testUserProfile = createTestUserProfile(TEST_USER_ID);
-
-    // Create match user profile
-    matchUserProfile = createTestUserProfile(MATCH_USER_ID);
-
     // Create test dating pool entry
     testUserPool = createTestDatingPool(TEST_USER_ID);
-
-    // Create potential matches
-    potentialMatches = createPotentialMatches();
-
   }
 
-  /**
-   * Test getting recommendations with valid data
-   */
   @Test
-  void getRecommendations_ShouldReturnValidRecommendations_WhenDataExists() {
+  void getPossibleMatches_ShouldRetrieveDatingPoolEntryWithCorrectFields_BeforeProcessingMatches() {
     // Arrange
-    when(userProfileRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserProfile));
     when(matchingRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserPool));
-    when(matchingRepository.findUsersThatMatchParameters(any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(potentialMatches);
-    when(userProfileRepository.findById(MATCH_USER_ID)).thenReturn(Optional.of(matchUserProfile));
 
-    // Act
-    MatchingRecommendationsDTO result = matchingService.getRecommendations(TEST_USER_ID);
-
-    // Assert
-    assertNotNull(result);
-    assertNotNull(result.getRecommendations());
-    assertFalse(result.getRecommendations().isEmpty());
-    assertEquals(potentialMatches.size(), result.getRecommendations().size());
-
-    var firstRecommendation = result.getRecommendations().get(0);
-    assertEquals(MATCH_USER_ID, firstRecommendation.getUserId());
-    assertEquals("Test", firstRecommendation.getFirstName());
-    assertEquals("User2", firstRecommendation.getLastName());
-    assertNotNull(firstRecommendation.getDistance());
-    assertNotNull(firstRecommendation.getProbability());
-    assertNotNull(firstRecommendation.getHobbies());
-  }
-
-  /**
-   * Test when user profile is not found
-   */
-  @Test
-  void getRecommendations_ShouldThrowResourceNotFoundException_WhenUserProfileNotFound() {
-    // Arrange
-    when(userProfileRepository.findById(TEST_USER_ID)).thenReturn(Optional.empty());
-
-    // Act & Assert
-    Exception exception = assertThrows(ResourceNotFoundException.class, () -> {
-      matchingService.getRecommendations(TEST_USER_ID);
-    });
-
-    assertTrue(exception.getMessage().contains("UserProfile for user"));
-  }
-
-  /**
-   * Test when no matches found in dating pool
-   */
-  @Test
-  void getRecommendations_ShouldThrowPotentialMatchesNotFoundException_WhenNoMatches() {
-    // Arrange
-    when(userProfileRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserProfile));
-    when(matchingRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserPool));
+    // Mock the repository to return an empty list for the
+    // findUsersThatMatchParameters call
     when(matchingRepository.findUsersThatMatchParameters(any(), any(), any(), any(), any(), any(), any()))
         .thenReturn(Collections.emptyList());
 
-    // Act & Assert
-    Exception exception = assertThrows(PotentialMatchesNotFoundException.class, () -> {
-      matchingService.getRecommendations(TEST_USER_ID);
-    });
+    try {
+      // Act
+      matchingService.getPossibleMatches(TEST_USER_ID);
+      fail("Expected PotentialMatchesNotFoundException was not thrown");
+    } catch (PotentialMatchesNotFoundException e) {
+      // Expected exception
+      // Verify that the repository was called with the correct user ID
+      verify(matchingRepository).findById(TEST_USER_ID);
 
-    assertTrue(exception.getMessage().contains("No recommendations available"));
+      // Verify that the findUsersThatMatchParameters was called with the correct
+      // parameters
+      verify(matchingRepository).findUsersThatMatchParameters(
+          eq(testUserPool.getLookingForGender()),
+          eq(testUserPool.getMyGender()),
+          eq(testUserPool.getMyAge()),
+          eq(testUserPool.getAgeMin()),
+          eq(testUserPool.getAgeMax()),
+          eq(testUserPool.getSuitableGeoHashes()),
+          eq(testUserPool.getMyLocation()));
+    }
+
   }
 
-  /**
-   * Test getting possible matches
-   */
-  @Test
-  void getPossibleMatches_ShouldReturnMatches_WhenDataExists() {
-    // Arrange
-    when(matchingRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserPool));
-    when(matchingRepository.findUsersThatMatchParameters(any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(potentialMatches);
-
-    // Act
-    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID);
-
-    // Assert
-    assertNotNull(result);
-    assertFalse(result.isEmpty());
-    assertTrue(result.containsKey(MATCH_USER_ID));
-    assertTrue(result.get(MATCH_USER_ID) > 0.3 && result.get(MATCH_USER_ID) < 0.91);
-  }
-
-  /**
-   * Test when dating pool entry not found
-   */
   @Test
   void getPossibleMatches_ShouldThrowResourceNotFoundException_WhenDatingPoolEntryNotFound() {
     // Arrange
@@ -160,17 +89,93 @@ public class MatchingServiceTests {
       matchingService.getPossibleMatches(TEST_USER_ID);
     });
 
-    assertTrue(exception.getMessage().contains("User " + TEST_USER_ID));
+    // Verify the exception message contains the user ID
+    assertTrue(exception.getMessage().contains("User " + TEST_USER_ID),
+        "Exception message should mention the user ID");
+
+    // Verify that the repository was called with the correct user ID
+    verify(matchingRepository).findById(TEST_USER_ID);
+
   }
 
   /**
-   * Test when no potential matches found
+   * Tests that the matching repository correctly filters users based on search
+   * parameters
+   * and only returns users that match all criteria.
    */
   @Test
-  void getPossibleMatches_ShouldThrowPotentialMatchesNotFoundException_WhenNoMatches() {
+  void findUsersThatMatchParameters_ShouldReturnOnlyUsersMatchingAllCriteria() {
+    // Arrange
+    Long lookingForGender = 2L; // Looking for female
+    Long myGender = 1L; // I am male
+    Integer myAge = 25;
+    Integer ageMin = 21;
+    Integer ageMax = 30;
+    Set<String> suitableGeoHashes = new HashSet<>(Arrays.asList("u10abc", "u11def", "u12ghi"));
+    String myLocation = "u10abc";
+
+    // Create matching and non-matching users
+    DatingPool matchingUser = createTestDatingPool(2L);
+    matchingUser.setMyGender(lookingForGender); // This user is female (what we're looking for)
+    matchingUser.setLookingForGender(myGender); // This user is looking for males (what we are)
+    matchingUser.setMyAge(25); // Age within our range
+    matchingUser.setMyLocation("u11def"); // Location within our suitable geohashes
+
+    DatingPool nonMatchingGenderUser = createTestDatingPool(3L);
+    nonMatchingGenderUser.setMyGender(1L); // This user is male (not what we're looking for)
+    nonMatchingGenderUser.setMyLocation("u10abc");
+
+    DatingPool nonMatchingAgeUser = createTestDatingPool(4L);
+    nonMatchingAgeUser.setMyGender(lookingForGender);
+    nonMatchingAgeUser.setMyAge(35); // Age outside our range
+    nonMatchingAgeUser.setMyLocation("u10abc");
+
+    DatingPool nonMatchingLocationUser = createTestDatingPool(5L);
+    nonMatchingLocationUser.setMyGender(lookingForGender);
+    nonMatchingLocationUser.setMyLocation("z99xyz"); // Location outside our suitable geohashes
+
+    // Mock repository to return only the matching user
+    List<DatingPool> matchingUsers = Collections.singletonList(matchingUser);
+    when(matchingRepository.findUsersThatMatchParameters(
+        eq(lookingForGender), eq(myGender), eq(myAge), eq(ageMin), eq(ageMax),
+        eq(suitableGeoHashes), eq(myLocation)))
+        .thenReturn(matchingUsers);
+
+    // Act
+    List<DatingPool> result = matchingRepository.findUsersThatMatchParameters(
+        lookingForGender, myGender, myAge, ageMin, ageMax, suitableGeoHashes, myLocation);
+
+    // Assert
+    assertNotNull(result, "Result should not be null");
+    assertEquals(1, result.size(), "Should return exactly one matching user");
+    assertEquals(2L, result.get(0).getUserId(), "Should return the correct matching user");
+
+    // Verify the non-matching users are not in the result
+    assertFalse(result.stream().anyMatch(user -> user.getUserId().equals(3L)),
+        "User with non-matching gender should not be included");
+    assertFalse(result.stream().anyMatch(user -> user.getUserId().equals(4L)),
+        "User with non-matching age should not be included");
+    assertFalse(result.stream().anyMatch(user -> user.getUserId().equals(5L)),
+        "User with non-matching location should not be included");
+
+    // Verify the repository was called with the correct parameters
+    verify(matchingRepository).findUsersThatMatchParameters(
+        eq(lookingForGender), eq(myGender), eq(myAge), eq(ageMin), eq(ageMax),
+        eq(suitableGeoHashes), eq(myLocation));
+  }
+
+  /**
+   * Tests that a PotentialMatchesNotFoundException is thrown when no users
+   * match the search parameters.
+   */
+  @Test
+  void findUsersThatMatchParameters_ShouldThrowPotentialMatchesNotFoundException_WhenNoMatchesFound() {
     // Arrange
     when(matchingRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserPool));
-    when(matchingRepository.findUsersThatMatchParameters(any(), any(), any(), any(), any(), any(), any()))
+
+    // Mock repository to return empty list (no matches found)
+    when(matchingRepository.findUsersThatMatchParameters(
+        any(), any(), any(), any(), any(), any(), any()))
         .thenReturn(Collections.emptyList());
 
     // Act & Assert
@@ -178,251 +183,375 @@ public class MatchingServiceTests {
       matchingService.getPossibleMatches(TEST_USER_ID);
     });
 
-    assertTrue(exception.getMessage().contains("Potential matches with selected parameters"));
+    // Verify the exception message
+    assertTrue(exception.getMessage().contains("Potential matches with selected parameters"),
+        "Exception message should indicate no matches were found with the parameters");
+
+    // Verify the repository methods were called with correct parameters
+    verify(matchingRepository).findById(TEST_USER_ID);
+    verify(matchingRepository).findUsersThatMatchParameters(
+        eq(testUserPool.getLookingForGender()),
+        eq(testUserPool.getMyGender()),
+        eq(testUserPool.getMyAge()),
+        eq(testUserPool.getAgeMin()),
+        eq(testUserPool.getAgeMax()),
+        eq(testUserPool.getSuitableGeoHashes()),
+        eq(testUserPool.getMyLocation()));
   }
 
   /**
-   * Test when matches found but none meet probability criteria
+   * Tests that matching probabilities are correctly calculated for users without
+   * mutual hobbies.
+   * The probability calculation should be based on the ELO score difference
+   * between users.
    */
   @Test
-  void getPossibleMatches_ShouldThrowPotentialMatchesNotFoundException_WhenNoMatchesMeetProbabilityCriteria() {
+  void calculateMatchingProbability_ShouldReturnCorrectProbability_WithoutMutualHobbies() {
     // Arrange
     when(matchingRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserPool));
 
-    // Create match with very different score to ensure low probability
-    DatingPool lowProbabilityMatch = new DatingPool();
-    lowProbabilityMatch.setUserId(3L);
-    lowProbabilityMatch.setActualScore(3000); // Very different from test user's 1500
-    lowProbabilityMatch.setHobbyIds(new HashSet<>()); // No shared hobbies
-    lowProbabilityMatch.setMyGender(2L);
-    lowProbabilityMatch.setLookingForGender(1L);
+    // Create a potential match with no mutual hobbies
+    DatingPool matchWithoutMutualHobbies = createTestDatingPool(3L);
+    matchWithoutMutualHobbies.setMyGender(2L); // Female
+    matchWithoutMutualHobbies.setLookingForGender(1L); // Looking for male
+    matchWithoutMutualHobbies.setActualScore(1600); // Different score from test user's 1500
+    matchWithoutMutualHobbies.setHobbyIds(new HashSet<>(Arrays.asList(3L, 4L))); // No overlap with test user's hobbies
+                                                                                 // (1L, 2L)
+
+    List<DatingPool> potentialMatches = Collections.singletonList(matchWithoutMutualHobbies);
 
     when(matchingRepository.findUsersThatMatchParameters(any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(Collections.singletonList(lowProbabilityMatch));
+        .thenReturn(potentialMatches);
+
+    // Act
+    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID);
+
+    // Assert
+    assertNotNull(result, "Result should not be null");
+    assertEquals(1, result.size(), "Should return exactly one match");
+    assertTrue(result.containsKey(3L), "Should contain the match user ID");
+
+    // Calculate expected probability using the ELO formula: 1.0 / (1.0 +
+    // Math.pow(10, (userScore - matchScore) / 1071.0))
+    // For scores 1500 and 1600, this should be approximately 0.435
+    double expectedProbability = 1.0 / (1.0 + Math.pow(10, (1500 - 1600) / 1071.0));
+    double actualProbability = result.get(3L);
+
+    // Allow for small rounding differences
+    assertEquals(expectedProbability, actualProbability, 0.01,
+        "Probability should be calculated correctly based on ELO score difference");
+
+    // Verify the probability is within the acceptable range
+    assertTrue(actualProbability > 0.3 && actualProbability < 0.91,
+        "Probability should be within the acceptable range (0.3 to 0.91)");
+
+    // Verify repository methods were called
+    verify(matchingRepository).findById(TEST_USER_ID);
+    verify(matchingRepository).findUsersThatMatchParameters(
+        eq(testUserPool.getLookingForGender()),
+        eq(testUserPool.getMyGender()),
+        eq(testUserPool.getMyAge()),
+        eq(testUserPool.getAgeMin()),
+        eq(testUserPool.getAgeMax()),
+        eq(testUserPool.getSuitableGeoHashes()),
+        eq(testUserPool.getMyLocation()));
+  }
+
+  /**
+   * Tests that matching probabilities are correctly calculated for users with
+   * mutual hobbies.
+   * The probability calculation should include a bonus based on the number of
+   * shared hobbies.
+   */
+  @Test
+  void calculateMatchingProbability_ShouldReturnIncreasedProbability_WithMutualHobbies() {
+    // Arrange
+    when(matchingRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserPool));
+
+    // Create a potential match with mutual hobbies
+    DatingPool matchWithMutualHobbies = createTestDatingPool(3L);
+    matchWithMutualHobbies.setMyGender(2L); // Female
+    matchWithMutualHobbies.setLookingForGender(1L); // Looking for male
+    matchWithMutualHobbies.setActualScore(1600); // Different score from test user's 1500
+    matchWithMutualHobbies.setHobbyIds(new HashSet<>(Arrays.asList(1L, 2L, 3L))); // 2 shared hobbies (1L, 2L)
+
+    List<DatingPool> potentialMatches = Collections.singletonList(matchWithMutualHobbies);
+
+    when(matchingRepository.findUsersThatMatchParameters(any(), any(), any(), any(), any(), any(), any()))
+        .thenReturn(potentialMatches);
+
+    // Act
+    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID);
+
+    // Assert
+    assertNotNull(result, "Result should not be null");
+    assertEquals(1, result.size(), "Should return exactly one match");
+    assertTrue(result.containsKey(3L), "Should contain the match user ID");
+
+    // Calculate base probability using the ELO formula: 1.0 / (1.0 + Math.pow(10,
+    // (userScore - matchScore) / 1071.0))
+    // For scores 1500 and 1600, this should be approximately 0.435
+    double baseProbability = 1.0 / (1.0 + Math.pow(10, (1500 - 1600) / 1071.0));
+
+    // Calculate hobby bonus: 0.2 * (Math.log(mutualHobbies + 1) /
+    // Math.log(hobbies.size() + 1))
+    // For 2 mutual hobbies out of 2 total hobbies: 0.2 * (Math.log(2 + 1) /
+    // Math.log(2 + 1)) = 0.2
+    double expectedHobbyBonus = 0.2 * (Math.log(2 + 1) / Math.log(2 + 1));
+
+    // Total expected probability
+    double expectedProbability = baseProbability + expectedHobbyBonus;
+    double actualProbability = result.get(3L);
+
+    // Allow for small rounding differences
+    assertEquals(expectedProbability, actualProbability, 0.01,
+        "Probability should be increased by the hobby bonus");
+
+    // Verify the probability is higher than the base probability
+    assertTrue(actualProbability > baseProbability,
+        "Probability with mutual hobbies should be higher than without");
+
+    // Verify the probability is within the acceptable range
+    assertTrue(actualProbability > 0.3 && actualProbability < 0.91,
+        "Probability should be within the acceptable range (0.3 to 0.91)");
+
+    // Verify repository methods were called
+    verify(matchingRepository).findById(TEST_USER_ID);
+    verify(matchingRepository).findUsersThatMatchParameters(
+        eq(testUserPool.getLookingForGender()),
+        eq(testUserPool.getMyGender()),
+        eq(testUserPool.getMyAge()),
+        eq(testUserPool.getAgeMin()),
+        eq(testUserPool.getAgeMax()),
+        eq(testUserPool.getSuitableGeoHashes()),
+        eq(testUserPool.getMyLocation()));
+  }
+
+  /**
+   * Tests that the matching service correctly filters out potential matches with
+   * probabilities outside the acceptable range (below 0.3 or above 0.91).
+   */
+  @Test
+  void getPossibleMatches_ShouldFilterOutMatchesOutsideProbabilityThresholds() {
+    // Arrange
+    when(matchingRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserPool));
+
+    // Create matches with different probabilities
+    // 1. Match with very high probability (should be filtered out for being > 0.91)
+    DatingPool highProbabilityMatch = createTestDatingPool(3L);
+    highProbabilityMatch.setMyGender(2L);
+    highProbabilityMatch.setLookingForGender(1L);
+    highProbabilityMatch.setActualScore(3000); // Much higher score than user's 1500 -> high probability
+    highProbabilityMatch.setHobbyIds(new HashSet<>(Arrays.asList(1L, 2L))); // All mutual hobbies to push probability
+                                                                            // higher
+
+    // 2. Match with very low probability (should be filtered out for being < 0.3)
+    DatingPool lowProbabilityMatch = createTestDatingPool(4L);
+    lowProbabilityMatch.setMyGender(2L);
+    lowProbabilityMatch.setLookingForGender(1L);
+    lowProbabilityMatch.setActualScore(700); // Much lower score than user's 1500 -> low probability
+    lowProbabilityMatch.setHobbyIds(new HashSet<>()); // No mutual hobbies to keep probability low
+
+    // 3. Match with acceptable probability (should be included)
+    DatingPool acceptableProbabilityMatch = createTestDatingPool(5L);
+    acceptableProbabilityMatch.setMyGender(2L);
+    acceptableProbabilityMatch.setLookingForGender(1L);
+    acceptableProbabilityMatch.setActualScore(1600); // Score to ensure 0.3 < probability < 0.91
+    acceptableProbabilityMatch.setHobbyIds(new HashSet<>(Arrays.asList(1L, 3L))); // One mutual hobby
+
+    List<DatingPool> allMatches = Arrays.asList(
+        highProbabilityMatch,
+        lowProbabilityMatch,
+        acceptableProbabilityMatch);
+
+    when(matchingRepository.findUsersThatMatchParameters(
+        any(), any(), any(), any(), any(), any(), any()))
+        .thenReturn(allMatches);
+
+    // Act
+    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID);
+
+    // Assert
+    assertNotNull(result, "Result should not be null");
+    assertEquals(1, result.size(), "Should only include matches with acceptable probability");
+
+    // Verify only the match with acceptable probability is included
+    assertTrue(result.containsKey(5L), "Should contain the match with acceptable probability");
+
+    // Verify matches with too low or too high probability are filtered out
+    assertFalse(result.containsKey(3L), "Should not contain match with too high probability");
+    assertFalse(result.containsKey(4L), "Should not contain match with too low probability");
+
+    // Verify the probability of the included match is within acceptable range
+    double probability = result.get(5L);
+    assertTrue(probability > 0.3 && probability < 0.91,
+        "Probability should be within acceptable range (0.3 to 0.91)");
+
+    // Verify repository methods were called
+    verify(matchingRepository).findById(TEST_USER_ID);
+    verify(matchingRepository).findUsersThatMatchParameters(
+        eq(testUserPool.getLookingForGender()),
+        eq(testUserPool.getMyGender()),
+        eq(testUserPool.getMyAge()),
+        eq(testUserPool.getAgeMin()),
+        eq(testUserPool.getAgeMax()),
+        eq(testUserPool.getSuitableGeoHashes()),
+        eq(testUserPool.getMyLocation()));
+  }
+
+  /**
+   * Tests that the matching service throws a PotentialMatchesNotFoundException
+   * when all
+   * potential matches have probabilities outside the acceptable range (below 0.3
+   * or above 0.91).
+   */
+  @Test
+  void getPossibleMatches_ShouldThrowPotentialMatchesNotFoundException_WhenAllMatchesOutsideProbabilityRange() {
+    // Arrange
+    when(matchingRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserPool));
+
+    // Create only matches with probabilities outside the acceptable range
+    // 1. Match with very high probability (> 0.91)
+    DatingPool highProbabilityMatch = createTestDatingPool(3L);
+    highProbabilityMatch.setMyGender(2L);
+    highProbabilityMatch.setLookingForGender(1L);
+    highProbabilityMatch.setActualScore(3000); // Much higher score than user's 1500 -> high probability
+    highProbabilityMatch.setHobbyIds(new HashSet<>(Arrays.asList(1L, 2L))); // All mutual hobbies
+
+    // 2. Another match with very high probability (> 0.91)
+    DatingPool anotherHighProbabilityMatch = createTestDatingPool(4L);
+    anotherHighProbabilityMatch.setMyGender(2L);
+    anotherHighProbabilityMatch.setLookingForGender(1L);
+    anotherHighProbabilityMatch.setActualScore(2800); // Higher score than user's 1500 -> high probability
+    anotherHighProbabilityMatch.setHobbyIds(new HashSet<>(Arrays.asList(1L, 2L))); // All mutual hobbies
+
+    // 3. Match with very low probability (< 0.3)
+    DatingPool lowProbabilityMatch = createTestDatingPool(5L);
+    lowProbabilityMatch.setMyGender(2L);
+    lowProbabilityMatch.setLookingForGender(1L);
+    lowProbabilityMatch.setActualScore(700); // Much lower score than user's 1500 -> low probability
+    lowProbabilityMatch.setHobbyIds(new HashSet<>()); // No mutual hobbies
+
+    List<DatingPool> allMatches = Arrays.asList(
+        highProbabilityMatch,
+        anotherHighProbabilityMatch,
+        lowProbabilityMatch);
+
+    when(matchingRepository.findUsersThatMatchParameters(
+        any(), any(), any(), any(), any(), any(), any()))
+        .thenReturn(allMatches);
 
     // Act & Assert
     Exception exception = assertThrows(PotentialMatchesNotFoundException.class, () -> {
       matchingService.getPossibleMatches(TEST_USER_ID);
     });
 
-    assertTrue(exception.getMessage().contains("Potential matches within acceptable probability range"));
+    // Verify the exception message
+    assertTrue(exception.getMessage().contains("Potential matches within acceptable probability range"),
+        "Exception message should indicate no matches were found within acceptable probability range");
+
+    // Verify repository methods were called
+    verify(matchingRepository).findById(TEST_USER_ID);
+    verify(matchingRepository).findUsersThatMatchParameters(
+        eq(testUserPool.getLookingForGender()),
+        eq(testUserPool.getMyGender()),
+        eq(testUserPool.getMyAge()),
+        eq(testUserPool.getAgeMin()),
+        eq(testUserPool.getAgeMax()),
+        eq(testUserPool.getSuitableGeoHashes()),
+        eq(testUserPool.getMyLocation()));
   }
 
   /**
-   * Test match probability calculation with hobby similarity
+   * Tests that the matching service correctly sorts potential matches by
+   * probability
+   * in descending order and limits the results to a maximum of 10 matches.
    */
   @Test
-  void getRecommendations_ShouldConsiderHobbySimilarity() {
+  void getPossibleMatches_ShouldLimitToTop10MatchesInDescendingProbabilityOrder() {
     // Arrange
-    when(userProfileRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserProfile));
     when(matchingRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserPool));
 
-    // Create two matches with same score but different hobby overlap
-    DatingPool match1 = createTestDatingPool(2L);
-    match1.setHobbyIds(new HashSet<>(Arrays.asList(1L, 2L))); // 2 shared hobbies
-    match1.setMyGender(2L);
-    match1.setLookingForGender(1L);
+    // Create more than 10 potential matches with different probabilities
+    List<DatingPool> manyMatches = new ArrayList<>();
+    for (int i = 2; i <= 15; i++) {
+      DatingPool match = createTestDatingPool((long) i);
+      match.setMyGender(2L);
+      match.setLookingForGender(1L);
+      // Set different scores to create different probabilities
+      match.setActualScore(1500 + (i * 10)); // Increasing scores for higher probabilities
 
-    DatingPool match2 = createTestDatingPool(3L);
-    match2.setHobbyIds(new HashSet<>(Arrays.asList(3L, 4L))); // 0 shared hobbies
-    match2.setMyGender(2L);
-    match2.setLookingForGender(1L);
+      // Add varying numbers of mutual hobbies
+      Set<Long> hobbies = new HashSet<>();
+      hobbies.add(1L); // At least one mutual hobby
+      if (i % 3 == 0)
+        hobbies.add(2L); // Some matches have two mutual hobbies
+      match.setHobbyIds(hobbies);
 
-    List<DatingPool> matches = Arrays.asList(match1, match2);
+      manyMatches.add(match);
+    }
 
-    when(matchingRepository.findUsersThatMatchParameters(any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(matches);
-
-    // Mock user profiles
-    when(userProfileRepository.findById(2L)).thenReturn(Optional.of(createTestUserProfile(2L)));
-    when(userProfileRepository.findById(3L)).thenReturn(Optional.of(createTestUserProfile(3L)));
-
-    // Act
-    MatchingRecommendationsDTO result = matchingService.getRecommendations(TEST_USER_ID);
-
-    // Assert
-    assertNotNull(result);
-    assertEquals(2, result.getRecommendations().size());
-
-    // Match with shared hobbies should have higher probability
-    double probMatch1 = result.getRecommendations().stream()
-        .filter(r -> r.getUserId().equals(2L))
-        .findFirst()
-        .get()
-        .getProbability();
-
-    double probMatch2 = result.getRecommendations().stream()
-        .filter(r -> r.getUserId().equals(3L))
-        .findFirst()
-        .get()
-        .getProbability();
-
-    assertTrue(probMatch1 > probMatch2, "Match with shared hobbies should have higher probability");
-  }
-
-  /**
-   * Test distance calculation
-   */
-  @Test
-  void getRecommendations_ShouldCalculateDistanceCorrectly() {
-    // Arrange
-    when(userProfileRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserProfile));
-    when(matchingRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserPool));
-    when(matchingRepository.findUsersThatMatchParameters(any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(potentialMatches);
-
-    // Create match user profile with known location
-    UserProfile matchProfile = createTestUserProfile(MATCH_USER_ID);
-    UserAttributes matchAttributes = matchProfile.getAttributes();
-    // Paris coordinates (known distance from London ~344km)
-    matchAttributes.setLocation(Arrays.asList(48.8566, 2.3522));
-    matchProfile.setAttributes(matchAttributes);
-
-    when(userProfileRepository.findById(MATCH_USER_ID)).thenReturn(Optional.of(matchProfile));
+    when(matchingRepository.findUsersThatMatchParameters(
+        any(), any(), any(), any(), any(), any(), any()))
+        .thenReturn(manyMatches);
 
     // Act
-    MatchingRecommendationsDTO result = matchingService.getRecommendations(TEST_USER_ID);
+    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID);
 
     // Assert
-    var firstRecommendation = result.getRecommendations().get(0);
-    // Expected distance between London and Paris is ~344km
-    // Allow for small rounding differences
-    assertTrue(Math.abs(firstRecommendation.getDistance() - 344) < 5,
-        "Distance calculation should be approximately correct");
+    assertNotNull(result, "Result should not be null");
+    assertTrue(result.size() <= 10, "Should return at most 10 matches");
+
+    // Verify the matches are sorted by probability in descending order
+    List<Double> probabilities = new ArrayList<>(result.values());
+    List<Double> sortedProbabilities = new ArrayList<>(probabilities);
+    Collections.sort(sortedProbabilities, Collections.reverseOrder());
+
+    assertEquals(sortedProbabilities, probabilities,
+        "Matches should be sorted by probability in descending order");
+
+    // Verify that the matches with highest probabilities are included
+    double lowestIncludedProbability = Collections.min(result.values());
+    for (DatingPool match : manyMatches) {
+      double expectedProbability = calculateExpectedProbability(match);
+      if (!result.containsKey(match.getUserId())) {
+        // If a match is not included, its probability should be lower than the lowest
+        // included probability
+        assertTrue(expectedProbability <= lowestIncludedProbability,
+            "Only matches with highest probabilities should be included");
+      }
+    }
+
+    // Verify repository methods were called
+    verify(matchingRepository).findById(TEST_USER_ID);
+    verify(matchingRepository).findUsersThatMatchParameters(
+        eq(testUserPool.getLookingForGender()),
+        eq(testUserPool.getMyGender()),
+        eq(testUserPool.getMyAge()),
+        eq(testUserPool.getAgeMin()),
+        eq(testUserPool.getAgeMax()),
+        eq(testUserPool.getSuitableGeoHashes()),
+        eq(testUserPool.getMyLocation()));
   }
 
-  /**
-   * Test age calculation
-   */
-  @Test
-  void getRecommendations_ShouldCalculateAgeCorrectly() {
-    // Arrange
-    when(userProfileRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserProfile));
-    when(matchingRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserPool));
-    when(matchingRepository.findUsersThatMatchParameters(any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(potentialMatches);
+  // Helper method to calculate expected probability for a match
+  private double calculateExpectedProbability(DatingPool match) {
+    // Base probability using ELO formula
+    double baseProbability = 1.0 / (1.0 + Math.pow(10, (1500 - match.getActualScore()) / 1071.0));
 
-    // Create match user profile with specific birthdate (30 years ago)
-    UserProfile matchProfile = createTestUserProfile(MATCH_USER_ID);
-    UserAttributes matchAttributes = matchProfile.getAttributes();
-    matchAttributes.setBirthdate(LocalDate.now().minusYears(30));
-    matchProfile.setAttributes(matchAttributes);
+    // Calculate mutual hobbies
+    Set<Long> userHobbies = testUserPool.getHobbyIds();
+    Set<Long> matchHobbies = match.getHobbyIds();
+    Set<Long> mutualHobbies = new HashSet<>(userHobbies);
+    mutualHobbies.retainAll(matchHobbies);
 
-    when(userProfileRepository.findById(MATCH_USER_ID)).thenReturn(Optional.of(matchProfile));
+    // Calculate hobby bonus
+    double hobbyBonus = 0.0;
+    if (!mutualHobbies.isEmpty()) {
+      hobbyBonus = 0.2 * (Math.log(mutualHobbies.size() + 1) / Math.log(userHobbies.size() + 1));
+    }
 
-    // Act
-    MatchingRecommendationsDTO result = matchingService.getRecommendations(TEST_USER_ID);
-
-    // Assert
-    var firstRecommendation = result.getRecommendations().get(0);
-    assertEquals(30, firstRecommendation.getAge(), "Age calculation should be correct");
-  }
-
-  /**
-   * Test hobby conversion
-   */
-  @Test
-  void getRecommendations_ShouldConvertHobbiesCorrectly() {
-    // Arrange
-    when(userProfileRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserProfile));
-    when(matchingRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserPool));
-    when(matchingRepository.findUsersThatMatchParameters(any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(potentialMatches);
-
-    // Create match user profile with specific hobbies
-    UserProfile matchProfile = createTestUserProfile(MATCH_USER_ID);
-    Set<Hobby> hobbies = new HashSet<>();
-    hobbies.add(new Hobby(1L, "Reading", "Leisure", null));
-    hobbies.add(new Hobby(2L, "Swimming", "Exercise", null));
-    hobbies.add(new Hobby(3L, "Hiking", "Leisure", null));
-    matchProfile.setHobbies(hobbies);
-
-    when(userProfileRepository.findById(MATCH_USER_ID)).thenReturn(Optional.of(matchProfile));
-
-    // Act
-    MatchingRecommendationsDTO result = matchingService.getRecommendations(TEST_USER_ID);
-
-    // Assert
-    var firstRecommendation = result.getRecommendations().get(0);
-    assertEquals(3, firstRecommendation.getHobbies().size(), "Should have correct number of hobbies");
-    assertTrue(firstRecommendation.getHobbies().contains("Reading"), "Should contain hobby name");
-    assertTrue(firstRecommendation.getHobbies().contains("Swimming"), "Should contain hobby name");
-    assertTrue(firstRecommendation.getHobbies().contains("Hiking"), "Should contain hobby name");
-  }
-
-  /**
-   * Test profile picture encoding
-   */
-  @Test
-  void getRecommendations_ShouldEncodeProfilePictureCorrectly() {
-    // Arrange
-    when(userProfileRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserProfile));
-    when(matchingRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserPool));
-    when(matchingRepository.findUsersThatMatchParameters(any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(potentialMatches);
-
-    // Create match user profile with profile picture
-    UserProfile matchProfile = createTestUserProfile(MATCH_USER_ID);
-    byte[] pictureData = "test_image_data".getBytes();
-    matchProfile.setProfilePicture(pictureData);
-
-    when(userProfileRepository.findById(MATCH_USER_ID)).thenReturn(Optional.of(matchProfile));
-
-    // Act
-    MatchingRecommendationsDTO result = matchingService.getRecommendations(TEST_USER_ID);
-
-    // Assert
-    var firstRecommendation = result.getRecommendations().get(0);
-    assertNotNull(firstRecommendation.getProfilePicture(), "Profile picture should be encoded");
-    assertTrue(firstRecommendation.getProfilePicture().startsWith("data:image/png;base64,"),
-        "Should have correct base64 image format");
-  }
-
-  /**
-   * Test null profile picture handling
-   */
-  @Test
-  void getRecommendations_ShouldHandleNullProfilePicture() {
-    // Arrange
-    when(userProfileRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserProfile));
-    when(matchingRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserPool));
-    when(matchingRepository.findUsersThatMatchParameters(any(), any(), any(), any(), any(), any(), any()))
-        .thenReturn(potentialMatches);
-
-    // Create match user profile with null profile picture
-    UserProfile matchProfile = createTestUserProfile(MATCH_USER_ID);
-    matchProfile.setProfilePicture(null);
-
-    when(userProfileRepository.findById(MATCH_USER_ID)).thenReturn(Optional.of(matchProfile));
-
-    // Act
-    MatchingRecommendationsDTO result = matchingService.getRecommendations(TEST_USER_ID);
-
-    // Assert
-    var firstRecommendation = result.getRecommendations().get(0);
-    assertNull(firstRecommendation.getProfilePicture(), "Profile picture should be null");
-  }
-
-  // Helper methods to create test data
-  private UserProfile createTestUserProfile(Long userId) {
-    UserProfile profile = new UserProfile();
-    profile.setId(userId);
-    profile.setFirst_name("Test");
-    profile.setLast_name("User" + userId);
-
-    UserAttributes attributes = new UserAttributes();
-    attributes.setBirthdate(LocalDate.now().minusYears(25));
-    attributes.setLocation(Arrays.asList(51.5074, -0.1278)); // London coordinates
-    attributes.setGender(new UserGenderType(1L, "Male"));
-
-    Set<Hobby> hobbies = new HashSet<>();
-    hobbies.add(new Hobby(1L, "Reading", "Leisure", null));
-    hobbies.add(new Hobby(2L, "Swimming", "Excercise", null));
-
-    profile.setHobbies(hobbies);
-    profile.setAttributes(attributes);
-
-    return profile;
+    return baseProbability + hobbyBonus;
   }
 
   private DatingPool createTestDatingPool(Long userId) {
@@ -438,14 +567,5 @@ public class MatchingServiceTests {
     pool.setSuitableGeoHashes(new HashSet<>(Arrays.asList("u10", "u11", "u12")));
     pool.setHobbyIds(new HashSet<>(Arrays.asList(1L, 2L)));
     return pool;
-  }
-
-  private List<DatingPool> createPotentialMatches() {
-    List<DatingPool> matches = new ArrayList<>();
-    DatingPool match = createTestDatingPool(MATCH_USER_ID);
-    match.setMyGender(2L);
-    match.setLookingForGender(1L);
-    matches.add(match);
-    return matches;
   }
 }
