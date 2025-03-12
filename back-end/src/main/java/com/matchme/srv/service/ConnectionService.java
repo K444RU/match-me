@@ -1,12 +1,15 @@
 package com.matchme.srv.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.matchme.srv.model.connection.ConnectionState;
 import com.matchme.srv.model.enums.ConnectionStatus;
+import com.matchme.srv.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import com.matchme.srv.dto.response.ConnectionResponseDTO;
@@ -21,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ConnectionService {
     private final ConnectionRepository connectionRepository;
+    private final UserRepository userRepository;
 
     /**
      * Creates a new connection between two users
@@ -88,11 +92,131 @@ public class ConnectionService {
      * Currently DOES NOT account for inactive connections
      */
     public boolean isConnected(Long requesterId, Long targetId) {
-        List<Connection> connections = connectionRepository.findConnectionsByUserId(requesterId);
-        for (Connection connection : connections) {
-            if (connection.getUsers().stream().anyMatch(user -> user.getId().equals(targetId)))
-                return true;
-        }
-        return false;
+        return connectionRepository.existsConnectionBetween(requesterId, targetId);
     }
+
+    /**
+     * Sends a connection request from requester to target, creating a PENDING state.
+     * Prevents duplicates by checking existing connections and their states.
+     */
+    public void sendConnectionRequest(Long requesterId, Long targetId) {
+        if (requesterId.equals(targetId)) {
+            throw new IllegalStateException("Cannot send a connection request to yourself");
+        }
+
+        Connection existingConnection = connectionRepository.findConnectionBetween(requesterId, targetId);
+        if (existingConnection != null) {
+            ConnectionState currentState = getCurrentState(existingConnection);
+            switch (currentState.getStatus()) {
+                case PENDING:
+                    if (currentState.getRequesterId().equals(requesterId)) {
+                        throw new IllegalStateException("A pending request already exists from you to this user");
+                    } else {
+                        // If target has sent a request to requester, auto-accept it
+                        acceptConnectionRequest(existingConnection.getId(), requesterId);
+                        return;
+                    }
+                case ACCEPTED:
+                    throw new IllegalStateException("You are already connected with this user");
+                case REJECTED:
+                case DISCONNECTED:
+                    // Allow a new request by adding a PENDING state
+                    addNewState(existingConnection, ConnectionStatus.PENDING, requesterId, targetId);
+                    return;
+            }
+        }
+        // No existing connection, create a new one with PENDING state
+        createPendingConnection(requesterId, targetId);
+    }
+
+    /**
+     * Accepts a pending connection request, updating the state to ACCEPTED.
+     */
+    public void acceptConnectionRequest(Long connectionId, Long acceptorId) {
+        Connection connection = connectionRepository.findById(connectionId)
+                .orElseThrow(() -> new EntityNotFoundException("Connection not found"));
+        ConnectionState currentState = getCurrentState(connection);
+
+        if (currentState.getStatus() != ConnectionStatus.PENDING) {
+            throw new IllegalStateException("Connection is not in PENDING state");
+        }
+        if (!currentState.getTargetId().equals(acceptorId)) {
+            throw new IllegalStateException("You are not authorized to accept this request");
+        }
+
+        addNewState(connection, ConnectionStatus.ACCEPTED, currentState.getRequesterId(), acceptorId);
+    }
+
+    /**
+     * Disconnects an accepted connection, updating the state to DISCONNECTED.
+     */
+    public void rejectConnectionRequest(Long connectionId, Long rejectorId) {
+        Connection connection = connectionRepository.findById(connectionId)
+                .orElseThrow(() -> new EntityNotFoundException("Connection not found"));
+        ConnectionState currentState = getCurrentState(connection);
+
+        if (currentState.getStatus() != ConnectionStatus.PENDING) {
+            throw new IllegalStateException("Connection is not in PENDING state");
+        }
+        if (!currentState.getTargetId().equals(rejectorId)) {
+            throw new IllegalStateException("You are not authorized to reject this request");
+        }
+
+        addNewState(connection, ConnectionStatus.REJECTED, rejectorId, connectionId);
+    }
+
+    /**
+     * Disconnects an accepted connection, updating the state to DISCONNECTED.
+     */
+    public void disconnect(Long connectionId, Long userId) {
+        Connection connection = connectionRepository.findById(connectionId)
+                .orElseThrow(() -> new EntityNotFoundException("Connection not found"));
+        if (!connection.getUsers().stream().anyMatch(u -> u.getId().equals(userId))) {
+            throw new IllegalStateException("You are not part of this connection");
+        }
+        ConnectionState currentState = getCurrentState(connection);
+        if (currentState.getStatus() != ConnectionStatus.ACCEPTED) {
+            throw new IllegalStateException("Connection is not in ACCEPTED state");
+        }
+
+        addNewState(connection, ConnectionStatus.DISCONNECTED, null, null);
+    }
+
+    private void createPendingConnection(Long requesterId, Long targetId) {
+        User requester = userRepository.findById(requesterId).orElseThrow(EntityNotFoundException::new);
+        User target = userRepository.findById(targetId).orElseThrow(EntityNotFoundException::new);
+
+        Connection connection = Connection.builder()
+                .users(Set.of(requester, target))
+                .build();
+        ConnectionState state = new ConnectionState();
+        state.setConnection(connection);
+        state.setStatus(ConnectionStatus.PENDING);
+        state.setRequesterId(requesterId);
+        state.setTargetId(targetId);
+        state.setTimestamp(LocalDateTime.now());
+        connection.getConnectionStates().add(state);
+
+        connectionRepository.save(connection);
+
+    }
+
+    private void addNewState(Connection connection, ConnectionStatus status, Long requesterId, Long targetId) {
+        ConnectionState newState = new ConnectionState();
+        newState.setConnection(connection);
+        newState.setStatus(status);
+        newState.setRequesterId(requesterId);
+        newState.setTargetId(targetId);
+        newState.setTimestamp(LocalDateTime.now());
+        connection.getConnectionStates().add(newState);
+        connectionRepository.save(connection);
+
+    }
+
+    private ConnectionState getCurrentState(Connection connection) {
+        return connection.getConnectionStates().stream()
+                .max(Comparator.comparing(ConnectionState::getTimestamp))
+                .orElseThrow(() -> new IllegalStateException("Connection not found"));
+    }
+
 }

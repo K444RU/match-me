@@ -80,11 +80,11 @@ public class UserDTOMapper {
                                 profile.getPreferences().getGender().getName()))
                 .hobbies(profile.getHobbies().stream().map(Hobby::getId).collect(Collectors.toSet()))
                 .age_self(
-                        Period.between(profile.getAttributes().getBirth_date(), LocalDate.now()).getYears())
-                .age_min(profile.getPreferences().getAge_min())
-                .age_max(profile.getPreferences().getAge_max())
+                        Period.between(profile.getAttributes().getBirthdate(), LocalDate.now()).getYears())
+                .age_min(profile.getPreferences().getAgeMin())
+                .age_max(profile.getPreferences().getAgeMax())
                 .distance(profile.getPreferences().getDistance())
-                .probability_tolerance(profile.getPreferences().getProbability_tolerance())
+                .probability_tolerance(profile.getPreferences().getProbabilityTolerance())
                 .build();
     }
 

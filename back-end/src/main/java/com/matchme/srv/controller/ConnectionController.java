@@ -34,10 +34,10 @@ public class ConnectionController {
         return ResponseEntity.ok().build();
     }
 
-    @PatchMapping("/request/{requestId}/accept")
+    @PatchMapping("/connections/requests/{requestId}/accept")
     public ResponseEntity<?> acceptConnectionRequest(@PathVariable Long requestId, Authentication authentication) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
-        connectionService.acceptConnectionRequest(currentUserId);
+        connectionService.acceptConnectionRequest(requestId, currentUserId);
         return ResponseEntity.ok().build();
     }
 

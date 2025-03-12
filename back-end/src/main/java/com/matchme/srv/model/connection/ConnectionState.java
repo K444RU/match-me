@@ -2,6 +2,7 @@ package com.matchme.srv.model.connection;
 
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 import com.matchme.srv.model.enums.ConnectionStatus;
 import com.matchme.srv.model.user.User;
@@ -34,7 +35,7 @@ public class ConnectionState {
   private ConnectionType connection_type;
 
   @NotNull
-  private Instant timestamp;
+  private LocalDateTime timestamp;
 
   @Column(name = "status", nullable = false)
   @Enumerated(EnumType.STRING)

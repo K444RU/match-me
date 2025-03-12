@@ -12,6 +12,14 @@ import java.util.List;
 public interface ConnectionRepository extends JpaRepository<Connection, Long> {
 
     @Query("""
+            SELECT c FROM Connection c 
+            JOIN c.users u1 
+            JOIN c.users u2 
+            WHERE u1.id = :userId1 
+            AND u2.id = :userId2""")
+    Connection findConnectionBetween(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
+
+    @Query("""
             SELECT CASE WHEN COUNT(c) > 0 THEN TRUE ELSE FALSE END
             FROM Connection c
             JOIN c.users u1
