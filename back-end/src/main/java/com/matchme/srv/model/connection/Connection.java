@@ -31,12 +31,18 @@ public class Connection {
 
   @OneToMany(mappedBy = "connection", cascade = CascadeType.ALL)
   @Builder.Default
+  @EqualsAndHashCode.Exclude
+  @ToString.Exclude
   private Set<ConnectionState> connectionStates = new HashSet<>();
 
   @OneToMany(mappedBy = "connection", cascade = CascadeType.ALL)
+  @EqualsAndHashCode.Exclude
+  @ToString.Exclude
   private Set<ConnectionResult> connectionResults;
 
   @OneToMany(mappedBy = "connection", cascade = CascadeType.ALL)
+  @EqualsAndHashCode.Exclude
+  @ToString.Exclude
   private Set<UserMessage> userMessages;
 
 }

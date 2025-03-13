@@ -38,12 +38,10 @@ public interface ConnectionRepository extends JpaRepository<Connection, Long> {
             """)
     List<Connection> findConnectionsByUserIdWithMessages(@Param("userId") Long userId);
 
-    @Query("""
-            SELECT c
-            FROM Connection c
-            JOIN c.users u
-            WHERE u.id = :userId
-            """)
+    @Query("SELECT DISTINCT c FROM Connection c " +
+            "JOIN FETCH c.connectionStates " +
+            "JOIN FETCH c.users u " +
+            "WHERE u.id = :userId")
     List<Connection> findConnectionsByUserId(@Param("userId") Long userId);
 
     @Query("""

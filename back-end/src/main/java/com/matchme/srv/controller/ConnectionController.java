@@ -1,5 +1,6 @@
 package com.matchme.srv.controller;
 
+import com.matchme.srv.dto.response.ConnectionsDTO;
 import com.matchme.srv.service.ConnectionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -27,6 +28,13 @@ public class ConnectionController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/")
+    public ResponseEntity<ConnectionsDTO> getConnections(Authentication authentication) {
+        Long currentUserId = securityUtils.getCurrentUserId(authentication);
+        ConnectionsDTO connections = connectionService.getConnections(currentUserId);
+        return ResponseEntity.ok(connections);
+    }
+
     @GetMapping("/request/{userId}")
     public ResponseEntity<?> sendConnectionRequest(@PathVariable Long userId, Authentication authentication) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
@@ -34,7 +42,7 @@ public class ConnectionController {
         return ResponseEntity.ok().build();
     }
 
-    @PatchMapping("/connections/requests/{requestId}/accept")
+    @PatchMapping("/requests/{requestId}/accept")
     public ResponseEntity<?> acceptConnectionRequest(@PathVariable Long requestId, Authentication authentication) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
         connectionService.acceptConnectionRequest(requestId, currentUserId);

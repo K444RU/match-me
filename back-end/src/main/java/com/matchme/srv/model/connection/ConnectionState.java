@@ -10,6 +10,8 @@ import com.matchme.srv.model.user.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Data
 @Entity
@@ -23,6 +25,8 @@ public class ConnectionState {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "connection_id")
   @NotNull
+  @EqualsAndHashCode.Exclude
+  @ToString.Exclude
   private Connection connection;
 
   @ManyToOne(fetch = FetchType.LAZY)
