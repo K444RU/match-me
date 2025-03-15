@@ -28,14 +28,14 @@ public class ConnectionController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/")
+    @GetMapping("")
     public ResponseEntity<ConnectionsDTO> getConnections(Authentication authentication) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
         ConnectionsDTO connections = connectionService.getConnections(currentUserId);
         return ResponseEntity.ok(connections);
     }
 
-    @GetMapping("/request/{userId}")
+    @PostMapping("/requests/{userId}")
     public ResponseEntity<?> sendConnectionRequest(@PathVariable Long userId, Authentication authentication) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
         connectionService.sendConnectionRequest(currentUserId, userId);

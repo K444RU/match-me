@@ -58,7 +58,7 @@ public class ConnectionControllerTest {
         when(securityUtils.getCurrentUserId(authentication)).thenReturn(currentUserId);
         when(connectionService.getConnections(currentUserId)).thenReturn(connectionsDTO);
 
-        mockMvc.perform(get("/connections/")
+        mockMvc.perform(get("/connections")
                 .principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.active", containsInAnyOrder(2, 3)))
@@ -76,7 +76,7 @@ public class ConnectionControllerTest {
         when(securityUtils.getCurrentUserId(authentication)).thenReturn(currentUserId);
         doNothing().when(connectionService).sendConnectionRequest(currentUserId, targetUserId);
 
-        mockMvc.perform(get("/connections/request/" + targetUserId)
+        mockMvc.perform(post("/connections/requests/" + targetUserId)
                         .principal(authentication))
                 .andExpect(status().isOk());
 
@@ -91,7 +91,7 @@ public class ConnectionControllerTest {
         doThrow(new IllegalStateException("Cannot send a connection request to yourself"))
                 .when(connectionService).sendConnectionRequest(currentUserId, currentUserId);
 
-        mockMvc.perform(get("/connections/request/" + currentUserId)
+        mockMvc.perform(post("/connections/requests/" + currentUserId)
                         .principal(authentication))
                 .andExpect(status().isBadRequest());
 
@@ -107,7 +107,7 @@ public class ConnectionControllerTest {
         doThrow(new IllegalStateException("A pending request already exists from you to this user"))
                 .when(connectionService).sendConnectionRequest(currentUserId, targetUserId);
 
-        mockMvc.perform(get("/connections/request/" + targetUserId)
+        mockMvc.perform(post("/connections/requests/" + targetUserId)
                         .principal(authentication))
                 .andExpect(status().isBadRequest());
 

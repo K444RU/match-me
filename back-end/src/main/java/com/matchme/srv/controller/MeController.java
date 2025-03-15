@@ -1,10 +1,11 @@
 package com.matchme.srv.controller;
 
-import com.matchme.srv.dto.response.*;
+import com.matchme.srv.dto.response.BiographicalResponseDTO;
+import com.matchme.srv.dto.response.CurrentUserResponseDTO;
+import com.matchme.srv.dto.response.ProfileResponseDTO;
+import com.matchme.srv.dto.response.SettingsResponseDTO;
 import com.matchme.srv.security.jwt.SecurityUtils;
-import com.matchme.srv.service.ConnectionService;
 import com.matchme.srv.service.user.UserQueryService;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -12,15 +13,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api")
 public class MeController {
 
     private final UserQueryService queryService;
-    private final ConnectionService connectionService;
     private final SecurityUtils securityUtils;
 
     /**
@@ -76,21 +74,4 @@ public class MeController {
                 queryService.getSettingsResponseDTO(currentUserId, currentUserId);
         return ResponseEntity.ok(response);
     }
-
-    /**
-     * Retrieves the current authenticated users connections.
-     * 
-     * @return List of {@link ConnectionResponseDTO}
-     */
-    @GetMapping("/connections")
-    public ResponseEntity<List<ConnectionResponseDTO>> getConnections(
-            Authentication authentication) {
-        Long currentUserId = securityUtils.getCurrentUserId(authentication);
-        List<ConnectionResponseDTO> response =
-                connectionService.getConnectionResponseDTO(currentUserId, currentUserId);
-        return ResponseEntity.ok(response);
-    }
-
-    // TODO: /recommendations
-    // @GetMapping("/recommendations")
 }

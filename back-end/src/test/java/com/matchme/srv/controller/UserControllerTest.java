@@ -1,47 +1,20 @@
 package com.matchme.srv.controller;
 
-import static com.matchme.srv.TestDataFactory.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.matchme.srv.dto.request.UserParametersRequestDTO;
-import com.matchme.srv.dto.request.settings.AccountSettingsRequestDTO;
-import com.matchme.srv.dto.request.settings.AttributesSettingsRequestDTO;
-import com.matchme.srv.dto.request.settings.PreferencesSettingsRequestDTO;
-import com.matchme.srv.dto.request.settings.ProfilePictureSettingsRequestDTO;
-import com.matchme.srv.dto.request.settings.ProfileSettingsRequestDTO;
+import com.matchme.srv.dto.request.settings.*;
 import com.matchme.srv.dto.response.BiographicalResponseDTO;
-import com.matchme.srv.dto.response.ConnectionResponseDTO;
 import com.matchme.srv.dto.response.CurrentUserResponseDTO;
 import com.matchme.srv.dto.response.ProfileResponseDTO;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.security.services.UserDetailsImpl;
-import com.matchme.srv.service.ConnectionService;
 import com.matchme.srv.service.user.UserCreationService;
 import com.matchme.srv.service.user.UserProfileService;
 import com.matchme.srv.service.user.UserQueryService;
 import com.matchme.srv.service.user.UserSettingsService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.ServletException;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -56,6 +29,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static com.matchme.srv.TestDataFactory.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @ExtendWith(MockitoExtension.class)
 class UserControllerTest {
 
@@ -68,8 +52,6 @@ class UserControllerTest {
   @Mock private UserProfileService profileService;
 
   @Mock private UserSettingsService settingsService;
-
-  @Mock private ConnectionService connectionService;
 
   @Mock private Authentication authentication;
 
@@ -349,68 +331,6 @@ class UserControllerTest {
                 jsonPath("$.age_min", is(DEFAULT_TARGET_AGE_MIN)),
                 jsonPath("$.distance", is(DEFAULT_TARGET_DISTANCE)),
                 jsonPath("$.probability_tolerance", is(DEFAULT_TARGET_PROBABILITY_TOLERANCE)));
-      }
-    }
-
-    @Nested
-    @DisplayName("getConnections Tests")
-    class GetConnectionsTests {
-      @Test
-      @DisplayName("Should return user connections")
-      void getConnections_WhenRequested_ReturnsUserConnections() throws Exception {
-        // Given
-        setupAuthenticatedUser(authentication);
-
-        List<ConnectionResponseDTO> connections = createConnectionsResponse(1);
-
-        when(connectionService.getConnectionResponseDTO(DEFAULT_USER_ID, DEFAULT_USER_ID))
-            .thenReturn(connections);
-
-        mockMvc
-            .perform(
-                get("/api/users/{targetId}/connections", DEFAULT_USER_ID)
-                    .principal(authentication)
-                    .contentType(MediaType.APPLICATION_JSON))
-            .andExpectAll(
-                status().isOk(),
-                jsonPath("$", hasSize(1)),
-                jsonPath("$[0].id", is(1)),
-                jsonPath("$[0].users[*].id", hasItem(DEFAULT_USER_ID.intValue())),
-                jsonPath("$[0].users[*].email", hasItem(DEFAULT_EMAIL)),
-                jsonPath("$[0].users[*].number", hasItem(DEFAULT_NUMBER)),
-                jsonPath("$[0].users[*].id", hasItem(DEFAULT_TARGET_USER_ID.intValue())),
-                jsonPath("$[0].users[*].email", hasItem(DEFAULT_TARGET_EMAIL)),
-                jsonPath("$[0].users[*].number", hasItem(DEFAULT_TARGET_NUMBER)));
-      }
-
-      @Test
-      @DisplayName("Should return 404 when user connections are not found")
-      void getConnections_WhenUnauthorized_Returns404() {
-        // Given
-        setupAuthenticatedUser(authentication);
-
-        when(connectionService.getConnectionResponseDTO(DEFAULT_USER_ID, DEFAULT_TARGET_USER_ID))
-            .thenThrow(new EntityNotFoundException("User not found or no access rights."));
-
-        // When/Then
-        Exception exception =
-            assertThrows(
-                ServletException.class,
-                () ->
-                    mockMvc.perform(
-                        get("/api/users/{targetId}/connections", DEFAULT_TARGET_USER_ID)
-                            .principal(authentication)
-                            .contentType(MediaType.APPLICATION_JSON)));
-
-        assertAll(
-            () ->
-                assertThat(exception.getCause())
-                    .as("check if the exception is an instance of EntityNotFoundException")
-                    .isInstanceOf(EntityNotFoundException.class),
-            () ->
-                assertThat(exception.getCause().getMessage())
-                    .as("check if the exception message contains the expected message")
-                    .contains("User not found or no access rights."));
       }
     }
 

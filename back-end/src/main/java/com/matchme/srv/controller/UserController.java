@@ -1,26 +1,20 @@
 package com.matchme.srv.controller;
 
-import java.util.List;
-
-import com.matchme.srv.dto.request.settings.*;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
 import com.matchme.srv.dto.request.UserParametersRequestDTO;
+import com.matchme.srv.dto.request.settings.*;
 import com.matchme.srv.dto.response.BiographicalResponseDTO;
-import com.matchme.srv.dto.response.ConnectionResponseDTO;
 import com.matchme.srv.dto.response.CurrentUserResponseDTO;
 import com.matchme.srv.dto.response.ProfileResponseDTO;
 import com.matchme.srv.security.jwt.SecurityUtils;
-import com.matchme.srv.service.ConnectionService;
 import com.matchme.srv.service.user.UserCreationService;
 import com.matchme.srv.service.user.UserProfileService;
 import com.matchme.srv.service.user.UserQueryService;
 import com.matchme.srv.service.user.UserSettingsService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -32,7 +26,6 @@ public class UserController {
     private final UserSettingsService settingsService;
     private final UserProfileService profileService;
     private final UserQueryService queryService;
-    private final ConnectionService connectionService;
     private final SecurityUtils securityUtils;
 
     /**
@@ -87,24 +80,6 @@ public class UserController {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
         BiographicalResponseDTO response =
             queryService.getBiographicalResponseDTO(currentUserId, targetId);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * Retrieves a users connections
-     * <p>
-     * Checks if the requester is the user.
-     *
-     * @param targetId ID of the user to retrieve connections for
-     * @param authentication
-     * @return List of {@link ConnectionResponseDTO}
-     */
-    @GetMapping("/{targetId}/connections")
-    public ResponseEntity<List<ConnectionResponseDTO>> getConnections(@PathVariable Long targetId,
-            Authentication authentication) {
-        Long currentUserId = securityUtils.getCurrentUserId(authentication);
-        List<ConnectionResponseDTO> response =
-                connectionService.getConnectionResponseDTO(currentUserId, targetId);
         return ResponseEntity.ok(response);
     }
 

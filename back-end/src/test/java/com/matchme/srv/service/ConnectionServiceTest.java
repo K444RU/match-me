@@ -57,12 +57,16 @@ class ConnectionServiceTest {
 
     @Test
     void getUserConnections_success() {
+        ConnectionState acceptedState = createState(ConnectionStatus.ACCEPTED, requester.getId(), target.getId());
+        connection.getConnectionStates().add(acceptedState);
         when(connectionRepository.findConnectionsByUserId(requester.getId())).thenReturn(List.of(connection));
 
-        List<Connection> result = connectionService.getUserConnections(requester.getId());
+        ConnectionsDTO result = connectionService.getConnections(requester.getId());
 
-        assertEquals(1, result.size());
-        assertEquals(connection, result.getFirst());
+        assertEquals(1, result.getActive().size(), "There should be one active connection");
+        assertEquals(target.getId(), result.getActive().getFirst(), "The active connection should be with the target user");
+        assertTrue(result.getPendingIncoming().isEmpty(), "There should be no pending incoming requests");
+        assertTrue(result.getPendingOutgoing().isEmpty(), "There should be no pending outgoing requests");
 
         verify(connectionRepository).findConnectionsByUserId(requester.getId());
     }
