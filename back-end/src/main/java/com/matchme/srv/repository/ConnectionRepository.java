@@ -40,8 +40,8 @@ public interface ConnectionRepository extends JpaRepository<Connection, Long> {
 
     @Query("SELECT DISTINCT c FROM Connection c " +
             "JOIN FETCH c.connectionStates " +
-            "JOIN FETCH c.users u " +
-            "WHERE u.id = :userId")
+            "JOIN FETCH c.users " +
+            "WHERE c.id IN (SELECT c2.id FROM Connection c2 JOIN c2.users u WHERE u.id = :userId)")
     List<Connection> findConnectionsByUserId(@Param("userId") Long userId);
 
     @Query("""

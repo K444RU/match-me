@@ -210,20 +210,18 @@ public class ConnectionService {
                     .filter(id -> !id.equals(currentUserId))
                     .findFirst()
                     .orElse(null);
-            if (otherUserId != null) {
-                switch (currentState.getStatus()) {
-                    case ACCEPTED:
-                        active.add(otherUserId);
-                        break;
-                    case PENDING:
-                        if (currentState.getRequesterId().equals(currentUserId)) {
-                            pendingOutgoing.add(otherUserId);
-                        } else {
-                            pendingIncoming.add(otherUserId);
-                        }
-                        break;
-                    default:
-                        break;
+            if (otherUserId == null) {
+                continue;
+            }
+            // Based on the effective state, add the id to the appropriate list.
+            if (currentState.getStatus() == ConnectionStatus.ACCEPTED) {
+                active.add(otherUserId);
+            } else if (currentState.getStatus() == ConnectionStatus.PENDING) {
+                // Distinguish between outgoing and incoming requests.
+                if (currentState.getRequesterId().equals(currentUserId)) {
+                    pendingOutgoing.add(otherUserId);
+                } else {
+                    pendingIncoming.add(otherUserId);
                 }
             }
         }
@@ -265,14 +263,9 @@ public class ConnectionService {
     }
 
     private ConnectionState getCurrentState(Connection connection) {
-        Set<ConnectionState> states = connection.getConnectionStates();
-        if (states.isEmpty()) {
-            System.out.println("Warning: No states found for connection ID: " + connection.getId());
-            return null;
-        }
-        return new ArrayList<>(states).stream()
+        return connection.getConnectionStates().stream()
+                .filter(state -> state.getStatus() == ConnectionStatus.ACCEPTED || state.getStatus() == ConnectionStatus.PENDING)
                 .max(Comparator.comparing(ConnectionState::getTimestamp))
-                .orElseThrow(() -> new IllegalStateException("Connection not found"));
+                .orElse(null);
     }
-
 }
