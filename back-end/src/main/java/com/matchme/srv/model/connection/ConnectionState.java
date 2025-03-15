@@ -1,23 +1,21 @@
 package com.matchme.srv.model.connection;
 
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-
 import com.matchme.srv.model.enums.ConnectionStatus;
 import com.matchme.srv.model.user.User;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Data
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "connection_log")
 public class ConnectionState {
-  
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
