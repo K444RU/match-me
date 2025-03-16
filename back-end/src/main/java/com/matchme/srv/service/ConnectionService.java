@@ -92,17 +92,16 @@ public class ConnectionService {
             ConnectionState currentState = getCurrentState(existingConnection);
             if (currentState != null) {
                 switch (currentState.getStatus()) {
-                    case PENDING:
+                    case PENDING -> {
                         if (currentState.getRequesterId().equals(requesterId)) {
                             throw new IllegalStateException("A pending request already exists from you to this user");
                         }
-                        break;
-                    case ACCEPTED:
-                        throw new IllegalStateException("You are already connected with this user");
-                    case REJECTED:
-                    case DISCONNECTED:
+                    }
+                    case ACCEPTED -> throw new IllegalStateException("You are already connected with this user");
+                    case REJECTED, DISCONNECTED -> {
                         addNewState(existingConnection, ConnectionStatus.PENDING, requesterId, targetId, requesterId);
                         return;
+                    }
                 }
             }
         }

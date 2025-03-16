@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.matchme.srv.TestDataFactory.DEFAULT_CONNECTION_ID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -132,7 +133,7 @@ class ConnectionServiceTest {
         when(connectionRepository.findById(1L)).thenReturn(Optional.of(connection));
 
         IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> connectionService.acceptConnectionRequest(1L, target.getId()));
+                () -> connectionService.acceptConnectionRequest(DEFAULT_CONNECTION_ID, target.getId()));
         assertEquals("Connection is not in PENDING state", exception.getMessage());
     }
 
@@ -143,7 +144,7 @@ class ConnectionServiceTest {
         when(connectionRepository.findById(1L)).thenReturn(Optional.of(connection));
 
         IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> connectionService.acceptConnectionRequest(1L, requester.getId()));
+                () -> connectionService.acceptConnectionRequest(DEFAULT_CONNECTION_ID, requester.getId()));
         assertEquals("You are not authorized to accept this request", exception.getMessage());
     }
 
@@ -164,7 +165,7 @@ class ConnectionServiceTest {
         when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
         when(connectionRepository.save(any(Connection.class))).thenReturn(connection);
 
-        connectionService.rejectConnectionRequest(1L, target.getId());
+        connectionService.rejectConnectionRequest(DEFAULT_CONNECTION_ID, target.getId());
 
         verify(connectionRepository).save(any(Connection.class));
     }
@@ -176,7 +177,7 @@ class ConnectionServiceTest {
         when(connectionRepository.findById(1L)).thenReturn(Optional.of(connection));
 
         IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> connectionService.rejectConnectionRequest(1L, target.getId()));
+                () -> connectionService.rejectConnectionRequest(DEFAULT_CONNECTION_ID, target.getId()));
         assertEquals("Connection is not in PENDING state", exception.getMessage());
     }
 
@@ -187,7 +188,7 @@ class ConnectionServiceTest {
         when(connectionRepository.findById(1L)).thenReturn(Optional.of(connection));
 
         IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> connectionService.rejectConnectionRequest(1L, requester.getId()));
+                () -> connectionService.rejectConnectionRequest(DEFAULT_CONNECTION_ID, requester.getId()));
         assertEquals("You are not authorized to reject this request", exception.getMessage());
     }
 
@@ -199,7 +200,7 @@ class ConnectionServiceTest {
         when(userRepository.findById(requester.getId())).thenReturn(Optional.of(requester));
         when(connectionRepository.save(any(Connection.class))).thenReturn(connection);
 
-        connectionService.disconnect(1L, requester.getId());
+        connectionService.disconnect(DEFAULT_CONNECTION_ID, requester.getId());
 
         verify(connectionRepository).save(any(Connection.class));
     }
@@ -212,7 +213,7 @@ class ConnectionServiceTest {
         when(connectionRepository.findById(1L)).thenReturn(Optional.of(connection));
 
         IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> connectionService.disconnect(1L, outsider.getId()));
+                () -> connectionService.disconnect(DEFAULT_CONNECTION_ID, outsider.getId()));
         assertEquals("You are not part of this connection", exception.getMessage());
     }
 
@@ -223,7 +224,7 @@ class ConnectionServiceTest {
         when(connectionRepository.findById(1L)).thenReturn(Optional.of(connection));
 
         IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> connectionService.disconnect(1L, requester.getId()));
+                () -> connectionService.disconnect(DEFAULT_CONNECTION_ID, requester.getId()));
         assertEquals("Connection is not in ACCEPTED state", exception.getMessage());
     }
 

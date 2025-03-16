@@ -28,6 +28,9 @@ import org.springframework.security.core.Authentication;
 
 public class TestDataFactory {
 
+    // Initial Connection data
+    public static final Long DEFAULT_CONNECTION_ID = 1L;
+    public static final Long DEFAULT_UNAUTHORIZED_USER_ID = 3L;
     // Initial user data
     public static final Long DEFAULT_USER_ID = 1L;
     public static final String DEFAULT_EMAIL = "user@example.com";
@@ -382,6 +385,14 @@ public class TestDataFactory {
                 .distance(DEFAULT_UPDATE_DISTANCE)
                 .probability_tolerance(DEFAULT_UPDATE_PROBABILITY_TOLERANCE)
                 .build();
+    }
+
+    public static ConnectionsDTO createSampleConnectionsDTO() {
+        return new ConnectionsDTO(
+                List.of(DEFAULT_TARGET_USER_ID, DEFAULT_TARGET_USER_ID + 1),
+                List.of(DEFAULT_TARGET_USER_ID + 2),
+                List.of(DEFAULT_TARGET_USER_ID + 3)
+        );
     }
 
     /**
