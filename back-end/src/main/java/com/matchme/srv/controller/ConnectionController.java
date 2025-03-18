@@ -3,6 +3,7 @@ package com.matchme.srv.controller;
 import com.matchme.srv.dto.response.ConnectionsDTO;
 import com.matchme.srv.service.ConnectionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,30 +37,30 @@ public class ConnectionController {
     }
 
     @PostMapping("/requests/{userId}")
-    public ResponseEntity<?> sendConnectionRequest(@PathVariable Long userId, Authentication authentication) {
+    public ResponseEntity<Void> sendConnectionRequest(@PathVariable Long userId, Authentication authentication) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
         connectionService.sendConnectionRequest(currentUserId, userId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PatchMapping("/requests/{requestId}/accept")
-    public ResponseEntity<?> acceptConnectionRequest(@PathVariable Long requestId, Authentication authentication) {
+    public ResponseEntity<Void> acceptConnectionRequest(@PathVariable Long requestId, Authentication authentication) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
         connectionService.acceptConnectionRequest(requestId, currentUserId);
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/requests/{requestId}/reject")
-    public ResponseEntity<?> rejectConnectionRequest(@PathVariable Long requestId, Authentication authentication) {
+    public ResponseEntity<Void> rejectConnectionRequest(@PathVariable Long requestId, Authentication authentication) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
         connectionService.rejectConnectionRequest(requestId, currentUserId);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{connectionId}")
-    public ResponseEntity<?> disconnect(@PathVariable Long connectionId, Authentication authentication) {
+    public ResponseEntity<Void> disconnect(@PathVariable Long connectionId, Authentication authentication) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
         connectionService.disconnect(connectionId, currentUserId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 }

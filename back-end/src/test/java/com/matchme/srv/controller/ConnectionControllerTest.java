@@ -69,7 +69,7 @@ public class ConnectionControllerTest {
 
         mockMvc.perform(post("/connections/requests/" + DEFAULT_TARGET_USER_ID)
                         .principal(authentication))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         verify(connectionService).sendConnectionRequest(DEFAULT_USER_ID, DEFAULT_TARGET_USER_ID);
     }
@@ -183,7 +183,7 @@ public class ConnectionControllerTest {
 
         mockMvc.perform(delete("/connections/" + DEFAULT_CONNECTION_ID)
                         .principal(authentication))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         verify(connectionService).disconnect(DEFAULT_CONNECTION_ID, DEFAULT_USER_ID);
     }
