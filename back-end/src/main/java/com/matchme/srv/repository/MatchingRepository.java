@@ -18,7 +18,7 @@ import com.matchme.srv.model.connection.DatingPool;
  */
 public interface MatchingRepository extends JpaRepository<DatingPool, Long> {
 
-    Optional<DatingPool> findById(Long userId);
+    Optional<DatingPool> findById(Long profileId);
 
     /**
      * Finds potential matches based on specified matching parameters.
