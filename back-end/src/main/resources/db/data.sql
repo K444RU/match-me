@@ -553,3 +553,61 @@ INSERT INTO hobby (id, name, category, sub_category) VALUES (492, 'Satellite wat
 INSERT INTO hobby (id, name, category, sub_category) VALUES (493, 'Trainspotting', 'Observation', 'Outdoors') ON CONFLICT (id) DO NOTHING;
 INSERT INTO hobby (id, name, category, sub_category) VALUES (494, 'Whale watching', 'Observation', 'Outdoors') ON CONFLICT (id) DO NOTHING;
 
+-- ----------------------------------------------------------------------
+-- Sample data inserts for testing
+-- ----------------------------------------------------------------------
+
+-- Insert sample users into the "users" table.
+INSERT INTO users (id, email, number, user_state_type_id) 
+VALUES 
+  (1, 'test1@example.com', '111-111-1111', 4),
+  (2, 'test2@example.com', '222-222-2222', 4),
+  (3, 'test3@example.com', '333-333-3333', 4)
+ON CONFLICT (id) DO NOTHING;
+
+-- Update the users_id_seq sequence, because we don't use JPA, JPA doesn't know where the sequence is
+SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
+
+-- Insert user authentication data with a precomputed fixed BCrypt hash for the password "123456"
+INSERT INTO user_auth_data (user_id, password, recovery)
+VALUES 
+  (1, '$2a$10$sNInvglURuXPEWjojzv/.uPsHsCxBmtUkeevnn0K7BnWdJCrvBwcK', 123456),
+  (2, '$2a$10$sNInvglURuXPEWjojzv/.uPsHsCxBmtUkeevnn0K7BnWdJCrvBwcK', 123456),
+  (3, '$2a$10$sNInvglURuXPEWjojzv/.uPsHsCxBmtUkeevnn0K7BnWdJCrvBwcK', 123456)
+ON CONFLICT (user_id) DO NOTHING;
+
+-- Insert corresponding user profiles into the "user_profile" table.
+INSERT INTO user_profile (user_id, first_name, last_name, alias, city) 
+VALUES 
+  (1, 'John', 'Doe', 'johnny', 'Tallinn'),
+  (2, 'Jane', 'Smith', 'jane', 'Tartu'),
+  (3, 'Alice', 'Johnson', 'alice', 'Pärnu')
+ON CONFLICT (user_id) DO NOTHING;
+
+-- Insert sample user attributes into the "user_attributes" table.
+-- NOTE: "gender_id" values reference user_gender_types (1 = MALE, 2 = FEMALE)
+--       and location is stored as an array literal (PostgreSQL syntax).
+INSERT INTO user_attributes (user_id, gender_id, birthdate, location) 
+VALUES 
+  (1, 1, '1990-01-01', '{59.43722,24.74528}'),
+  (2, 2, '1992-05-10', '{58.378,26.728}'),
+  (3, 2, '1988-11-20', '{58.3859,24.5002}')
+ON CONFLICT (user_id) DO NOTHING;
+
+-- Insert sample user preferences into the "user_preferences" table.
+-- Here we assume the gender preference (stored as gender_id) indicates the
+-- preferred gender for matching (e.g. John (id 1) prefers females which is id 2).
+INSERT INTO user_preferences (user_id, gender_id, age_min, age_max, distance, probability_tolerance)
+VALUES 
+  (1, 2, 18, 35, 50, 0.5),  -- John prefers females
+  (2, 1, 25, 45, 30, 0.5),  -- Jane prefers males
+  (3, 1, 25, 40, 30, 0.5)   -- Alice prefers males
+ON CONFLICT (user_id) DO NOTHING;
+
+-- Insert sample user scores into the "user_scores" table.
+INSERT INTO user_scores (user_id, current_score, vibe_probability, current_blind)
+VALUES 
+  (1, 1000, 1.0, 1000),
+  (2, 1000, 1.0, 1000),
+  (3, 1000, 1.0, 1000)
+ON CONFLICT (user_id) DO NOTHING;
