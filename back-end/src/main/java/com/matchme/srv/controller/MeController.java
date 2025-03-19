@@ -90,7 +90,4 @@ public class MeController {
                 connectionService.getConnectionResponseDTO(currentUserId, currentUserId);
         return ResponseEntity.ok(response);
     }
-
-    // TODO: /recommendations
-    // @GetMapping("/recommendations")
 }
