@@ -40,6 +40,7 @@ public class User {
     private String email;
 
     @Size(max = 20)
+    @Column(unique = true)
     private String number;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true,
