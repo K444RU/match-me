@@ -25,7 +25,7 @@ import com.matchme.srv.repository.MatchingRepository;
 import com.matchme.srv.repository.UserProfileRepository;
 
 @ExtendWith(MockitoExtension.class)
-public class MatchingServiceTests {
+class MatchingServiceTests {
 
   @Mock
   private MatchingRepository matchingRepository;
@@ -90,7 +90,7 @@ public class MatchingServiceTests {
     });
 
     // Verify the exception message contains the user ID
-    assertTrue(exception.getMessage().contains("User " + TEST_USER_ID),
+    assertTrue(exception.getMessage().contains(TEST_USER_ID.toString()),
         "Exception message should mention the user ID");
 
     // Verify that the repository was called with the correct user ID
