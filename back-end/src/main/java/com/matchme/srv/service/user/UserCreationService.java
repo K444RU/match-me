@@ -145,6 +145,7 @@ public class UserCreationService {
         userRepository.save(user);
     }
 
+    @Transactional
     public ActivityLog setUserParameters(Long userId, UserParametersRequestDTO parameters) {
 
         User user = userRepository
@@ -210,7 +211,9 @@ public class UserCreationService {
         ActivityLog newEntry = new ActivityLog(user, activitylogType);
 
         // Now user can have a score entity and start looking for a chat
-        user.setScore(new UserScore(user));
+        if (user.getScore() == null) {
+            user.setScore(new UserScore(user));
+        }
 
         userRepository.save(user);
 
