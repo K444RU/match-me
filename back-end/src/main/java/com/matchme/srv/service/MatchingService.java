@@ -95,9 +95,11 @@ public class MatchingService {
       UserProfile myProfile = userProfileRepository.findById(userId)
           .orElseThrow(() -> new ResourceNotFoundException("UserProfile for user " + userId.toString()));
 
+      Long profileId = myProfile.getId();
+
       List<Double> myLocation = myProfile.getAttributes().getLocation();
 
-      Map<Long, Double> possibleMatches = getPossibleMatches(userId);
+      Map<Long, Double> possibleMatches = getPossibleMatches(profileId);
 
       MatchingRecommendationsDTO response = new MatchingRecommendationsDTO();
       List<RecommendedUserDTO> recommendations = new ArrayList<>();
@@ -210,24 +212,24 @@ public class MatchingService {
    * @throws PotentialMatchesNotFoundException if no compatible matches are found
    *                                           within acceptable probability range
    */
-  public Map<Long, Double> getPossibleMatches(Long userId) {
+  public Map<Long, Double> getPossibleMatches(Long profileId) {
 
     // get the users datingPool entry
-    DatingPool entry = matchingRepository.findById(userId)
-        .orElseThrow(() -> new ResourceNotFoundException("User " + userId.toString()));
+    DatingPool entry = matchingRepository.findById(profileId)
+        .orElseThrow(() -> new ResourceNotFoundException("User Profile " + profileId.toString()));
 
     // find users that match parameters
     List<DatingPool> possibleMatches = matchingRepository.findUsersThatMatchParameters(entry.getLookingForGender(),
         entry.getMyGender(), entry.getMyAge(), entry.getAgeMin(), entry.getAgeMax(),
         entry.getSuitableGeoHashes(), entry.getMyLocation());
 
-    if (possibleMatches.size() == 0) {
+    if (possibleMatches.isEmpty()) {
       throw new PotentialMatchesNotFoundException(
-          "Potential matches with selected parameters for user " + userId.toString());
+          "Potential matches with selected parameters for user " + profileId.toString());
     }
     // Calculate match probability, filter and sort
     Map<Long, Double> bestMatches = possibleMatches.stream()
-        .map(pool -> Map.entry(pool.getUserId(),
+        .map(pool -> Map.entry(pool.getProfileId(),
             calculateProbability(entry.getActualScore(), entry.getHobbyIds(), pool)))
         .filter(pair -> pair.getValue() > MINIMUM_PROBABILITY)
         .filter(pair -> pair.getValue() < MAXIMUM_PROBABILITY)
@@ -241,7 +243,7 @@ public class MatchingService {
 
     if (bestMatches.isEmpty()) {
       throw new PotentialMatchesNotFoundException(
-          "Potential matches within acceptable probability range for user " + userId.toString());
+          "Potential matches within acceptable probability range for user " + profileId.toString());
     }
 
     return bestMatches;
