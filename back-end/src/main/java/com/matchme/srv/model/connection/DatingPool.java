@@ -52,11 +52,11 @@ public class DatingPool {
 
     /**
      * The unique identifier for this dating pool entry.
-     * Maps directly to the user's ID.
+     * Maps directly to the user's profile ID.
      */
     @Id
-    @Column(name = "user_id")
-    private Long userId;
+    @Column(name = "profile_id")
+    private Long profileId;
 
     /**
      * The user's gender identifier.
