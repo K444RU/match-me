@@ -64,6 +64,8 @@ public class MatchingService {
   private final MatchingRepository matchingRepository;
   private final UserProfileRepository userProfileRepository;
 
+  private static final String USER_PROFILE_NOT_FOUND_MESSAGE = "UserProfile for user ";
+
   @Autowired
   public MatchingService(MatchingRepository matchingRepository, UserProfileRepository userProfileRepository) {
     this.matchingRepository = matchingRepository;
@@ -93,7 +95,7 @@ public class MatchingService {
 
     try {
       UserProfile myProfile = userProfileRepository.findById(userId)
-          .orElseThrow(() -> new ResourceNotFoundException("UserProfile for user " + userId.toString()));
+          .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + userId.toString()));
 
       Long profileId = myProfile.getId();
 
@@ -109,7 +111,11 @@ public class MatchingService {
         Double matchScore = match.getValue();
 
         UserProfile profile = userProfileRepository.findById(matchUserId)
-            .orElseThrow(() -> new ResourceNotFoundException("UserProfile for user " + matchUserId.toString()));
+            .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + matchUserId.toString()));
+
+        if (profile == null) {
+          throw new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + matchUserId.toString());
+        }
 
         String base64Picture = null;
         if (profile != null
@@ -119,7 +125,10 @@ public class MatchingService {
               + Base64.getEncoder().encodeToString(profile.getProfilePicture());
         }
 
-        UserAttributes attributes = profile.getAttributes();
+        UserAttributes attributes = profile != null ? profile.getAttributes() : null;
+        if (attributes == null) {
+            throw new ResourceNotFoundException("User attributes not found for profile ID: " + matchUserId);
+        }
 
         RecommendedUserDTO dto = new RecommendedUserDTO();
         dto.setUserId(matchUserId);
@@ -216,7 +225,7 @@ public class MatchingService {
 
     // get the users datingPool entry
     DatingPool entry = matchingRepository.findById(profileId)
-        .orElseThrow(() -> new ResourceNotFoundException("User Profile " + profileId.toString()));
+        .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + profileId.toString()));
 
     // find users that match parameters
     List<DatingPool> possibleMatches = matchingRepository.findUsersThatMatchParameters(entry.getLookingForGender(),
@@ -273,7 +282,7 @@ public class MatchingService {
     }
 
     if (mutualhobbies != 0) {
-      probability += (0.2 * (Math.log(mutualhobbies + 1) / Math.log(hobbies.size() + 1)));
+      probability += (0.2 * (Math.log((double) mutualhobbies + 1) / Math.log((double) hobbies.size() + 1)));
     }
 
     return probability;
