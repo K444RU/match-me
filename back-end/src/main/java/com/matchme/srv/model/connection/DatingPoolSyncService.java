@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 
 import com.matchme.srv.exception.ResourceNotFoundException;
 import com.matchme.srv.model.user.profile.Hobby;
@@ -20,7 +21,7 @@ import com.matchme.srv.repository.UserProfileRepository;
 import com.matchme.srv.repository.UserScoreRepository;
 import com.matchme.srv.service.GeohashService;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,7 +52,7 @@ public class DatingPoolSyncService {
      * @throws ResourceNotFoundException if any required user data entities cannot
      *                                   be found
      */
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void synchronizeDatingPool(Long profileId) {
 
         UserAttributes attributes = userAttributesRepository.findById(profileId)
@@ -80,7 +81,7 @@ public class DatingPoolSyncService {
                             .orElseThrow(() -> new ResourceNotFoundException("userScore for " + profileId.toString()));
 
                     DatingPool newEntry = new DatingPool();
-                    newEntry.setUserId(profileId);
+                    newEntry.setProfileId(profileId);
                     newEntry.setActualScore(userScore.getCurrentScore());
                     return newEntry;
                 });
