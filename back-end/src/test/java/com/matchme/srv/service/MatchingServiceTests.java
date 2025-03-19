@@ -148,14 +148,14 @@ public class MatchingServiceTests {
     // Assert
     assertNotNull(result, "Result should not be null");
     assertEquals(1, result.size(), "Should return exactly one matching user");
-    assertEquals(2L, result.get(0).getUserId(), "Should return the correct matching user");
+    assertEquals(2L, result.get(0).getProfileId(), "Should return the correct matching user");
 
     // Verify the non-matching users are not in the result
-    assertFalse(result.stream().anyMatch(user -> user.getUserId().equals(3L)),
+    assertFalse(result.stream().anyMatch(user -> user.getProfileId().equals(3L)),
         "User with non-matching gender should not be included");
-    assertFalse(result.stream().anyMatch(user -> user.getUserId().equals(4L)),
+    assertFalse(result.stream().anyMatch(user -> user.getProfileId().equals(4L)),
         "User with non-matching age should not be included");
-    assertFalse(result.stream().anyMatch(user -> user.getUserId().equals(5L)),
+    assertFalse(result.stream().anyMatch(user -> user.getProfileId().equals(5L)),
         "User with non-matching location should not be included");
 
     // Verify the repository was called with the correct parameters
@@ -514,7 +514,7 @@ public class MatchingServiceTests {
     double lowestIncludedProbability = Collections.min(result.values());
     for (DatingPool match : manyMatches) {
       double expectedProbability = calculateExpectedProbability(match);
-      if (!result.containsKey(match.getUserId())) {
+      if (!result.containsKey(match.getProfileId())) {
         // If a match is not included, its probability should be lower than the lowest
         // included probability
         assertTrue(expectedProbability <= lowestIncludedProbability,
@@ -556,7 +556,7 @@ public class MatchingServiceTests {
 
   private DatingPool createTestDatingPool(Long userId) {
     DatingPool pool = new DatingPool();
-    pool.setUserId(userId);
+    pool.setProfileId(userId);
     pool.setMyGender(1L);
     pool.setLookingForGender(2L);
     pool.setMyAge(25);
