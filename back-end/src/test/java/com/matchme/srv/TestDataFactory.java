@@ -8,6 +8,7 @@ import com.matchme.srv.dto.request.settings.AttributesSettingsRequestDTO;
 import com.matchme.srv.dto.request.settings.PreferencesSettingsRequestDTO;
 import com.matchme.srv.dto.request.settings.ProfileSettingsRequestDTO;
 import com.matchme.srv.dto.response.*;
+import com.matchme.srv.model.connection.ConnectionProvider;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.UserRoleType;
 import com.matchme.srv.model.user.profile.Hobby;
@@ -388,10 +389,14 @@ public class TestDataFactory {
     }
 
     public static ConnectionsDTO createSampleConnectionsDTO() {
+        ConnectionProvider active1 = new ConnectionProvider(1L, 2L);
+        ConnectionProvider active2 = new ConnectionProvider(2L, 3L);
+        ConnectionProvider pendingIncoming = new ConnectionProvider(3L, DEFAULT_TARGET_USER_ID + 2);
+        ConnectionProvider pendingOutgoing = new ConnectionProvider(4L, DEFAULT_TARGET_USER_ID + 3);
         return new ConnectionsDTO(
-                List.of(DEFAULT_TARGET_USER_ID, DEFAULT_TARGET_USER_ID + 1),
-                List.of(DEFAULT_TARGET_USER_ID + 2),
-                List.of(DEFAULT_TARGET_USER_ID + 3)
+                List.of(active1, active2),
+                List.of(pendingIncoming),
+                List.of(pendingOutgoing)
         );
     }
 

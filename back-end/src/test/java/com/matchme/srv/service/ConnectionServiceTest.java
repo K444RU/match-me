@@ -65,7 +65,8 @@ class ConnectionServiceTest {
         ConnectionsDTO result = connectionService.getConnections(requester.getId());
 
         assertEquals(1, result.getActive().size(), "There should be one active connection");
-        assertEquals(target.getId(), result.getActive().getFirst(), "The active connection should be with the target user");
+        assertEquals(target.getId(), result.getActive().getFirst().getUserId(), "The active connection should be with the target user");
+        assertEquals(connection.getId(), result.getActive().getFirst().getConnectionId(), "The connection ID should match");
         assertTrue(result.getPendingIncoming().isEmpty(), "There should be no pending incoming requests");
         assertTrue(result.getPendingOutgoing().isEmpty(), "There should be no pending outgoing requests");
 
@@ -237,7 +238,8 @@ class ConnectionServiceTest {
         ConnectionsDTO result = connectionService.getConnections(requester.getId());
 
         assertEquals(1, result.getActive().size());
-        assertEquals(target.getId(), result.getActive().getFirst());
+        assertEquals(target.getId(), result.getActive().getFirst().getUserId());
+        assertEquals(connection.getId(), result.getActive().getFirst().getConnectionId());
         assertTrue(result.getPendingIncoming().isEmpty());
         assertTrue(result.getPendingOutgoing().isEmpty());
         verify(connectionRepository).findConnectionsByUserId(requester.getId());
@@ -254,7 +256,8 @@ class ConnectionServiceTest {
         assertTrue(result.getActive().isEmpty());
         assertTrue(result.getPendingIncoming().isEmpty());
         assertEquals(1, result.getPendingOutgoing().size());
-        assertEquals(target.getId(), result.getPendingOutgoing().getFirst());
+        assertEquals(target.getId(), result.getPendingOutgoing().getFirst().getUserId());
+        assertEquals(connection.getId(), result.getPendingOutgoing().getFirst().getConnectionId());
     }
 
     @Test
@@ -267,7 +270,8 @@ class ConnectionServiceTest {
 
         assertTrue(result.getActive().isEmpty());
         assertEquals(1, result.getPendingIncoming().size());
-        assertEquals(target.getId(), result.getPendingIncoming().getFirst());
+        assertEquals(target.getId(), result.getPendingIncoming().getFirst().getUserId());
+        assertEquals(connection.getId(), result.getPendingIncoming().getFirst().getConnectionId());
         assertTrue(result.getPendingOutgoing().isEmpty());
     }
 

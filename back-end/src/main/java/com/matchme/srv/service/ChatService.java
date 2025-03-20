@@ -3,6 +3,8 @@ package com.matchme.srv.service;
 import com.matchme.srv.dto.response.ChatMessageResponseDTO;
 import com.matchme.srv.dto.response.ChatPreviewResponseDTO;
 import com.matchme.srv.model.connection.Connection;
+import com.matchme.srv.model.connection.ConnectionState;
+import com.matchme.srv.model.enums.ConnectionStatus;
 import com.matchme.srv.model.message.MessageEvent;
 import com.matchme.srv.model.message.MessageEventType;
 import com.matchme.srv.model.message.UserMessage;
@@ -25,6 +27,7 @@ public class ChatService {
 
     private final ConnectionRepository connectionRepository;
     private final UserMessageRepository userMessageRepository;
+    private final ConnectionService connectionService;
 
     public static final String EVENT_TYPE_READ = "READ";
     public static final String EVENT_TYPE_SEND = "SEND";
@@ -48,7 +51,7 @@ public class ChatService {
      * 4. Return a list of `ChatPreviewResponseDTO` objects containing the compiled details.
      *<p>
      * @param userId The ID of the user for whom to fetch chat previews.
-     * @return A sorted list of chat previews for the user.
+     * @return A sorted list of chat previews for ACCEPTED connections.
      */
     @Transactional
     public List<ChatPreviewResponseDTO> getChatPreviews(Long userId) {
@@ -58,6 +61,11 @@ public class ChatService {
 
         // 2) Iterate over each connection
         for (Connection connection : connections) {
+            ConnectionState currentState = connectionService.getCurrentState(connection);
+            if (currentState == null || currentState.getStatus() != ConnectionStatus.ACCEPTED) {
+                continue;
+            }
+
             User otherParticipant = findOtherParticipant(connection, userId);
             if (otherParticipant == null) {
                 continue;

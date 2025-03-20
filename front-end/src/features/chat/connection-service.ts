@@ -38,7 +38,6 @@ export const acceptConnection = async (requestId: string, token: string) => {
         throw new Error('Failed to accept connection');
     }
 
-    return response.json();
 };
 
 /**
@@ -60,7 +59,6 @@ export const rejectConnection = async (requestId: string, token: string) => {
         throw new Error('Failed to reject connection');
     }
 
-    return response.json();
 };
 
 /**
@@ -82,5 +80,4 @@ export const disconnectConnection = async (connectionId: string, token: string) 
         throw new Error('Failed to disconnect');
     }
 
-    return response.json();
 };

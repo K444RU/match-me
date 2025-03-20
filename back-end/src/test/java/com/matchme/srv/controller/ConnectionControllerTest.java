@@ -55,9 +55,9 @@ public class ConnectionControllerTest {
 
         mockMvc.perform(get("/connections").principal(authentication))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active", containsInAnyOrder(2, 3)))
-                .andExpect(jsonPath("$.pendingIncoming", containsInAnyOrder(4)))
-                .andExpect(jsonPath("$.pendingOutgoing", containsInAnyOrder(5)));
+                .andExpect(jsonPath("$.active[*].userId", containsInAnyOrder(2, 3)))
+                .andExpect(jsonPath("$.pendingIncoming[*].userId", containsInAnyOrder(4)))
+                .andExpect(jsonPath("$.pendingOutgoing[*].userId", containsInAnyOrder(5)));
 
         verify(connectionService).getConnections(DEFAULT_USER_ID);
     }

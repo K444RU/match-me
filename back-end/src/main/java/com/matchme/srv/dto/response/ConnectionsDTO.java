@@ -1,5 +1,6 @@
 package com.matchme.srv.dto.response;
 
+import com.matchme.srv.model.connection.ConnectionProvider;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ConnectionsDTO {
-    private List<Long> active;
-    private List<Long> pendingIncoming;
-    private List<Long> pendingOutgoing;
+    private List<ConnectionProvider> active;
+    private List<ConnectionProvider> pendingIncoming;
+    private List<ConnectionProvider> pendingOutgoing;
 }

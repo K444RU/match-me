@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.matchme.srv.dto.response.ConnectionsDTO;
 import com.matchme.srv.model.connection.Connection;
+import com.matchme.srv.model.connection.ConnectionProvider;
 import com.matchme.srv.model.connection.ConnectionState;
 import com.matchme.srv.model.enums.ConnectionStatus;
 import com.matchme.srv.model.user.User;
@@ -38,9 +39,9 @@ public class ConnectionService {
      */
     public ConnectionsDTO getConnections(Long currentUserId) {
         List<Connection> connections = connectionRepository.findConnectionsByUserId(currentUserId);
-        List<Long> active = new ArrayList<>();
-        List<Long> pendingIncoming = new ArrayList<>();
-        List<Long> pendingOutgoing = new ArrayList<>();
+        List<ConnectionProvider> active = new ArrayList<>();
+        List<ConnectionProvider> pendingIncoming = new ArrayList<>();
+        List<ConnectionProvider> pendingOutgoing = new ArrayList<>();
 
         for (Connection connection : connections) {
             ConnectionState currentState = getCurrentState(connection);
@@ -55,13 +56,14 @@ public class ConnectionService {
             if (otherUserId == null) {
                 continue;
             }
+            ConnectionProvider connectionInformation = new ConnectionProvider(connection.getId(), otherUserId);
             if (currentState.getStatus() == ConnectionStatus.ACCEPTED) {
-                active.add(otherUserId);
+                active.add(connectionInformation);
             } else if (currentState.getStatus() == ConnectionStatus.PENDING) {
                 if (currentState.getRequesterId().equals(currentUserId)) {
-                    pendingOutgoing.add(otherUserId);
+                    pendingOutgoing.add(connectionInformation);
                 } else {
-                    pendingIncoming.add(otherUserId);
+                    pendingIncoming.add(connectionInformation);
                 }
             }
         }
@@ -245,7 +247,7 @@ public class ConnectionService {
      * @param connection The connection to check.
      * @return The most recent ACCEPTED or PENDING state, or null if none exist.
      */
-    private ConnectionState getCurrentState(Connection connection) {
+    public ConnectionState getCurrentState(Connection connection) {
         return connection.getConnectionStates().stream()
                 .filter(state -> state.getStatus() == ConnectionStatus.ACCEPTED || state.getStatus() == ConnectionStatus.PENDING)
                 .max(Comparator.comparing(ConnectionState::getTimestamp))

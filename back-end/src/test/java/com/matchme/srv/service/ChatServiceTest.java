@@ -13,6 +13,8 @@ import static org.mockito.Mockito.when;
 import com.matchme.srv.dto.response.ChatMessageResponseDTO;
 import com.matchme.srv.dto.response.ChatPreviewResponseDTO;
 import com.matchme.srv.model.connection.Connection;
+import com.matchme.srv.model.connection.ConnectionState;
+import com.matchme.srv.model.enums.ConnectionStatus;
 import com.matchme.srv.model.message.MessageEvent;
 import com.matchme.srv.model.message.MessageEventType;
 import com.matchme.srv.model.message.UserMessage;
@@ -41,6 +43,7 @@ class ChatServiceTest {
 
   @Mock private ConnectionRepository connectionRepository;
   @Mock private UserMessageRepository userMessageRepository;
+  @Mock private ConnectionService connectionService;
   @InjectMocks private ChatService chatService;
 
   private static final Long CONNECTION_ID = 101L;
@@ -87,10 +90,14 @@ class ChatServiceTest {
     void getChatPreviews_WithConnections_ReturnsPreviews() {
       // Arrange
       when(connectionRepository.findConnectionsByUserId(DEFAULT_USER_ID))
-          .thenReturn(List.of(connection));
+              .thenReturn(List.of(connection));
       when(userMessageRepository.findTopByConnectionIdOrderByCreatedAtDesc(CONNECTION_ID))
-          .thenReturn(message);
+              .thenReturn(message);
       when(userMessageRepository.countUnreadMessages(CONNECTION_ID, DEFAULT_USER_ID)).thenReturn(0);
+
+      ConnectionState mockState = new ConnectionState();
+      mockState.setStatus(ConnectionStatus.ACCEPTED);
+      when(connectionService.getCurrentState(any(Connection.class))).thenReturn(mockState);
 
       // Act
       List<ChatPreviewResponseDTO> chatPreviews = chatService.getChatPreviews(DEFAULT_USER_ID);
