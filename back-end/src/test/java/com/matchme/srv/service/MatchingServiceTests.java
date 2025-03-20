@@ -2,7 +2,10 @@ package com.matchme.srv.service;
 
 import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -53,7 +56,7 @@ class MatchingServiceTests {
 
     // Mock the repository to return an empty list for the
     // findUsersThatMatchParameters call
-    when(matchingRepository.findUsersThatMatchParameters(any(), any(), any(), any(), any(), any(), any()))
+    when(matchingRepository.findUsersThatMatchParameters(anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
         .thenReturn(Collections.emptyList());
 
     try {
@@ -74,7 +77,8 @@ class MatchingServiceTests {
           eq(testUserPool.getAgeMin()),
           eq(testUserPool.getAgeMax()),
           eq(testUserPool.getSuitableGeoHashes()),
-          eq(testUserPool.getMyLocation()));
+          eq(testUserPool.getMyLocation()),
+          eq(3));
     }
 
   }
@@ -138,12 +142,12 @@ class MatchingServiceTests {
     List<DatingPool> matchingUsers = Collections.singletonList(matchingUser);
     when(matchingRepository.findUsersThatMatchParameters(
         eq(lookingForGender), eq(myGender), eq(myAge), eq(ageMin), eq(ageMax),
-        eq(suitableGeoHashes), eq(myLocation)))
+        eq(suitableGeoHashes), eq(myLocation), eq(3)))
         .thenReturn(matchingUsers);
 
     // Act
     List<DatingPool> result = matchingRepository.findUsersThatMatchParameters(
-        lookingForGender, myGender, myAge, ageMin, ageMax, suitableGeoHashes, myLocation);
+        lookingForGender, myGender, myAge, ageMin, ageMax, suitableGeoHashes, myLocation, 3);
 
     // Assert
     assertNotNull(result, "Result should not be null");
@@ -161,7 +165,7 @@ class MatchingServiceTests {
     // Verify the repository was called with the correct parameters
     verify(matchingRepository).findUsersThatMatchParameters(
         eq(lookingForGender), eq(myGender), eq(myAge), eq(ageMin), eq(ageMax),
-        eq(suitableGeoHashes), eq(myLocation));
+        eq(suitableGeoHashes), eq(myLocation), eq(3));
   }
 
   /**
@@ -175,7 +179,7 @@ class MatchingServiceTests {
 
     // Mock repository to return empty list (no matches found)
     when(matchingRepository.findUsersThatMatchParameters(
-        any(), any(), any(), any(), any(), any(), any()))
+        anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
         .thenReturn(Collections.emptyList());
 
     // Act & Assert
@@ -196,7 +200,8 @@ class MatchingServiceTests {
         eq(testUserPool.getAgeMin()),
         eq(testUserPool.getAgeMax()),
         eq(testUserPool.getSuitableGeoHashes()),
-        eq(testUserPool.getMyLocation()));
+        eq(testUserPool.getMyLocation()),
+        eq(3));
   }
 
   /**
@@ -220,7 +225,7 @@ class MatchingServiceTests {
 
     List<DatingPool> potentialMatches = Collections.singletonList(matchWithoutMutualHobbies);
 
-    when(matchingRepository.findUsersThatMatchParameters(any(), any(), any(), any(), any(), any(), any()))
+    when(matchingRepository.findUsersThatMatchParameters(anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
         .thenReturn(potentialMatches);
 
     // Act
@@ -254,7 +259,8 @@ class MatchingServiceTests {
         eq(testUserPool.getAgeMin()),
         eq(testUserPool.getAgeMax()),
         eq(testUserPool.getSuitableGeoHashes()),
-        eq(testUserPool.getMyLocation()));
+        eq(testUserPool.getMyLocation()),
+        eq(3));
   }
 
   /**
@@ -277,7 +283,7 @@ class MatchingServiceTests {
 
     List<DatingPool> potentialMatches = Collections.singletonList(matchWithMutualHobbies);
 
-    when(matchingRepository.findUsersThatMatchParameters(any(), any(), any(), any(), any(), any(), any()))
+    when(matchingRepository.findUsersThatMatchParameters(anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
         .thenReturn(potentialMatches);
 
     // Act
@@ -324,7 +330,8 @@ class MatchingServiceTests {
         eq(testUserPool.getAgeMin()),
         eq(testUserPool.getAgeMax()),
         eq(testUserPool.getSuitableGeoHashes()),
-        eq(testUserPool.getMyLocation()));
+        eq(testUserPool.getMyLocation()),
+        eq(3));
   }
 
   /**
@@ -365,7 +372,7 @@ class MatchingServiceTests {
         acceptableProbabilityMatch);
 
     when(matchingRepository.findUsersThatMatchParameters(
-        any(), any(), any(), any(), any(), any(), any()))
+        anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
         .thenReturn(allMatches);
 
     // Act
@@ -396,7 +403,8 @@ class MatchingServiceTests {
         eq(testUserPool.getAgeMin()),
         eq(testUserPool.getAgeMax()),
         eq(testUserPool.getSuitableGeoHashes()),
-        eq(testUserPool.getMyLocation()));
+        eq(testUserPool.getMyLocation()),
+        eq(3));
   }
 
   /**
@@ -438,7 +446,7 @@ class MatchingServiceTests {
         lowProbabilityMatch);
 
     when(matchingRepository.findUsersThatMatchParameters(
-        any(), any(), any(), any(), any(), any(), any()))
+        anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
         .thenReturn(allMatches);
 
     // Act & Assert
@@ -459,7 +467,8 @@ class MatchingServiceTests {
         eq(testUserPool.getAgeMin()),
         eq(testUserPool.getAgeMax()),
         eq(testUserPool.getSuitableGeoHashes()),
-        eq(testUserPool.getMyLocation()));
+        eq(testUserPool.getMyLocation()),
+        eq(3));
   }
 
   /**
@@ -492,7 +501,7 @@ class MatchingServiceTests {
     }
 
     when(matchingRepository.findUsersThatMatchParameters(
-        any(), any(), any(), any(), any(), any(), any()))
+        anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
         .thenReturn(manyMatches);
 
     // Act
@@ -531,7 +540,8 @@ class MatchingServiceTests {
         eq(testUserPool.getAgeMin()),
         eq(testUserPool.getAgeMax()),
         eq(testUserPool.getSuitableGeoHashes()),
-        eq(testUserPool.getMyLocation()));
+        eq(testUserPool.getMyLocation()),
+        eq(3));
   }
 
   // Helper method to calculate expected probability for a match
