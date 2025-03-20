@@ -562,7 +562,8 @@ INSERT INTO users (id, email, number, user_state_type_id)
 VALUES 
   (1, 'test1@example.com', '111-111-1111', 4),
   (2, 'test2@example.com', '222-222-2222', 4),
-  (3, 'test3@example.com', '333-333-3333', 4)
+  (3, 'test3@example.com', '333-333-3333', 4),
+  (4, 'test4@example.com', '444-444-4444', 4)
 ON CONFLICT (id) DO NOTHING;
 
 -- Update the users_id_seq sequence, because we don't use JPA, JPA doesn't know where the sequence is
@@ -573,7 +574,8 @@ INSERT INTO user_auth_data (user_id, password, recovery)
 VALUES 
   (1, '$2a$10$sNInvglURuXPEWjojzv/.uPsHsCxBmtUkeevnn0K7BnWdJCrvBwcK', 123456),
   (2, '$2a$10$sNInvglURuXPEWjojzv/.uPsHsCxBmtUkeevnn0K7BnWdJCrvBwcK', 123456),
-  (3, '$2a$10$sNInvglURuXPEWjojzv/.uPsHsCxBmtUkeevnn0K7BnWdJCrvBwcK', 123456)
+  (3, '$2a$10$sNInvglURuXPEWjojzv/.uPsHsCxBmtUkeevnn0K7BnWdJCrvBwcK', 123456),
+  (4, '$2a$10$sNInvglURuXPEWjojzv/.uPsHsCxBmtUkeevnn0K7BnWdJCrvBwcK', 123456)
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Insert corresponding user profiles into the "user_profile" table.
@@ -581,7 +583,8 @@ INSERT INTO user_profile (user_id, first_name, last_name, alias, city)
 VALUES 
   (1, 'John', 'Doe', 'johnny', 'Tallinn'),
   (2, 'Jane', 'Smith', 'jane', 'Tartu'),
-  (3, 'Alice', 'Johnson', 'alice', 'Pärnu')
+  (3, 'Alice', 'Johnson', 'alice', 'Pärnu'),
+  (4, 'Test', 'Match', 'testmatch', 'Paide')
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Insert sample user attributes into the "user_attributes" table.
@@ -589,9 +592,10 @@ ON CONFLICT (user_id) DO NOTHING;
 --       and location is stored as an array literal (PostgreSQL syntax).
 INSERT INTO user_attributes (user_id, gender_id, birthdate, location) 
 VALUES 
-  (1, 1, '1990-01-01', '{59.43722,24.74528}'),
-  (2, 2, '1992-05-10', '{58.378,26.728}'),
-  (3, 2, '1988-11-20', '{58.3859,24.5002}')
+  (1, 1, '1990-01-01', '{58.3859,24.5002}'),
+  (2, 1, '1992-05-10', '{58.3859,24.5002}'),
+  (3, 2, '1988-11-20', '{58.3859,24.5002}'),
+  (4, 2, '1990-01-01', '{58.3859,24.5002}')
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Insert sample user preferences into the "user_preferences" table.
@@ -599,9 +603,10 @@ ON CONFLICT (user_id) DO NOTHING;
 -- preferred gender for matching (e.g. John (id 1) prefers females which is id 2).
 INSERT INTO user_preferences (user_id, gender_id, age_min, age_max, distance, probability_tolerance)
 VALUES 
-  (1, 2, 18, 35, 50, 0.5),  -- John prefers females
-  (2, 1, 25, 45, 30, 0.5),  -- Jane prefers males
-  (3, 1, 25, 40, 30, 0.5)   -- Alice prefers males
+  (1, 2, 18, 100, 30, 0.5),  -- John prefers females
+  (2, 2, 18, 100, 30, 0.5),  -- Jane prefers males
+  (3, 1, 18, 100, 30, 0.5),   -- Alice prefers males
+  (4, 1, 18, 100, 30, 0.5)
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Insert sample user scores into the "user_scores" table.
@@ -609,5 +614,82 @@ INSERT INTO user_scores (user_id, current_score, vibe_probability, current_blind
 VALUES 
   (1, 1000, 1.0, 1000),
   (2, 1000, 1.0, 1000),
-  (3, 1000, 1.0, 1000)
+  (3, 1000, 1.0, 1000),
+  (4, 1000, 1.0, 1000)
 ON CONFLICT (user_id) DO NOTHING;
+
+-- Insert user hobbies
+INSERT INTO user_profile_hobbies (user_profile_id, hobby_id)
+VALUES
+  (1, 1),
+  (2, 1),
+  (3, 1),
+  (4, 1)
+ON CONFLICT (user_profile_id, hobby_id) DO NOTHING;
+
+INSERT INTO dating_pool (
+    profile_id, 
+    my_gender_id, 
+    looking_for_gender_id, 
+    my_age, 
+    age_min, 
+    age_max, 
+    my_location, 
+    actual_score
+) VALUES (
+    1, 
+    1,  -- Male
+    2,  -- Looking for Female
+    34, -- 1990-01-01 = 34 years old
+    18, -- 18 years old age min
+    100, -- 100 age max
+    'tk3e2s', -- tk3e2s ==58.3859, 24.5002
+    1000
+), (
+    2, 
+    1,  -- Male
+    2,  -- Looking for Female
+    32, -- 1992-05-10 = 32 years old
+    18, -- 18 years old age min
+    100, -- 100 age max
+    'tk3e2s', -- tk3e2s ==58.3859, 24.5002
+    1000
+), (
+    3, 
+    2,  -- Female
+    1,  -- Looking for Male
+    36, -- 1988-11-20 = 36 years old
+    18, -- 18 years old age min
+    100, -- 100 age max
+    'tk3e2s', -- tk3e2s ==58.3859, 24.5002
+    1000
+), (
+    4, 
+    2,  -- Female
+    1,  -- Looking for Male
+    34, -- 1990-01-01 = 34 years old
+    18, -- 18 years old age min
+    100, -- 100 age max
+    'tk3e2s', -- tk3e2s ==58.3859, 24.5002
+    1000
+) 
+
+
+ON CONFLICT (profile_id) DO NOTHING;
+
+
+-- Insert geo hashes into separate table
+INSERT INTO dating_pool_geo_hashes (dating_pool_id, geo_hash)
+VALUES
+  (1, 'tk3'),
+  (2, 'tk3'),
+  (3, 'tk3'),
+  (4, 'tk3');
+
+-- Insert hobbies into separate table
+INSERT INTO dating_pool_hobbies (dating_pool_id, hobby_id)
+VALUES
+  (1, 1),
+  (2, 1),
+  (3, 1),
+  (4, 1);
