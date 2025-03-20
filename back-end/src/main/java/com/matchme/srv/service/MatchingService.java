@@ -230,7 +230,7 @@ public class MatchingService {
     // find users that match parameters
     List<DatingPool> possibleMatches = matchingRepository.findUsersThatMatchParameters(entry.getLookingForGender(),
         entry.getMyGender(), entry.getMyAge(), entry.getAgeMin(), entry.getAgeMax(),
-        entry.getSuitableGeoHashes(), entry.getMyLocation());
+        entry.getSuitableGeoHashes(), entry.getMyLocation(), 3);
 
     if (possibleMatches.isEmpty()) {
       throw new PotentialMatchesNotFoundException(
