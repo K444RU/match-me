@@ -38,16 +38,17 @@ public interface MatchingRepository extends JpaRepository<DatingPool, Long> {
      * @param locations        Set of geohash areas within the user's preferred
      *                         distance
      * @param userLocation     The user's current geohash location
+     * @param precision        The precision of the geohash
      * @return List of dating pool entries matching the specified criteria
      */
     @Query("""
             SELECT dp FROM DatingPool dp WHERE
             dp.myGender = :gender AND
             dp.myAge BETWEEN :minAge AND :maxAge AND
-            dp.myLocation IN :locations AND
+            substring(dp.myLocation, 1, :precision) IN :locations AND
             dp.lookingForGender = :lookingForGender AND
             :userAge BETWEEN dp.ageMin AND dp.ageMax AND
-            :userLocation MEMBER OF dp.suitableGeoHashes
+            substring(:userLocation, 1, :precision) MEMBER OF dp.suitableGeoHashes
             """)
     List<DatingPool> findUsersThatMatchParameters(
             @Param("gender") Long gender,
@@ -56,5 +57,6 @@ public interface MatchingRepository extends JpaRepository<DatingPool, Long> {
             @Param("minAge") Integer minAge,
             @Param("maxAge") Integer maxAge,
             @Param("locations") Set<String> locations,
-            @Param("userLocation") String userLocation);
+            @Param("userLocation") String userLocation,
+            @Param("precision") int precision);
 }
