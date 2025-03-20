@@ -30,7 +30,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errors);
     }
 
-    // Thrown if user has supplied an invalid password or a non-existing email on login
+    // Thrown if user has supplied an invalid password or a non-existing email on
+    // login
     // "error": "Invalid credentials"
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Map<String, String>> handleBadCredentialsException(BadCredentialsException ex) {
@@ -81,7 +82,7 @@ public class GlobalExceptionHandler {
     }
 
     // Supplied verification code is invalid
-    // Example: if user.getverificationcode != code throw -> this 
+    // Example: if user.getverificationcode != code throw -> this
     // "error": "Invalid Verification Code 123"
     @ExceptionHandler(InvalidVerificationException.class)
     public ResponseEntity<Map<String, String>> handleInvalidVerificationException(InvalidVerificationException ex) {
@@ -90,7 +91,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-        public ResponseEntity<Map<String, String>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+    public ResponseEntity<Map<String, String>> handleHttpMessageNotReadableException(
+            HttpMessageNotReadableException ex) {
         Map<String, String> error = new HashMap<>();
         error.put("error", "Please check your input fields.");
         return ResponseEntity.badRequest().body(error);
@@ -101,13 +103,13 @@ public class GlobalExceptionHandler {
         log.error("EntityNotFoundException occurred: {}", ex.getMessage()/* , ex */);
         return ResponseEntity.notFound().build();
     }
-    
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Void> handleIllegalArgument(IllegalArgumentException ex) {
         log.error("IllegalArgumentException occurred: {}", ex.getMessage()/* , ex */);
         return ResponseEntity.badRequest().build();
     }
-    
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Void> handleGeneral(Exception ex) {
         log.error("Exception occurred: {}", ex.getMessage()/* , ex */);
@@ -132,4 +134,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().build();
     }
 
+    @ExceptionHandler(PotentialMatchesNotFoundException.class)
+    public ResponseEntity<Void> handlePotentialMatchesNotFoundException(PotentialMatchesNotFoundException ex) {
+        log.error("PotentialMatchesNotFoundException occurred: {}", ex.getMessage(), ex);
+        return ResponseEntity.notFound().build();
+    }
 }
