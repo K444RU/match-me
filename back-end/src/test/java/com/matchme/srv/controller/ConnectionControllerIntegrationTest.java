@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.*;
 
+import com.matchme.srv.service.ConnectionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,9 @@ class ConnectionControllerIntegrationTest {
   @MockitoBean
   private SecurityUtils securityUtils;
 
+  @MockitoBean
+  private ConnectionService connectionService;
+
   private static final Long TEST_USER_ID = 1L;
 
   @BeforeEach
@@ -53,7 +57,7 @@ class ConnectionControllerIntegrationTest {
     when(matchingService.getRecommendations(TEST_USER_ID)).thenReturn(mockResponse);
 
     // Act & Assert
-    mockMvc.perform(get("/api/recommendations")
+    mockMvc.perform(get("/connections/recommendations")
         .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.recommendations", hasSize(2)))
@@ -77,7 +81,7 @@ class ConnectionControllerIntegrationTest {
         .thenThrow(new PotentialMatchesNotFoundException("No matches found"));
 
     // Act & Assert
-    mockMvc.perform(get("/api/recommendations")
+    mockMvc.perform(get("/connections/recommendations")
         .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
   }
