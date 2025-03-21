@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.matchme.srv.model.user.profile.user_score.UserScore;
-
+import com.matchme.srv.util.SpringContext;
 import jakarta.persistence.PostUpdate;
 
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -14,11 +14,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UserScoreListener {
 
-  private static DatingPoolSyncService synchronizer;
+  private DatingPoolSyncService synchronizer;
 
   @Autowired
   public void setSynchronizer(DatingPoolSyncService synchronizer) {
-    UserScoreListener.synchronizer = synchronizer;
+    this.synchronizer = synchronizer;
   }
 
   /**
@@ -47,7 +47,7 @@ public class UserScoreListener {
       TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
         @Override
         public void afterCommit() {
-          synchronizer.synchronizeUserScore(profileId);
+          SpringContext.getBean(DatingPoolSyncService.class).synchronizeDatingPool(profileId);
         }
       });
     }

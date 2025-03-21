@@ -2,7 +2,10 @@ package com.matchme.srv.service;
 
 import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,7 +28,7 @@ import com.matchme.srv.repository.MatchingRepository;
 import com.matchme.srv.repository.UserProfileRepository;
 
 @ExtendWith(MockitoExtension.class)
-public class MatchingServiceTests {
+class MatchingServiceTests {
 
   @Mock
   private MatchingRepository matchingRepository;
@@ -53,7 +56,7 @@ public class MatchingServiceTests {
 
     // Mock the repository to return an empty list for the
     // findUsersThatMatchParameters call
-    when(matchingRepository.findUsersThatMatchParameters(any(), any(), any(), any(), any(), any(), any()))
+    when(matchingRepository.findUsersThatMatchParameters(anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
         .thenReturn(Collections.emptyList());
 
     try {
@@ -74,7 +77,8 @@ public class MatchingServiceTests {
           eq(testUserPool.getAgeMin()),
           eq(testUserPool.getAgeMax()),
           eq(testUserPool.getSuitableGeoHashes()),
-          eq(testUserPool.getMyLocation()));
+          eq(testUserPool.getMyLocation()),
+          eq(3));
     }
 
   }
@@ -90,7 +94,7 @@ public class MatchingServiceTests {
     });
 
     // Verify the exception message contains the user ID
-    assertTrue(exception.getMessage().contains("User " + TEST_USER_ID),
+    assertTrue(exception.getMessage().contains(TEST_USER_ID.toString()),
         "Exception message should mention the user ID");
 
     // Verify that the repository was called with the correct user ID
@@ -138,30 +142,30 @@ public class MatchingServiceTests {
     List<DatingPool> matchingUsers = Collections.singletonList(matchingUser);
     when(matchingRepository.findUsersThatMatchParameters(
         eq(lookingForGender), eq(myGender), eq(myAge), eq(ageMin), eq(ageMax),
-        eq(suitableGeoHashes), eq(myLocation)))
+        eq(suitableGeoHashes), eq(myLocation), eq(3)))
         .thenReturn(matchingUsers);
 
     // Act
     List<DatingPool> result = matchingRepository.findUsersThatMatchParameters(
-        lookingForGender, myGender, myAge, ageMin, ageMax, suitableGeoHashes, myLocation);
+        lookingForGender, myGender, myAge, ageMin, ageMax, suitableGeoHashes, myLocation, 3);
 
     // Assert
     assertNotNull(result, "Result should not be null");
     assertEquals(1, result.size(), "Should return exactly one matching user");
-    assertEquals(2L, result.get(0).getUserId(), "Should return the correct matching user");
+    assertEquals(2L, result.get(0).getProfileId(), "Should return the correct matching user");
 
     // Verify the non-matching users are not in the result
-    assertFalse(result.stream().anyMatch(user -> user.getUserId().equals(3L)),
+    assertFalse(result.stream().anyMatch(user -> user.getProfileId().equals(3L)),
         "User with non-matching gender should not be included");
-    assertFalse(result.stream().anyMatch(user -> user.getUserId().equals(4L)),
+    assertFalse(result.stream().anyMatch(user -> user.getProfileId().equals(4L)),
         "User with non-matching age should not be included");
-    assertFalse(result.stream().anyMatch(user -> user.getUserId().equals(5L)),
+    assertFalse(result.stream().anyMatch(user -> user.getProfileId().equals(5L)),
         "User with non-matching location should not be included");
 
     // Verify the repository was called with the correct parameters
     verify(matchingRepository).findUsersThatMatchParameters(
         eq(lookingForGender), eq(myGender), eq(myAge), eq(ageMin), eq(ageMax),
-        eq(suitableGeoHashes), eq(myLocation));
+        eq(suitableGeoHashes), eq(myLocation), eq(3));
   }
 
   /**
@@ -175,7 +179,7 @@ public class MatchingServiceTests {
 
     // Mock repository to return empty list (no matches found)
     when(matchingRepository.findUsersThatMatchParameters(
-        any(), any(), any(), any(), any(), any(), any()))
+        anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
         .thenReturn(Collections.emptyList());
 
     // Act & Assert
@@ -196,7 +200,8 @@ public class MatchingServiceTests {
         eq(testUserPool.getAgeMin()),
         eq(testUserPool.getAgeMax()),
         eq(testUserPool.getSuitableGeoHashes()),
-        eq(testUserPool.getMyLocation()));
+        eq(testUserPool.getMyLocation()),
+        eq(3));
   }
 
   /**
@@ -220,7 +225,7 @@ public class MatchingServiceTests {
 
     List<DatingPool> potentialMatches = Collections.singletonList(matchWithoutMutualHobbies);
 
-    when(matchingRepository.findUsersThatMatchParameters(any(), any(), any(), any(), any(), any(), any()))
+    when(matchingRepository.findUsersThatMatchParameters(anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
         .thenReturn(potentialMatches);
 
     // Act
@@ -254,7 +259,8 @@ public class MatchingServiceTests {
         eq(testUserPool.getAgeMin()),
         eq(testUserPool.getAgeMax()),
         eq(testUserPool.getSuitableGeoHashes()),
-        eq(testUserPool.getMyLocation()));
+        eq(testUserPool.getMyLocation()),
+        eq(3));
   }
 
   /**
@@ -277,7 +283,7 @@ public class MatchingServiceTests {
 
     List<DatingPool> potentialMatches = Collections.singletonList(matchWithMutualHobbies);
 
-    when(matchingRepository.findUsersThatMatchParameters(any(), any(), any(), any(), any(), any(), any()))
+    when(matchingRepository.findUsersThatMatchParameters(anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
         .thenReturn(potentialMatches);
 
     // Act
@@ -324,7 +330,8 @@ public class MatchingServiceTests {
         eq(testUserPool.getAgeMin()),
         eq(testUserPool.getAgeMax()),
         eq(testUserPool.getSuitableGeoHashes()),
-        eq(testUserPool.getMyLocation()));
+        eq(testUserPool.getMyLocation()),
+        eq(3));
   }
 
   /**
@@ -365,7 +372,7 @@ public class MatchingServiceTests {
         acceptableProbabilityMatch);
 
     when(matchingRepository.findUsersThatMatchParameters(
-        any(), any(), any(), any(), any(), any(), any()))
+        anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
         .thenReturn(allMatches);
 
     // Act
@@ -396,7 +403,8 @@ public class MatchingServiceTests {
         eq(testUserPool.getAgeMin()),
         eq(testUserPool.getAgeMax()),
         eq(testUserPool.getSuitableGeoHashes()),
-        eq(testUserPool.getMyLocation()));
+        eq(testUserPool.getMyLocation()),
+        eq(3));
   }
 
   /**
@@ -438,7 +446,7 @@ public class MatchingServiceTests {
         lowProbabilityMatch);
 
     when(matchingRepository.findUsersThatMatchParameters(
-        any(), any(), any(), any(), any(), any(), any()))
+        anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
         .thenReturn(allMatches);
 
     // Act & Assert
@@ -459,7 +467,8 @@ public class MatchingServiceTests {
         eq(testUserPool.getAgeMin()),
         eq(testUserPool.getAgeMax()),
         eq(testUserPool.getSuitableGeoHashes()),
-        eq(testUserPool.getMyLocation()));
+        eq(testUserPool.getMyLocation()),
+        eq(3));
   }
 
   /**
@@ -492,7 +501,7 @@ public class MatchingServiceTests {
     }
 
     when(matchingRepository.findUsersThatMatchParameters(
-        any(), any(), any(), any(), any(), any(), any()))
+        anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
         .thenReturn(manyMatches);
 
     // Act
@@ -514,7 +523,7 @@ public class MatchingServiceTests {
     double lowestIncludedProbability = Collections.min(result.values());
     for (DatingPool match : manyMatches) {
       double expectedProbability = calculateExpectedProbability(match);
-      if (!result.containsKey(match.getUserId())) {
+      if (!result.containsKey(match.getProfileId())) {
         // If a match is not included, its probability should be lower than the lowest
         // included probability
         assertTrue(expectedProbability <= lowestIncludedProbability,
@@ -531,7 +540,8 @@ public class MatchingServiceTests {
         eq(testUserPool.getAgeMin()),
         eq(testUserPool.getAgeMax()),
         eq(testUserPool.getSuitableGeoHashes()),
-        eq(testUserPool.getMyLocation()));
+        eq(testUserPool.getMyLocation()),
+        eq(3));
   }
 
   // Helper method to calculate expected probability for a match
@@ -556,7 +566,7 @@ public class MatchingServiceTests {
 
   private DatingPool createTestDatingPool(Long userId) {
     DatingPool pool = new DatingPool();
-    pool.setUserId(userId);
+    pool.setProfileId(userId);
     pool.setMyGender(1L);
     pool.setLookingForGender(2L);
     pool.setMyAge(25);

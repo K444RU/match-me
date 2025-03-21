@@ -54,6 +54,11 @@ public class UserQueryService {
             .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_MESSAGE));
     UserAuth auth = user.getUserAuth();
     UserProfile profile = user.getProfile();
+
+    if (profile == null) {
+      throw new EntityNotFoundException(PROFILE_NOT_FOUND_MESSAGE);
+    }
+
     UserAttributes attributes = profile.getAttributes();
     UserPreferences preferences = profile.getPreferences();
 

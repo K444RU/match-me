@@ -70,7 +70,11 @@ public class GeohashService {
 
         Set<String> geohashes = new HashSet<>();
         for (GeoHash hash : query.getSearchHashes()) {
-            geohashes.add(hash.toBase32().substring(0, GEOHASH_PRECISION));
+            String hashString = hash.toBase32();
+            // Ensure we only take the minimum of the actual length or the desired precision
+            // This prevents the substring from throwing an exception when the hash is shorter than expected
+            int precision = Math.min(hashString.length(), GEOHASH_PRECISION);
+            geohashes.add(hashString.substring(0, precision));
         }
 
         return geohashes;

@@ -10,13 +10,12 @@ import java.util.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.matchme.srv.dto.response.MatchingRecommendationsDTO;
@@ -27,15 +26,15 @@ import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.service.MatchingService;
 
 @WebMvcTest(ConnectionController.class)
-public class ConnectionControllerIntegrationTest {
+class ConnectionControllerIntegrationTest {
 
   @Autowired
   private MockMvc mockMvc;
 
-  @MockBean
+  @MockitoBean
   private MatchingService matchingService;
 
-  @MockBean
+  @MockitoBean
   private SecurityUtils securityUtils;
 
   private static final Long TEST_USER_ID = 1L;

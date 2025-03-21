@@ -5,6 +5,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.transaction.support.TransactionSynchronization;
 
 import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
+import com.matchme.srv.util.SpringContext;
 
 import jakarta.persistence.PostUpdate;
 import lombok.extern.slf4j.Slf4j;
@@ -12,11 +13,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UserPreferencesListener {
 
-  private static DatingPoolSyncService synchronizer;
+  private DatingPoolSyncService synchronizer;
 
   @Autowired
   public void setSynchronizer(DatingPoolSyncService synchronizer) {
-    UserPreferencesListener.synchronizer = synchronizer;
+    this.synchronizer = synchronizer;
   }
 
   /**
@@ -47,7 +48,7 @@ public class UserPreferencesListener {
       TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
         @Override
         public void afterCommit() {
-          synchronizer.synchronizeUserPreferences(profileId);
+          SpringContext.getBean(DatingPoolSyncService.class).synchronizeDatingPool(profileId);
         }
       });
     }
