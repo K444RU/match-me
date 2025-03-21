@@ -7,13 +7,13 @@
  */
 
 export interface RecommendedUserDTO {
-  age?: number;
-  distance?: number;
-  firstName?: string;
-  gender?: string;
+  age: number;
+  distance: number;
+  firstName: string;
+  gender: string;
   hobbies?: string[];
-  lastName?: string;
-  probability?: number;
+  lastName: string;
+  probability: number;
   profilePicture?: string;
-  userId?: number;
+  userId: number;
 }

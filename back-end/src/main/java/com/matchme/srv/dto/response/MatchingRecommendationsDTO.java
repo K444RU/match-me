@@ -1,8 +1,8 @@
 package com.matchme.srv.dto.response;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Set;
-
 import lombok.Data;
 
 @Data
@@ -11,14 +11,14 @@ public class MatchingRecommendationsDTO {
 
   @Data
   public static class RecommendedUserDTO {
-    private Long userId;
-    private String firstName;
-    private String lastName;
+    @NotNull private Long userId;
+    @NotNull private String firstName;
+    @NotNull private String lastName;
     private String profilePicture;
-    private Integer age;
-    private String gender;
-    private Integer distance;
+    @NotNull private Integer age;
+    @NotNull private String gender;
+    @NotNull private Integer distance;
     private Set<String> hobbies;
-    private Double probability;
+    @NotNull private Double probability;
   }
 }
