@@ -128,10 +128,6 @@
 			<version>1.18.36</version>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.liquibase</groupId>
-			<artifactId>liquibase-core</artifactId>
-		</dependency>
 		<!-- OpenAPI & Swagger -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
@@ -142,6 +138,11 @@
 			<groupId>com.googlecode.libphonenumber</groupId>
 			<artifactId>libphonenumber</artifactId>
 			<version>8.13.19</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.hsr</groupId>
+			<artifactId>geohash</artifactId>
+			<version>1.4.0</version>
 		</dependency>
 	</dependencies>
 
