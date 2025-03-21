@@ -1,3 +1,26 @@
+import { getConnectionController } from '@/api/connection-controller';
+import type { MatchingRecommendationsDTO } from '@/api/types';
+
+const connectionController = getConnectionController();
+
+export const connectionService = {
+  getRecommendations: async (): Promise<MatchingRecommendationsDTO> => {
+    try {
+      console.debug('🖖 ConnectionService: Making request');
+      const token = localStorage.getItem('authToken');
+      const response = await connectionController.getMatchingRecommendations({
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('❌ Error fetching connections', error);
+      throw error;
+    }
+  },
+};
+
 /**
  * Fetch all connections for the authenticated user.
  * @param token - The user's authentication token.

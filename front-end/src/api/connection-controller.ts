@@ -7,14 +7,53 @@
  */
 import * as axios from 'axios';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-import type { MatchingRecommendationsDTO } from './types';
+import type { ConnectionsDTO, MatchingRecommendationsDTO } from './types';
 
 export const getConnectionController = () => {
+  const sendConnectionRequest = <TData = AxiosResponse<void>>(
+    userId: number,
+    options?: AxiosRequestConfig
+  ): Promise<TData> => {
+    return axios.default.post(`http://localhost:8000/connections/requests/${userId}`, undefined, options);
+  };
+  const rejectConnectionRequest = <TData = AxiosResponse<void>>(
+    requestId: number,
+    options?: AxiosRequestConfig
+  ): Promise<TData> => {
+    return axios.default.patch(`http://localhost:8000/connections/requests/${requestId}/reject`, undefined, options);
+  };
+  const acceptConnectionRequest = <TData = AxiosResponse<void>>(
+    requestId: number,
+    options?: AxiosRequestConfig
+  ): Promise<TData> => {
+    return axios.default.patch(`http://localhost:8000/connections/requests/${requestId}/accept`, undefined, options);
+  };
+  const getConnections = <TData = AxiosResponse<ConnectionsDTO>>(options?: AxiosRequestConfig): Promise<TData> => {
+    return axios.default.get(`http://localhost:8000/connections`, options);
+  };
   const getMatchingRecommendations = <TData = AxiosResponse<MatchingRecommendationsDTO>>(
     options?: AxiosRequestConfig
   ): Promise<TData> => {
-    return axios.default.get(`http://localhost:8000/api/recommendations`, options);
+    return axios.default.get(`http://localhost:8000/connections/recommendations`, options);
   };
-  return { getMatchingRecommendations };
+  const disconnect = <TData = AxiosResponse<void>>(
+    connectionId: number,
+    options?: AxiosRequestConfig
+  ): Promise<TData> => {
+    return axios.default.delete(`http://localhost:8000/connections/${connectionId}`, options);
+  };
+  return {
+    sendConnectionRequest,
+    rejectConnectionRequest,
+    acceptConnectionRequest,
+    getConnections,
+    getMatchingRecommendations,
+    disconnect,
+  };
 };
+export type SendConnectionRequestResult = AxiosResponse<void>;
+export type RejectConnectionRequestResult = AxiosResponse<void>;
+export type AcceptConnectionRequestResult = AxiosResponse<void>;
+export type GetConnectionsResult = AxiosResponse<ConnectionsDTO>;
 export type GetMatchingRecommendationsResult = AxiosResponse<MatchingRecommendationsDTO>;
+export type DisconnectResult = AxiosResponse<void>;

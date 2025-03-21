@@ -12,7 +12,7 @@ type ConnectionState = Record<string, 'idle' | 'loading' | 'sent'>;
 
 async function fetchRecommendations() {
   try {
-    const response = await connectionService.getConnections();
+    const response = await connectionService.getRecommendations();
     console.log('Fetched recommendations:', response);
     return response;
   } catch (error) {
