@@ -4,10 +4,11 @@ import React, { useRef, useState } from 'react';
 import ReactAvatarEditor from 'react-avatar-editor';
 
 interface ProfilePictureUploaderProps {
+  currentImage: string | null;
   onUploadSuccess?: () => void;
 }
 
-const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ onUploadSuccess }) => {
+const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ currentImage, onUploadSuccess }) => {
   const [image, setImage] = useState<File | string | null>(null);
   const [scale, setScale] = useState<number | null>(1);
   const [position, setPosition] = useState<{ x: number; y: number }>({
@@ -15,6 +16,7 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ onUploa
     y: 0.5,
   });
   const editorRef = useRef<ReactAvatarEditor>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const MAX_AVATAR_SIZE_MB = parseInt(import.meta.env.VITE_MAX_AVATAR_SIZE_MB);
 
@@ -53,12 +55,32 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ onUploa
             },
           }
         );
-        alert('Profile picture uploaded!');
+        setImage(null);
         if (onUploadSuccess) onUploadSuccess();
       } catch (error) {
         console.error('Upload error:', error);
         alert('Failed to upload picture.');
       }
+    }
+  };
+
+  const handleRemove = async () => {
+    try {
+      const token = localStorage.getItem('authToken') || '';
+      await userService.updateProfilePicture(
+        { base64Image: null },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      setImage(null);
+      if (onUploadSuccess) onUploadSuccess();
+    } catch (error) {
+      console.error('Remove error:', error);
+      alert('Failed to remove picture.');
     }
   };
 
@@ -96,6 +118,8 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ onUploa
               />
             </div>
           </div>
+        ) : currentImage ? (
+          <img src={currentImage} alt="Profile Picture" className="size-48 rounded-lg object-cover" />
         ) : (
           <div className="flex h-24 w-36 items-center justify-center rounded-lg bg-gray-200 text-sm text-gray-500">
             No image selected
@@ -103,16 +127,9 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ onUploa
         )}
       </div>
 
-      {/* Right: File Input and Upload Button */}
+      {/* Right: Buttons */}
       <div className="flex flex-col items-center justify-center gap-4">
-        <label
-          htmlFor="image-upload"
-          className="flex w-full cursor-pointer items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
-        >
-          Choose File
-          <input id="image-upload" type="file" onChange={handleNewImage} accept="image/*" className="hidden" />
-        </label>
-        {image && (
+        {image ? (
           <button
             type="button"
             onClick={handleSubmit}
@@ -120,7 +137,33 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ onUploa
           >
             Upload
           </button>
+        ) : currentImage ? (
+          <>
+            <button
+              type="button"
+              onClick={handleRemove}
+              className="flex w-full items-center justify-center gap-2 self-start rounded-md bg-red-500 px-5 py-2 font-semibold tracking-wide text-white transition-colors hover:bg-red-600"
+            >
+              Remove
+            </button>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
+            >
+              Change
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
+          >
+            Choose File
+          </button>
         )}
+        <input ref={fileInputRef} type="file" onChange={handleNewImage} accept="image/*" className="hidden" />
       </div>
     </div>
   );

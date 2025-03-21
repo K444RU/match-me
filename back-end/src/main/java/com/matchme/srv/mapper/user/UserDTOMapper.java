@@ -9,39 +9,44 @@ import com.matchme.srv.dto.response.UserParametersResponseDTO;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.profile.Hobby;
 import com.matchme.srv.model.user.profile.UserProfile;
+
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.Base64;
 import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class UserDTOMapper {
-    public CurrentUserResponseDTO toCurrentUserResponseDTO(User user) {
+    public CurrentUserResponseDTO toCurrentUserResponseDTO(User user, boolean isOwner) {
         UserProfile profile = user.getProfile();
 
         String base64Picture = null;
-        if (profile != null
-                && profile.getProfilePicture() != null
-                && profile.getProfilePicture().length > 0) {
-            base64Picture = "data:image/png;base64,"
-                    + Base64.getEncoder().encodeToString(profile.getProfilePicture());
+        if (profile != null && profile.getProfilePicture() != null && profile.getProfilePicture().length > 0) {
+            base64Picture = "data:image/png;base64," + Base64.getEncoder().encodeToString(profile.getProfilePicture());
         }
 
         return CurrentUserResponseDTO.builder()
                 .id(user.getId())
-                .email(user.getEmail())
+                .email(isOwner ? user.getEmail() : null)
                 .firstName(profile != null ? profile.getFirst_name() : null)
                 .lastName(profile != null ? profile.getLast_name() : null)
                 .alias(profile != null ? profile.getAlias() : null)
                 .profilePicture(base64Picture)
                 .role(user.getRoles())
+                .profileLink("/api/users/" + user.getId() + "/profile")
                 .build();
     }
 
     public SettingsResponseDTO toSettingsResponseDTO(UserParametersResponseDTO parameters) {
+        String base64Picture = null;
+        if (parameters.profilePicture() != null && parameters.profilePicture().length > 0) {
+            base64Picture = "data:image/png;base64," + Base64.getEncoder().encodeToString(parameters.profilePicture());
+        }
+
         return SettingsResponseDTO.builder()
                 .email(parameters.email())
                 .number(parameters.number())
@@ -59,6 +64,7 @@ public class UserDTOMapper {
                 .ageMax(parameters.age_max())
                 .distance(parameters.distance())
                 .probabilityTolerance(parameters.probability_tolerance())
+                .profilePicture(base64Picture)
                 .build();
     }
 

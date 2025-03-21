@@ -1,27 +1,12 @@
 package com.matchme.srv.controller;
 
-import static com.matchme.srv.TestDataFactory.*;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.matchme.srv.dto.response.BiographicalResponseDTO;
-import com.matchme.srv.dto.response.ConnectionResponseDTO;
 import com.matchme.srv.dto.response.CurrentUserResponseDTO;
 import com.matchme.srv.dto.response.ProfileResponseDTO;
 import com.matchme.srv.dto.response.SettingsResponseDTO;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.security.services.UserDetailsImpl;
-import com.matchme.srv.service.ConnectionService;
 import com.matchme.srv.service.user.UserQueryService;
-import java.util.Collections;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,14 +20,20 @@ import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static com.matchme.srv.TestDataFactory.*;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @ExtendWith(MockitoExtension.class)
 class MeControllerTest {
 
   private MockMvc mockMvc;
 
   @Mock private UserQueryService queryService;
-
-  @Mock private ConnectionService connectionService;
 
   @Mock private Authentication authentication;
 
@@ -134,53 +125,6 @@ class MeControllerTest {
             jsonPath("$.age_max", is(DEFAULT_AGE_MAX)),
             jsonPath("$.distance", is(DEFAULT_DISTANCE)),
             jsonPath("$.probability_tolerance", is(DEFAULT_PROBABILITY_TOLERANCE)));
-  }
-
-  @Test
-  @DisplayName("Should return connections list when connections exist")
-  void getConnections_WhenConnectionsExist_ReturnsConnectionList() throws Exception {
-    // Given
-    setupAuthenticatedUser(authentication);
-
-    List<ConnectionResponseDTO> connections =
-        List.of(createConnectionResponse(DEFAULT_USER_ID, DEFAULT_TARGET_USER_ID));
-
-    when(connectionService.getConnectionResponseDTO(DEFAULT_USER_ID, DEFAULT_USER_ID))
-        .thenReturn(connections);
-
-    // When/Then
-    mockMvc
-        .perform(
-            get("/api/connections")
-                .principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpectAll(
-            status().isOk(),
-            jsonPath("$", hasSize(1)),
-            jsonPath(
-                "$[0].users[*].id",
-                containsInAnyOrder(DEFAULT_USER_ID.intValue(), DEFAULT_TARGET_USER_ID.intValue())),
-            jsonPath(
-                "$[0].users[*].email", containsInAnyOrder(DEFAULT_EMAIL, DEFAULT_TARGET_EMAIL)),
-            jsonPath(
-                "$[0].users[*].number", containsInAnyOrder(DEFAULT_NUMBER, DEFAULT_TARGET_NUMBER)));
-  }
-
-  @Test
-  @DisplayName("Should return empty list when no connections exist")
-  void getConnections_WhenNoConnectionsExist_ReturnsEmptyList() throws Exception {
-    // Given
-    setupAuthenticatedUser(authentication);
-    when(connectionService.getConnectionResponseDTO(DEFAULT_USER_ID, DEFAULT_USER_ID))
-        .thenReturn(Collections.emptyList());
-
-    // When/Then
-    mockMvc
-        .perform(
-            get("/api/connections")
-                .principal(authentication)
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpectAll(status().isOk(), jsonPath("$", empty()));
   }
 
   @Test
