@@ -10,12 +10,12 @@ import type { UserGenderType } from './userGenderType';
 import type { UserProfile } from './userProfile';
 
 export interface UserPreferences {
-  age_max?: number;
-  age_min?: number;
+  ageMax?: number;
+  ageMin?: number;
   distance?: number;
   gender?: UserGenderType;
   id?: number;
   preferenceChangeLog?: PreferenceChange[];
-  probability_tolerance?: number;
+  probabilityTolerance?: number;
   userProfile?: UserProfile;
 }

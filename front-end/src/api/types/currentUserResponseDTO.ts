@@ -13,6 +13,7 @@ export interface CurrentUserResponseDTO {
   firstName?: string;
   id?: number;
   lastName?: string;
+  profileLink?: string;
   profilePicture?: string;
   role?: UserRoleType[];
 }

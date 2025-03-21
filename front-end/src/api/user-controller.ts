@@ -11,7 +11,6 @@ import type {
   AccountSettingsRequestDTO,
   AttributesSettingsRequestDTO,
   BiographicalResponseDTO,
-  ConnectionResponseDTO,
   CurrentUserResponseDTO,
   PreferencesSettingsRequestDTO,
   ProfilePictureSettingsRequestDTO,
@@ -96,12 +95,6 @@ export const getUserController = () => {
   ): Promise<TData> => {
     return axios.default.get(`http://localhost:8000/api/users/${targetId}/profile`, options);
   };
-  const getConnections = <TData = AxiosResponse<ConnectionResponseDTO[]>>(
-    targetId: number,
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.get(`http://localhost:8000/api/users/${targetId}/connections`, options);
-  };
   const getBio = <TData = AxiosResponse<BiographicalResponseDTO>>(
     targetId: number,
     options?: AxiosRequestConfig
@@ -118,7 +111,6 @@ export const getUserController = () => {
     setParameters,
     getUser,
     getProfile,
-    getConnections,
     getBio,
   };
 };
@@ -131,5 +123,4 @@ export type VerifyAccountResult = AxiosResponse<void>;
 export type SetParametersResult = AxiosResponse<void>;
 export type GetUserResult = AxiosResponse<CurrentUserResponseDTO>;
 export type GetProfileResult = AxiosResponse<ProfileResponseDTO>;
-export type GetConnectionsResult = AxiosResponse<ConnectionResponseDTO[]>;
 export type GetBioResult = AxiosResponse<BiographicalResponseDTO>;

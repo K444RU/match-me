@@ -13,5 +13,9 @@ export interface AccountSettingsRequestDTO {
    * @pattern ^[^\s@]+@[^\s@]+\.[^\s@]+$
    */
   email: string;
+  /**
+   * @minLength 0
+   * @maxLength 20
+   */
   number: string;
 }

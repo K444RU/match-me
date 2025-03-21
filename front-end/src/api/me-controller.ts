@@ -7,13 +7,7 @@
  */
 import * as axios from 'axios';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-import type {
-  BiographicalResponseDTO,
-  ConnectionResponseDTO,
-  CurrentUserResponseDTO,
-  ProfileResponseDTO,
-  SettingsResponseDTO,
-} from './types';
+import type { BiographicalResponseDTO, CurrentUserResponseDTO, ProfileResponseDTO, SettingsResponseDTO } from './types';
 
 export const getMeController = () => {
   const getCurrentUser = <TData = AxiosResponse<CurrentUserResponseDTO>>(
@@ -34,15 +28,9 @@ export const getMeController = () => {
   ): Promise<TData> => {
     return axios.default.get(`http://localhost:8000/api/me/bio`, options);
   };
-  const getConnections1 = <TData = AxiosResponse<ConnectionResponseDTO[]>>(
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.get(`http://localhost:8000/api/connections`, options);
-  };
-  return { getCurrentUser, getParameters, getCurrentProfile, getCurrentBio, getConnections1 };
+  return { getCurrentUser, getParameters, getCurrentProfile, getCurrentBio };
 };
 export type GetCurrentUserResult = AxiosResponse<CurrentUserResponseDTO>;
 export type GetParametersResult = AxiosResponse<SettingsResponseDTO>;
 export type GetCurrentProfileResult = AxiosResponse<ProfileResponseDTO>;
 export type GetCurrentBioResult = AxiosResponse<BiographicalResponseDTO>;
-export type GetConnections1Result = AxiosResponse<ConnectionResponseDTO[]>;

@@ -9,7 +9,7 @@ import * as axios from 'axios';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import type { GenderTypeDTO } from './types';
 
-export const getGenderController = () => {
+export const getUserGenderTypeController = () => {
   const getAllGenders = <TData = AxiosResponse<GenderTypeDTO[]>>(options?: AxiosRequestConfig): Promise<TData> => {
     return axios.default.get(`http://localhost:8000/api/genders`, options);
   };
