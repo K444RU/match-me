@@ -7,7 +7,13 @@
  */
 import * as axios from 'axios';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-import type { ChatPreviewResponseDTO, GetChatMessagesParams, PageChatMessageResponseDTO } from './types';
+import type {
+  ChatMessageResponseDTO,
+  ChatPreviewResponseDTO,
+  GetChatMessagesParams,
+  MessagesSendRequestDTO,
+  PageChatMessageResponseDTO,
+} from './types';
 
 export const getChatController = () => {
   const getChatMessages = <TData = AxiosResponse<PageChatMessageResponseDTO>>(
@@ -20,12 +26,24 @@ export const getChatController = () => {
       params: { ...params, ...options?.params },
     });
   };
+  const sendChatMessage = <TData = AxiosResponse<ChatMessageResponseDTO>>(
+    connectionId: number,
+    messagesSendRequestDTO: MessagesSendRequestDTO,
+    options?: AxiosRequestConfig
+  ): Promise<TData> => {
+    return axios.default.post(
+      `http://localhost:8000/api/chats/${connectionId}/messages`,
+      messagesSendRequestDTO,
+      options
+    );
+  };
   const getChatPreviews = <TData = AxiosResponse<ChatPreviewResponseDTO[]>>(
     options?: AxiosRequestConfig
   ): Promise<TData> => {
     return axios.default.get(`http://localhost:8000/api/chats/previews`, options);
   };
-  return { getChatMessages, getChatPreviews };
+  return { getChatMessages, sendChatMessage, getChatPreviews };
 };
 export type GetChatMessagesResult = AxiosResponse<PageChatMessageResponseDTO>;
+export type SendChatMessageResult = AxiosResponse<ChatMessageResponseDTO>;
 export type GetChatPreviewsResult = AxiosResponse<ChatPreviewResponseDTO[]>;

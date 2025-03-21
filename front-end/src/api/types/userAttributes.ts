@@ -11,7 +11,7 @@ import type { UserProfile } from './userProfile';
 
 export interface UserAttributes {
   attributeChangeLog?: ProfileChange[];
-  birth_date?: string;
+  birthdate?: string;
   gender?: UserGenderType;
   id?: number;
   location?: number[];

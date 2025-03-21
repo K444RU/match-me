@@ -9,9 +9,9 @@
 export interface ChatPreviewResponseDTO {
   connectedUserAlias?: string;
   connectedUserFirstName?: string;
+  connectedUserId?: number;
   connectedUserLastName?: string;
   connectedUserProfilePicture?: string;
-  connectedUserId?: number;
   connectionId?: number;
   lastMessageContent?: string;
   lastMessageTimestamp?: string;

@@ -6,7 +6,7 @@
  * OpenAPI spec version: v0.0.1
  */
 
-export interface UserPair {
-  email1?: string;
-  email2?: string;
+export interface MessagesSendRequestDTO {
+  connectionId?: number;
+  content?: string;
 }
