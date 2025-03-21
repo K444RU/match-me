@@ -8,12 +8,13 @@ import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.profile.user_score.ConnectionResult;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 @Data
 @Entity
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "connections")
 public class Connection {
 
@@ -30,13 +31,18 @@ public class Connection {
 
   @OneToMany(mappedBy = "connection", cascade = CascadeType.ALL)
   @Builder.Default
+  @EqualsAndHashCode.Exclude
+  @ToString.Exclude
   private Set<ConnectionState> connectionStates = new HashSet<>();
 
   @OneToMany(mappedBy = "connection", cascade = CascadeType.ALL)
+  @EqualsAndHashCode.Exclude
+  @ToString.Exclude
   private Set<ConnectionResult> connectionResults;
 
   @OneToMany(mappedBy = "connection", cascade = CascadeType.ALL)
+  @EqualsAndHashCode.Exclude
+  @ToString.Exclude
   private Set<UserMessage> userMessages;
 
-  // Somewhere or in an added relationship, also ELO scores should be encoded...
 }

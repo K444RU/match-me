@@ -23,4 +23,5 @@ export interface SettingsResponseDTO {
   longitude?: number;
   number?: string;
   probabilityTolerance?: number;
+  profilePicture?: string;
 }

@@ -1,0 +1,51 @@
+import {Users, Star} from 'lucide-react';
+import {
+    DropdownMenuContent,
+    DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
+
+interface BlindMenuProps {
+    setIsConnectionsModalOpen: (open: boolean) => void;
+    setIsRecommendationsModalOpen: (open: boolean) => void;
+    setIsDropdownOpen: (open: boolean) => void;
+}
+
+const BlindMenu = ({
+                       setIsConnectionsModalOpen,
+                       setIsRecommendationsModalOpen,
+                       setIsDropdownOpen,
+                   }: BlindMenuProps) => {
+    return (
+        <DropdownMenuContent
+            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+            side="bottom"
+            align="start"
+            sideOffset={4}
+        >
+            <DropdownMenuItem
+                onSelect={(e) => {
+                    e.preventDefault();
+                    setIsConnectionsModalOpen(true);
+                    setIsDropdownOpen(false);
+                }}
+                className="cursor-pointer h-12"
+            >
+                <Users className="mr-2 h-4 w-4"/>
+                <span>Check my current Connections</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+                onSelect={(e) => {
+                    e.preventDefault();
+                    setIsRecommendationsModalOpen(true);
+                    setIsDropdownOpen(false);
+                }}
+                className="cursor-pointer h-12"
+            >
+                <Star className="mr-2 h-4 w-4"/>
+                <span>Get my new Matching Recommendations</span>
+            </DropdownMenuItem>
+        </DropdownMenuContent>
+    );
+};
+
+export default BlindMenu;

@@ -7,5 +7,5 @@
  */
 
 export interface ProfilePictureSettingsRequestDTO {
-  base64Image?: string;
+  base64Image?: string | null;
 }

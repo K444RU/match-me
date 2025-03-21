@@ -21,8 +21,6 @@ public record SettingsResponseDTO(
     Integer ageMin,
     Integer ageMax,
     Integer distance,
-    Double probabilityTolerance
-
-) {
-
-}
+    Double probabilityTolerance,
+    String profilePicture
+) {}
