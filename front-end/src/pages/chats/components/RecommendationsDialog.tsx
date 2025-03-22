@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { connectionService } from '@/features/chat';
+import { AxiosError } from 'axios';
 import { UserPlus } from 'lucide-react';
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -41,27 +42,48 @@ const RecommendationsDialog = ({
         const result = await fetchRecommendations();
         if (result) {
           setRecommendations(result);
+          const initialStates =
+            result?.recommendations?.reduce((acc, r) => {
+              acc[String(r.userId)] = r.connectionStatus === 'PENDING_SENT' ? 'sent' : 'idle';
+              return acc;
+            }, {} as ConnectionState) || {};
+          setConnectionStates(initialStates);
         }
       };
-
       fetchData();
     }
   }, [isOpen]);
 
   const handleSendConnectionRequest = useCallback(async (userId: number) => {
     try {
-      // TODO: Add send connection request functionality
       setConnectionStates((prev) => ({ ...prev, [userId]: 'loading' }));
       setTimeout(() => {
         console.log(`Sent request to: ${userId}`);
         setConnectionStates((prev) => ({ ...prev, [userId]: 'sent' }));
       }, 1000);
     } catch (error) {
-      toast.error('Failed to send a connection request');
-      console.error('Error sending a connection request:', error);
-      setConnectionStates((prev) => ({ ...prev, [userId]: 'idle' }));
+      if (error instanceof AxiosError) {
+        if (error.response?.data?.message === 'A pending request already exists from you to this user') {
+          toast.info('Request already sent');
+          setConnectionStates((prev) => ({ ...prev, [String(userId)]: 'sent' }));
+        } else {
+          toast.error('Failed to send connection request');
+          console.error('Error sending connection request:', error);
+          setConnectionStates((prev) => ({ ...prev, [String(userId)]: 'idle' }));
+        }
+      } else {
+        toast.error('An unexpected error occurred');
+        console.error('Unexpected error:', error);
+        setConnectionStates((prev) => ({ ...prev, [String(userId)]: 'idle' }));
+      }
     }
   }, []);
+
+  const statusText = {
+    PENDING_SENT: 'Request Sent',
+    PENDING_RECEIVED: 'Request Received',
+    ACCEPTED: 'Connected',
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -81,22 +103,24 @@ const RecommendationsDialog = ({
                   </Avatar>
                   <span>{`${r.firstName} ${r.lastName}`}</span>
                 </div>
-                <Button
-                  onClick={() => handleSendConnectionRequest(r.userId)}
-                  disabled={connectionStates[r.userId] === 'loading' || connectionStates[r.userId] === 'sent'}
-                >
-                  {connectionStates[r.userId] === 'sent' ? (
-                    'Sent'
-                  ) : connectionStates[r.userId] === 'loading' ? (
-                    <>
-                      <MotionSpinner />{' '}
-                    </>
-                  ) : (
-                    <>
-                      Add <UserPlus />
-                    </>
-                  )}
-                </Button>
+                {r.connectionStatus === 'NONE' ? (
+                  <Button
+                    onClick={() => handleSendConnectionRequest(r.userId)}
+                    disabled={connectionStates[r.userId] === 'loading' || connectionStates[r.userId] === 'sent'}
+                  >
+                    {connectionStates[r.userId] === 'loading' ? (
+                      <MotionSpinner />
+                    ) : connectionStates[r.userId] === 'sent' ? (
+                      'Sent'
+                    ) : (
+                      <>
+                        Add <UserPlus />
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <span>{statusText[r.connectionStatus as keyof typeof statusText] || r.connectionStatus}</span>
+                )}
               </div>
             ))}
         </div>

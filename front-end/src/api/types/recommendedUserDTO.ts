@@ -8,6 +8,8 @@
 
 export interface RecommendedUserDTO {
   age: number;
+  connectionId?: number;
+  connectionStatus?: string;
   distance: number;
   firstName: string;
   gender: string;

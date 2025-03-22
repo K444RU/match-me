@@ -1,28 +1,23 @@
 package com.matchme.srv.service;
 
+import com.matchme.srv.dto.response.ConnectionsDTO;
 import com.matchme.srv.dto.response.MatchingRecommendationsDTO;
 import com.matchme.srv.dto.response.MatchingRecommendationsDTO.RecommendedUserDTO;
 import com.matchme.srv.exception.PotentialMatchesNotFoundException;
 import com.matchme.srv.exception.ResourceNotFoundException;
+import com.matchme.srv.model.connection.ConnectionProvider;
 import com.matchme.srv.model.connection.DatingPool;
 import com.matchme.srv.model.user.profile.Hobby;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
 import com.matchme.srv.repository.MatchingRepository;
 import com.matchme.srv.repository.UserProfileRepository;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +31,7 @@ import java.util.stream.Collectors;
  * - Gender preferences
  */
 @Service
+@RequiredArgsConstructor
 public class MatchingService {
 
   /**
@@ -61,16 +57,11 @@ public class MatchingService {
    */
   private static final double MAXIMUM_PROBABILITY = 0.91;
 
-  private final MatchingRepository matchingRepository;
-  private final UserProfileRepository userProfileRepository;
-
   private static final String USER_PROFILE_NOT_FOUND_MESSAGE = "UserProfile for user ";
 
-  @Autowired
-  public MatchingService(MatchingRepository matchingRepository, UserProfileRepository userProfileRepository) {
-    this.matchingRepository = matchingRepository;
-    this.userProfileRepository = userProfileRepository;
-  }
+  private final MatchingRepository matchingRepository;
+  private final UserProfileRepository userProfileRepository;
+  private final ConnectionService connectionService;
 
   /**
    * Retrieves and constructs detailed recommendation profiles for potential
@@ -81,7 +72,7 @@ public class MatchingService {
    * 1. Retrieving the requesting user's profile and location
    * 2. Getting potential matches using the matching algorithm
    * 3. Enriching each match with detailed profile information.
-   * 
+   *
    * @param userId The ID of the user requesting recommendations
    * @return MatchingRecommendationsDTO containing a list of recommended users
    *         with their complete profiles
@@ -98,10 +89,26 @@ public class MatchingService {
           .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + userId.toString()));
 
       Long profileId = myProfile.getId();
-
       List<Double> myLocation = myProfile.getAttributes().getLocation();
-
       Map<Long, Double> possibleMatches = getPossibleMatches(profileId);
+
+      ConnectionsDTO connections = connectionService.getConnections(profileId);
+
+      Map<Long, String> connectionStatus = new HashMap<>();
+      Map<Long, Long> connectionIds = new HashMap<>();
+
+      for (ConnectionProvider cp : connections.getActive()) {
+        connectionStatus.put(cp.getUserId(), "ACCEPTED");
+        connectionIds.put(cp.getUserId(), cp.getConnectionId());
+      }
+      for (ConnectionProvider cp : connections.getPendingOutgoing()) {
+        connectionStatus.put(cp.getUserId(), "PENDING_SENT");
+        connectionIds.put(cp.getUserId(), cp.getConnectionId());
+      }
+      for (ConnectionProvider cp : connections.getPendingIncoming()) {
+        connectionStatus.put(cp.getUserId(), "PENDING_RECEIVED");
+        connectionIds.put(cp.getUserId(), cp.getConnectionId());
+      }
 
       MatchingRecommendationsDTO response = new MatchingRecommendationsDTO();
       List<RecommendedUserDTO> recommendations = new ArrayList<>();
@@ -140,6 +147,12 @@ public class MatchingService {
         dto.setGender(attributes.getGender().toString());
         dto.setDistance(calculateDistance(myLocation, attributes.getLocation()));
         dto.setProbability(matchScore);
+
+        String status = connectionStatus.getOrDefault(matchUserId, "NONE");
+        dto.setConnectionStatus(status);
+        if (!"NONE".equals(status)) {
+          dto.setConnectionId(connectionIds.get(matchUserId));
+        }
 
         recommendations.add(dto);
       }
@@ -214,7 +227,7 @@ public class MatchingService {
    * 3. Calculating match probability based on ELO scores and mutual interests
    * 4. Filtering and sorting matches by probability
    * 
-   * @param userId User ID to find matches for
+   * @param profileId User ID to find matches for
    * @return Map of user IDs to match probability scores, sorted by probability in
    *         descending order
    * @throws ResourceNotFoundException         if the user is not found

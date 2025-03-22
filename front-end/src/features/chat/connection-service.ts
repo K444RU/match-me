@@ -6,7 +6,7 @@ const connectionController = getConnectionController();
 export const connectionService = {
   getRecommendations: async (): Promise<MatchingRecommendationsDTO> => {
     try {
-      console.debug('🖖 ConnectionService: Making request');
+      console.debug('ConnectionService: Making request');
       const token = localStorage.getItem('authToken');
       const response = await connectionController.getMatchingRecommendations({
         headers: {
@@ -15,7 +15,18 @@ export const connectionService = {
       });
       return response.data;
     } catch (error) {
-      console.error('❌ Error fetching connections', error);
+      console.error('Error fetching recommendations:', error);
+      throw error;
+    }
+  },
+  sendConnectionRequest: async (userId: number): Promise<void> => {
+    try {
+      const token = localStorage.getItem('authToken');
+      await connectionController.sendConnectionRequest(userId, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (error) {
+      console.error('Error sending connection request:', error);
       throw error;
     }
   },
@@ -27,19 +38,22 @@ export const connectionService = {
  * @returns Promise resolving to the connections data.
  */
 export const getConnections = async (token: string) => {
-  const response = await fetch('http://localhost:8000/connections', {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch connections');
+  try {
+    const response = await fetch('http://localhost:8000/connections', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch connections');
+    }
+    return response.json();
+  } catch (error) {
+    console.error('Error fetching connections:', error);
+    throw error;
   }
-
-  return response.json();
 };
 
 /**
@@ -49,16 +63,20 @@ export const getConnections = async (token: string) => {
  * @returns Promise resolving to the updated connection data.
  */
 export const acceptConnection = async (requestId: string, token: string) => {
-  const response = await fetch(`http://localhost:8000/connections/requests/${requestId}/accept`, {
-    method: 'PATCH',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to accept connection');
+  try {
+    const response = await fetch(`http://localhost:8000/connections/requests/${requestId}/accept`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to accept connection');
+    }
+  } catch (error) {
+    console.error('Error accepting connection:', error);
+    throw error;
   }
 };
 
@@ -69,16 +87,20 @@ export const acceptConnection = async (requestId: string, token: string) => {
  * @returns Promise resolving to the updated connection data.
  */
 export const rejectConnection = async (requestId: string, token: string) => {
-  const response = await fetch(`http://localhost:8000/connections/requests/${requestId}/reject`, {
-    method: 'PATCH',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to reject connection');
+  try {
+    const response = await fetch(`http://localhost:8000/connections/requests/${requestId}/reject`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to reject connection');
+    }
+  } catch (error) {
+    console.error('Error rejecting connection:', error);
+    throw error;
   }
 };
 
@@ -89,15 +111,19 @@ export const rejectConnection = async (requestId: string, token: string) => {
  * @returns Promise resolving to the disconnection confirmation.
  */
 export const disconnectConnection = async (connectionId: string, token: string) => {
-  const response = await fetch(`http://localhost:8000/connections/${connectionId}`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to disconnect');
+  try {
+    const response = await fetch(`http://localhost:8000/connections/${connectionId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to disconnect');
+    }
+  } catch (error) {
+    console.error('Error disconnecting connection:', error);
+    throw error;
   }
 };
