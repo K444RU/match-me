@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { StompSessionProvider } from "react-stomp-hooks";
 import { MessagesSendRequestDTOWithSender } from "@/api/types";
-import { InnerWebSocketProvider } from "./InnerWebSocketProvider";
+import { InnerWebSocketProvider } from "./inner-websocket-provider";
 
 
 interface WebSocketProviderProps {

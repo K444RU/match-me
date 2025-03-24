@@ -1,3 +1,3 @@
-export { ChatContext } from './ChatContext';
-export { chatService } from './chat-service';
-export { connectionService } from './connection-service';
+export { ChatContext } from './context/chat-context';
+export { chatService } from './services/chat-service';
+export { connectionService } from './services/connection-service';

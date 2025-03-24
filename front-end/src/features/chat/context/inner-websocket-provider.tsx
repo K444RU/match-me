@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { useWebSocketConnection } from "./use-websocket-connection";
+import { useWebSocketConnection } from "../hooks/use-websocket-connection";
 import { MessagesSendRequestDTOWithSender } from "@/api/types";
 import { WebSocketContext } from "./websocket-context";
 
