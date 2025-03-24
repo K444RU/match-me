@@ -2,7 +2,7 @@ import { LoginRequestDTO } from '@/api/types';
 import { authService } from '@/features/authentication';
 import { meService } from '@/features/user';
 import { ReactNode, useState } from 'react';
-import { AuthContext, User } from './AuthContext';
+import { AuthContext, User } from './auth-context';
 
 interface AuthProviderProps {
   children: ReactNode;
