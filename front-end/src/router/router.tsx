@@ -3,7 +3,6 @@ import { LoginPage, RegisterPage } from '@/features/authentication';
 import PageNotFound from '@/pages/404Page';
 import ProfileCompletionPage from '@/pages/profile-completion/ProfileCompletionPage';
 import UserProfilePage from '@/pages/profile/UserProfilePage.tsx';
-import TestPage from '@/pages/test/TestPage';
 import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import ChatsPage from '../pages/chats/ChatsPage';
@@ -37,7 +36,6 @@ export const routes = createRoutesFromElements(
         <Route path="profile-completion" element={<ProfileCompletionPage />} />
         <Route path="chats" element={<ChatsPage />} />
         <Route path="logout" element={<LogoutPage />} />
-        <Route path="test" element={<TestPage />} />
         <Route path="me" element={<UserProfilePage />} />
         <Route path=":id/profile" element={<UserProfilePage />} />
       </Route>
