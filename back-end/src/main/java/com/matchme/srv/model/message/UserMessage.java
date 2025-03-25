@@ -2,32 +2,34 @@ package com.matchme.srv.model.message;
 
 import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.model.user.User;
-
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
-
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(exclude = "messageEvents")
 @Table(name = "user_messages")
 public class UserMessage {
-  
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @NotNull
-  @JoinColumn(name = "user_id")
-  private User user;
+  @JoinColumn(name = "sender_id")
+  private User sender;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @NotNull

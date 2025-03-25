@@ -114,6 +114,7 @@ class ChatControllerTest {
         new ChatMessageResponseDTO(
             DEFAULT_MESSAGE_ID,
             DEFAULT_CONNECTION_ID,
+            DEFAULT_USER_ID,
             DEFAULT_TARGET_ALIAS,
             DEFAULT_MESSAGE_CONTENT,
             Instant.now());
