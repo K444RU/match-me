@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
-import { useDebounce } from '@/lib/hooks/useDebounce';
+import { useDebounce } from '@/lib/hooks/use-debounce';
 import { cn } from '@/lib/utils';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Command as CommandPrimitive, useCommandState } from 'cmdk';

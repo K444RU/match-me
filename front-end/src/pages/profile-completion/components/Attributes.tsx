@@ -6,7 +6,7 @@ import { HOBBIES } from '@/assets/hobbies';
 import MotionSpinner from '@/components/animations/MotionSpinner';
 import { Label } from '@/components/ui/label';
 import MultipleSelector, { Option } from '@/components/ui/multi-select';
-import { useDebounce } from '@/lib/hooks/useDebounce';
+import { useDebounce } from '@/lib/hooks/use-debounce';
 import { hobbiesById } from '@/lib/utils/dataConversion';
 import DatePicker from '@ui/forms/DatePicker.tsx';
 import ProfilePictureUploader from '@ui/forms/ProfilePictureUploader.tsx';

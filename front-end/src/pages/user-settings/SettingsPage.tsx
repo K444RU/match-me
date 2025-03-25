@@ -5,8 +5,7 @@ import { useAuth } from '@/features/authentication';
 import { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SettingsContext } from './SettingsContext';
-import { GenderContext } from '@/features/gender';
-import { genderService } from '@/features/gender';
+import { GenderContext, genderService } from '@/features/gender';
 import UserAccountCard from './components/UserAccountCard';
 import { toast } from "sonner"
 import { meService } from '@/features/user';

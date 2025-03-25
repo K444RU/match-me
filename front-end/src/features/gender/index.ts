@@ -1,2 +1,2 @@
 export { genderService } from './services/gender-service';
-export { GenderContext } from './GenderContext';
+export { GenderContext } from './context/gender-context';

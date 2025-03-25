@@ -9,10 +9,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { useAuth } from '@/features/authentication';
+import { chatService } from '@/features/chat';
 import { cn } from '@/lib/utils';
 import { ChatPreview } from '@/types/api';
-import { useAuth } from '@features/authentication/AuthContext.tsx';
-import { chatService } from '@features/chat';
 import { ChevronDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { IFrame, StompSessionProvider } from 'react-stomp-hooks';
@@ -47,7 +47,7 @@ const AppSidebar = ({ onChatSelect }: { onChatSelect: (chat: ChatPreview) => voi
         console.error('Failed to fetch chats: ', error);
       }
     })();
-  }, [user]);
+  }, [user, getChatPreviews]);
 
   const wsConfig = {
     url: 'http://localhost:8000/ws',

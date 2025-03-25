@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { GenderContext } from '@/features/gender';
 import { userService } from '@/features/user';
-import { useDebounce } from '@/lib/hooks/useDebounce';
+import { useDebounce } from '@/lib/hooks/use-debounce';
 import { CitySuggestions } from '@/pages/profile-completion/components/CitySuggestions';
 import { City } from '@/pages/profile-completion/types/types';
 import { useContext, useEffect, useState } from 'react';
