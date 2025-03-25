@@ -67,16 +67,9 @@ const UnifiedForm = () => {
 
   const handleFinalSubmit = async () => {
     setLoading(true);
-    const token = localStorage.getItem('authToken');
     const payload = PayloadFormData(formData);
     try {
-      await userService.updateParameters(payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
+      await userService.updateParameters(payload);
       localStorage.removeItem('profileData');
       await fetchCurrentUser();
       navigate('/chats');
