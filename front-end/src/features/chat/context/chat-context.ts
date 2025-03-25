@@ -1,11 +1,40 @@
-import { ChatPreview } from '@/types/api';
-import { createContext } from 'react';
+import { ChatPreviewResponseDTO, MessagesSendRequestDTO } from '@/api/types';
+import { createContext, useContext } from 'react';
 
-interface ChatContext {
-  chatPreviews: ChatPreview[] | null;
-  openChat: number | null; // connectionId
-  refreshChats: () => Promise<void>;
-  setOpenChat: (chatId: number | null) => void;
+export interface ChatContextType {
+  chatPreviews: ChatPreviewResponseDTO[];
+  openChat: ChatPreviewResponseDTO | null;
+  refreshChats: () => void;
+  setOpenChat: (chat: ChatPreviewResponseDTO | null) => void;
+  sendMessage: (message: MessagesSendRequestDTO) => Promise<void>;
+  sendTypingIndicator: (connectionId: string) => void;
 }
 
-export const ChatContext = createContext<ChatContext | null>(null);
+// Default values for the context to avoid null checks
+const defaultContext: ChatContextType = {
+  chatPreviews: [],
+  openChat: null,
+  refreshChats: () => {
+    console.warn('ChatContext not initialized');
+  },
+  setOpenChat: () => {
+    console.warn('ChatContext not initialized');
+  },
+  sendMessage: async () => {
+    console.warn('ChatContext not initialized');
+  },
+  sendTypingIndicator: () => {
+    console.warn('ChatContext not initialized');
+  },
+};
+
+export const ChatContext = createContext<ChatContextType>(defaultContext);
+
+export const useChat = (): ChatContextType => {
+  const context = useContext(ChatContext);
+  if (!context) {
+    console.error('useChat must be used within a ChatProvider');
+    return defaultContext;
+  }
+  return context;
+};
