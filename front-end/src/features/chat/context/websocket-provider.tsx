@@ -1,47 +1,34 @@
-import { ReactNode } from "react";
-import { StompSessionProvider } from "react-stomp-hooks";
-import { MessagesSendRequestDTOWithSender } from "@/api/types";
-import { InnerWebSocketProvider } from "./inner-websocket-provider";
-
+import { useAuth } from '@/features/authentication/';
+import { ReactNode } from 'react';
+import { StompSessionProvider } from 'react-stomp-hooks';
+import WebSocketConnectionManager from './connection-manager';
 
 interface WebSocketProviderProps {
   children: ReactNode;
   wsUrl: string;
-  token: string;
 }
 
-export const WebSocketProvider = ({ children, wsUrl, token }: WebSocketProviderProps) => {
+export const WebSocketProvider = ({ children, wsUrl }: WebSocketProviderProps) => {
+  const { user: currentUser } = useAuth();
 
-  const handleMessage = (message: MessagesSendRequestDTOWithSender) => {
-
-  };
-
-  const handleTypingIndicator = (userId: string, isTyping: boolean) => {
-
-  };
-
-  const handleOnlineIndicator = (userId: string, isOnline: boolean) => {
-
+  // Simple early return if no user
+  if (!currentUser?.id) {
+    return null;
   }
-
-  const handleConnectionChange = (connected: boolean) => {
-
-  };
 
   return (
     <StompSessionProvider
       url={wsUrl}
-      connectHeaders={{ Authorization: `Bearer ${token}`}}
-      debug={import.meta.env.DEV ? console.log : undefined}
+      connectHeaders={{ Authorization: `Bearer ${currentUser.token}` }}
+      debug={(msg: string) => console.log('STOMP DEBUG:', msg)}
+      reconnectDelay={5000}
+      heartbeatIncoming={4000}
+      heartbeatOutgoing={4000}
+      onStompError={(frame) => {
+        console.log('STOMP error:', frame);
+      }}
     >
-      	<InnerWebSocketProvider
-	  		onMessage={handleMessage}
-			onTypingIndicator={handleTypingIndicator}
-			onOnlineIndicator={handleOnlineIndicator}
-			onConnectionChange={handleConnectionChange}
-	  	>
-			{children}
-		</InnerWebSocketProvider>
+      <WebSocketConnectionManager user={currentUser}>{children}</WebSocketConnectionManager>
     </StompSessionProvider>
-  )
-}
+  );
+};

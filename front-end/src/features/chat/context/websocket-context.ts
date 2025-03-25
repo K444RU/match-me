@@ -1,20 +1,39 @@
-import { MessagesSendRequestDTOWithSender } from '@/api/types';
+import { ChatMessageResponseDTO, ChatPreviewResponseDTO, MessagesSendRequestDTO } from '@/api/types';
 import { createContext, useContext } from 'react';
 
-
-interface WebSocketContextType {
-	isConnected: boolean;
-	sendMessage: (message: MessagesSendRequestDTOWithSender) => Promise<void>;
-	sendTypingIndicator: (userId: string) => void;
-	sendOnlineIndicator: (userId: string) => void;
+export interface WebSocketContextType {
+  connected: boolean;
+  sendMessage: (message: MessagesSendRequestDTO) => Promise<void>;
+  sendTypingIndicator: (connectionId: string) => void;
+  reconnect: () => void;
+  messages: ChatMessageResponseDTO[];
+  typingUsers: Record<string, boolean>;
+  chatPreviews: ChatPreviewResponseDTO[];
 }
 
-export const WebSocketContext = createContext<WebSocketContextType | undefined>(undefined);
+const defaultContext: WebSocketContextType = {
+  connected: false,
+  sendMessage: async () => {
+    console.error('WebSocket context not initialized');
+  },
+  sendTypingIndicator: () => {
+    console.error('WebSocket context not initialized');
+  },
+  reconnect: () => {
+    console.error('WebSocket context not initialized');
+  },
+  messages: [],
+  typingUsers: {},
+  chatPreviews: [],
+};
 
-export const useWebSocket = () => {
-	const context = useContext(WebSocketContext);
-	if (!context) {
-		throw new Error('useWebSocket must be used within WebSocketProvider');
-	}
-	return context;
-}
+export const WebSocketContext = createContext<WebSocketContextType>(defaultContext);
+
+export const useWebSocket = (): WebSocketContextType => {
+  const context = useContext(WebSocketContext);
+  if (!context) {
+    console.error('useWebSocket must be used within WebSocketProvider');
+    return defaultContext;
+  }
+  return context;
+};
