@@ -15,5 +15,5 @@ export interface UserMessage {
   createdAt?: string;
   id?: number;
   messageEvents?: MessageEvent[];
-  user: User;
+  sender: User;
 }
