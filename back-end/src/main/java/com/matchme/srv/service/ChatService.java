@@ -168,10 +168,11 @@ public class ChatService {
         Page<UserMessage> messages = userMessageRepository.findByConnectionIdOrderByCreatedAtDesc(connectionId, pageable);
 
         return messages.map(message -> {
-            User sender = message.getUser();
+            User sender = message.getSender();
             return new ChatMessageResponseDTO(
                     connectionId,
                     message.getId(),
+                    sender.getId(),
                     sender.getProfile().getAlias(),
                     message.getContent(),
                     message.getCreatedAt()
@@ -213,7 +214,7 @@ public class ChatService {
 
         UserMessage message = UserMessage.builder()
                 .connection(connection)
-                .user(connection.getUsers().stream()
+                .sender(connection.getUsers().stream()
                         .filter(user -> user.getId().equals(senderId))
                         .findFirst()
                         .orElseThrow(() -> new IllegalArgumentException("User not found")))
@@ -232,7 +233,8 @@ public class ChatService {
         return new ChatMessageResponseDTO(
                 savedMessage.getId(),
                 connectionId,
-                savedMessage.getUser().getProfile().getAlias(),
+                senderId,
+                savedMessage.getSender().getProfile().getAlias(),
                 savedMessage.getContent(),
                 savedMessage.getCreatedAt()
         );

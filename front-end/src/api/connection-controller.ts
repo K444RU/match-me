@@ -5,42 +5,36 @@
  * kood/Jõhvi match-me task API
  * OpenAPI spec version: v0.0.1
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { customInstance } from '../lib/custom-axios-instance';
 import type { ConnectionsDTO, MatchingRecommendationsDTO } from './types';
 
 export const getConnectionController = () => {
-  const sendConnectionRequest = <TData = AxiosResponse<void>>(
-    userId: number,
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.post(`http://localhost:8000/connections/requests/${userId}`, undefined, options);
+  const sendConnectionRequest = (userId: number) => {
+    return customInstance<void>({ url: `http://localhost:8000/connections/requests/${userId}`, method: 'POST' });
   };
-  const rejectConnectionRequest = <TData = AxiosResponse<void>>(
-    requestId: number,
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.patch(`http://localhost:8000/connections/requests/${requestId}/reject`, undefined, options);
+  const rejectConnectionRequest = (requestId: number) => {
+    return customInstance<void>({
+      url: `http://localhost:8000/connections/requests/${requestId}/reject`,
+      method: 'PATCH',
+    });
   };
-  const acceptConnectionRequest = <TData = AxiosResponse<void>>(
-    requestId: number,
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.patch(`http://localhost:8000/connections/requests/${requestId}/accept`, undefined, options);
+  const acceptConnectionRequest = (requestId: number) => {
+    return customInstance<void>({
+      url: `http://localhost:8000/connections/requests/${requestId}/accept`,
+      method: 'PATCH',
+    });
   };
-  const getConnections = <TData = AxiosResponse<ConnectionsDTO>>(options?: AxiosRequestConfig): Promise<TData> => {
-    return axios.default.get(`http://localhost:8000/connections`, options);
+  const getConnections = () => {
+    return customInstance<ConnectionsDTO>({ url: `http://localhost:8000/connections`, method: 'GET' });
   };
-  const getMatchingRecommendations = <TData = AxiosResponse<MatchingRecommendationsDTO>>(
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.get(`http://localhost:8000/connections/recommendations`, options);
+  const getMatchingRecommendations = () => {
+    return customInstance<MatchingRecommendationsDTO>({
+      url: `http://localhost:8000/connections/recommendations`,
+      method: 'GET',
+    });
   };
-  const disconnect = <TData = AxiosResponse<void>>(
-    connectionId: number,
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.delete(`http://localhost:8000/connections/${connectionId}`, options);
+  const disconnect = (connectionId: number) => {
+    return customInstance<void>({ url: `http://localhost:8000/connections/${connectionId}`, method: 'DELETE' });
   };
   return {
     sendConnectionRequest,
@@ -51,9 +45,21 @@ export const getConnectionController = () => {
     disconnect,
   };
 };
-export type SendConnectionRequestResult = AxiosResponse<void>;
-export type RejectConnectionRequestResult = AxiosResponse<void>;
-export type AcceptConnectionRequestResult = AxiosResponse<void>;
-export type GetConnectionsResult = AxiosResponse<ConnectionsDTO>;
-export type GetMatchingRecommendationsResult = AxiosResponse<MatchingRecommendationsDTO>;
-export type DisconnectResult = AxiosResponse<void>;
+export type SendConnectionRequestResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getConnectionController>['sendConnectionRequest']>>
+>;
+export type RejectConnectionRequestResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getConnectionController>['rejectConnectionRequest']>>
+>;
+export type AcceptConnectionRequestResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getConnectionController>['acceptConnectionRequest']>>
+>;
+export type GetConnectionsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getConnectionController>['getConnections']>>
+>;
+export type GetMatchingRecommendationsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getConnectionController>['getMatchingRecommendations']>>
+>;
+export type DisconnectResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getConnectionController>['disconnect']>>
+>;

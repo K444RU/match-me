@@ -4,3 +4,4 @@ export { default as Login } from './components/PopUpForm';
 export { useAuth } from './hooks/use-auth';
 export { authService } from './services/auth-service';
 export { AuthProvider } from './context/auth-provider';
+export type { User } from './context/auth-context';

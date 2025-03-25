@@ -1,5 +1,6 @@
 package com.matchme.srv.dto.request;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 /*
@@ -15,7 +16,10 @@ The receiving client updates the UI to show “User is typing...” if isTyping 
 */
 @Data
 public class TypingStatusRequestDTO {
+    @NotNull
     private Long connectionId;
+    @NotNull
     private Long senderId;
-    private boolean isTyping;
+    @NotNull
+    private Boolean isTyping;
 }

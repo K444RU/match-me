@@ -1,41 +1,25 @@
-import { useCallback, useEffect, useState } from 'react';
-import OpenChat from './components/OpenChat';
-import AppSidebar from './components/AppSidebar';
-import { ChatPreview } from '@/types/api';
+import { ChatPreviewResponseDTO } from '@/api/types';
 import { Toaster } from '@/components/ui/sonner';
-import { useAuth } from '@/features/authentication';
-import { getMockChatPreviews } from '@/mocks/chatData';
-import { ChatContext } from '@/features/chat';
+import { useChat } from '@/features/chat';
+import { useEffect, useState } from 'react';
+import AppSidebar from './components/AppSidebar';
+import OpenChat from './components/OpenChat';
 
-const ChatsPage = () => {
-    const [chats, setChats] = useState<ChatPreview[]>([]);
-    const [openChat, setOpenChat] = useState<number | null>(null);
-    const { user } = useAuth();
+export default function ChatsPage() {
+  const [selectedChat, setSelectedChat] = useState<ChatPreviewResponseDTO | null>(null);
+  const { setOpenChat } = useChat();
 
-    const refreshChats = useCallback(async () => {
-        if (!user) return;
-        try {
-            setChats(getMockChatPreviews(user));
-        } catch (error) {
-            console.error('Failed to refresh chats: ', error);
-        }
-    }, [user])
+  useEffect(() => {
+    setOpenChat(selectedChat ?? null);
+  }, [selectedChat, setOpenChat]);
 
-    useEffect(() => {
-        refreshChats();
-    }, [refreshChats]);
-
-    return (
-        <ChatContext.Provider
-            value={{ chatPreviews: chats, openChat, refreshChats, setOpenChat }}
-        >
-            <div className="flex w-screen">
-                <AppSidebar />
-                <OpenChat />
-            </div>
-            <Toaster className="bg-black text-white" />
-        </ChatContext.Provider>
-    );
-};
-
-export default ChatsPage;
+  return (
+    <>
+      <div className="flex w-screen">
+        <AppSidebar onChatSelect={setSelectedChat} />
+        <OpenChat />
+      </div>
+      <Toaster />
+    </>
+  );
+}

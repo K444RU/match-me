@@ -6,7 +6,7 @@
  * OpenAPI spec version: v0.0.1
  */
 
-export interface MessagesSendRequestDTO {
-  connectionId: number;
-  content: string;
+export interface ConnectionProvider {
+  connectionId?: number;
+  userId?: number;
 }

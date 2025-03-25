@@ -74,7 +74,8 @@ class ChatServiceTest {
             .id(1L)
             .content(MESSAGE_CONTENT)
             .createdAt(Instant.now())
-            .user(otherUser)
+            .sender(otherUser)
+            .connection(connection)
             .messageEvents(new HashSet<>(Set.of(messageEvent)))
             .build();
 
@@ -197,7 +198,8 @@ class ChatServiceTest {
               .id(1L)
               .content(MESSAGE_CONTENT)
               .createdAt(timestamp)
-              .user(user)
+              .sender(user)
+              .connection(connection)
               .messageEvents(new HashSet<>())
               .build();
 

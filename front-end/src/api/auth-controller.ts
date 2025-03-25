@@ -5,24 +5,29 @@
  * kood/Jõhvi match-me task API
  * OpenAPI spec version: v0.0.1
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { customInstance } from '../lib/custom-axios-instance';
 import type { JwtResponseDTO, LoginRequestDTO, SignupRequestDTO } from './types';
 
 export const getAuthController = () => {
-  const registerUser = <TData = AxiosResponse<void>>(
-    signupRequestDTO: SignupRequestDTO,
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.post(`http://localhost:8000/api/auth/signup`, signupRequestDTO, options);
+  const registerUser = (signupRequestDTO: SignupRequestDTO) => {
+    return customInstance<void>({
+      url: `http://localhost:8000/api/auth/signup`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: signupRequestDTO,
+    });
   };
-  const authenticateUser = <TData = AxiosResponse<JwtResponseDTO>>(
-    loginRequestDTO: LoginRequestDTO,
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.post(`http://localhost:8000/api/auth/signin`, loginRequestDTO, options);
+  const authenticateUser = (loginRequestDTO: LoginRequestDTO) => {
+    return customInstance<JwtResponseDTO>({
+      url: `http://localhost:8000/api/auth/signin`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: loginRequestDTO,
+    });
   };
   return { registerUser, authenticateUser };
 };
-export type RegisterUserResult = AxiosResponse<void>;
-export type AuthenticateUserResult = AxiosResponse<JwtResponseDTO>;
+export type RegisterUserResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getAuthController>['registerUser']>>>;
+export type AuthenticateUserResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getAuthController>['authenticateUser']>>
+>;

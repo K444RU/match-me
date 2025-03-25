@@ -693,3 +693,99 @@ VALUES
   (2, 1),
   (3, 1),
   (4, 1);
+
+INSERT INTO connections (id) 
+VALUES (1), (2), (3), (4)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO user_connections (connection_id, user_id)
+VALUES 
+  (1, 1), (1, 2),  -- John and Jane
+  (2, 1), (2, 3),  -- John and Alice
+  (3, 3), (3, 4),  -- Alice and TestMatch
+  (4, 2), (4, 4)   -- Jane and TestMatch
+ON CONFLICT DO NOTHING;
+
+-- Update sequence for connections
+SELECT setval('connections_id_seq', (SELECT MAX(id) FROM connections));
+
+-- Insert connection states for existing connections (making them all ACCEPTED)
+INSERT INTO connection_log (connection_id, user_id, status, timestamp, requester_id, target_id) 
+VALUES 
+  (1, 1, 'ACCEPTED', NOW(), 1, 2),  -- John and Jane
+  (2, 1, 'ACCEPTED', NOW(), 1, 3),  -- John and Alice
+  (3, 3, 'ACCEPTED', NOW(), 3, 4),  -- Alice and TestMatch
+  (4, 2, 'ACCEPTED', NOW(), 2, 4)   -- Jane and TestMatch
+ON CONFLICT DO NOTHING;
+
+-- Insert user messages
+INSERT INTO user_messages (id, connection_id, sender_id, content, created_at)
+VALUES 
+  -- John and Jane conversation
+  (1, 1, 1, 'Hey Jane, how are you doing?', NOW() - INTERVAL '2 days'),
+  (2, 1, 2, 'Hi John! I am doing great. How about you?', NOW() - INTERVAL '2 days'),
+  (3, 1, 1, 'I am good too. Working on a new project.', NOW() - INTERVAL '1 day'),
+  
+  -- John and Alice conversation
+  (4, 2, 1, 'Hello Alice! Nice to meet you.', NOW() - INTERVAL '3 days'),
+  (5, 2, 3, 'Hi John! Nice to meet you too.', NOW() - INTERVAL '3 days'),
+  (6, 2, 3, 'I saw you like programming?', NOW() - INTERVAL '2 days'),
+  
+  -- Alice and TestMatch conversation
+  (7, 3, 3, 'Hey there! I am Alice.', NOW() - INTERVAL '1 day'),
+  (8, 3, 4, 'Hi Alice! I am Test. How are you?', NOW() - INTERVAL '1 day'),
+  
+  -- Jane and TestMatch conversation
+  (9, 4, 2, 'Hello Test! I am Jane.', NOW() - INTERVAL '4 days'),
+  (10, 4, 4, 'Hi Jane! Nice to meet you.', NOW() - INTERVAL '4 days'),
+  (11, 4, 2, 'What do you like to do for fun?', NOW() - INTERVAL '3 days')
+ON CONFLICT (id) DO NOTHING;
+
+-- Update sequence for user_messages
+SELECT setval('user_messages_id_seq', (SELECT MAX(id) FROM user_messages));
+
+-- Insert message events to track sent, received, and read status
+-- SENT events for all messages
+INSERT INTO message_events (message_id, message_event_type_id, timestamp)
+VALUES
+  (1, 1, NOW() - INTERVAL '2 days'),
+  (2, 1, NOW() - INTERVAL '2 days'),
+  (3, 1, NOW() - INTERVAL '1 day'),
+  (4, 1, NOW() - INTERVAL '3 days'),
+  (5, 1, NOW() - INTERVAL '3 days'),
+  (6, 1, NOW() - INTERVAL '2 days'),
+  (7, 1, NOW() - INTERVAL '1 day'),
+  (8, 1, NOW() - INTERVAL '1 day'),
+  (9, 1, NOW() - INTERVAL '4 days'),
+  (10, 1, NOW() - INTERVAL '4 days'),
+  (11, 1, NOW() - INTERVAL '3 days');
+
+-- RECEIVED events for all messages
+INSERT INTO message_events (message_id, message_event_type_id, timestamp)
+VALUES
+  (1, 2, NOW() - INTERVAL '2 days' + INTERVAL '1 minute'),
+  (2, 2, NOW() - INTERVAL '2 days' + INTERVAL '1 minute'),
+  (3, 2, NOW() - INTERVAL '1 day' + INTERVAL '1 minute'),
+  (4, 2, NOW() - INTERVAL '3 days' + INTERVAL '1 minute'),
+  (5, 2, NOW() - INTERVAL '3 days' + INTERVAL '1 minute'),
+  (6, 2, NOW() - INTERVAL '2 days' + INTERVAL '1 minute'),
+  (7, 2, NOW() - INTERVAL '1 day' + INTERVAL '1 minute'),
+  (8, 2, NOW() - INTERVAL '1 day' + INTERVAL '1 minute'),
+  (9, 2, NOW() - INTERVAL '4 days' + INTERVAL '1 minute'),
+  (10, 2, NOW() - INTERVAL '4 days' + INTERVAL '1 minute'),
+  (11, 2, NOW() - INTERVAL '3 days' + INTERVAL '1 minute');
+
+-- READ events (for messages that have been read)
+INSERT INTO message_events (message_id, message_event_type_id, timestamp)
+VALUES
+  (1, 3, NOW() - INTERVAL '2 days' + INTERVAL '5 minutes'),
+  (2, 3, NOW() - INTERVAL '2 days' + INTERVAL '5 minutes'),
+  (3, 3, NOW() - INTERVAL '1 day' + INTERVAL '5 minutes'),
+  (4, 3, NOW() - INTERVAL '3 days' + INTERVAL '5 minutes'),
+  (5, 3, NOW() - INTERVAL '3 days' + INTERVAL '5 minutes'),
+  (6, 3, NOW() - INTERVAL '2 days' + INTERVAL '5 minutes'),
+  (7, 3, NOW() - INTERVAL '1 day' + INTERVAL '5 minutes'),
+  (8, 3, NOW() - INTERVAL '1 day' + INTERVAL '5 minutes'),
+  (9, 3, NOW() - INTERVAL '4 days' + INTERVAL '5 minutes'),
+  (10, 3, NOW() - INTERVAL '4 days' + INTERVAL '5 minutes');
+-- Note: Message 11 doesn't have a READ event, so it will appear as unread

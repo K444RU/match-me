@@ -7,9 +7,10 @@
  */
 
 export interface ChatMessageResponseDTO {
-  connectionId?: number;
-  content?: string;
-  createdAt?: string;
-  messageId?: number;
-  senderAlias?: string;
+  connectionId: number;
+  content: string;
+  createdAt: string;
+  messageId: number;
+  senderAlias: string;
+  senderId: number;
 }

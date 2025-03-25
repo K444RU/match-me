@@ -7,13 +7,13 @@
  */
 
 export interface ChatPreviewResponseDTO {
-  connectedUserAlias?: string;
-  connectedUserFirstName?: string;
-  connectedUserId?: number;
-  connectedUserLastName?: string;
-  connectedUserProfilePicture?: string;
-  connectionId?: number;
-  lastMessageContent?: string;
-  lastMessageTimestamp?: string;
-  unreadMessageCount?: number;
+  connectedUserAlias: string;
+  connectedUserFirstName: string;
+  connectedUserId: number;
+  connectedUserLastName: string;
+  connectedUserProfilePicture: string;
+  connectionId: number;
+  lastMessageContent: string;
+  lastMessageTimestamp: string;
+  unreadMessageCount: number;
 }

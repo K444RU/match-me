@@ -5,8 +5,7 @@
  * kood/Jõhvi match-me task API
  * OpenAPI spec version: v0.0.1
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { customInstance } from '../lib/custom-axios-instance';
 import type {
   ChatMessageResponseDTO,
   ChatPreviewResponseDTO,
@@ -16,34 +15,32 @@ import type {
 } from './types';
 
 export const getChatController = () => {
-  const getChatMessages = <TData = AxiosResponse<PageChatMessageResponseDTO>>(
-    connectionId: number,
-    params: GetChatMessagesParams,
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.get(`http://localhost:8000/api/chats/${connectionId}/messages`, {
-      ...options,
-      params: { ...params, ...options?.params },
+  const getChatMessages = (connectionId: number, params: GetChatMessagesParams) => {
+    return customInstance<PageChatMessageResponseDTO>({
+      url: `http://localhost:8000/api/chats/${connectionId}/messages`,
+      method: 'GET',
+      params,
     });
   };
-  const sendChatMessage = <TData = AxiosResponse<ChatMessageResponseDTO>>(
-    connectionId: number,
-    messagesSendRequestDTO: MessagesSendRequestDTO,
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.post(
-      `http://localhost:8000/api/chats/${connectionId}/messages`,
-      messagesSendRequestDTO,
-      options
-    );
+  const sendChatMessage = (connectionId: number, messagesSendRequestDTO: MessagesSendRequestDTO) => {
+    return customInstance<ChatMessageResponseDTO>({
+      url: `http://localhost:8000/api/chats/${connectionId}/messages`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: messagesSendRequestDTO,
+    });
   };
-  const getChatPreviews = <TData = AxiosResponse<ChatPreviewResponseDTO[]>>(
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.get(`http://localhost:8000/api/chats/previews`, options);
+  const getChatPreviews = () => {
+    return customInstance<ChatPreviewResponseDTO[]>({ url: `http://localhost:8000/api/chats/previews`, method: 'GET' });
   };
   return { getChatMessages, sendChatMessage, getChatPreviews };
 };
-export type GetChatMessagesResult = AxiosResponse<PageChatMessageResponseDTO>;
-export type SendChatMessageResult = AxiosResponse<ChatMessageResponseDTO>;
-export type GetChatPreviewsResult = AxiosResponse<ChatPreviewResponseDTO[]>;
+export type GetChatMessagesResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getChatController>['getChatMessages']>>
+>;
+export type SendChatMessageResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getChatController>['sendChatMessage']>>
+>;
+export type GetChatPreviewsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getChatController>['getChatPreviews']>>
+>;

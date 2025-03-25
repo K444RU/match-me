@@ -5,32 +5,29 @@
  * kood/Jõhvi match-me task API
  * OpenAPI spec version: v0.0.1
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { customInstance } from '../lib/custom-axios-instance';
 import type { BiographicalResponseDTO, CurrentUserResponseDTO, ProfileResponseDTO, SettingsResponseDTO } from './types';
 
 export const getMeController = () => {
-  const getCurrentUser = <TData = AxiosResponse<CurrentUserResponseDTO>>(
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.get(`http://localhost:8000/api/me`, options);
+  const getCurrentUser = () => {
+    return customInstance<CurrentUserResponseDTO>({ url: `http://localhost:8000/api/me`, method: 'GET' });
   };
-  const getParameters = <TData = AxiosResponse<SettingsResponseDTO>>(options?: AxiosRequestConfig): Promise<TData> => {
-    return axios.default.get(`http://localhost:8000/api/me/settings`, options);
+  const getParameters = () => {
+    return customInstance<SettingsResponseDTO>({ url: `http://localhost:8000/api/me/settings`, method: 'GET' });
   };
-  const getCurrentProfile = <TData = AxiosResponse<ProfileResponseDTO>>(
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.get(`http://localhost:8000/api/me/profile`, options);
+  const getCurrentProfile = () => {
+    return customInstance<ProfileResponseDTO>({ url: `http://localhost:8000/api/me/profile`, method: 'GET' });
   };
-  const getCurrentBio = <TData = AxiosResponse<BiographicalResponseDTO>>(
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.get(`http://localhost:8000/api/me/bio`, options);
+  const getCurrentBio = () => {
+    return customInstance<BiographicalResponseDTO>({ url: `http://localhost:8000/api/me/bio`, method: 'GET' });
   };
   return { getCurrentUser, getParameters, getCurrentProfile, getCurrentBio };
 };
-export type GetCurrentUserResult = AxiosResponse<CurrentUserResponseDTO>;
-export type GetParametersResult = AxiosResponse<SettingsResponseDTO>;
-export type GetCurrentProfileResult = AxiosResponse<ProfileResponseDTO>;
-export type GetCurrentBioResult = AxiosResponse<BiographicalResponseDTO>;
+export type GetCurrentUserResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getMeController>['getCurrentUser']>>
+>;
+export type GetParametersResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getMeController>['getParameters']>>>;
+export type GetCurrentProfileResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getMeController>['getCurrentProfile']>>
+>;
+export type GetCurrentBioResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getMeController>['getCurrentBio']>>>;

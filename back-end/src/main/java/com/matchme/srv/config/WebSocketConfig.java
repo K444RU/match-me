@@ -1,7 +1,7 @@
 package com.matchme.srv.config;
 
 import java.util.UUID;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
@@ -13,7 +13,6 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
 import org.springframework.web.socket.handler.WebSocketHandlerDecoratorFactory;
-import lombok.RequiredArgsConstructor;
 
 @Configuration
 @RequiredArgsConstructor
@@ -25,9 +24,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
   private static final String WS_ENDPOINT = "/ws";
   private static final String CSRF_TOKEN_ATTR = "CSRF_TOKEN";
   private static final String[] ALLOWED_ORIGINS = {
-      "http://localhost:8000", 
-      "http://localhost:3000", 
-      "http://127.0.0.1:3000"
+    "http://localhost:8000", "http://localhost:3000", "http://127.0.0.1:3000"
   };
   private static final String APPLICATION_DESTINATION_PREFIX = "/app";
   private static final String USER_DESTINATION_PREFIX = "/user";
@@ -37,31 +34,37 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
   public void configureClientInboundChannel(@NonNull ChannelRegistration registration) {
     registration.interceptors(webSocketAuthInterceptor);
   }
-  
+
   @Override
   public void configureMessageBroker(@NonNull MessageBrokerRegistry config) {
     config.enableSimpleBroker(SIMPLE_BROKER_DESTINATIONS); // the client subscribes
-    config.setApplicationDestinationPrefixes(APPLICATION_DESTINATION_PREFIX); //These go to server
+    config.setApplicationDestinationPrefixes(APPLICATION_DESTINATION_PREFIX); // These go to server
     config.setUserDestinationPrefix(USER_DESTINATION_PREFIX);
+
+    // Enable more verbose logging for message routing
+    config.setPreservePublishOrder(true);
   }
 
   @Override
   public void registerStompEndpoints(@NonNull StompEndpointRegistry registry) {
-    registry.addEndpoint(WS_ENDPOINT) //connects to the configured endpoint here
-      .setAllowedOrigins(ALLOWED_ORIGINS)
-      .withSockJS()
-      .setSessionCookieNeeded(true);
+    registry
+        .addEndpoint(WS_ENDPOINT) // connects to the configured endpoint here
+        .setAllowedOrigins(ALLOWED_ORIGINS)
+        .withSockJS()
+        .setSessionCookieNeeded(true);
   }
 
   @Bean
   public WebSocketHandlerDecoratorFactory wsHandlerDecoratorFactory() {
-    return handler -> new WebSocketHandlerDecorator(handler) {
-      @Override
-      public void afterConnectionEstablished(@NonNull WebSocketSession session) throws Exception {
-        String csrfToken = UUID.randomUUID().toString();
-        session.getAttributes().put(CSRF_TOKEN_ATTR, csrfToken);
-        super.afterConnectionEstablished(session);
-      }
-    };
+    return handler ->
+        new WebSocketHandlerDecorator(handler) {
+          @Override
+          public void afterConnectionEstablished(@NonNull WebSocketSession session)
+              throws Exception {
+            String csrfToken = UUID.randomUUID().toString();
+            session.getAttributes().put(CSRF_TOKEN_ATTR, csrfToken);
+            super.afterConnectionEstablished(session);
+          }
+        };
   }
 }

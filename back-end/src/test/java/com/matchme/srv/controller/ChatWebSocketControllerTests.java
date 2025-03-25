@@ -139,7 +139,7 @@ public class ChatWebSocketControllerTests {
       validRequest = new TypingStatusRequestDTO();
       validRequest.setConnectionId(123L);
       validRequest.setSenderId(DEFAULT_USER_ID);
-      validRequest.setTyping(true);
+      validRequest.setIsTyping(true);
     }
 
     @Test

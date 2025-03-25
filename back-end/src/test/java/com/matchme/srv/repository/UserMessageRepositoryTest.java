@@ -41,14 +41,14 @@ class UserMessageRepositoryTest {
 
         UserMessage message1 = UserMessage.builder()
                 .connection(connection)
-                .user(user)
+                .sender(user)
                 .content("Message 1")
                 .createdAt(Instant.now().minusSeconds(60))
                 .build();
 
         UserMessage message2 = UserMessage.builder()
                 .connection(connection)
-                .user(user)
+                .sender(user)
                 .content("Message 2")
                 .createdAt(Instant.now())
                 .build();

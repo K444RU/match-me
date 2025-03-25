@@ -5,14 +5,15 @@
  * kood/Jõhvi match-me task API
  * OpenAPI spec version: v0.0.1
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { customInstance } from '../lib/custom-axios-instance';
 import type { GenderTypeDTO } from './types';
 
 export const getUserGenderTypeController = () => {
-  const getAllGenders = <TData = AxiosResponse<GenderTypeDTO[]>>(options?: AxiosRequestConfig): Promise<TData> => {
-    return axios.default.get(`http://localhost:8000/api/genders`, options);
+  const getAllGenders = () => {
+    return customInstance<GenderTypeDTO[]>({ url: `http://localhost:8000/api/genders`, method: 'GET' });
   };
   return { getAllGenders };
 };
-export type GetAllGendersResult = AxiosResponse<GenderTypeDTO[]>;
+export type GetAllGendersResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getUserGenderTypeController>['getAllGenders']>>
+>;
