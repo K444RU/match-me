@@ -7,13 +7,8 @@ export const connectionService = {
   getRecommendations: async (): Promise<MatchingRecommendationsDTO> => {
     try {
       console.debug('🖖 ConnectionService: Making request');
-      const token = localStorage.getItem('authToken');
-      const response = await connectionController.getMatchingRecommendations({
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return response.data;
+      const response = await connectionController.getMatchingRecommendations();
+      return response;
     } catch (error) {
       console.error('❌ Error fetching connections', error);
       throw error;
