@@ -8,157 +8,178 @@ import com.matchme.srv.model.user.User;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.service.ChatService;
 import com.matchme.srv.service.user.UserQueryService;
-
+import java.time.Instant;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 
-import java.time.Instant;
-import java.util.List;
-
 /**
- * This controller handles the real-time WebSocket-based chat functionalities:
- * - Sending messages
- * - Typing indicators
- * - Online/offline status (can be handled by presence events)
- * <p>
- * It relies on:
- * - The WebSocketConfig that sets up the endpoints and message broker.
- * - The ChatService and potentially specialized services (e.g. ChatMessageSendingService)
- * that handle logic related to sending messages, updating unread counts, etc.
+ * This controller handles the real-time WebSocket-based chat functionalities: - Sending messages -
+ * Typing indicators - Online/offline status (can be handled by presence events)
+ *
+ * <p>It relies on: - The WebSocketConfig that sets up the endpoints and message broker. - The
+ * ChatService and potentially specialized services (e.g. ChatMessageSendingService) that handle
+ * logic related to sending messages, updating unread counts, etc.
  */
 @Controller
 @RequiredArgsConstructor
 @Slf4j
 public class ChatWebSocketController {
 
-    private final UserQueryService queryService;
-    private final ChatService chatService;
-    private final SimpMessagingTemplate messagingTemplate;
-    private final SecurityUtils securityUtils;
+  private final UserQueryService queryService;
+  private final ChatService chatService;
+  private final SimpMessagingTemplate messagingTemplate;
+  private final SecurityUtils securityUtils;
 
-    /**
-     * Send a chat message from one user to another.
-     * send the message payload to /app/chat.sendMessage.
-     * <p>
-     * The process:
-     * 1. Identifies the authenticated user (sender).
-     * 2. Saves the message via chatService.
-     * 3. Broadcasts the saved message to both the sender and the receiver.
-     * 4. Fetches updated chat previews for both participants.
-     * 5. Broadcasts the updated chat previews to both users.
-     * WebSocket destinations used:
-     * - "/user/{userId}/queue/messages": Sends the new message privately to each user.
-     * - "/user/{userId}/queue/previews": Sends the updated chat previews privately to each user.
-     * <p>
-     * This ensures that both users receive real-time updates for new messages and chat previews.
-     * @param messageDTO The message payload containing the connection ID and content.
-     * @param authentication The authentication object to retrieve the current user's details.
-     */
-    @MessageMapping("/chat.sendMessage")
-    public void sendMessage(@Payload MessagesSendRequestDTO messageDTO,
-                            Authentication authentication) {
-        Long senderId = securityUtils.getCurrentUserId(authentication);
-        User sender = queryService.getUser(senderId);
+  /**
+   * Send a chat message from one user to another. send the message payload to
+   * /app/chat.sendMessage.
+   *
+   * <p>The process: 1. Identifies the authenticated user (sender). 2. Saves the message via
+   * chatService. 3. Broadcasts the saved message to both the sender and the receiver. 4. Fetches
+   * updated chat previews for both participants. 5. Broadcasts the updated chat previews to both
+   * users. WebSocket destinations used: - "/user/{userId}/queue/messages": Sends the new message
+   * privately to each user. - "/user/{userId}/queue/previews": Sends the updated chat previews
+   * privately to each user.
+   *
+   * <p>This ensures that both users receive real-time updates for new messages and chat previews.
+   *
+   * @param messageDTO The message payload containing the connection ID and content.
+   * @param authentication The authentication object to retrieve the current user's details.
+   */
+  @MessageMapping("/chat.sendMessage")
+  public void sendMessage(
+      @Payload MessagesSendRequestDTO messageDTO, Authentication authentication) {
+    Long senderId = securityUtils.getCurrentUserId(authentication);
+    User sender = queryService.getUser(senderId);
 
-        log.info("Received chat message from user ID: {} for connection ID: {}",
-                        senderId, messageDTO.getConnectionId());
+    log.info(
+        "Received chat message from user ID: {} for connection ID: {}",
+        senderId,
+        messageDTO.getConnectionId());
 
-        ChatMessageResponseDTO savedMessage = chatService.saveMessage(
-                messageDTO.getConnectionId(),
-                sender.getId(),
-                messageDTO.getContent(),
-                Instant.now()
-        );
+    ChatMessageResponseDTO savedMessage =
+        chatService.saveMessage(
+            messageDTO.getConnectionId(), sender.getId(), messageDTO.getContent(), Instant.now());
 
-        Long otherUserId = chatService.getOtherUserIdInConnection(messageDTO.getConnectionId(), senderId);
+    Long otherUserId =
+        chatService.getOtherUserIdInConnection(messageDTO.getConnectionId(), senderId);
 
-        // Broadcast the message to both participants in real-time
-        // The "/user/{userId}/queue/messages" destination will deliver the message privately
-        messagingTemplate.convertAndSendToUser(
-                senderId.toString(),
-                "/queue/messages",
-                savedMessage
-        );
+    // Broadcast the message to both participants in real-time
+    // The "/user/{userId}/queue/messages" destination will deliver the message privately
+    messagingTemplate.convertAndSendToUser(senderId.toString(), "/queue/messages", savedMessage);
 
-        messagingTemplate.convertAndSendToUser(
-                otherUserId.toString(),
-                "/queue/messages",
-                savedMessage
-        );
+    messagingTemplate.convertAndSendToUser(otherUserId.toString(), "/queue/messages", savedMessage);
 
-        List<ChatPreviewResponseDTO> senderPreviews = chatService.getChatPreviews(senderId);
-        List<ChatPreviewResponseDTO> otherUserPreviews = chatService.getChatPreviews(otherUserId);
+    List<ChatPreviewResponseDTO> senderPreviews = chatService.getChatPreviews(senderId);
+    List<ChatPreviewResponseDTO> otherUserPreviews = chatService.getChatPreviews(otherUserId);
 
-        messagingTemplate.convertAndSendToUser(
-                senderId.toString(),
-                "/queue/previews",
-                senderPreviews
-        );
+    messagingTemplate.convertAndSendToUser(senderId.toString(), "/queue/previews", senderPreviews);
 
-        messagingTemplate.convertAndSendToUser(
-                otherUserId.toString(),
-                "/queue/previews",
-                otherUserPreviews
-        );
+    messagingTemplate.convertAndSendToUser(
+        otherUserId.toString(), "/queue/previews", otherUserPreviews);
 
-        log.debug("Broadcasting message ID: {} to users {} and {}",
-                savedMessage.getMessageId(), senderId, otherUserId);
+    log.debug(
+        "Broadcasting message ID: {} to users {} and {}",
+        savedMessage.getMessageId(),
+        senderId,
+        otherUserId);
+  }
+
+  /**
+   * Handle typing indicator events. Clients send a message to /app/chat.typing when they start or
+   * stop typing.
+   *
+   * <p>The server sends a typing notification to the other participant. The frontend can show a
+   * "User is typing..." message.
+   */
+  @MessageMapping("/chat.typing")
+  public void typingStatus(
+      @Payload TypingStatusRequestDTO typingStatusRequest, Authentication authentication) {
+    Long senderId = securityUtils.getCurrentUserId(authentication);
+
+    // Ensure the sender in the request matches the authenticated user
+    if (!senderId.equals(typingStatusRequest.getSenderId())) {
+      // If mismatched, ignore or throw an exception
+      return;
     }
 
-    /**
-     * Handle typing indicator events.
-     * Clients send a message to /app/chat.typing when they start or stop typing.
-     * <p>
-     * The server sends a typing notification to the other participant. The frontend can show
-     * a "User is typing..." message.
-     */
-    @MessageMapping("/chat.typing")
-    public void typingStatus(@Payload TypingStatusRequestDTO typingStatusRequest,
-                             Authentication authentication) {
-        Long senderId = securityUtils.getCurrentUserId(authentication);
+    Long connectionId = typingStatusRequest.getConnectionId();
+    Long otherUserId = chatService.getOtherUserIdInConnection(connectionId, senderId);
 
-        // Ensure the sender in the request matches the authenticated user
-        if (!senderId.equals(typingStatusRequest.getSenderId())) {
-            // If mismatched, ignore or throw an exception
-            return;
-        }
+    // Broadcast typing status to the other participant
+    messagingTemplate.convertAndSendToUser(
+        otherUserId.toString(), "/queue/typing", typingStatusRequest);
+  }
 
-        Long connectionId = typingStatusRequest.getConnectionId();
-        Long otherUserId = chatService.getOtherUserIdInConnection(connectionId, senderId);
+  /**
+   * Handle ping-pong events to verify connectivity. This is used by clients to test subscription
+   * connectivity.
+   */
+  @MessageMapping("/chat.ping")
+  public void handlePing(@Payload String payload, Authentication authentication) {
+    Long userId = securityUtils.getCurrentUserId(authentication);
 
-        // Broadcast typing status to the other participant
-        messagingTemplate.convertAndSendToUser(
-                otherUserId.toString(),
-                "/queue/typing",
-                typingStatusRequest
-        );
-    }
+    log.info("Received ping from user ID: {}, payload: {}", userId, payload);
 
-    /*
-    * toDo:
-    * for online/offline status -> track WebSocket connections.
-    * We can use a @EventListener for SessionConnectEvent and SessionDisconnectEvent
-    * to track who is online and broadcast their status changes
-    *
-    * @EventListener
-    * public void handleWebSocketConnectListener(SessionConnectEvent event) {
-    *
-    * }
-    *
-    * @EventListener
-    * public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
-    *
-    * }
-    *
-    * private void trackOnlineStatus(Long userId, boolean isOnline) {
-    *
-    * }
-    */
+    // Parse the payload to get any extra data
+    String responsePayload =
+        String.format(
+            "{ \"timestamp\": \"%s\", \"status\": \"ok\", \"userId\": %d, \"message\": \"Server"
+                + " acknowledged ping\" }",
+            Instant.now(), userId);
+
+    // Send a pong back to the sender to confirm subscription works
+    log.debug("Sending pong to user {}: {}", userId, responsePayload);
+    messagingTemplate.convertAndSendToUser(userId.toString(), "/queue/pong", responsePayload);
+
+    // Also send an echo message to test message handling
+    String testMessage =
+        String.format(
+            "{ \"messageId\": -1, \"connectionId\": -1, \"senderId\": -1, \"senderAlias\":"
+                + " \"system\", \"content\": \"Echo: Connection verified for user %d\","
+                + " \"timestamp\": \"%s\" }",
+            userId, Instant.now());
+
+    log.debug("Sending test message to user {}: {}", userId, testMessage);
+    messagingTemplate.convertAndSendToUser(userId.toString(), "/queue/messages", testMessage);
+
+    // Send a test preview update to verify that subscription
+    String testPreview =
+        String.format(
+            "[ { \"connectionId\": -1, \"connectedUserId\": -1, \"connectedUserAlias\": \"system\","
+                + " \"latestMessagePreview\": \"Preview subscription test for user %d\","
+                + " \"unreadMessageCount\": 0, \"updatedAt\": \"%s\" } ]",
+            userId, Instant.now());
+
+    log.debug("Sending test preview to user {}: {}", userId, testPreview);
+    messagingTemplate.convertAndSendToUser(userId.toString(), "/queue/previews", testPreview);
+  }
+
+  /*
+   * toDo:
+   * for online/offline status -> track WebSocket connections.
+   * We can use a @EventListener for SessionConnectEvent and SessionDisconnectEvent
+   * to track who is online and broadcast their status changes
+   *
+   * @EventListener
+   * public void handleWebSocketConnectListener(SessionConnectEvent event) {
+   *
+   * }
+   *
+   * @EventListener
+   * public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
+   *
+   * }
+   *
+   * private void trackOnlineStatus(Long userId, boolean isOnline) {
+   *
+   * }
+   */
 
 }
