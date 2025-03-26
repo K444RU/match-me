@@ -1,11 +1,12 @@
 import type { ChatPreviewResponseDTO } from '@/api/types';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useWebSocket } from '@/features/chat';
 import { format, fromUnixTime } from 'date-fns';
-import { FaRegUserCircle } from 'react-icons/fa';
 
 export default function ChatPreviewCard({ chat }: { chat: ChatPreviewResponseDTO }) {
-  const { typingUsers } = useWebSocket();
+  const { typingUsers, onlineUsers } = useWebSocket();
   const isTyping = typingUsers[chat.connectionId];
+  const isOnline = onlineUsers[chat.connectionId];
 
   console.log(chat);
 
@@ -15,19 +16,21 @@ export default function ChatPreviewCard({ chat }: { chat: ChatPreviewResponseDTO
     <>
       <div className="flex h-16 w-full items-center text-text">
         <div className="m-2 flex size-16 items-center justify-center">
-          {chat.connectedUserProfilePicture ? (
-            <div className="flex size-12 items-center justify-center">
-              <img
+          <div className="relative flex size-12 items-center justify-center">
+            <Avatar>
+              <AvatarImage
                 src={chat.connectedUserProfilePicture}
                 alt={`${chat.connectedUserAlias} Avatar`}
                 className="size-12 rounded-full object-cover"
               />
-            </div>
-          ) : (
-            <div className="flex size-12 items-center justify-center">
-              <FaRegUserCircle className="size-12 text-text-600" />
-            </div>
-          )}
+              <AvatarFallback>{chat.connectedUserAlias[0].toUpperCase()}</AvatarFallback>
+            </Avatar>
+            {isOnline ? (
+              <span className="absolute bottom-0.5 right-0.5 size-4 rounded-full border-2 border-white bg-green-500"></span>
+            ) : (
+              <span className="absolute bottom-0.5 right-0.5 size-4 rounded-full border-2 border-white bg-gray-500"></span>
+            )}
+          </div>
         </div>
         <div className="flex size-full flex-col pl-2">
           <div className="mr-3 mt-4 flex justify-between">
