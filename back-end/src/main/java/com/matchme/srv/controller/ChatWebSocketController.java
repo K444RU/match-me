@@ -1,6 +1,7 @@
 package com.matchme.srv.controller;
 
 import com.matchme.srv.dto.request.MessagesSendRequestDTO;
+import com.matchme.srv.dto.request.OnlineStatusResponseDTO;
 import com.matchme.srv.dto.request.TypingStatusRequestDTO;
 import com.matchme.srv.dto.response.ChatMessageResponseDTO;
 import com.matchme.srv.dto.response.ChatPreviewResponseDTO;
@@ -12,11 +13,15 @@ import java.time.Instant;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.socket.messaging.SessionConnectEvent;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 /**
  * This controller handles the real-time WebSocket-based chat functionalities: - Sending messages -
@@ -161,25 +166,45 @@ public class ChatWebSocketController {
     messagingTemplate.convertAndSendToUser(userId.toString(), "/queue/previews", testPreview);
   }
 
-  /*
-   * toDo:
-   * for online/offline status -> track WebSocket connections.
-   * We can use a @EventListener for SessionConnectEvent and SessionDisconnectEvent
-   * to track who is online and broadcast their status changes
-   *
-   * @EventListener
-   * public void handleWebSocketConnectListener(SessionConnectEvent event) {
-   *
-   * }
-   *
-   * @EventListener
-   * public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
-   *
-   * }
-   *
-   * private void trackOnlineStatus(Long userId, boolean isOnline) {
-   *
-   * }
-   */
 
+  @EventListener
+  public void handleWebSocketConnectListener(SessionConnectEvent event) {
+    StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
+
+    // Extract user
+    Authentication auth = (Authentication) accessor.getUser();
+    if (auth != null) {
+      Long userId = securityUtils.getCurrentUserId(auth);
+      trackOnlineStatus(userId, true);
+    }
+  }
+
+  @EventListener
+  public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
+    StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
+
+    // Extract user
+    Authentication auth = (Authentication) accessor.getUser();
+    if (auth != null) {
+      Long userId = securityUtils.getCurrentUserId(auth);
+      trackOnlineStatus(userId, false);
+    }
+  }
+
+  private void trackOnlineStatus(Long userId, boolean isOnline) {
+    List<Long> connections = chatService.getUserConnections(userId);
+
+    for (Long connectionId : connections) {
+      Long otherUserId = chatService.getOtherUserIdInConnection(connectionId, userId);
+
+      // Create status update object
+      OnlineStatusResponseDTO statusUpdate = new OnlineStatusResponseDTO();
+      statusUpdate.setConnectionId(connectionId);
+      statusUpdate.setUserId(userId);
+      statusUpdate.setIsOnline(isOnline);
+
+      // Send to the other user
+      messagingTemplate.convertAndSendToUser(otherUserId.toString(), "/queue/online", statusUpdate);
+    }
+  }
 }
