@@ -41,6 +41,13 @@ public class ChatWebSocketController {
   private final SimpMessagingTemplate messagingTemplate;
   private final SecurityUtils securityUtils;
 
+  private static final String QUEUE_PREFIX = "/queue";
+  private static final String ONLINE_QUEUE = QUEUE_PREFIX + "/online";
+  private static final String MESSAGES_QUEUE = QUEUE_PREFIX + "/messages";
+  private static final String PREVIEWS_QUEUE = QUEUE_PREFIX + "/previews";
+  private static final String TYPING_QUEUE = QUEUE_PREFIX + "/typing";
+  private static final String PONG_QUEUE = QUEUE_PREFIX + "/pong";
+
   /**
    * Send a chat message from one user to another. send the message payload to
    * /app/chat.sendMessage.
@@ -77,17 +84,16 @@ public class ChatWebSocketController {
 
     // Broadcast the message to both participants in real-time
     // The "/user/{userId}/queue/messages" destination will deliver the message privately
-    messagingTemplate.convertAndSendToUser(senderId.toString(), "/queue/messages", savedMessage);
+    messagingTemplate.convertAndSendToUser(senderId.toString(), MESSAGES_QUEUE, savedMessage);
 
-    messagingTemplate.convertAndSendToUser(otherUserId.toString(), "/queue/messages", savedMessage);
+    messagingTemplate.convertAndSendToUser(otherUserId.toString(), MESSAGES_QUEUE, savedMessage);
 
     List<ChatPreviewResponseDTO> senderPreviews = chatService.getChatPreviews(senderId);
     List<ChatPreviewResponseDTO> otherUserPreviews = chatService.getChatPreviews(otherUserId);
 
-    messagingTemplate.convertAndSendToUser(senderId.toString(), "/queue/previews", senderPreviews);
+    messagingTemplate.convertAndSendToUser(senderId.toString(), PREVIEWS_QUEUE, senderPreviews);
 
-    messagingTemplate.convertAndSendToUser(
-        otherUserId.toString(), "/queue/previews", otherUserPreviews);
+    messagingTemplate.convertAndSendToUser(otherUserId.toString(), PREVIEWS_QUEUE, otherUserPreviews);
 
     log.debug(
         "Broadcasting message ID: {} to users {} and {}",
@@ -118,8 +124,7 @@ public class ChatWebSocketController {
     Long otherUserId = chatService.getOtherUserIdInConnection(connectionId, senderId);
 
     // Broadcast typing status to the other participant
-    messagingTemplate.convertAndSendToUser(
-        otherUserId.toString(), "/queue/typing", typingStatusRequest);
+    messagingTemplate.convertAndSendToUser(otherUserId.toString(), TYPING_QUEUE, typingStatusRequest);
   }
 
   /**
@@ -141,7 +146,7 @@ public class ChatWebSocketController {
 
     // Send a pong back to the sender to confirm subscription works
     log.debug("Sending pong to user {}: {}", userId, responsePayload);
-    messagingTemplate.convertAndSendToUser(userId.toString(), "/queue/pong", responsePayload);
+    messagingTemplate.convertAndSendToUser(userId.toString(), PONG_QUEUE, responsePayload);
 
     // Also send an echo message to test message handling
     String testMessage =
@@ -152,7 +157,7 @@ public class ChatWebSocketController {
             userId, Instant.now());
 
     log.debug("Sending test message to user {}: {}", userId, testMessage);
-    messagingTemplate.convertAndSendToUser(userId.toString(), "/queue/messages", testMessage);
+    messagingTemplate.convertAndSendToUser(userId.toString(), MESSAGES_QUEUE, testMessage);
 
     // Send a test preview update to verify that subscription
     String testPreview =
@@ -163,9 +168,8 @@ public class ChatWebSocketController {
             userId, Instant.now());
 
     log.debug("Sending test preview to user {}: {}", userId, testPreview);
-    messagingTemplate.convertAndSendToUser(userId.toString(), "/queue/previews", testPreview);
+    messagingTemplate.convertAndSendToUser(userId.toString(), PREVIEWS_QUEUE, testPreview);
   }
-
 
   @EventListener
   public void handleWebSocketConnectListener(SessionConnectEvent event) {
@@ -204,7 +208,7 @@ public class ChatWebSocketController {
       statusUpdate.setIsOnline(isOnline);
 
       // Send to the other user
-      messagingTemplate.convertAndSendToUser(otherUserId.toString(), "/queue/online", statusUpdate);
+      messagingTemplate.convertAndSendToUser(otherUserId.toString(), ONLINE_QUEUE, statusUpdate);
     }
   }
 }
