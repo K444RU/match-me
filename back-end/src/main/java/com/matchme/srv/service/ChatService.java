@@ -257,4 +257,15 @@ public class ChatService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
+
+    /**
+     * Retrieves all connection IDs for a user.
+     *
+     * @param userId The ID of the user whose connections we want to fetch.
+     * @return A list of connection IDs.
+     */
+    public List<Long> getUserConnections(Long userId) {
+        return connectionRepository.findConnectionsByUserId(userId).stream()
+                .map(Connection::getId).toList();
+    }
 }
