@@ -7,6 +7,7 @@ interface UseSubscriptionManagerProps {
   handleMessage: (message: IMessage) => void;
   handleTypingIndicator: (message: IMessage) => void;
   handleChatPreviews: (message: IMessage) => void;
+  handleOnlineIndicator: (message: IMessage) => void;
 }
 
 export default function useSubscriptionManager({
@@ -15,6 +16,7 @@ export default function useSubscriptionManager({
   handleMessage,
   handleTypingIndicator,
   handleChatPreviews,
+  handleOnlineIndicator,
 }: UseSubscriptionManagerProps) {
   const subscriptionsRef = useRef<{ [key: string]: { unsubscribe: () => void } }>({});
   const stompClientRef = useRef<Client | null>(null);
@@ -25,6 +27,7 @@ export default function useSubscriptionManager({
     handleMessage,
     handleTypingIndicator,
     handleChatPreviews,
+    handleOnlineIndicator,
   });
 
   // Keep handlers up to date
@@ -33,8 +36,9 @@ export default function useSubscriptionManager({
       handleMessage,
       handleTypingIndicator,
       handleChatPreviews,
+      handleOnlineIndicator,
     };
-  }, [handleMessage, handleTypingIndicator, handleChatPreviews]);
+  }, [handleMessage, handleTypingIndicator, handleChatPreviews, handleOnlineIndicator]);
 
   // Update client reference
   useEffect(() => {
@@ -128,6 +132,10 @@ export default function useSubscriptionManager({
       subscriptionsRef.current.previews = stompClientRef.current.subscribe(
         `/user/${userId}/queue/previews`,
         (message) => handlersRef.current.handleChatPreviews(message)
+      );
+
+      subscriptionsRef.current.online = stompClientRef.current.subscribe(`/user/${userId}/queue/online`, (message) =>
+        handlersRef.current.handleOnlineIndicator(message)
       );
 
       // Set up a ping interval

@@ -3,6 +3,7 @@ import { ReactNode, useMemo } from 'react';
 import { useStompClient } from 'react-stomp-hooks';
 import useChatPreviewHandler from '../hooks/useChatPreviewHandler';
 import useMessageHandler from '../hooks/useMessageHandler';
+import useOnlineIndicator from '../hooks/useOnlineIndicator';
 import useSubscriptionManager from '../hooks/useSubscriptionManager';
 import useTypingIndicator from '../hooks/useTypingIndicator';
 import { WebSocketContext } from './websocket-context';
@@ -29,6 +30,8 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
 
   const { chatPreviews, handleChatPreviews } = useChatPreviewHandler();
 
+  const { onlineUsers, handleOnlineIndicator } = useOnlineIndicator();
+
   // Setup subscriptions with the handlers
   const { reconnect } = useSubscriptionManager({
     userId: currentUser?.id,
@@ -36,6 +39,7 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
     handleMessage,
     handleTypingIndicator,
     handleChatPreviews,
+    handleOnlineIndicator,
   });
 
   // Context value with stable identity
@@ -47,9 +51,19 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
       reconnect,
       messages,
       typingUsers,
+      onlineUsers,
       chatPreviews: chatPreviews || [],
     }),
-    [stompClient?.connected, sendMessage, sendTypingIndicator, reconnect, messages, typingUsers, chatPreviews]
+    [
+      stompClient?.connected,
+      sendMessage,
+      sendTypingIndicator,
+      reconnect,
+      messages,
+      typingUsers,
+      onlineUsers,
+      chatPreviews,
+    ]
   );
 
   return <WebSocketContext.Provider value={contextValue}>{children}</WebSocketContext.Provider>;

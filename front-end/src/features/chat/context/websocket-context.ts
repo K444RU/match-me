@@ -8,6 +8,7 @@ export interface WebSocketContextType {
   reconnect: () => void;
   messages: ChatMessageResponseDTO[];
   typingUsers: Record<string, boolean>;
+  onlineUsers: Record<string, boolean>;
   chatPreviews: ChatPreviewResponseDTO[];
 }
 
@@ -24,6 +25,7 @@ const defaultContext: WebSocketContextType = {
   },
   messages: [],
   typingUsers: {},
+  onlineUsers: {},
   chatPreviews: [],
 };
 
