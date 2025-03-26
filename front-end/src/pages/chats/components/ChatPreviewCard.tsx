@@ -8,9 +8,7 @@ export default function ChatPreviewCard({ chat }: { chat: ChatPreviewResponseDTO
   const isTyping = typingUsers[chat.connectionId];
   const isOnline = onlineUsers[chat.connectionId];
 
-  console.log(chat);
-
-  if (!chat || chat.connectedUserId === -1) return null;
+  if (!chat) return null;
 
   return (
     <>
@@ -41,11 +39,18 @@ export default function ChatPreviewCard({ chat }: { chat: ChatPreviewResponseDTO
             </p>
             <p className="text-sm leading-none">{format(fromUnixTime(Number(chat.lastMessageTimestamp)), 'kk:mm')}</p>
           </div>
-          <div className="mt-1 w-full">
+          <div className="mt-1 flex w-full items-center justify-between">
             {isTyping ? (
               <p className="line-clamp-1 animate-pulse text-sm text-gray-500">typing...</p>
             ) : (
-              <p className="line-clamp-1 text-sm">{chat.lastMessageContent}</p>
+              <p className={`line-clamp-1 text-sm ${chat.unreadMessageCount > 0 ? 'font-bold' : 'opacity-70'}`}>
+                {chat.lastMessageContent}
+              </p>
+            )}
+            {chat.unreadMessageCount > 0 && (
+              <span className="mr-3 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-medium text-white">
+                {chat.unreadMessageCount}
+              </span>
             )}
           </div>
         </div>
