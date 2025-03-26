@@ -135,7 +135,7 @@ public class ChatWebSocketController {
   public void handlePing(@Payload String payload, Authentication authentication) {
     Long userId = securityUtils.getCurrentUserId(authentication);
 
-    log.info("Received ping from user ID: {}, payload: {}", userId, payload);
+    log.debug("Received ping from user ID: {}", userId);
 
     // Parse the payload to get any extra data
     String responsePayload =
@@ -145,30 +145,8 @@ public class ChatWebSocketController {
             Instant.now(), userId);
 
     // Send a pong back to the sender to confirm subscription works
-    log.debug("Sending pong to user {}: {}", userId, responsePayload);
+    log.debug("Sending pong to user {}", userId);
     messagingTemplate.convertAndSendToUser(userId.toString(), PONG_QUEUE, responsePayload);
-
-    // Also send an echo message to test message handling
-    String testMessage =
-        String.format(
-            "{ \"messageId\": -1, \"connectionId\": -1, \"senderId\": -1, \"senderAlias\":"
-                + " \"system\", \"content\": \"Echo: Connection verified for user %d\","
-                + " \"timestamp\": \"%s\" }",
-            userId, Instant.now());
-
-    log.debug("Sending test message to user {}: {}", userId, testMessage);
-    messagingTemplate.convertAndSendToUser(userId.toString(), MESSAGES_QUEUE, testMessage);
-
-    // Send a test preview update to verify that subscription
-    String testPreview =
-        String.format(
-            "[ { \"connectionId\": -1, \"connectedUserId\": -1, \"connectedUserAlias\": \"system\","
-                + " \"latestMessagePreview\": \"Preview subscription test for user %d\","
-                + " \"unreadMessageCount\": 0, \"updatedAt\": \"%s\" } ]",
-            userId, Instant.now());
-
-    log.debug("Sending test preview to user {}: {}", userId, testPreview);
-    messagingTemplate.convertAndSendToUser(userId.toString(), PREVIEWS_QUEUE, testPreview);
   }
 
   @EventListener
@@ -210,5 +188,7 @@ public class ChatWebSocketController {
       // Send to the other user
       messagingTemplate.convertAndSendToUser(otherUserId.toString(), ONLINE_QUEUE, statusUpdate);
     }
+
+    log.debug("Online status update for userId: {}, isOnline: {}", userId, isOnline);
   }
 }
