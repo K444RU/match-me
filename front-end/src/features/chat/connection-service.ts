@@ -1,5 +1,6 @@
 import { getConnectionController } from '@/api/connection-controller';
 import type { MatchingRecommendationsDTO } from '@/api/types';
+import {useWebSocket} from "@features/chat/websocket-context.ts";
 
 const connectionController = getConnectionController();
 
@@ -19,12 +20,10 @@ export const connectionService = {
       throw error;
     }
   },
-  sendConnectionRequest: async (userId: number): Promise<void> => {
+  sendConnectionRequest: (userId: number): void => {
+    const { sendConnectionRequest } = useWebSocket();
     try {
-      const token = localStorage.getItem('authToken');
-      await connectionController.sendConnectionRequest(userId, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      sendConnectionRequest(userId);
     } catch (error) {
       console.error('Error sending connection request:', error);
       throw error;
