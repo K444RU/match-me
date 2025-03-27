@@ -1,132 +1,86 @@
-import { MessagesSendRequestDTOWithSender } from "@/api/types";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { IMessage, useStompClient, useSubscription } from "react-stomp-hooks";
-
-
-const TYPING_TIMEOUT = 5000;
-const MAX_RECONNECTION_ATTEMPTS = 3;
-const RECONNECTION_DELAY = 2000;
+import { useStompClient, useSubscription } from 'react-stomp-hooks';
+import {ConnectionUpdateMessage} from "@features/chat/connectionUpdateMessage.ts";
+import {useEffect, useState} from "react";
 
 interface UseWebSocketConnectionProps {
-  	onMessage: (message: MessagesSendRequestDTOWithSender) => void;
-  	onTypingIndicator: (userId: string, isTyping: boolean) => void;
-  	onOnlineIndicator: (userId: string, isOnline: boolean) => void;
-  	onConnectionChange: (connected: boolean) => void;
+	onConnectionChange: (connected: boolean) => void;
+	onConnectionUpdate: (update: ConnectionUpdateMessage) => void;
 }
 
-export const useWebSocketConnection = ({
-  	onMessage,
-  	onTypingIndicator,
-  	onOnlineIndicator,
-  	onConnectionChange
-}: UseWebSocketConnectionProps) => {
+export const useWebSocketConnection = ({ onConnectionChange, onConnectionUpdate }: UseWebSocketConnectionProps) => {
 	const stompClient = useStompClient();
+
 	const [isConnected, setIsConnected] = useState(false);
-	const typingTimeout = useRef<ReturnType<typeof setTimeout>>();
-	const reconnectionAttempts = useRef(0);
-
-  const handleConnectionChange = useCallback((connected: boolean) => {
-      setIsConnected(connected);
-      onConnectionChange?.(connected);
-      if (connected) {
-        reconnectionAttempts.current = 0;
-      }
-    }, [onConnectionChange]);
-
-  const handleReconnection = useCallback(() => {
-    if (reconnectionAttempts.current >= MAX_RECONNECTION_ATTEMPTS) {
-      console.error('Reconnection attempts reached, timed out.')
-      return;
-    }
-    setTimeout(() => {
-      reconnectionAttempts.current++;
-      stompClient?.activate();
-    }, RECONNECTION_DELAY * Math.pow(2, reconnectionAttempts.current))
-  }, [stompClient]);
-
-  const safeParseJSON = <T,>(json: string, errorMsg: string): T | null => {
-    try {
-      return JSON.parse(json) as T;
-    } catch (error) {
-      console.error(errorMsg, error);
-      return null;
-    }
-  }
 
 	useEffect(() => {
-		if (!stompClient) return;
-
-		const onConnect = () => {
-			handleConnectionChange(true);
-		};
-
-    const onDisconnect = () => {
-			handleConnectionChange(false);
-			handleReconnection();
-		};
-
-		stompClient.onConnect = onConnect;
-		stompClient.onDisconnect = onDisconnect;
-
-		return () => {
-      stompClient.onConnect = () => {};
-      stompClient.onDisconnect = () => {};
-      handleConnectionChange(false);
-    };
-
-	}, [stompClient, handleConnectionChange, handleReconnection])
-
-  // Message subscription with error handling and retry logic
-  const handleIncomingMessage = (message: IMessage) => {
-    const parsed = safeParseJSON<MessagesSendRequestDTOWithSender>(
-      message.body,
-      'Error processing message:'
-    );
-    if (parsed) onMessage(parsed);
-  }
-
-	// Typing indicator subscription
-  const handleTypingMessage = (message: IMessage) => {
-    const parsed = safeParseJSON<{ userId: string; isTyping: boolean }>(
-      message.body,
-      'Error processing typing indicator:'
-    );
-    if (parsed) onTypingIndicator(parsed.userId, parsed.isTyping)
-  }
-
-  useSubscription(`/user/queue/messages`, handleIncomingMessage);
-  useSubscription(`/user/queue/typing`, handleTypingMessage);
-
-
-	/**
-	 * Sends a message to the user specific user via Websocket
-	 * @param userId - The users ID to which the message will be sent
-	 * @param message - The message which will be sent to the user via Websocket
-	 */
-	const sendMessage = useCallback(async (message: MessagesSendRequestDTOWithSender): Promise<void> => {
-
-	}, [stompClient]);
-
-	/**
-	 * Sends an indicator to the other user that this user is typing. Has a magic number to manage typing timeout.
-	 * @param userId - The users ID to which the indicator will be sent
-	 */
-	const sendTypingIndicator = useCallback((userId: string) => {
-		if(!stompClient?.connected) return;
-	
-		if (typingTimeout.current) {
-		  	clearTimeout(typingTimeout.current);
+		if (stompClient) {
+			console.log('STOMP client connected:', stompClient.connected);
+			setIsConnected(stompClient.connected);
+			onConnectionChange(stompClient.connected);
+		} else {
+			console.log('STOMP client not initialized');
+			setIsConnected(false);
+			onConnectionChange(false);
 		}
-	}, [stompClient]);
+	}, [stompClient, onConnectionChange]);
 
-	const sendOnlineIndicator = useCallback((userId: string) => {
+	useSubscription('/user/queue/connectionUpdates', (message) => {
+		const update: ConnectionUpdateMessage = JSON.parse(message.body);
+		console.log('Received connection update:', update);
+		onConnectionUpdate(update);
+	});
 
-	}, [stompClient]);
+	const sendConnectionRequest = (targetUserId: number) => {
+		if (stompClient && stompClient.connected) {
+			console.log(`Sending connection request to user ${targetUserId}`);
+			stompClient.publish({
+				destination: '/app/connection.sendRequest',
+				body: JSON.stringify(targetUserId),
+			});
+		} else {
+			console.error('STOMP client not connected');
+		}
+	};
+
+	const acceptConnectionRequest = (connectionId: number) => {
+		if (stompClient && stompClient.connected) {
+			console.log(`Sending connection request accepted ${connectionId}`);
+			stompClient.publish({
+				destination: '/app/connection.acceptRequest',
+				body: JSON.stringify(connectionId),
+			});
+		} else {
+			console.error('STOMP client not connected');
+		}
+	};
+
+	const rejectConnectionRequest = (connectionId: number) => {
+		if (stompClient) {
+			stompClient.publish({
+				destination: '/app/connection.rejectRequest',
+				body: JSON.stringify(connectionId),
+			});
+		} else {
+			console.error('STOMP client not connected');
+		}
+	};
+
+	const disconnectConnection = (connectionId: number) => {
+		if (stompClient) {
+			stompClient.publish({
+				destination: '/app/connection.disconnect',
+				body: JSON.stringify(connectionId),
+			});
+		} else {
+			console.error('STOMP client not connected');
+		}
+	};
 
 	return {
 		isConnected,
-		sendMessage,
-		sendTypingIndicator,
-		sendOnlineIndicator,
-	}
-}
+		sendConnectionRequest,
+		acceptConnectionRequest,
+		rejectConnectionRequest,
+		disconnectConnection,
+	};
+};

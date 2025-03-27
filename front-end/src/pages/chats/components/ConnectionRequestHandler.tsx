@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@features/authentication';
-import { getConnections, acceptConnection, rejectConnection } from '@features/chat/connection-service.ts';
+import { useWebSocket } from '@/features/chat/websocket-context';
 import { getUserController } from '@/api/user-controller.ts';
 
 interface ConnectionProvider {
@@ -8,22 +8,22 @@ interface ConnectionProvider {
     userId: number;
 }
 
-const ConnectionRequestHandler = () => {
+const ConnectionRequestHandler = ({ pendingIncoming }: { pendingIncoming: ConnectionProvider[] }) => {
     const { user } = useAuth();
-    const [pendingIncomingIds, setPendingIncomingIds] = useState<ConnectionProvider[]>([]);
+    const [pendingIncomingIds, setPendingIncomingIds] = useState<ConnectionProvider[]>(pendingIncoming);
     const [userData, setUserData] = useState<{ [key: string]: any }>({});
+    const { acceptConnectionRequest, rejectConnectionRequest } = useWebSocket();
 
     useEffect(() => {
-        if (!user) return;
+        setPendingIncomingIds(pendingIncoming);
+    }, [pendingIncoming]);
+
+    useEffect(() => {
+        if (!user || pendingIncomingIds.length === 0) return;
 
         (async () => {
             try {
-                const data = await getConnections(user.token);
-                console.log('Connections data:', data);
-                const pending = data.pendingIncoming || [];
-                setPendingIncomingIds(pending);
-
-                const userPromises = pending.map((request: ConnectionProvider) =>
+                const userPromises = pendingIncomingIds.map((request) =>
                     getUserController().getUser(request.userId, {
                         headers: { Authorization: `Bearer ${user.token}` },
                     })
@@ -32,20 +32,21 @@ const ConnectionRequestHandler = () => {
                 const users = userResponses.map((response) => response.data);
 
                 const userMap = users.reduce((acc, user) => {
+                    // @ts-ignore
                     acc[user.id] = user;
                     return acc;
                 }, {} as { [key: string]: any });
 
                 setUserData(userMap);
             } catch (error) {
-                console.error('Failed to fetch connections or user data:', error);
+                console.error('Failed to fetch user data:', error);
             }
         })();
-    }, [user]);
+    }, [pendingIncomingIds, user]);
 
     const handleAccept = async (connectionId: number) => {
         try {
-            await acceptConnection(connectionId.toString(), user!.token);
+            acceptConnectionRequest(connectionId);
             setPendingIncomingIds(pendingIncomingIds.filter((request) => request.connectionId !== connectionId));
         } catch (error) {
             console.error('Failed to accept connection:', error);
@@ -54,7 +55,7 @@ const ConnectionRequestHandler = () => {
 
     const handleReject = async (connectionId: number) => {
         try {
-            await rejectConnection(connectionId.toString(), user!.token);
+            rejectConnectionRequest(connectionId);
             setPendingIncomingIds(pendingIncomingIds.filter((request) => request.connectionId !== connectionId));
         } catch (error) {
             console.error('Failed to reject connection:', error);

@@ -1,33 +1,27 @@
-import { ReactNode } from "react";
-import { useWebSocketConnection } from "./use-websocket-connection";
-import { MessagesSendRequestDTOWithSender } from "@/api/types";
-import { WebSocketContext } from "./websocket-context";
+import { ReactNode } from 'react';
+import { useWebSocketConnection } from './use-websocket-connection';
+import { WebSocketContext } from './websocket-context';
+import {ConnectionUpdateMessage} from "@features/chat/connectionUpdateMessage.ts";
 
 interface InnerWebSocketProviderProps {
     children: ReactNode;
-    onMessage: (message: MessagesSendRequestDTOWithSender) => void;
-    onTypingIndicator: (userId: string, isTyping: boolean) => void;
-    onOnlineIndicator: (userId: string, isOnline: boolean) => void;
     onConnectionChange: (connected: boolean) => void;
+    onConnectionUpdate: (update: ConnectionUpdateMessage) => void;
 }
 
 export const InnerWebSocketProvider = ({
-    children,
-    onMessage,
-    onTypingIndicator,
-    onOnlineIndicator,
-    onConnectionChange
-}: InnerWebSocketProviderProps) => {
+                                           children,
+                                           onConnectionChange,
+                                           onConnectionUpdate,
+                                       }: InnerWebSocketProviderProps) => {
     const websocket = useWebSocketConnection({
-      onMessage,
-      onTypingIndicator,
-      onOnlineIndicator,
-      onConnectionChange,
+        onConnectionChange,
+        onConnectionUpdate,
     });
 
     return (
-      <WebSocketContext.Provider value={websocket}>
-        {children}
-      </WebSocketContext.Provider>
+        <WebSocketContext.Provider value={websocket}>
+            {children}
+        </WebSocketContext.Provider>
     );
 };

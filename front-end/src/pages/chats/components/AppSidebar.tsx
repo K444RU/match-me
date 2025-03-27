@@ -11,11 +11,12 @@ import {
 } from '@/components/ui/sidebar';
 import { useAuth } from '@/features/authentication';
 import { chatService } from '@/features/chat';
+import { getConnections } from '@/features/chat/connection-service';
 import { cn } from '@/lib/utils';
 import { ChatPreview } from '@/types/api';
 import { ChevronDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { IFrame, StompSessionProvider } from 'react-stomp-hooks';
+import { useSubscription } from 'react-stomp-hooks';
 import BlindMenu from './BlindMenu';
 import ChatPreviewCard from './ChatPreviewCard';
 import ConnectionsDialog from './ConnectionsDialog';
@@ -29,7 +30,9 @@ const AppSidebar = ({ onChatSelect }: { onChatSelect: (chat: ChatPreview) => voi
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isConnectionsModalOpen, setIsConnectionsModalOpen] = useState(false);
   const [isRecommendationsModalOpen, setIsRecommendationsModalOpen] = useState(false);
+  const [connections, setConnections] = useState<any>(null); // Replace 'any' with ConnectionsDTO type if available
 
+  // Fetch chat previews
   useEffect(() => {
     if (!user) return;
 
@@ -49,69 +52,71 @@ const AppSidebar = ({ onChatSelect }: { onChatSelect: (chat: ChatPreview) => voi
     })();
   }, [user, getChatPreviews]);
 
-  const wsConfig = {
-    url: 'http://localhost:8000/ws',
-    connectHeaders: {
-      Authorization: `Bearer ${user?.token}`,
-    },
-    debug: (str: string) => {
-      console.log('WS Debug:', str);
-    },
-    onConnect: () => {
-      console.log('WS Connected');
-    },
-    onDisconnect: () => {
-      console.log('WS Disconnected');
-    },
-    onStompError: (frame: IFrame) => {
-      console.error('WS Error:', frame);
-    },
+  // Fetch connections
+  const fetchConnections = async () => {
+    if (!user) return;
+    try {
+      const data = await getConnections(user.token);
+      setConnections(data);
+    } catch (error) {
+      console.error('Failed to fetch connections:', error);
+    }
   };
 
+  useEffect(() => {
+    fetchConnections();
+  }, [user]);
+
+  useSubscription('/user/queue/connectionUpdates', () => {
+    fetchConnections();
+  });
+
   return (
-    <Sidebar>
-      <SidebarContent>
-        <SidebarGroup>
-          <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-            <DropdownMenuTrigger asChild>
-              <SidebarMenuButton
-                size="lg"
-                className={cn(
-                  'justify-between group-data-[collapsible=icon]:hidden',
-                  'data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
-                )}
-              >
-                <span>Blind</span>
-                <ChevronDown className="ml-auto size-4" />
-              </SidebarMenuButton>
-            </DropdownMenuTrigger>
-            <BlindMenu
-              setIsConnectionsModalOpen={setIsConnectionsModalOpen}
-              setIsRecommendationsModalOpen={setIsRecommendationsModalOpen}
-              setIsDropdownOpen={setIsDropdownOpen}
-            />
-          </DropdownMenu>
-          <StompSessionProvider {...wsConfig}>
+      <Sidebar>
+        <SidebarContent>
+          <SidebarGroup>
+            <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton
+                    size="lg"
+                    className={cn(
+                        'justify-between group-data-[collapsible=icon]:hidden',
+                        'data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
+                    )}
+                >
+                  <span>Blind</span>
+                  <ChevronDown className="ml-auto size-4" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <BlindMenu
+                  setIsConnectionsModalOpen={setIsConnectionsModalOpen}
+                  setIsRecommendationsModalOpen={setIsRecommendationsModalOpen}
+                  setIsDropdownOpen={setIsDropdownOpen}
+              />
+            </DropdownMenu>
             <SidebarGroupContent>
               {chats.map((chat: ChatPreview) => (
-                <SidebarMenuItem key={chat.connectionId} className="list-none">
-                  <SidebarMenuButton onClick={() => onChatSelect(chat)} className="h-fit w-full">
-                    <ChatPreviewCard chat={chat} />
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                  <SidebarMenuItem key={chat.connectionId} className="list-none">
+                    <SidebarMenuButton onClick={() => onChatSelect(chat)} className="h-fit w-full">
+                      <ChatPreviewCard chat={chat} />
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
               ))}
             </SidebarGroupContent>
-          </StompSessionProvider>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenuItem className="list-none">
-          <UserInfo />
-        </SidebarMenuItem>
-      </SidebarFooter>
-      <ConnectionsDialog setIsOpen={setIsConnectionsModalOpen} isOpen={isConnectionsModalOpen} />
-      <RecommendationsDialog setIsOpen={setIsRecommendationsModalOpen} isOpen={isRecommendationsModalOpen} />
-    </Sidebar>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter>
+          <SidebarMenuItem className="list-none">
+            <UserInfo />
+          </SidebarMenuItem>
+        </SidebarFooter>
+        <ConnectionsDialog
+            setIsOpen={setIsConnectionsModalOpen}
+            isOpen={isConnectionsModalOpen}
+            connections={connections}
+        />
+        <RecommendationsDialog setIsOpen={setIsRecommendationsModalOpen} isOpen={isRecommendationsModalOpen} />
+      </Sidebar>
   );
 };
 

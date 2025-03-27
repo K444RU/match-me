@@ -1,12 +1,12 @@
-import { MessagesSendRequestDTOWithSender } from '@/api/types';
 import { createContext, useContext } from 'react';
 
 
 interface WebSocketContextType {
 	isConnected: boolean;
-	sendMessage: (message: MessagesSendRequestDTOWithSender) => Promise<void>;
-	sendTypingIndicator: (userId: string) => void;
-	sendOnlineIndicator: (userId: string) => void;
+	sendConnectionRequest: (targetUserId: number) => void;
+	acceptConnectionRequest: (connectionId: number) => void;
+	rejectConnectionRequest: (connectionId: number) => void;
+	disconnectConnection: (connectionId: number) => void;
 }
 
 export const WebSocketContext = createContext<WebSocketContextType | undefined>(undefined);

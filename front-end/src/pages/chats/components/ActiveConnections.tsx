@@ -1,29 +1,29 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@features/authentication';
-import { disconnectConnection, getConnections } from '@features/chat/connection-service.ts';
-import { getUserController } from "@/api/user-controller.ts";
+import { useWebSocket } from '@/features/chat/websocket-context';
+import { getUserController } from '@/api/user-controller.ts';
 
 interface ConnectionProvider {
     connectionId: number;
     userId: number;
 }
 
-const ActiveConnections = () => {
+const ActiveConnections = ({ active }: { active: ConnectionProvider[] }) => {
     const { user } = useAuth();
-    const [activeConnections, setActiveConnections] = useState<ConnectionProvider[]>([]);
+    const [activeConnections, setActiveConnections] = useState<ConnectionProvider[]>(active);
     const [userData, setUserData] = useState<{ [key: string]: any }>({});
+    const { disconnectConnection } = useWebSocket();
 
     useEffect(() => {
-        if (!user) return;
+        setActiveConnections(active);
+    }, [active]);
+
+    useEffect(() => {
+        if (!user || activeConnections.length === 0) return;
 
         (async () => {
             try {
-                const data = await getConnections(user.token);
-                console.log('Connections data:', data);
-                const active = data.active || [];
-                setActiveConnections(active);
-
-                const userPromises = active.map((connection: ConnectionProvider) =>
+                const userPromises = activeConnections.map((connection) =>
                     getUserController().getUser(connection.userId, {
                         headers: { Authorization: `Bearer ${user.token}` },
                     })
@@ -32,20 +32,21 @@ const ActiveConnections = () => {
                 const users = userResponses.map((response) => response.data);
 
                 const userMap = users.reduce((acc, user) => {
+                    // @ts-ignore
                     acc[user.id] = user;
                     return acc;
                 }, {} as { [key: string]: any });
 
                 setUserData(userMap);
             } catch (error) {
-                console.error('Failed to fetch connections or user data:', error);
+                console.error('Failed to fetch user data:', error);
             }
         })();
-    }, [user]);
+    }, [activeConnections, user]);
 
     const handleDisconnect = async (connectionId: number) => {
         try {
-            await disconnectConnection(connectionId.toString(), user!.token);
+            disconnectConnection(connectionId);
             setActiveConnections(activeConnections.filter((connection) => connection.connectionId !== connectionId));
         } catch (error) {
             console.error('Failed to disconnect:', error);
@@ -80,6 +81,5 @@ const ActiveConnections = () => {
         </div>
     );
 };
-
 
 export default ActiveConnections;

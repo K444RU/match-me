@@ -1,47 +1,35 @@
-import { ReactNode } from "react";
-import { StompSessionProvider } from "react-stomp-hooks";
-import { MessagesSendRequestDTOWithSender } from "@/api/types";
-import { InnerWebSocketProvider } from "./InnerWebSocketProvider";
-
+import { ReactNode } from 'react';
+import { StompSessionProvider } from 'react-stomp-hooks';
+import { InnerWebSocketProvider } from './InnerWebSocketProvider';
+import {ConnectionUpdateMessage} from "@features/chat/connectionUpdateMessage.ts";
 
 interface WebSocketProviderProps {
-  children: ReactNode;
-  wsUrl: string;
-  token: string;
+    children: ReactNode;
+    wsUrl: string;
+    token: string;
+    onConnectionChange: (connected: boolean) => void;
+    onConnectionUpdate: (update: ConnectionUpdateMessage) => void;
 }
 
-export const WebSocketProvider = ({ children, wsUrl, token }: WebSocketProviderProps) => {
-
-  const handleMessage = (message: MessagesSendRequestDTOWithSender) => {
-
-  };
-
-  const handleTypingIndicator = (userId: string, isTyping: boolean) => {
-
-  };
-
-  const handleOnlineIndicator = (userId: string, isOnline: boolean) => {
-
-  }
-
-  const handleConnectionChange = (connected: boolean) => {
-
-  };
-
-  return (
-    <StompSessionProvider
-      url={wsUrl}
-      connectHeaders={{ Authorization: `Bearer ${token}`}}
-      debug={import.meta.env.DEV ? console.log : undefined}
-    >
-      	<InnerWebSocketProvider
-	  		onMessage={handleMessage}
-			onTypingIndicator={handleTypingIndicator}
-			onOnlineIndicator={handleOnlineIndicator}
-			onConnectionChange={handleConnectionChange}
-	  	>
-			{children}
-		</InnerWebSocketProvider>
-    </StompSessionProvider>
-  )
-}
+export const WebSocketProvider = ({
+                                      children,
+                                      wsUrl,
+                                      token,
+                                      onConnectionChange,
+                                      onConnectionUpdate,
+                                  }: WebSocketProviderProps) => {
+    return (
+        <StompSessionProvider
+            url={wsUrl}
+            connectHeaders={{ Authorization: `Bearer ${token}` }}
+            debug={import.meta.env.DEV ? console.log : undefined}
+        >
+            <InnerWebSocketProvider
+                onConnectionChange={onConnectionChange}
+                onConnectionUpdate={onConnectionUpdate}
+            >
+                {children}
+            </InnerWebSocketProvider>
+        </StompSessionProvider>
+    );
+};

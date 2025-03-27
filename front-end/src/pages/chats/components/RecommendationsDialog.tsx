@@ -8,6 +8,7 @@ import { AxiosError } from 'axios';
 import { UserPlus } from 'lucide-react';
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import {useWebSocket} from "@features/chat/websocket-context.ts";
 
 type ConnectionState = Record<string, 'idle' | 'loading' | 'sent'>;
 
@@ -35,19 +36,23 @@ const RecommendationsDialog = ({
 }) => {
   const [recommendations, setRecommendations] = useState<MatchingRecommendationsDTO>();
   const [connectionStates, setConnectionStates] = useState<ConnectionState>({});
+  const { sendConnectionRequest } = useWebSocket();
 
   useEffect(() => {
     if (isOpen) {
       const fetchData = async () => {
         const result = await fetchRecommendations();
         if (result) {
+          console.log('Recommendations data: ', result);
           setRecommendations(result);
           const initialStates =
             result?.recommendations?.reduce((acc, r) => {
+              console.log(`User ${r.userId} connectionStatus: ${r.connectionStatus}`);
               acc[String(r.userId)] = r.connectionStatus === 'PENDING_SENT' ? 'sent' : 'idle';
               return acc;
             }, {} as ConnectionState) || {};
           setConnectionStates(initialStates);
+          console.log('Initial connection states:', initialStates);
         }
       };
       fetchData();
@@ -55,10 +60,13 @@ const RecommendationsDialog = ({
   }, [isOpen]);
 
   const handleSendConnectionRequest = useCallback(async (userId: number) => {
+    console.log(`Attempting to send connection request to user ${userId}`);
     try {
       setConnectionStates((prev) => ({ ...prev, [userId]: 'loading' }));
+      sendConnectionRequest(userId);
+      console.log(`WebSocket message sent to user ${userId}`);
       setTimeout(() => {
-        console.log(`Sent request to: ${userId}`);
+        console.log(`Request to user ${userId} marked as sent`);
         setConnectionStates((prev) => ({ ...prev, [userId]: 'sent' }));
       }, 1000);
     } catch (error) {
@@ -79,11 +87,11 @@ const RecommendationsDialog = ({
     }
   }, []);
 
-  const statusText = {
-    PENDING_SENT: 'Request Sent',
-    PENDING_RECEIVED: 'Request Received',
-    ACCEPTED: 'Connected',
-  };
+  // const statusText = {
+  //   PENDING_SENT: 'Request Sent',
+  //   PENDING_RECEIVED: 'Request Received',
+  //   ACCEPTED: 'Connected',
+  // };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -94,35 +102,35 @@ const RecommendationsDialog = ({
         </DialogHeader>
         <div className="space-y-4">
           {recommendations?.recommendations &&
-            recommendations.recommendations.map((r) => (
-              <div key={r.userId} className="flex justify-between rounded-md p-2 duration-100 hover:bg-text-100">
-                <div className="flex items-center gap-2">
-                  <Avatar>
-                    <AvatarImage src={r.profilePicture} alt={`${r.firstName} avatar`} />
-                    <AvatarFallback>{getInitials(r.firstName, r.lastName)}</AvatarFallback>
-                  </Avatar>
-                  <span>{`${r.firstName} ${r.lastName}`}</span>
-                </div>
-                {r.connectionStatus === 'NONE' ? (
-                  <Button
-                    onClick={() => handleSendConnectionRequest(r.userId)}
-                    disabled={connectionStates[r.userId] === 'loading' || connectionStates[r.userId] === 'sent'}
-                  >
-                    {connectionStates[r.userId] === 'loading' ? (
-                      <MotionSpinner />
-                    ) : connectionStates[r.userId] === 'sent' ? (
-                      'Sent'
-                    ) : (
-                      <>
-                        Add <UserPlus />
-                      </>
-                    )}
-                  </Button>
-                ) : (
-                  <span>{statusText[r.connectionStatus as keyof typeof statusText] || r.connectionStatus}</span>
-                )}
-              </div>
-            ))}
+              recommendations.recommendations.map((r) => (
+                  <div key={r.userId} className="flex justify-between rounded-md p-2 duration-100 hover:bg-text-100">
+                    <div className="flex items-center gap-2">
+                      <Avatar>
+                        <AvatarImage src={r.profilePicture} alt={`${r.firstName} avatar`}/>
+                        <AvatarFallback>{getInitials(r.firstName, r.lastName)}</AvatarFallback>
+                      </Avatar>
+                      <span>{`${r.firstName} ${r.lastName}`}</span>
+                    </div>
+                    <Button
+                        onClick={() => handleSendConnectionRequest(r.userId)}
+                        disabled={
+                            connectionStates[r.userId] === 'loading' ||
+                            connectionStates[r.userId] === 'sent' ||
+                            (r.connectionStatus && r.connectionStatus !== 'NONE')
+                        }
+                    >
+                      {connectionStates[r.userId] === 'loading' ? (
+                          <MotionSpinner/>
+                      ) : connectionStates[r.userId] === 'sent' || r.connectionStatus === 'PENDING_SENT' ? (
+                          'Sent'
+                      ) : (
+                          <>
+                            Add <UserPlus/>
+                          </>
+                      )}
+                    </Button>
+                  </div>
+              ))}
         </div>
       </DialogContent>
     </Dialog>
