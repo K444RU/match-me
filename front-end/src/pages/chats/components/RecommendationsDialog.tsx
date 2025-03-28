@@ -4,7 +4,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { connectionService } from '@/features/chat';
-import { AxiosError } from 'axios';
 import { UserPlus } from 'lucide-react';
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -36,7 +35,7 @@ const RecommendationsDialog = ({
 }) => {
   const [recommendations, setRecommendations] = useState<MatchingRecommendationsDTO>();
   const [connectionStates, setConnectionStates] = useState<ConnectionState>({});
-  const { sendConnectionRequest } = useWebSocket();
+  const { sendConnectionRequest, isConnected } = useWebSocket();
 
   useEffect(() => {
     if (isOpen) {
@@ -60,38 +59,26 @@ const RecommendationsDialog = ({
   }, [isOpen]);
 
   const handleSendConnectionRequest = useCallback(async (userId: number) => {
+    if (!isConnected) {
+      toast.error('Cannot send request: WebSocket is not connected');
+      return;
+    }
+
     console.log(`Attempting to send connection request to user ${userId}`);
     try {
       setConnectionStates((prev) => ({ ...prev, [userId]: 'loading' }));
       sendConnectionRequest(userId);
       console.log(`WebSocket message sent to user ${userId}`);
       setTimeout(() => {
-        console.log(`Request to user ${userId} marked as sent`);
         setConnectionStates((prev) => ({ ...prev, [userId]: 'sent' }));
+        toast.success('Connection request sent!');
       }, 1000);
     } catch (error) {
-      if (error instanceof AxiosError) {
-        if (error.response?.data?.message === 'A pending request already exists from you to this user') {
-          toast.info('Request already sent');
-          setConnectionStates((prev) => ({ ...prev, [String(userId)]: 'sent' }));
-        } else {
-          toast.error('Failed to send connection request');
-          console.error('Error sending connection request:', error);
-          setConnectionStates((prev) => ({ ...prev, [String(userId)]: 'idle' }));
-        }
-      } else {
-        toast.error('An unexpected error occurred');
-        console.error('Unexpected error:', error);
-        setConnectionStates((prev) => ({ ...prev, [String(userId)]: 'idle' }));
-      }
+      toast.error('Failed to send connection request');
+      console.error('Error sending connection request:', error);
+      setConnectionStates((prev) => ({ ...prev, [userId]: 'idle' }));
     }
-  }, []);
-
-  // const statusText = {
-  //   PENDING_SENT: 'Request Sent',
-  //   PENDING_RECEIVED: 'Request Received',
-  //   ACCEPTED: 'Connected',
-  // };
+  }, [isConnected, sendConnectionRequest]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -114,18 +101,19 @@ const RecommendationsDialog = ({
                     <Button
                         onClick={() => handleSendConnectionRequest(r.userId)}
                         disabled={
+                            !isConnected ||
                             connectionStates[r.userId] === 'loading' ||
                             connectionStates[r.userId] === 'sent' ||
                             (r.connectionStatus && r.connectionStatus !== 'NONE')
                         }
                     >
                       {connectionStates[r.userId] === 'loading' ? (
-                          <MotionSpinner/>
+                          <MotionSpinner />
                       ) : connectionStates[r.userId] === 'sent' || r.connectionStatus === 'PENDING_SENT' ? (
                           'Sent'
                       ) : (
                           <>
-                            Add <UserPlus/>
+                            Add <UserPlus />
                           </>
                       )}
                     </Button>

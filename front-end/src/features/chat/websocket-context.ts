@@ -1,6 +1,5 @@
 import { createContext, useContext } from 'react';
 
-
 interface WebSocketContextType {
 	isConnected: boolean;
 	sendConnectionRequest: (targetUserId: number) => void;
@@ -17,4 +16,4 @@ export const useWebSocket = () => {
 		throw new Error('useWebSocket must be used within WebSocketProvider');
 	}
 	return context;
-}
+};

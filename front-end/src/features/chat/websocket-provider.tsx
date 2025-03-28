@@ -1,14 +1,12 @@
 import { ReactNode } from 'react';
 import { StompSessionProvider } from 'react-stomp-hooks';
 import { InnerWebSocketProvider } from './InnerWebSocketProvider';
-import {ConnectionUpdateMessage} from "@features/chat/connectionUpdateMessage.ts";
 
 interface WebSocketProviderProps {
     children: ReactNode;
     wsUrl: string;
     token: string;
     onConnectionChange: (connected: boolean) => void;
-    onConnectionUpdate: (update: ConnectionUpdateMessage) => void;
 }
 
 export const WebSocketProvider = ({
@@ -16,18 +14,16 @@ export const WebSocketProvider = ({
                                       wsUrl,
                                       token,
                                       onConnectionChange,
-                                      onConnectionUpdate,
                                   }: WebSocketProviderProps) => {
     return (
         <StompSessionProvider
             url={wsUrl}
             connectHeaders={{ Authorization: `Bearer ${token}` }}
-            debug={import.meta.env.DEV ? console.log : undefined}
+            heartbeatIncoming={10000}
+            heartbeatOutgoing={10000}
+            debug={(msg: string) => console.log('STOMP DEBUG:', msg)}
         >
-            <InnerWebSocketProvider
-                onConnectionChange={onConnectionChange}
-                onConnectionUpdate={onConnectionUpdate}
-            >
+            <InnerWebSocketProvider onConnectionChange={onConnectionChange}>
                 {children}
             </InnerWebSocketProvider>
         </StompSessionProvider>

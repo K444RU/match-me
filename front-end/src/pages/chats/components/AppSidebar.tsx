@@ -11,28 +11,24 @@ import {
 } from '@/components/ui/sidebar';
 import { useAuth } from '@/features/authentication';
 import { chatService } from '@/features/chat';
-import { getConnections } from '@/features/chat/connection-service';
 import { cn } from '@/lib/utils';
 import { ChatPreview } from '@/types/api';
 import { ChevronDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useSubscription } from 'react-stomp-hooks';
 import BlindMenu from './BlindMenu';
 import ChatPreviewCard from './ChatPreviewCard';
 import ConnectionsDialog from './ConnectionsDialog';
 import RecommendationsDialog from './RecommendationsDialog';
 import UserInfo from './UserInfo';
 
-const AppSidebar = ({ onChatSelect }: { onChatSelect: (chat: ChatPreview) => void }) => {
+const AppSidebar = ({ onChatSelect }: { onChatSelect?: (chat: ChatPreview) => void }) => {
   const [chats, setChats] = useState<ChatPreview[]>([]);
   const { user } = useAuth();
   const { getChatPreviews } = getChatController();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isConnectionsModalOpen, setIsConnectionsModalOpen] = useState(false);
   const [isRecommendationsModalOpen, setIsRecommendationsModalOpen] = useState(false);
-  const [connections, setConnections] = useState<any>(null); // Replace 'any' with ConnectionsDTO type if available
 
-  // Fetch chat previews
   useEffect(() => {
     if (!user) return;
 
@@ -51,25 +47,6 @@ const AppSidebar = ({ onChatSelect }: { onChatSelect: (chat: ChatPreview) => voi
       }
     })();
   }, [user, getChatPreviews]);
-
-  // Fetch connections
-  const fetchConnections = async () => {
-    if (!user) return;
-    try {
-      const data = await getConnections(user.token);
-      setConnections(data);
-    } catch (error) {
-      console.error('Failed to fetch connections:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchConnections();
-  }, [user]);
-
-  useSubscription('/user/queue/connectionUpdates', () => {
-    fetchConnections();
-  });
 
   return (
       <Sidebar>
@@ -97,7 +74,10 @@ const AppSidebar = ({ onChatSelect }: { onChatSelect: (chat: ChatPreview) => voi
             <SidebarGroupContent>
               {chats.map((chat: ChatPreview) => (
                   <SidebarMenuItem key={chat.connectionId} className="list-none">
-                    <SidebarMenuButton onClick={() => onChatSelect(chat)} className="h-fit w-full">
+                    <SidebarMenuButton
+                        onClick={() => onChatSelect && onChatSelect(chat)}
+                        className="h-fit w-full"
+                    >
                       <ChatPreviewCard chat={chat} />
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -113,7 +93,6 @@ const AppSidebar = ({ onChatSelect }: { onChatSelect: (chat: ChatPreview) => voi
         <ConnectionsDialog
             setIsOpen={setIsConnectionsModalOpen}
             isOpen={isConnectionsModalOpen}
-            connections={connections}
         />
         <RecommendationsDialog setIsOpen={setIsRecommendationsModalOpen} isOpen={isRecommendationsModalOpen} />
       </Sidebar>

@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -37,11 +38,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
   public void configureClientInboundChannel(@NonNull ChannelRegistration registration) {
     registration.interceptors(webSocketAuthInterceptor);
   }
-  
+
   @Override
   public void configureMessageBroker(@NonNull MessageBrokerRegistry config) {
-    config.enableSimpleBroker(SIMPLE_BROKER_DESTINATIONS); // the client subscribes
-    config.setApplicationDestinationPrefixes(APPLICATION_DESTINATION_PREFIX); //These go to server
+    config.enableSimpleBroker(SIMPLE_BROKER_DESTINATIONS)
+            .setHeartbeatValue(new long[]{10000, 10000}) // Server sends heartbeats every 10s, expects client heartbeats every 10s
+            .setTaskScheduler(taskScheduler()); // Provide the TaskScheduler
+    config.setApplicationDestinationPrefixes(APPLICATION_DESTINATION_PREFIX);
     config.setUserDestinationPrefix(USER_DESTINATION_PREFIX);
   }
 
@@ -63,5 +66,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         super.afterConnectionEstablished(session);
       }
     };
+  }
+
+  @Bean
+  public ThreadPoolTaskScheduler taskScheduler() {
+    ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+    scheduler.setPoolSize(1); // Single thread for scheduling heartbeats
+    scheduler.setThreadNamePrefix("wss-heartbeat-thread-");
+    scheduler.initialize();
+    return scheduler;
   }
 }
