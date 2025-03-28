@@ -121,6 +121,8 @@ public class ConnectionService {
    *
    * Only the target of the request can accept it, and it must be in a pending
    * state.
+   * 
+   * Calls userScoreService to update request senders score based on decision.
    *
    * @param connectionId The ID of the connection to accept.
    * @param acceptorId   The ID of the user accepting the request.
@@ -151,6 +153,8 @@ public class ConnectionService {
    *
    * Only the target of the request can reject it, and it must be in a pending
    * state.
+   * 
+   * Calls userScoreService to update request senders score based on decision.
    *
    * @param connectionId The ID of the connection to reject.
    * @param rejectorId   The ID of the user rejecting the request.
