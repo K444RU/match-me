@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@features/authentication';
 import { useWebSocket } from '@/features/chat/websocket-context';
-import { getUserController } from '@/api/user-controller.ts';
+import { getUserController } from '@/api/user-controller';
 
 interface ConnectionProvider {
     connectionId: number;
@@ -15,14 +15,15 @@ const ConnectionRequestHandler = ({ pendingIncoming }: { pendingIncoming: Connec
     const { acceptConnectionRequest, rejectConnectionRequest } = useWebSocket();
 
     useEffect(() => {
+        console.log('[ConnectionRequestHandler] Updating local pendingIncoming state:', pendingIncoming);
         setPendingIncomingIds(pendingIncoming);
     }, [pendingIncoming]);
 
     useEffect(() => {
         if (!user || pendingIncomingIds.length === 0) return;
-
         (async () => {
             try {
+                console.log('[ConnectionRequestHandler] Fetching user data for pending requests:', pendingIncomingIds);
                 const userPromises = pendingIncomingIds.map((request) =>
                     getUserController().getUser(request.userId, {
                         headers: { Authorization: `Bearer ${user.token}` },
@@ -30,35 +31,36 @@ const ConnectionRequestHandler = ({ pendingIncoming }: { pendingIncoming: Connec
                 );
                 const userResponses = await Promise.all(userPromises);
                 const users = userResponses.map((response) => response.data);
-
                 const userMap = users.reduce((acc, user) => {
                     // @ts-ignore
                     acc[user.id] = user;
                     return acc;
                 }, {} as { [key: string]: any });
-
+                console.log('[ConnectionRequestHandler] Fetched user data:', userMap);
                 setUserData(userMap);
             } catch (error) {
-                console.error('Failed to fetch user data:', error);
+                console.error('[ConnectionRequestHandler] Failed to fetch user data:', error);
             }
         })();
     }, [pendingIncomingIds, user]);
 
     const handleAccept = async (connectionId: number) => {
+        console.log('[ConnectionRequestHandler] Accepting connection:', connectionId);
         try {
             acceptConnectionRequest(connectionId);
-            setPendingIncomingIds(pendingIncomingIds.filter((request) => request.connectionId !== connectionId));
+            setPendingIncomingIds(pendingIncomingIds.filter((r) => r.connectionId !== connectionId));
         } catch (error) {
-            console.error('Failed to accept connection:', error);
+            console.error('[ConnectionRequestHandler] Failed to accept connection:', error);
         }
     };
 
     const handleReject = async (connectionId: number) => {
+        console.log('[ConnectionRequestHandler] Rejecting connection:', connectionId);
         try {
             rejectConnectionRequest(connectionId);
-            setPendingIncomingIds(pendingIncomingIds.filter((request) => request.connectionId !== connectionId));
+            setPendingIncomingIds(pendingIncomingIds.filter((r) => r.connectionId !== connectionId));
         } catch (error) {
-            console.error('Failed to reject connection:', error);
+            console.error('[ConnectionRequestHandler] Failed to reject connection:', error);
         }
     };
 
@@ -73,21 +75,14 @@ const ConnectionRequestHandler = ({ pendingIncoming }: { pendingIncoming: Connec
                     const displayName = requester
                         ? `${requester.firstName} ${requester.lastName} (${requester.alias})`
                         : 'Unknown User';
-
                     return (
                         <div key={request.connectionId} className="flex items-center justify-between">
                             <span className="text-sm">{displayName}</span>
                             <div className="space-x-2">
-                                <button
-                                    onClick={() => handleAccept(request.connectionId)}
-                                    className="text-sm text-green-600 hover:underline"
-                                >
+                                <button onClick={() => handleAccept(request.connectionId)} className="text-sm text-green-600 hover:underline">
                                     Accept
                                 </button>
-                                <button
-                                    onClick={() => handleReject(request.connectionId)}
-                                    className="text-sm text-red-600 hover:underline"
-                                >
+                                <button onClick={() => handleReject(request.connectionId)} className="text-sm text-red-600 hover:underline">
                                     Reject
                                 </button>
                             </div>

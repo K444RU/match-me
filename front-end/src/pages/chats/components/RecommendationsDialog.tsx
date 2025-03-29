@@ -7,18 +7,18 @@ import { connectionService } from '@/features/chat';
 import { UserPlus } from 'lucide-react';
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import {useWebSocket} from "@features/chat/websocket-context.ts";
+import { useWebSocket } from '@/features/chat/websocket-context';
 
 type ConnectionState = Record<string, 'idle' | 'loading' | 'sent'>;
 
 async function fetchRecommendations() {
   try {
     const response = await connectionService.getRecommendations();
-    console.log('Fetched recommendations:', response);
+    console.log('[RecommendationsDialog] Fetched recommendations:', response);
     return response;
   } catch (error) {
     toast.error('Failed to fetch recommendations');
-    console.error('Error fetching recommendations:', error);
+    console.error('[RecommendationsDialog] Error fetching recommendations:', error);
   }
 }
 
@@ -27,9 +27,9 @@ function getInitials(firstName: string, lastName: string) {
 }
 
 const RecommendationsDialog = ({
-  setIsOpen,
-  isOpen,
-}: {
+                                 setIsOpen,
+                                 isOpen,
+                               }: {
   setIsOpen: Dispatch<SetStateAction<boolean>>;
   isOpen: boolean;
 }) => {
@@ -42,16 +42,16 @@ const RecommendationsDialog = ({
       const fetchData = async () => {
         const result = await fetchRecommendations();
         if (result) {
-          console.log('Recommendations data: ', result);
+          console.log('[RecommendationsDialog] Recommendations data:', result);
           setRecommendations(result);
           const initialStates =
-            result?.recommendations?.reduce((acc, r) => {
-              console.log(`User ${r.userId} connectionStatus: ${r.connectionStatus}`);
-              acc[String(r.userId)] = r.connectionStatus === 'PENDING_SENT' ? 'sent' : 'idle';
-              return acc;
-            }, {} as ConnectionState) || {};
+              result?.recommendations?.reduce((acc, r) => {
+                console.log(`[RecommendationsDialog] User ${r.userId} initial connectionStatus: ${r.connectionStatus}`);
+                acc[String(r.userId)] = r.connectionStatus === 'PENDING_SENT' ? 'sent' : 'idle';
+                return acc;
+              }, {} as ConnectionState) || {};
           setConnectionStates(initialStates);
-          console.log('Initial connection states:', initialStates);
+          console.log('[RecommendationsDialog] Initial connection states:', initialStates);
         }
       };
       fetchData();
@@ -63,65 +63,64 @@ const RecommendationsDialog = ({
       toast.error('Cannot send request: WebSocket is not connected');
       return;
     }
-
-    console.log(`Attempting to send connection request to user ${userId}`);
+    console.log(`[RecommendationsDialog] Attempting to send connection request to user ${userId}`);
     try {
       setConnectionStates((prev) => ({ ...prev, [userId]: 'loading' }));
       sendConnectionRequest(userId);
-      console.log(`WebSocket message sent to user ${userId}`);
+      console.log(`[RecommendationsDialog] WebSocket message sent to user ${userId}`);
       setTimeout(() => {
         setConnectionStates((prev) => ({ ...prev, [userId]: 'sent' }));
         toast.success('Connection request sent!');
       }, 1000);
     } catch (error) {
       toast.error('Failed to send connection request');
-      console.error('Error sending connection request:', error);
+      console.error('[RecommendationsDialog] Error sending connection request:', error);
       setConnectionStates((prev) => ({ ...prev, [userId]: 'idle' }));
     }
   }, [isConnected, sendConnectionRequest]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Matching Recommendations</DialogTitle>
-          <DialogDescription>View your latest matching recommendations here.</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          {recommendations?.recommendations &&
-              recommendations.recommendations.map((r) => (
-                  <div key={r.userId} className="flex justify-between rounded-md p-2 duration-100 hover:bg-text-100">
-                    <div className="flex items-center gap-2">
-                      <Avatar>
-                        <AvatarImage src={r.profilePicture} alt={`${r.firstName} avatar`}/>
-                        <AvatarFallback>{getInitials(r.firstName, r.lastName)}</AvatarFallback>
-                      </Avatar>
-                      <span>{`${r.firstName} ${r.lastName}`}</span>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Matching Recommendations</DialogTitle>
+            <DialogDescription>View your latest matching recommendations here.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {recommendations?.recommendations &&
+                recommendations.recommendations.map((r) => (
+                    <div key={r.userId} className="flex justify-between rounded-md p-2 duration-100 hover:bg-text-100">
+                      <div className="flex items-center gap-2">
+                        <Avatar>
+                          <AvatarImage src={r.profilePicture} alt={`${r.firstName} avatar`} />
+                          <AvatarFallback>{getInitials(r.firstName, r.lastName)}</AvatarFallback>
+                        </Avatar>
+                        <span>{`${r.firstName} ${r.lastName}`}</span>
+                      </div>
+                      <Button
+                          onClick={() => handleSendConnectionRequest(r.userId)}
+                          disabled={
+                              !isConnected ||
+                              connectionStates[r.userId] === 'loading' ||
+                              connectionStates[r.userId] === 'sent' ||
+                              (r.connectionStatus ? r.connectionStatus !== 'NONE' : false)
+                          }
+                      >
+                        {connectionStates[r.userId] === 'loading' ? (
+                            <MotionSpinner />
+                        ) : connectionStates[r.userId] === 'sent' || r.connectionStatus === 'PENDING_SENT' ? (
+                            'Sent'
+                        ) : (
+                            <>
+                              Add <UserPlus />
+                            </>
+                        )}
+                      </Button>
                     </div>
-                    <Button
-                        onClick={() => handleSendConnectionRequest(r.userId)}
-                        disabled={
-                            !isConnected ||
-                            connectionStates[r.userId] === 'loading' ||
-                            connectionStates[r.userId] === 'sent' ||
-                            (r.connectionStatus && r.connectionStatus !== 'NONE')
-                        }
-                    >
-                      {connectionStates[r.userId] === 'loading' ? (
-                          <MotionSpinner />
-                      ) : connectionStates[r.userId] === 'sent' || r.connectionStatus === 'PENDING_SENT' ? (
-                          'Sent'
-                      ) : (
-                          <>
-                            Add <UserPlus />
-                          </>
-                      )}
-                    </Button>
-                  </div>
-              ))}
-        </div>
-      </DialogContent>
-    </Dialog>
+                ))}
+          </div>
+        </DialogContent>
+      </Dialog>
   );
 };
 

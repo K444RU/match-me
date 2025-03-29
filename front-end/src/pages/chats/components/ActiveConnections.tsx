@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@features/authentication';
 import { useWebSocket } from '@/features/chat/websocket-context';
-import { getUserController } from '@/api/user-controller.ts';
+import { getUserController } from '@/api/user-controller';
 
 interface ConnectionProvider {
     connectionId: number;
@@ -15,14 +15,15 @@ const ActiveConnections = ({ active }: { active: ConnectionProvider[] }) => {
     const { disconnectConnection } = useWebSocket();
 
     useEffect(() => {
+        console.log('[ActiveConnections] Updating active connections state:', active);
         setActiveConnections(active);
     }, [active]);
 
     useEffect(() => {
         if (!user || activeConnections.length === 0) return;
-
         (async () => {
             try {
+                console.log('[ActiveConnections] Fetching user data for active connections:', activeConnections);
                 const userPromises = activeConnections.map((connection) =>
                     getUserController().getUser(connection.userId, {
                         headers: { Authorization: `Bearer ${user.token}` },
@@ -30,26 +31,26 @@ const ActiveConnections = ({ active }: { active: ConnectionProvider[] }) => {
                 );
                 const userResponses = await Promise.all(userPromises);
                 const users = userResponses.map((response) => response.data);
-
                 const userMap = users.reduce((acc, user) => {
                     // @ts-ignore
                     acc[user.id] = user;
                     return acc;
                 }, {} as { [key: string]: any });
-
+                console.log('[ActiveConnections] Fetched user data:', userMap);
                 setUserData(userMap);
             } catch (error) {
-                console.error('Failed to fetch user data:', error);
+                console.error('[ActiveConnections] Failed to fetch user data:', error);
             }
         })();
     }, [activeConnections, user]);
 
     const handleDisconnect = async (connectionId: number) => {
+        console.log('[ActiveConnections] Disconnecting connection:', connectionId);
         try {
             disconnectConnection(connectionId);
             setActiveConnections(activeConnections.filter((connection) => connection.connectionId !== connectionId));
         } catch (error) {
-            console.error('Failed to disconnect:', error);
+            console.error('[ActiveConnections] Failed to disconnect:', error);
         }
     };
 
@@ -64,14 +65,10 @@ const ActiveConnections = ({ active }: { active: ConnectionProvider[] }) => {
                     const displayName = connectedUser
                         ? `${connectedUser.firstName} ${connectedUser.lastName} (${connectedUser.alias})`
                         : 'Unknown User';
-
                     return (
                         <div key={connection.connectionId} className="flex items-center justify-between">
                             <span className="text-sm">{displayName}</span>
-                            <button
-                                onClick={() => handleDisconnect(connection.connectionId)}
-                                className="text-sm text-red-600 hover:underline"
-                            >
+                            <button onClick={() => handleDisconnect(connection.connectionId)} className="text-sm text-red-600 hover:underline">
                                 Disconnect
                             </button>
                         </div>

@@ -9,11 +9,10 @@ const WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:8000/ws';
 
 const AuthenticatedLayout: FC = () => {
     const { user } = useAuth();
-
     if (!user) return null;
 
     const handleConnectionChange = (connected: boolean) => {
-        console.log('WebSocket connection:', connected);
+        console.log('[AuthenticatedLayout] WebSocket connection status:', connected);
     };
 
     return (

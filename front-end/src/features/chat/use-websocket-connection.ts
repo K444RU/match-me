@@ -11,9 +11,11 @@ export const useWebSocketConnection = ({ onConnectionChange }: UseWebSocketConne
 
 	useEffect(() => {
 		if (stompClient) {
+			console.log('[useWebSocketConnection] STOMP client available, connected:', stompClient.connected);
 			setIsConnected(stompClient.connected);
 			onConnectionChange(stompClient.connected);
 		} else {
+			console.log('[useWebSocketConnection] STOMP client not available');
 			setIsConnected(false);
 			onConnectionChange(false);
 		}
@@ -21,46 +23,49 @@ export const useWebSocketConnection = ({ onConnectionChange }: UseWebSocketConne
 
 	const sendConnectionRequest = (targetUserId: number) => {
 		if (stompClient && stompClient.connected) {
-			console.log(`Sending connection request to user ${targetUserId}`);
+			console.log(`[useWebSocketConnection] Sending connection request to user ${targetUserId}`);
 			stompClient.publish({
 				destination: '/app/connection.sendRequest',
 				body: JSON.stringify(targetUserId),
 			});
 		} else {
-			console.error('STOMP client not connected');
+			console.error('[useWebSocketConnection] Cannot send connection request: STOMP client not connected');
 		}
 	};
 
 	const acceptConnectionRequest = (connectionId: number) => {
 		if (stompClient && stompClient.connected) {
+			console.log(`[useWebSocketConnection] Sending accept request for connection ${connectionId}`);
 			stompClient.publish({
 				destination: '/app/connection.acceptRequest',
 				body: JSON.stringify(connectionId),
 			});
 		} else {
-			console.error('STOMP client not connected');
+			console.error('[useWebSocketConnection] Cannot send accept request: STOMP client not connected');
 		}
 	};
 
 	const rejectConnectionRequest = (connectionId: number) => {
 		if (stompClient && stompClient.connected) {
+			console.log(`[useWebSocketConnection] Sending reject request for connection ${connectionId}`);
 			stompClient.publish({
 				destination: '/app/connection.rejectRequest',
 				body: JSON.stringify(connectionId),
 			});
 		} else {
-			console.error('STOMP client not connected');
+			console.error('[useWebSocketConnection] Cannot send reject request: STOMP client not connected');
 		}
 	};
 
 	const disconnectConnection = (connectionId: number) => {
 		if (stompClient && stompClient.connected) {
+			console.log(`[useWebSocketConnection] Sending disconnect for connection ${connectionId}`);
 			stompClient.publish({
 				destination: '/app/connection.disconnect',
 				body: JSON.stringify(connectionId),
 			});
 		} else {
-			console.error('STOMP client not connected');
+			console.error('[useWebSocketConnection] Cannot send disconnect: STOMP client not connected');
 		}
 	};
 
