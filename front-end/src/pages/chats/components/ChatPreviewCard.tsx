@@ -5,8 +5,8 @@ import { format, fromUnixTime } from 'date-fns';
 
 export default function ChatPreviewCard({ chat }: { chat: ChatPreviewResponseDTO }) {
   const { typingUsers, onlineUsers } = useWebSocket();
-  const isTyping = typingUsers[chat.connectionId];
-  const isOnline = onlineUsers[chat.connectionId];
+  const isTyping = typingUsers[chat.connectedUserId];
+  const isOnline = onlineUsers[chat.connectedUserId];
 
   if (!chat) return null;
 
