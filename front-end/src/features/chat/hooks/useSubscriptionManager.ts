@@ -134,9 +134,10 @@ export default function useSubscriptionManager({
         (message) => handlersRef.current.handleChatPreviews(message)
       );
 
-      subscriptionsRef.current.online = stompClientRef.current.subscribe(`/user/${userId}/queue/online`, (message) =>
-        handlersRef.current.handleOnlineIndicator(message)
-      );
+      subscriptionsRef.current.online = stompClientRef.current.subscribe(`/user/${userId}/queue/online`, (message) => {
+        handlersRef.current.handleOnlineIndicator(message);
+        console.log('ONLINE RECEIVED:', message.body);
+      });
 
       // Set up a ping interval
       if (pingIntervalRef.current) {
