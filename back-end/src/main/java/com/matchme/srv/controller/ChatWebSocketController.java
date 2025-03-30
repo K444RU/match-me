@@ -10,7 +10,11 @@ import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.service.ChatService;
 import com.matchme.srv.service.user.UserQueryService;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -47,6 +51,8 @@ public class ChatWebSocketController {
   private static final String PREVIEWS_QUEUE = QUEUE_PREFIX + "/previews";
   private static final String TYPING_QUEUE = QUEUE_PREFIX + "/typing";
   private static final String PONG_QUEUE = QUEUE_PREFIX + "/pong";
+
+  private final Set<Long> onlineUsers = Collections.synchronizedSet(new HashSet<>());
 
   /**
    * Send a chat message from one user to another. send the message payload to
@@ -93,7 +99,8 @@ public class ChatWebSocketController {
 
     messagingTemplate.convertAndSendToUser(senderId.toString(), PREVIEWS_QUEUE, senderPreviews);
 
-    messagingTemplate.convertAndSendToUser(otherUserId.toString(), PREVIEWS_QUEUE, otherUserPreviews);
+    messagingTemplate.convertAndSendToUser(
+        otherUserId.toString(), PREVIEWS_QUEUE, otherUserPreviews);
 
     log.debug(
         "Broadcasting message ID: {} to users {} and {}",
@@ -124,7 +131,8 @@ public class ChatWebSocketController {
     Long otherUserId = chatService.getOtherUserIdInConnection(connectionId, senderId);
 
     // Broadcast typing status to the other participant
-    messagingTemplate.convertAndSendToUser(otherUserId.toString(), TYPING_QUEUE, typingStatusRequest);
+    messagingTemplate.convertAndSendToUser(
+        otherUserId.toString(), TYPING_QUEUE, typingStatusRequest);
   }
 
   /**
@@ -147,6 +155,10 @@ public class ChatWebSocketController {
     // Send a pong back to the sender to confirm subscription works
     log.debug("Sending pong to user {}", userId);
     messagingTemplate.convertAndSendToUser(userId.toString(), PONG_QUEUE, responsePayload);
+    
+    // Also send the current online status information after ping
+    // This ensures client gets status info even if they missed the initial broadcast
+    sendInitialOnlineStatus(userId);
   }
 
   @EventListener
@@ -157,7 +169,7 @@ public class ChatWebSocketController {
     Authentication auth = (Authentication) accessor.getUser();
     if (auth != null) {
       Long userId = securityUtils.getCurrentUserId(auth);
-      trackOnlineStatus(userId, true);
+      setUserOnline(userId, true);
     }
   }
 
@@ -169,7 +181,7 @@ public class ChatWebSocketController {
     Authentication auth = (Authentication) accessor.getUser();
     if (auth != null) {
       Long userId = securityUtils.getCurrentUserId(auth);
-      trackOnlineStatus(userId, false);
+      setUserOnline(userId, false);
     }
   }
 
@@ -190,5 +202,38 @@ public class ChatWebSocketController {
     }
 
     log.debug("Online status update for userId: {}, isOnline: {}", userId, isOnline);
+  }
+
+  private void sendInitialOnlineStatus(Long userId) {
+    List<Long> connections = chatService.getUserConnections(userId);
+    List<OnlineStatusResponseDTO> onlineStatuses = new ArrayList<>();
+
+    for (Long connectionId : connections) {
+      Long otherUserId = chatService.getOtherUserIdInConnection(connectionId, userId);
+      boolean isOnline = isUserOnline(otherUserId);
+
+      OnlineStatusResponseDTO statusUpdate = new OnlineStatusResponseDTO();
+      statusUpdate.setConnectionId(connectionId);
+      statusUpdate.setUserId(otherUserId);
+      statusUpdate.setIsOnline(isOnline);
+      onlineStatuses.add(statusUpdate);
+    }
+
+    messagingTemplate.convertAndSendToUser(userId.toString(), ONLINE_QUEUE, onlineStatuses);
+    log.debug("Sent initial online status to userId: {}, count: {}", userId, onlineStatuses.size());
+  }
+
+  private void setUserOnline(Long userId, boolean isOnline) {
+    if (isOnline) {
+      onlineUsers.add(userId);
+    } else {
+      onlineUsers.remove(userId);
+    }
+
+    trackOnlineStatus(userId, isOnline);
+  }
+
+  private boolean isUserOnline(Long userId) {
+    return onlineUsers.contains(userId);
   }
 }
