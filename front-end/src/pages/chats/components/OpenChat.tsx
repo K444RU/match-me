@@ -19,16 +19,13 @@ export default function OpenChat() {
   const chatContext = useContext(ChatContext);
   const openChat = chatContext?.openChat || null;
 
-  // When the open chat changes, ensure WebSocket connection is active
+  // Only reconnect if the WebSocket is disconnected
   useEffect(() => {
-    if (openChat) {
-      // Ensure the WebSocket connection is active when changing chats
-      if (!connected) {
-        console.log('🔄 Chat changed, reconnecting WebSocket...');
-        reconnect();
-      }
+    if (!connected) {
+      console.log('🔄 WebSocket disconnected, attempting to reconnect...');
+      reconnect();
     }
-  }, [openChat, connected, reconnect]);
+  }, [connected, reconnect]);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -63,26 +60,20 @@ export default function OpenChat() {
     if (!message || !user || !openChat) return;
 
     try {
-      // Check WebSocket connection and try to reconnect if needed
-      if (!connected) {
-        console.log('🔄 WebSocket not connected, attempting to reconnect before sending...');
-        reconnect();
-      }
-
       // First send via REST API to ensure persistence
       await chatService.sendMessage(message.content, message.connectionId);
 
-      // Try WebSocket sending with better error handling
-      try {
-        if (connected) {
-          console.log('🚀 Sending message via WebSocket');
+      // Only use WebSocket if already connected
+      if (connected) {
+        console.log('🚀 Sending message via WebSocket');
+        try {
           await sendWebSocketMessage(message);
-        } else {
-          console.warn('⚠️ WebSocket not connected, message sent only via REST');
+        } catch (wsError) {
+          console.error('Failed to send via WebSocket:', wsError);
+          // If WebSocket fails, at least the message is already persisted via REST
         }
-      } catch (wsError) {
-        console.error('Failed to send via WebSocket:', wsError);
-        // If WebSocket fails, at least the message is already persisted via REST
+      } else {
+        console.warn('⚠️ WebSocket not connected, message sent only via REST');
       }
 
       // Optimistically add the message to the UI
@@ -117,15 +108,10 @@ export default function OpenChat() {
 
   const handleMessageChange = (value: string) => {
     setMessage(value);
-    // Ensure WebSocket is connected before sending typing indicator
-    if (openChat && openChat.connectionId) {
-      if (!connected) {
-        reconnect(); // Try to reconnect if dconnected
-      }
 
-      if (connected) {
-        sendTypingIndicator(openChat.connectionId.toString());
-      }
+    // Only send typing indicator if already connected
+    if (connected && openChat && openChat.connectionId) {
+      sendTypingIndicator(openChat.connectionId.toString());
     }
   };
 
