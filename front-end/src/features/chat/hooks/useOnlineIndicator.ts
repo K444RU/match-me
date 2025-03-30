@@ -8,19 +8,21 @@ export default function useOnlineIndicator() {
   const handleOnlineIndicator = useCallback((message: IMessage) => {
     try {
       console.log('Online indicator received:', message.body);
-      const data = JSON.parse(message.body) as OnlineStatusRequestDTO;
+      const parsedBody = JSON.parse(message.body);
 
-      // Validate data
-      if (!data || typeof data !== 'object' || typeof data.isOnline !== 'boolean') {
-        console.warn('Invalid online indicator format', message.body);
-        return;
+      if (Array.isArray(parsedBody)) {
+        const data = parsedBody as OnlineStatusRequestDTO[];
+        data.forEach((item) => {
+          const userId = String(item.userId);
+          setOnlineUsers((prev) => ({ ...prev, [userId]: item.isOnline }));
+        });
+      } else {
+        const data = parsedBody as OnlineStatusRequestDTO;
+        const userId = String(data.userId);
+        setOnlineUsers((prev) => ({ ...prev, [userId]: data.isOnline }));
       }
-
-      const senderId = String(data.connectionId);
-
-      // Update online status directly from backend
-      setOnlineUsers((prev) => ({ ...prev, [senderId]: data.isOnline }));
     } catch (error) {
+      // Update online status directly from backend
       console.error('Error parsing online indicator:', error, message.body);
     }
   }, []);
