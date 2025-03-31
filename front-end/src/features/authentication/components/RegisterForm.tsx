@@ -125,8 +125,8 @@ const RegisterForm = () => {
           // size must be between 0 and 20 -> what size? (its number...)
           // Password must be between 6 and 40 characters -> good
           // Error: email is already taken!
-          Object.keys(err.response.data).forEach((key) => {
-            setResSubtitle((prev) => `${prev}\n${err.response.data[key]}`);
+          Object.keys(err.response).forEach((key) => {
+            setResSubtitle((prev) => `${prev}\n${err.response[key]}`);
           });
         } else {
           setResTitle('Something went wrong...');

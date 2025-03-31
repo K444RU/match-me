@@ -21,8 +21,8 @@ export const chatService = {
       console.debug('🖖 ChatService: Making chat previews request');
       const response = await chatController.getChatPreviews();
       // DONT TOUCH THIS, THIS IS CORRECT, TYPE IS JUST FUCKING
-      console.debug('🖖 ChatService: Response', response.data);
-      return response.data;
+      console.debug('🖖 ChatService: Response', response);
+      return response;
     } catch (error) {
       console.error('❌ Error fetching chat previews', error);
       throw error;
@@ -34,8 +34,8 @@ export const chatService = {
       console.debug('🖖 ChatService: Making messages request');
       const response = await chatController.getChatMessages(connectionId, getChatMessagesParams);
       // DONT TOUCH THIS, THIS IS CORRECT, TYPE IS JUST FUCKING
-      console.debug('🖖 ChatService: Response', response.data);
-      return response.data.content ?? [];
+      console.debug('🖖 ChatService: Response', response);
+      return response.content ?? [];
     } catch (error) {
       console.error('❌ Error fetching chat messages', error);
       throw error;

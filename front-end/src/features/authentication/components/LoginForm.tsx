@@ -42,8 +42,8 @@ export default function LoginForm() {
     try {
       const response = await login({ email, password });
 
-      if (response.data.token) {
-        localStorage.setItem('authToken', response.data.token);
+      if (response.token) {
+        localStorage.setItem('authToken', response.token);
 
         const token = localStorage.getItem('authToken');
         if (!token) {
@@ -54,7 +54,7 @@ export default function LoginForm() {
 
         const currentUserResponse = await getCurrentUser();
 
-        const currentUser = currentUserResponse.data;
+        const currentUser = currentUserResponse;
         const requiredFields: (keyof CurrentUserResponseDTO)[] = ['firstName', 'lastName', 'alias', 'email'];
         const isProfileIncomplete = requiredFields.some((field) => !currentUser[field]);
 

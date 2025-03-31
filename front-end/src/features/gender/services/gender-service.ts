@@ -7,13 +7,8 @@ export const genderService = {
   getGenders: async (): Promise<GenderTypeDTO[]> => {
     try {
       console.debug('🖖 GenderService: Making request');
-      const token = localStorage.getItem('authToken');
-      const response = await genderController.getAllGenders({
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return response.data;
+      const response = await genderController.getAllGenders();
+      return response;
     } catch (error) {
       console.error('❌ Error fetching genders', error);
       throw error;

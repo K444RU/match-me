@@ -25,8 +25,7 @@ export default function ActiveConnections() {
         setActiveConnections(active);
 
         const userPromises = active.map((connection: ConnectionProvider) => userService.getUser(connection.userId));
-        const userResponses = await Promise.all(userPromises);
-        const users = userResponses.map((response) => response.data);
+        const users = await Promise.all(userPromises);
 
         const userMap = users.reduce(
           (acc, user) => {
