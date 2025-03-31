@@ -60,7 +60,7 @@ class UserMessageRepositoryTest {
 
         // Act
         Page<UserMessage> result =
-                userMessageRepository.findByConnectionIdOrderByCreatedAtDesc(1L, pageable);
+                userMessageRepository.findByConnectionIdOrderByCreatedAtDesc(connection.getId(), pageable);
 
         // Assert
         Assertions.assertThat(result).hasSize(2);
