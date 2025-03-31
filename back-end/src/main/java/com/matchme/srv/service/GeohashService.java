@@ -38,7 +38,6 @@ public class GeohashService {
         if (longitude < -180 || longitude > 180) {
             throw new IllegalArgumentException("Longitude must be between -180 and 180");
         }
-
         return GeoHash.withCharacterPrecision(latitude, longitude, GEOHASH_PRECISION).toBase32();
     }
 
@@ -70,11 +69,21 @@ public class GeohashService {
 
         Set<String> geohashes = new HashSet<>();
         for (GeoHash hash : query.getSearchHashes()) {
-            String hashString = hash.toBase32();
-            // Ensure we only take the minimum of the actual length or the desired precision
-            // This prevents the substring from throwing an exception when the hash is shorter than expected
-            int precision = Math.min(hashString.length(), GEOHASH_PRECISION);
-            geohashes.add(hashString.substring(0, precision));
+            // Get the center point of the hash returned by the query
+            WGS84Point hashCenterPoint = hash.getBoundingBoxCenter();
+
+            // Create a new GeoHash with the desired character precision
+            GeoHash preciselyFormattedHash = GeoHash.withCharacterPrecision(
+                hashCenterPoint.getLatitude(), 
+                hashCenterPoint.getLongitude(), 
+                GEOHASH_PRECISION
+            );
+
+            // Convert the precisely formatted hash to base32
+            String hashString = preciselyFormattedHash.toBase32();
+            
+            // Add the correctly formatted geohash string to the set
+            geohashes.add(hashString);
         }
 
         return geohashes;
