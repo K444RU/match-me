@@ -69,9 +69,7 @@ test.describe('Full User Registration Flow', () => {
     // Enter city and select from suggestions
     await page.getByRole('textbox', { name: 'First name Last name Alias' }).click();
     await page.getByRole('textbox', { name: 'First name Last name Alias' }).fill('Paide');
-    // Wait for debounced API call to complete
-    await page.waitForTimeout(1100);
-    // Click on the suggestion
+
     await page.getByText('Paide', { exact: true }).first().click({ timeout: 5000 });
 
     await page.getByRole('button', { name: 'Continue' }).click();
