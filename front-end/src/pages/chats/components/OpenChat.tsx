@@ -40,7 +40,7 @@ export default function OpenChat() {
           return;
         }
 
-        setChatMessages(messagesResponse);
+        setChatMessages(messagesResponse.reverse());
       } catch (error) {
         console.error('Error fetching messages:', error);
       } finally {
