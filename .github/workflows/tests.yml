@@ -140,14 +140,14 @@ jobs:
           timeout 30 bash -c 'until curl -s http://localhost:3000 > /dev/null; do sleep 2; done'
           echo "Frontend started successfully"
       
-      # Run Playwright tests with CI flags
+      # Run Playwright tests
       - name: Install Playwright browsers
         working-directory: ./front-end
         run: pnpm exec playwright install --with-deps chromium
       
       - name: Run Playwright tests
         working-directory: ./front-end
-        run: CI=true pnpm exec playwright test --project=chromium
+        run: CI=true pnpm exec playwright test
         env:
           PLAYWRIGHT_TEST_BASE_URL: http://localhost:3000
       
