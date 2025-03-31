@@ -129,7 +129,13 @@ jobs:
       - name: Build frontend
         working-directory: ./front-end
         run: pnpm build
-        
+        env:
+          VITE_GEOAPI_BASE_URL: https://api.api-ninjas.com/v1/geocoding
+          VITE_GEOAPI_KEY: dummy
+          VITE_API_URL: http://localhost:8000/api
+          VITE_WS_URL: ws://localhost:8000/ws
+          VITE_MAX_AVATAR_SIZE_MB: 5
+
       - name: Start frontend preview server
         working-directory: ./front-end
         run: |
@@ -139,7 +145,13 @@ jobs:
           echo "Waiting for frontend to start..."
           timeout 30 bash -c 'until curl -s http://localhost:3000 > /dev/null; do sleep 2; done'
           echo "Frontend started successfully"
-      
+        env:
+          VITE_GEOAPI_BASE_URL: https://api.api-ninjas.com/v1/geocoding
+          VITE_GEOAPI_KEY: dummy
+          VITE_API_URL: http://localhost:8000/api
+          VITE_WS_URL: ws://localhost:8000/ws
+          VITE_MAX_AVATAR_SIZE_MB: 5
+
       # Run Playwright tests
       - name: Install Playwright browsers
         working-directory: ./front-end
