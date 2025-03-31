@@ -3,6 +3,23 @@ import { getRandomValues } from 'utils/utils';
 
 test.describe('Full User Registration Flow', () => {
   const testUser = getRandomValues();
+  const mockCity = {
+    name: 'Paide',
+    latitude: 58.8869377,
+    longitude: 25.5699277,
+    country: 'EE',
+  };
+
+  test.beforeEach(async ({ page }) => {
+    // Mock the geocoding API response
+    await page.route('https://api.api-ninjas.com/v1/geocoding', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([mockCity]),
+      });
+    });
+  });
 
   test('should complete full registration and profile completion flow', async ({ page }) => {
     await page.goto('http://localhost:3000/');
@@ -34,7 +51,7 @@ test.describe('Full User Registration Flow', () => {
     await page.getByRole('textbox', { name: 'Michael' }).click();
     await page.getByRole('textbox', { name: 'Michael' }).fill(testUser.firstName);
     await page.getByRole('textbox', { name: 'Doorstep' }).click();
-    await page.getByRole('textbox', { name: 'Doorstep' }).fill(testUser.alias);
+    await page.getByRole('textbox', { name: 'Doorstep' }).fill(testUser.lastName);
     await page.getByRole('textbox', { name: 'Shotgunner404' }).click();
     await page.getByRole('textbox', { name: 'Shotgunner404' }).fill(testUser.alias);
 
@@ -49,9 +66,13 @@ test.describe('Full User Registration Flow', () => {
     await page.getByLabel('Choose the Month').selectOption('6');
     await page.getByRole('button', { name: 'Tuesday, July 10th,' }).click();
 
+    // Enter city and select from suggestions
     await page.getByRole('textbox', { name: 'First name Last name Alias' }).click();
-    await page.getByRole('textbox', { name: 'First name Last name Alias' }).fill(testUser.city);
-    await page.getByText('PaideEE').click();
+    await page.getByRole('textbox', { name: 'First name Last name Alias' }).fill('Paide');
+    // Wait for debounced API call to complete
+    await page.waitForTimeout(1100);
+    // Click on the suggestion
+    await page.getByText('Paide', { exact: true }).first().click({ timeout: 5000 });
 
     await page.getByRole('button', { name: 'Continue' }).click();
     await page.getByLabel('Gender Preference').selectOption('2');
