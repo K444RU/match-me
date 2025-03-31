@@ -62,14 +62,52 @@ jobs:
     name: Frontend Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    defaults:
-      run:
-        working-directory: ./front-end
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: kasutaja
+          POSTGRES_PASSWORD: koodjohvi
+          POSTGRES_DB: match
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       
+      # Setup and run backend in background
+      - name: Set up JDK for backend
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          
+      - name: Set up Maven for backend
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: 3.9.4
+          
+      - name: Build backend
+        working-directory: ./back-end
+        run: mvn -B package -DskipTests
+        
+      - name: Start backend server
+        working-directory: ./back-end
+        run: |
+          nohup java -jar target/*.jar > backend.log 2>&1 &
+          echo $! > backend.pid
+          # Wait for backend to start
+          echo "Waiting for backend to start..."
+          timeout 60 bash -c 'until curl -s http://localhost:8000/v3/api-docs > /dev/null; do sleep 2; done'
+          echo "Backend started successfully"
+      
+      # Setup and run frontend tests
       - name: Install pnpm
         uses: pnpm/action-setup@v3
         with:
@@ -84,12 +122,15 @@ jobs:
           cache-dependency-path: 'front-end/package.json'
       
       - name: Install dependencies
+        working-directory: ./front-end
         run: pnpm install --no-frozen-lockfile
       
       - name: Install Playwright browsers
+        working-directory: ./front-end
         run: pnpm exec playwright install --with-deps chromium
       
       - name: Run Playwright tests
+        working-directory: ./front-end
         run: pnpm test
       
       - name: Upload test results
@@ -98,4 +139,16 @@ jobs:
         with:
           name: playwright-report
           path: ./front-end/playwright-report/
-          retention-days: 5 
+          retention-days: 5
+          
+      - name: Stop backend server
+        if: always()
+        run: |
+          if [ -f back-end/backend.pid ]; then
+            kill $(cat back-end/backend.pid) || true
+            echo "Backend server stopped"
+          fi
+          
+      - name: Backend logs
+        if: always()
+        run: cat back-end/backend.log || true 
