@@ -11,13 +11,14 @@ test.describe('Full User Registration Flow', () => {
   };
 
   test.beforeEach(async ({ page }) => {
-    // Mock the geocoding API response
-    await page.route('https://api.api-ninjas.com/v1/geocoding', async (route) => {
+    await page.route('https://api.api-ninjas.com/v1/geocoding**', async (route) => {
+      console.log(`[Test Mock] Intercepting route: ${route.request().url()}`);
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify([mockCity]),
       });
+      console.log('[Test Mock] Mock fulfilled.');
     });
   });
 
@@ -66,11 +67,36 @@ test.describe('Full User Registration Flow', () => {
     await page.getByLabel('Choose the Month').selectOption('6');
     await page.getByRole('button', { name: 'Tuesday, July 10th,' }).click();
 
-    // Enter city and select from suggestions
-    await page.getByRole('textbox', { name: 'First name Last name Alias' }).click();
-    await page.getByRole('textbox', { name: 'First name Last name Alias' }).fill('Paide');
+    const cityInput = page.getByRole('textbox', { name: 'First name Last name Alias' });
+    await cityInput.click();
 
-    await page.getByRole('listitem').filter({ hasText: 'Paide' }).first().click({ timeout: 5000 });
+    // Start waiting for the response BEFORE filling the input
+    const responsePromise = page.waitForResponse('https://api.api-ninjas.com/v1/geocoding**', { timeout: 5000 });
+    console.log('[Test] Waiting for geocoding response...');
+
+    await cityInput.fill('Paide');
+    console.log('[Test] Filled city input with Paide.');
+
+    try {
+      const response = await responsePromise;
+      console.log(`[Test] Geocoding response received: ${response.status()}`);
+    } catch (e) {
+      console.error('[Test] Failed waiting for geocoding response:', e);
+      test.fail(true, 'Mock response for geocoding was not received.');
+      return;
+    }
+
+    const suggestionListItem = page
+      .getByRole('listitem')
+      .filter({ has: page.locator('span.font-medium', { hasText: 'Paide' }) });
+
+    console.log('[Test] Waiting for suggestion list item to be visible...');
+    await suggestionListItem.waitFor({ state: 'visible', timeout: 10000 });
+    console.log('[Test] Suggestion list item is visible.');
+
+    console.log('[Test] Clicking suggestion list item...');
+    await suggestionListItem.click({ timeout: 10000 });
+    console.log('[Test] Clicked suggestion.');
 
     await page.getByRole('button', { name: 'Continue' }).click();
     await page.getByLabel('Gender Preference').selectOption('2');
