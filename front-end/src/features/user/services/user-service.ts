@@ -1,134 +1,90 @@
-import { AxiosRequestConfig } from 'axios';
-import { getUserController } from '@/api/user-controller';
 import {
-    AccountSettingsRequestDTO,
-    AttributesSettingsRequestDTO,
-    PreferencesSettingsRequestDTO,
-    ProfilePictureSettingsRequestDTO,
-    ProfileSettingsRequestDTO,
-    UserParametersRequestDTO,
+  AccountSettingsRequestDTO,
+  AttributesSettingsRequestDTO,
+  PreferencesSettingsRequestDTO,
+  ProfilePictureSettingsRequestDTO,
+  ProfileSettingsRequestDTO,
+  UserParametersRequestDTO,
 } from '@/api/types';
+import { getUserController } from '@/api/user-controller';
 
 const userController = getUserController();
 
 export const userService = {
-    updateParameters: async (
-        userPararmetersRequestDTO: UserParametersRequestDTO,
-        options?: AxiosRequestConfig
-    ): Promise<unknown> => {
-        try {
-            console.debug('👤 UserService: Making updateParameters request');
-            const response = await userController.setParameters(
-                userPararmetersRequestDTO,
-                options
-            );
-            return response.data;
-        } catch (error) {
-            console.error('👤 UserService: Request failed');
-            throw error;
-        }
-    },
+  updateParameters: async (userPararmetersRequestDTO: UserParametersRequestDTO): Promise<unknown> => {
+    try {
+      console.debug('👤 UserService: Making updateParameters request');
+      const response = await userController.setParameters(userPararmetersRequestDTO);
+      return response;
+    } catch (error) {
+      console.error('👤 UserService: Request failed');
+      throw error;
+    }
+  },
 
-    updateAccountSettings: async (
-        accountSettingsRequestDTO: AccountSettingsRequestDTO
-    ): Promise<unknown> => {
-        try {
-            console.debug('👤 UserService: Making updateAccount request');
-            const token = localStorage.getItem('authToken');
-            const response = await userController.updateAccount(
-                accountSettingsRequestDTO,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-            return response.data;
-        } catch (error) {
-            console.error('👤 UserService: Request failed');
-            throw error;
-        }
-    },
+  updateAccountSettings: async (accountSettingsRequestDTO: AccountSettingsRequestDTO): Promise<unknown> => {
+    try {
+      console.debug('👤 UserService: Making updateAccount request');
+      const response = await userController.updateAccount(accountSettingsRequestDTO);
+      return response;
+    } catch (error) {
+      console.error('👤 UserService: Request failed');
+      throw error;
+    }
+  },
 
-    updateProfileSettings: async (
-        profileSettingsRequestDTO: ProfileSettingsRequestDTO
-    ): Promise<unknown> => {
-        try {
-            console.debug('👤 UserService: Making updateProfile request');
-            const token = localStorage.getItem('authToken');
-            const response = await userController.updateProfile(
-                profileSettingsRequestDTO,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-            return response.data;
-        } catch (error) {
-            console.error('👤 UserService: Request failed');
-            throw error;
-        }
-    },
+  updateProfileSettings: async (profileSettingsRequestDTO: ProfileSettingsRequestDTO): Promise<unknown> => {
+    try {
+      console.debug('👤 UserService: Making updateProfile request');
+      const response = await userController.updateProfile(profileSettingsRequestDTO);
+      return response;
+    } catch (error) {
+      console.error('👤 UserService: Request failed');
+      throw error;
+    }
+  },
 
-    updatePreferencesSettings: async (
-        preferencesSettingsRequestDTO: PreferencesSettingsRequestDTO
-    ): Promise<unknown> => {
-        try {
-            console.debug('👤 UserService: Making updatePreferences request');
-            const token = localStorage.getItem('authToken');
-            const response = await userController.updatePreferences(
-                preferencesSettingsRequestDTO,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-            return response.data;
-        } catch (error) {
-            console.error('👤 UserService: Request failed');
-            throw error;
-        }
-    },
+  updatePreferencesSettings: async (preferencesSettingsRequestDTO: PreferencesSettingsRequestDTO): Promise<unknown> => {
+    try {
+      console.debug('👤 UserService: Making updatePreferences request');
+      const response = await userController.updatePreferences(preferencesSettingsRequestDTO);
+      return response;
+    } catch (error) {
+      console.error('👤 UserService: Request failed');
+      throw error;
+    }
+  },
 
-    updateAttributesSettings: async (
-        attributesSettingsRequestDTO: AttributesSettingsRequestDTO
-    ): Promise<unknown> => {
-        try {
-            console.debug('👤 UserService: Making updateAttributes request');
-            const token = localStorage.getItem('authToken');
-            const response = await userController.updateAttributes(
-                attributesSettingsRequestDTO,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-            return response.data;
-        } catch (error) {
-            console.error('👤 UserService: Request failed');
-            throw error;
-        }
-    },
+  updateAttributesSettings: async (attributesSettingsRequestDTO: AttributesSettingsRequestDTO): Promise<unknown> => {
+    try {
+      console.debug('👤 UserService: Making updateAttributes request');
+      const response = await userController.updateAttributes(attributesSettingsRequestDTO);
+      return response;
+    } catch (error) {
+      console.error('👤 UserService: Request failed');
+      throw error;
+    }
+  },
 
-    updateProfilePicture: async (
-        base64Image: ProfilePictureSettingsRequestDTO,
-        options?: AxiosRequestConfig
-    ): Promise<unknown> => {
-        try {
-            console.debug(
-                '👤 UserService: Making updateProfilePicture request'
-            );
-            const response = await userController.uploadProfilePicture(
-                base64Image,
-                options
-            );
-            return response;
-        } catch (error) {
-            console.error('👤 UserService: Request failed');
-            throw error;
-        }
-    },
+  updateProfilePicture: async (base64Image: ProfilePictureSettingsRequestDTO): Promise<unknown> => {
+    try {
+      console.debug('👤 UserService: Making updateProfilePicture request');
+      const response = await userController.uploadProfilePicture(base64Image);
+      return response;
+    } catch (error) {
+      console.error('👤 UserService: Request failed');
+      throw error;
+    }
+  },
+
+  getUser: async (userId: number): Promise<unknown> => {
+    try {
+      console.debug('👤 UserService: Making getUser request');
+      const response = await userController.getUser(userId);
+      return response;
+    } catch (error) {
+      console.error('👤 UserService: Request failed');
+      throw error;
+    }
+  },
 };

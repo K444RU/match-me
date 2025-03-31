@@ -168,10 +168,11 @@ public class ChatService {
         Page<UserMessage> messages = userMessageRepository.findByConnectionIdOrderByCreatedAtDesc(connectionId, pageable);
 
         return messages.map(message -> {
-            User sender = message.getUser();
+            User sender = message.getSender();
             return new ChatMessageResponseDTO(
                     connectionId,
                     message.getId(),
+                    sender.getId(),
                     sender.getProfile().getAlias(),
                     message.getContent(),
                     message.getCreatedAt()
@@ -213,7 +214,7 @@ public class ChatService {
 
         UserMessage message = UserMessage.builder()
                 .connection(connection)
-                .user(connection.getUsers().stream()
+                .sender(connection.getUsers().stream()
                         .filter(user -> user.getId().equals(senderId))
                         .findFirst()
                         .orElseThrow(() -> new IllegalArgumentException("User not found")))
@@ -232,7 +233,8 @@ public class ChatService {
         return new ChatMessageResponseDTO(
                 savedMessage.getId(),
                 connectionId,
-                savedMessage.getUser().getProfile().getAlias(),
+                senderId,
+                savedMessage.getSender().getProfile().getAlias(),
                 savedMessage.getContent(),
                 savedMessage.getCreatedAt()
         );
@@ -254,5 +256,16 @@ public class ChatService {
                 .map(User::getId)
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    }
+
+    /**
+     * Retrieves all connection IDs for a user.
+     *
+     * @param userId The ID of the user whose connections we want to fetch.
+     * @return A list of connection IDs.
+     */
+    public List<Long> getUserConnections(Long userId) {
+        return connectionRepository.findConnectionsByUserId(userId).stream()
+                .map(Connection::getId).toList();
     }
 }

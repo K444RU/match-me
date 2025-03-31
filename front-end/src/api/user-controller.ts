@@ -5,8 +5,7 @@
  * kood/Jõhvi match-me task API
  * OpenAPI spec version: v0.0.1
  */
-import * as axios from 'axios';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { customInstance } from '../lib/custom-axios-instance';
 import type {
   AccountSettingsRequestDTO,
   AttributesSettingsRequestDTO,
@@ -21,85 +20,74 @@ import type {
 } from './types';
 
 export const getUserController = () => {
-  const updateProfile = <TData = AxiosResponse<void>>(
-    profileSettingsRequestDTO: ProfileSettingsRequestDTO,
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.put(`http://localhost:8000/api/users/settings/profile`, profileSettingsRequestDTO, options);
-  };
-  const updatePreferences = <TData = AxiosResponse<void>>(
-    preferencesSettingsRequestDTO: PreferencesSettingsRequestDTO,
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.put(
-      `http://localhost:8000/api/users/settings/preferences`,
-      preferencesSettingsRequestDTO,
-      options
-    );
-  };
-  const updateAttributes = <TData = AxiosResponse<void>>(
-    attributesSettingsRequestDTO: AttributesSettingsRequestDTO,
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.put(
-      `http://localhost:8000/api/users/settings/attributes`,
-      attributesSettingsRequestDTO,
-      options
-    );
-  };
-  const updateAccount = <TData = AxiosResponse<void>>(
-    accountSettingsRequestDTO: AccountSettingsRequestDTO,
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.put(`http://localhost:8000/api/users/settings/account`, accountSettingsRequestDTO, options);
-  };
-  const uploadProfilePicture = <TData = AxiosResponse<void>>(
-    profilePictureSettingsRequestDTO: ProfilePictureSettingsRequestDTO,
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.post(
-      `http://localhost:8000/api/users/profile-picture`,
-      profilePictureSettingsRequestDTO,
-      options
-    );
-  };
-  const verifyAccount = <TData = AxiosResponse<void>>(
-    userId: number,
-    params: VerifyAccountParams,
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.patch(`http://localhost:8000/api/users/verify/${userId}`, undefined, {
-      ...options,
-      params: { ...params, ...options?.params },
+  const updateProfile = (profileSettingsRequestDTO: ProfileSettingsRequestDTO) => {
+    return customInstance<void>({
+      url: `http://localhost:8000/api/users/settings/profile`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: profileSettingsRequestDTO,
     });
   };
-  const setParameters = <TData = AxiosResponse<void>>(
-    userParametersRequestDTO: UserParametersRequestDTO,
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.patch(
-      `http://localhost:8000/api/users/complete-registration`,
-      userParametersRequestDTO,
-      options
-    );
+  const updatePreferences = (preferencesSettingsRequestDTO: PreferencesSettingsRequestDTO) => {
+    return customInstance<void>({
+      url: `http://localhost:8000/api/users/settings/preferences`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: preferencesSettingsRequestDTO,
+    });
   };
-  const getUser = <TData = AxiosResponse<CurrentUserResponseDTO>>(
-    targetId: number,
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.get(`http://localhost:8000/api/users/${targetId}`, options);
+  const updateAttributes = (attributesSettingsRequestDTO: AttributesSettingsRequestDTO) => {
+    return customInstance<void>({
+      url: `http://localhost:8000/api/users/settings/attributes`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: attributesSettingsRequestDTO,
+    });
   };
-  const getProfile = <TData = AxiosResponse<ProfileResponseDTO>>(
-    targetId: number,
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.get(`http://localhost:8000/api/users/${targetId}/profile`, options);
+  const updateAccount = (accountSettingsRequestDTO: AccountSettingsRequestDTO) => {
+    return customInstance<void>({
+      url: `http://localhost:8000/api/users/settings/account`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: accountSettingsRequestDTO,
+    });
   };
-  const getBio = <TData = AxiosResponse<BiographicalResponseDTO>>(
-    targetId: number,
-    options?: AxiosRequestConfig
-  ): Promise<TData> => {
-    return axios.default.get(`http://localhost:8000/api/users/${targetId}/bio`, options);
+  const uploadProfilePicture = (profilePictureSettingsRequestDTO: ProfilePictureSettingsRequestDTO) => {
+    return customInstance<void>({
+      url: `http://localhost:8000/api/users/profile-picture`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: profilePictureSettingsRequestDTO,
+    });
+  };
+  const verifyAccount = (userId: number, params: VerifyAccountParams) => {
+    return customInstance<void>({ url: `http://localhost:8000/api/users/verify/${userId}`, method: 'PATCH', params });
+  };
+  const setParameters = (userParametersRequestDTO: UserParametersRequestDTO) => {
+    return customInstance<void>({
+      url: `http://localhost:8000/api/users/complete-registration`,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      data: userParametersRequestDTO,
+    });
+  };
+  const getUser = (targetId: number) => {
+    return customInstance<CurrentUserResponseDTO>({
+      url: `http://localhost:8000/api/users/${targetId}`,
+      method: 'GET',
+    });
+  };
+  const getProfile = (targetId: number) => {
+    return customInstance<ProfileResponseDTO>({
+      url: `http://localhost:8000/api/users/${targetId}/profile`,
+      method: 'GET',
+    });
+  };
+  const getBio = (targetId: number) => {
+    return customInstance<BiographicalResponseDTO>({
+      url: `http://localhost:8000/api/users/${targetId}/bio`,
+      method: 'GET',
+    });
   };
   return {
     updateProfile,
@@ -114,13 +102,27 @@ export const getUserController = () => {
     getBio,
   };
 };
-export type UpdateProfileResult = AxiosResponse<void>;
-export type UpdatePreferencesResult = AxiosResponse<void>;
-export type UpdateAttributesResult = AxiosResponse<void>;
-export type UpdateAccountResult = AxiosResponse<void>;
-export type UploadProfilePictureResult = AxiosResponse<void>;
-export type VerifyAccountResult = AxiosResponse<void>;
-export type SetParametersResult = AxiosResponse<void>;
-export type GetUserResult = AxiosResponse<CurrentUserResponseDTO>;
-export type GetProfileResult = AxiosResponse<ProfileResponseDTO>;
-export type GetBioResult = AxiosResponse<BiographicalResponseDTO>;
+export type UpdateProfileResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getUserController>['updateProfile']>>
+>;
+export type UpdatePreferencesResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getUserController>['updatePreferences']>>
+>;
+export type UpdateAttributesResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getUserController>['updateAttributes']>>
+>;
+export type UpdateAccountResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getUserController>['updateAccount']>>
+>;
+export type UploadProfilePictureResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getUserController>['uploadProfilePicture']>>
+>;
+export type VerifyAccountResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getUserController>['verifyAccount']>>
+>;
+export type SetParametersResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getUserController>['setParameters']>>
+>;
+export type GetUserResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getUserController>['getUser']>>>;
+export type GetProfileResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getUserController>['getProfile']>>>;
+export type GetBioResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getUserController>['getBio']>>>;

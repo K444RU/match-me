@@ -45,16 +45,7 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ current
       const base64Image = canvas.toDataURL();
 
       try {
-        const token = localStorage.getItem('authToken') || '';
-        await userService.updateProfilePicture(
-          { base64Image },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
+        await userService.updateProfilePicture({ base64Image });
         setImage(null);
         if (onUploadSuccess) onUploadSuccess();
       } catch (error) {
@@ -66,16 +57,7 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ current
 
   const handleRemove = async () => {
     try {
-      const token = localStorage.getItem('authToken') || '';
-      await userService.updateProfilePicture(
-        { base64Image: null },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      await userService.updateProfilePicture({ base64Image: undefined });
       setImage(null);
       if (onUploadSuccess) onUploadSuccess();
     } catch (error) {

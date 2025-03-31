@@ -1,5 +1,6 @@
 package com.matchme.srv.dto.response;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,11 +15,12 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatMessageResponseDTO {
-    private Long messageId;
-    private Long connectionId;
-    private String senderAlias;
-    private String content;
-    private Instant createdAt;
+    @NotNull private Long messageId;
+    @NotNull private Long connectionId;
+    @NotNull private Long senderId;
+    @NotNull private String senderAlias;
+    @NotNull private String content;
+    @NotNull private Instant createdAt;
     //toDo: we might add MessageEventType here as well?
 }
 

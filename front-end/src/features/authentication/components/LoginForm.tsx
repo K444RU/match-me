@@ -1,5 +1,6 @@
 import { getMeController } from '@/api/me-controller';
 import type { CurrentUserResponseDTO } from '@/api/types';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/features/authentication';
 import MotionSpinner from '@animations/MotionSpinner';
 import axios from 'axios';
@@ -8,7 +9,14 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import InputField from '../../../components/ui/forms/InputField';
 import FormResponse from './FormResponse';
 
-const LoginForm = () => {
+const testUsers = [
+  { email: 'test1@example.com', password: '123456' },
+  { email: 'test2@example.com', password: '123456' },
+  { email: 'test3@example.com', password: '123456' },
+  { email: 'test4@example.com', password: '123456' },
+];
+
+export default function LoginForm() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
@@ -21,6 +29,11 @@ const LoginForm = () => {
 
   const [resTitle, setResTitle] = useState('');
   const [resSubtitle, setResSubtitle] = useState('');
+
+  const handleTestUser = (email: string, password: string) => {
+    setEmail(email);
+    setPassword(password);
+  };
 
   const submitForm = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,11 +52,7 @@ const LoginForm = () => {
           return;
         }
 
-        const currentUserResponse = await getCurrentUser({
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const currentUserResponse = await getCurrentUser();
 
         const currentUser = currentUserResponse.data;
         const requiredFields: (keyof CurrentUserResponseDTO)[] = ['firstName', 'lastName', 'alias', 'email'];
@@ -81,16 +90,29 @@ const LoginForm = () => {
         onChange={setPassword}
         required
       />
-      <button
+      <Button
         className="flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
         type="submit"
         aria-label="Submit form."
       >
         <span>Login</span>
         {loading && <MotionSpinner />}
-      </button>
+      </Button>
+
+      <div className="mt-4 flex w-full flex-col gap-2">
+        <div className="grid grid-cols-2 gap-2">
+          {testUsers.map((user) => (
+            <Button
+              type="button"
+              className="rounded bg-gray-200 px-3 py-1 text-sm"
+              onClick={() => handleTestUser(user.email, user.password)}
+              key={user.email}
+            >
+              {user.email}
+            </Button>
+          ))}
+        </div>
+      </div>
     </form>
   );
-};
-
-export default LoginForm;
+}
