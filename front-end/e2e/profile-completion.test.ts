@@ -70,7 +70,7 @@ test.describe('Full User Registration Flow', () => {
     await page.getByRole('textbox', { name: 'First name Last name Alias' }).click();
     await page.getByRole('textbox', { name: 'First name Last name Alias' }).fill('Paide');
 
-    await page.getByText('Paide', { exact: true }).first().click({ timeout: 5000 });
+    await page.getByRole('listitem').filter({ hasText: 'Paide' }).first().click({ timeout: 5000 });
 
     await page.getByRole('button', { name: 'Continue' }).click();
     await page.getByLabel('Gender Preference').selectOption('2');
