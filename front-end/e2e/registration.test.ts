@@ -1,6 +1,9 @@
 import { expect, test } from '@playwright/test';
+import { getRandomValues } from 'utils/utils';
 
 test.describe('User Registration', () => {
+  const testUser = getRandomValues();
+
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:3000/');
   });
@@ -10,11 +13,11 @@ test.describe('User Registration', () => {
     await expect(page.getByRole('heading', { name: 'Sign Up' })).toBeVisible();
 
     await page.getByRole('textbox', { name: 'Email' }).click();
-    await page.getByRole('textbox', { name: 'Email' }).fill('michael@johnson.com');
+    await page.getByRole('textbox', { name: 'Email' }).fill(testUser.email);
     await page.getByRole('textbox', { name: 'Password' }).click();
-    await page.getByRole('textbox', { name: 'Password' }).fill('123456');
+    await page.getByRole('textbox', { name: 'Password' }).fill(testUser.password);
     await page.getByRole('textbox', { name: 'Enter a phone number' }).click();
-    await page.getByRole('textbox', { name: 'Enter a phone number' }).fill('5555 3333');
+    await page.getByRole('textbox', { name: 'Enter a phone number' }).fill(testUser.phone);
     await page.getByRole('button', { name: 'Submit form.' }).click();
 
     await expect(page).toHaveURL('http://localhost:3000/login');
@@ -47,7 +50,7 @@ test.describe('User Registration', () => {
     await page.getByRole('textbox', { name: 'Password' }).click();
     await page.getByRole('textbox', { name: 'Password' }).fill('123456');
     await page.getByRole('textbox', { name: 'Enter a phone number' }).click();
-    await page.getByRole('textbox', { name: 'Enter a phone number' }).fill('5555 2222');
+    await page.getByRole('textbox', { name: 'Enter a phone number' }).fill(testUser.phone);
     await page.getByRole('button', { name: 'Submit form.' }).click();
 
     await expect(page.getByText('We found some errors Email')).toBeVisible();
