@@ -107,7 +107,7 @@ jobs:
           timeout 60 bash -c 'until curl -s http://localhost:8000/v3/api-docs > /dev/null; do sleep 2; done'
           echo "Backend started successfully"
       
-      # Setup and run frontend tests
+      # Setup and run frontend
       - name: Install pnpm
         uses: pnpm/action-setup@v3
         with:
@@ -124,14 +124,32 @@ jobs:
       - name: Install dependencies
         working-directory: ./front-end
         run: pnpm install --no-frozen-lockfile
+        
+      # Build and start frontend server
+      - name: Build frontend
+        working-directory: ./front-end
+        run: pnpm build
+        
+      - name: Start frontend preview server
+        working-directory: ./front-end
+        run: |
+          nohup pnpm preview --port 3000 > frontend.log 2>&1 &
+          echo $! > frontend.pid
+          # Wait for frontend to start
+          echo "Waiting for frontend to start..."
+          timeout 30 bash -c 'until curl -s http://localhost:3000 > /dev/null; do sleep 2; done'
+          echo "Frontend started successfully"
       
+      # Run Playwright tests
       - name: Install Playwright browsers
         working-directory: ./front-end
         run: pnpm exec playwright install --with-deps chromium
       
       - name: Run Playwright tests
         working-directory: ./front-end
-        run: pnpm test
+        run: pnpm exec playwright test
+        env:
+          PLAYWRIGHT_TEST_BASE_URL: http://localhost:3000
       
       - name: Upload test results
         if: always()
@@ -141,14 +159,23 @@ jobs:
           path: ./front-end/playwright-report/
           retention-days: 5
           
-      - name: Stop backend server
+      # Cleanup
+      - name: Stop servers
         if: always()
         run: |
           if [ -f back-end/backend.pid ]; then
             kill $(cat back-end/backend.pid) || true
             echo "Backend server stopped"
           fi
+          if [ -f front-end/frontend.pid ]; then
+            kill $(cat front-end/frontend.pid) || true
+            echo "Frontend server stopped"
+          fi
           
-      - name: Backend logs
+      - name: Server logs
         if: always()
-        run: cat back-end/backend.log || true 
+        run: |
+          echo "=== BACKEND LOGS ==="
+          cat back-end/backend.log || true
+          echo "=== FRONTEND LOGS ==="
+          cat front-end/frontend.log || true 
