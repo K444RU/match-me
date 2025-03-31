@@ -13,7 +13,8 @@
     "gen:types": "orval --config ./orval.config.ts",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "prepare": "cd .. && husky front-end/.husky",
-    "preinstall": "npx only-allow pnpm"
+    "preinstall": "npx only-allow pnpm",
+    "test": "playwright test"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.2",
