@@ -1,5 +1,7 @@
 package com.matchme.srv.service;
 
+import static org.mockito.ArgumentMatchers.anyLong;
+
 import com.matchme.srv.TestDataFactory;
 import com.matchme.srv.dto.response.ConnectionsDTO;
 import com.matchme.srv.model.connection.Connection;
@@ -8,6 +10,7 @@ import com.matchme.srv.model.enums.ConnectionStatus;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.repository.ConnectionRepository;
 import com.matchme.srv.repository.UserRepository;
+import com.matchme.srv.service.user.UserScoreService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doNothing;
 
 class ConnectionServiceTest {
 
@@ -34,6 +38,9 @@ class ConnectionServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private UserScoreService userScoreService;
 
     @InjectMocks
     private ConnectionService connectionService;
@@ -121,10 +128,12 @@ class ConnectionServiceTest {
         when(connectionRepository.findById(1L)).thenReturn(Optional.of(connection));
         when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
         when(connectionRepository.save(any(Connection.class))).thenReturn(connection);
+        doNothing().when(userScoreService).updateUserScore(requester.getId(), target.getId(), true);
 
         connectionService.acceptConnectionRequest(requester.getId(), target.getId());
 
         verify(connectionRepository).save(any(Connection.class));
+        verify(userScoreService).updateUserScore(requester.getId(), target.getId(), true);
     }
 
     @Test
@@ -165,10 +174,12 @@ class ConnectionServiceTest {
         when(connectionRepository.findById(1L)).thenReturn(Optional.of(connection));
         when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
         when(connectionRepository.save(any(Connection.class))).thenReturn(connection);
+        doNothing().when(userScoreService).updateUserScore(anyLong(), anyLong(), false);
 
         connectionService.rejectConnectionRequest(DEFAULT_CONNECTION_ID, target.getId());
 
         verify(connectionRepository).save(any(Connection.class));
+        verify(userScoreService).updateUserScore(anyLong(), anyLong(), false);
     }
 
     @Test
