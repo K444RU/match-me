@@ -133,21 +133,21 @@ jobs:
       - name: Start frontend preview server
         working-directory: ./front-end
         run: |
-          nohup pnpm preview --port 3000 > frontend.log 2>&1 &
+          nohup pnpm preview --port 3000 --host > frontend.log 2>&1 &
           echo $! > frontend.pid
           # Wait for frontend to start
           echo "Waiting for frontend to start..."
           timeout 30 bash -c 'until curl -s http://localhost:3000 > /dev/null; do sleep 2; done'
           echo "Frontend started successfully"
       
-      # Run Playwright tests
+      # Run Playwright tests with CI flags
       - name: Install Playwright browsers
         working-directory: ./front-end
         run: pnpm exec playwright install --with-deps chromium
       
       - name: Run Playwright tests
         working-directory: ./front-end
-        run: pnpm exec playwright test
+        run: CI=true pnpm exec playwright test --project=chromium
         env:
           PLAYWRIGHT_TEST_BASE_URL: http://localhost:3000
       
