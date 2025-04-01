@@ -58,7 +58,7 @@ const ChatProviderInner = ({
   children,
 }: ChatProviderInnerProps) => {
   // Get websocket values (which include incoming chat previews and send functions)
-  const { chatPreviews, sendMessage, sendTypingIndicator } = useWebSocket();
+  const { chatPreviews, sendMessage, sendTypingIndicator, sendMarkRead } = useWebSocket();
 
   // Load initial data once when connected
   useEffect(() => {
@@ -116,6 +116,7 @@ const ChatProviderInner = ({
       setOpenChat,
       sendMessage,
       sendTypingIndicator,
+      sendMarkRead,
     }),
     [chats, openChat, refreshChats, setOpenChat, sendMessage, sendTypingIndicator]
   );

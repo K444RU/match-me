@@ -4,7 +4,8 @@ import { createContext, useContext } from 'react';
 export interface WebSocketContextType {
   connected: boolean;
   sendMessage: (message: MessagesSendRequestDTO) => Promise<void>;
-  sendTypingIndicator: (connectionId: string) => void;
+  sendTypingIndicator: (connectionId: number) => void;
+  sendMarkRead: (connectionId: number) => void;
   reconnect: () => void;
   messages: ChatMessageResponseDTO[];
   typingUsers: Record<string, boolean>;
@@ -18,6 +19,9 @@ const defaultContext: WebSocketContextType = {
     console.error('WebSocket context not initialized');
   },
   sendTypingIndicator: () => {
+    console.error('WebSocket context not initialized');
+  },
+  sendMarkRead: () => {
     console.error('WebSocket context not initialized');
   },
   reconnect: () => {

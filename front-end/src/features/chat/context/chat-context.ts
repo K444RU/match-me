@@ -7,7 +7,8 @@ export interface ChatContextType {
   refreshChats: () => void;
   setOpenChat: (chat: ChatPreviewResponseDTO | null) => void;
   sendMessage: (message: MessagesSendRequestDTO) => Promise<void>;
-  sendTypingIndicator: (connectionId: string) => void;
+  sendTypingIndicator: (connectionId: number) => void;
+  sendMarkRead: (connectionId: number) => void;
 }
 
 // Default values for the context to avoid null checks
@@ -24,6 +25,9 @@ const defaultContext: ChatContextType = {
     console.warn('ChatContext not initialized');
   },
   sendTypingIndicator: () => {
+    console.warn('ChatContext not initialized');
+  },
+  sendMarkRead: () => {
     console.warn('ChatContext not initialized');
   },
 };
