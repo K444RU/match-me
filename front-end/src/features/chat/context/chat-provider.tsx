@@ -118,7 +118,7 @@ const ChatProviderInner = ({
       sendTypingIndicator,
       sendMarkRead,
     }),
-    [chats, openChat, refreshChats, setOpenChat, sendMessage, sendTypingIndicator]
+    [chats, openChat, refreshChats, setOpenChat, sendMessage, sendTypingIndicator, sendMarkRead]
   );
 
   return <ChatContext.Provider value={contextValue}>{children}</ChatContext.Provider>;
