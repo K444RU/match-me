@@ -102,7 +102,7 @@ export default function OpenChat() {
       });
     } else if (connected && openChat && openChat.connectionId) {
       // Send typing indicator when user is typing
-      sendTypingIndicator(openChat.connectionId.toString());
+      sendTypingIndicator(openChat.connectionId);
     }
   };
 
@@ -111,7 +111,7 @@ export default function OpenChat() {
 
     // Only send typing indicator if already connected
     if (connected && openChat && openChat.connectionId) {
-      sendTypingIndicator(openChat.connectionId.toString());
+      sendTypingIndicator(openChat.connectionId);
     }
   };
 

@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -137,5 +138,33 @@ class ChatControllerTest {
             jsonPath("$.content[0].messageId", is(DEFAULT_MESSAGE_ID.intValue())),
             jsonPath("$.content[0].senderAlias", is(DEFAULT_TARGET_ALIAS)),
             jsonPath("$.content[0].content", is(DEFAULT_MESSAGE_CONTENT)));
+  }
+
+  @Test
+  @DisplayName("Should mark chat messages as read")
+  void readChatMessages_WhenRequested_MarksMessagesAsRead() throws Exception {
+    ChatPreviewResponseDTO previewResponse = new ChatPreviewResponseDTO();
+    previewResponse.setConnectionId(DEFAULT_CONNECTION_ID);
+    previewResponse.setConnectedUserId(DEFAULT_TARGET_USER_ID);
+    previewResponse.setConnectedUserAlias(DEFAULT_TARGET_ALIAS);
+    previewResponse.setLastMessageContent(DEFAULT_MESSAGE_CONTENT);
+    previewResponse.setLastMessageTimestamp(Instant.now());
+    previewResponse.setUnreadMessageCount(0);
+
+    when(chatService.markMessagesAsRead(DEFAULT_CONNECTION_ID, DEFAULT_USER_ID))
+        .thenReturn(previewResponse);
+
+    mockMvc
+        .perform(
+            post("/api/chats/{connectionId}/messages/read", DEFAULT_CONNECTION_ID)
+                .principal(authentication)
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpectAll(
+            status().isOk(),
+            jsonPath("$.connectionId", is(DEFAULT_CONNECTION_ID.intValue())),
+            jsonPath("$.connectedUserId", is(DEFAULT_TARGET_USER_ID.intValue())),
+            jsonPath("$.connectedUserAlias", is(DEFAULT_TARGET_ALIAS)),
+            jsonPath("$.lastMessageContent", is(DEFAULT_MESSAGE_CONTENT)),
+            jsonPath("$.unreadMessageCount", is(0)));
   }
 }

@@ -18,7 +18,7 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
   const currentUser = user;
 
   // Create stable handlers first
-  const { messages, handleMessage, sendMessage } = useMessageHandler({
+  const { messages, handleMessage, sendMessage, sendMarkRead } = useMessageHandler({
     stompClient,
     currentUser,
   });
@@ -48,6 +48,7 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
       connected: !!stompClient?.connected,
       sendMessage,
       sendTypingIndicator,
+      sendMarkRead,
       reconnect,
       messages,
       typingUsers,
@@ -58,6 +59,7 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
       stompClient?.connected,
       sendMessage,
       sendTypingIndicator,
+      sendMarkRead,
       reconnect,
       messages,
       typingUsers,
