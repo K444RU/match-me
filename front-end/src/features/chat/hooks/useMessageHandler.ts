@@ -15,7 +15,7 @@ export default function useMessageHandler({ stompClient, currentUser }: UseMessa
     // Parse message and update state logic
     try {
       const data = JSON.parse(message.body) as ChatMessageResponseDTO;
-
+      // TODO: mark as recieved
       // Add validation to ensure the message is valid
       if (!data || typeof data !== 'object') {
         console.warn('Received invalid message format', message.body);
@@ -81,5 +81,24 @@ export default function useMessageHandler({ stompClient, currentUser }: UseMessa
     [stompClient, currentUser]
   );
 
-  return { messages, handleMessage, sendMessage };
+  const sendMarkRead = useCallback(
+    (connectionId: number) => {
+      if (!stompClient?.connected || !currentUser?.id) {
+        console.error('Cannot send markRead: STOMP client not connected or no user ID.');
+        return;
+      }
+      try {
+        stompClient.publish({
+          destination: '/app/chat.markRead',
+          body: JSON.stringify({ connectionId: connectionId.toString() }),
+        });
+        console.log(`Sent markRead for connection ${connectionId}`);
+      } catch (error) {
+        console.error(`Error sending markRead for connection ${connectionId}:`, error);
+      }
+    },
+    [stompClient, currentUser?.id]
+  );
+
+  return { messages, handleMessage, sendMessage, sendMarkRead };
 }
