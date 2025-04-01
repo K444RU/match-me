@@ -10,16 +10,16 @@ import com.matchme.srv.model.message.MessageEventType;
 import com.matchme.srv.model.message.UserMessage;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.repository.ConnectionRepository;
+import com.matchme.srv.repository.MessageEventRepository;
+import com.matchme.srv.repository.MessageEventTypeRepository;
 import com.matchme.srv.repository.UserMessageRepository;
-
-import jakarta.transaction.Transactional;
+import java.time.Instant;
+import java.util.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.*;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +27,8 @@ public class ChatService {
 
     private final ConnectionRepository connectionRepository;
     private final UserMessageRepository userMessageRepository;
+    private final MessageEventRepository messageEventRepository;
+    private final MessageEventTypeRepository messageEventTypeRepository;
     private final ConnectionService connectionService;
 
     public static final String EVENT_TYPE_READ = "READ";
@@ -267,5 +269,65 @@ public class ChatService {
     public List<Long> getUserConnections(Long userId) {
         return connectionRepository.findConnectionsByUserId(userId).stream()
                 .map(Connection::getId).toList();
+    }
+
+    @Transactional
+    public ChatPreviewResponseDTO markMessagesAsRead(Long connectionId, Long userId) {
+        Connection connection =
+            connectionRepository
+                .findById(connectionId)
+                .orElseThrow(() -> new IllegalArgumentException("Connection not found"));
+
+        boolean isParticipant = connection.getUsers().stream().anyMatch(u -> u.getId().equals(userId));
+        if (!isParticipant) {
+        throw new RuntimeException("User is not participant.");
+        }
+
+        List<UserMessage> messagesToMarkRead =
+            userMessageRepository.findMessagesToMarkAsRead(connectionId, userId);
+
+        if (!messagesToMarkRead.isEmpty()) {
+        Instant now = Instant.now();
+        MessageEventType readEventType =
+            messageEventTypeRepository
+                .findByName(EVENT_TYPE_READ)
+                .orElseThrow(() -> new IllegalArgumentException("Message event type not found"));
+
+        List<MessageEvent> readEvents = new ArrayList<>();
+        for (UserMessage message : messagesToMarkRead) {
+            MessageEvent readEvent = new MessageEvent();
+            readEvent.setMessage(message);
+            readEvent.setMessageEventType(readEventType);
+            readEvent.setTimestamp(now);
+            readEvents.add(readEvent);
+        }
+        messageEventRepository.saveAll(readEvents);
+        }
+
+        ChatPreviewResponseDTO preview = new ChatPreviewResponseDTO();
+        preview.setConnectionId(connectionId);
+
+        User otherParticipant = findOtherParticipant(connection, userId);
+        if (otherParticipant != null) {
+        preview.setConnectedUserId(otherParticipant.getId());
+        fillParticipantDetails(preview, otherParticipant);
+        } else {
+        preview.setConnectedUserId(null);
+        preview.setConnectedUserAlias("UNKNOWN_ALIAS");
+        preview.setConnectedUserFirstName(null);
+        preview.setConnectedUserLastName(null);
+        preview.setConnectedUserProfilePicture(null);
+        }
+
+        UserMessage lastMessage =
+            userMessageRepository.findTopByConnectionIdOrderByCreatedAtDesc(connection.getId());
+        if (lastMessage != null) {
+        preview.setLastMessageContent(lastMessage.getContent());
+        preview.setLastMessageTimestamp(lastMessage.getCreatedAt());
+        }
+
+        preview.setUnreadMessageCount(0);
+
+        return preview;
     }
 }
