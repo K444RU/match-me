@@ -25,8 +25,7 @@ export default function ConnectionRequestHandler() {
         setPendingIncomingIds(pending);
 
         const userPromises = pending.map((request: ConnectionProvider) => userService.getUser(request.userId));
-        const userResponses = await Promise.all(userPromises);
-        const users = userResponses.map((response) => response.data);
+        const users = await Promise.all(userPromises);
 
         const userMap = users.reduce(
           (acc, user) => {

@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig } from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 const axiosInstance = axios.create({
   baseURL: 'http://localhost:8000/',
@@ -18,8 +18,8 @@ const flattenParams = (obj: any, prefix = ''): Record<string, any> => {
       }
 
       return acc;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     {} as Record<string, any>
   );
 };
@@ -38,11 +38,14 @@ axiosInstance.interceptors.request.use(
 );
 
 // Custom instance that handles nested objects in query parameters
-export const customInstance = <T>(config: AxiosRequestConfig): Promise<T> => {
+export const customInstance = async <T>(config: AxiosRequestConfig): Promise<T> => {
   // If there are params, flatten any nested objects to prevent square brackets in URLs
   if (config.params) {
     config.params = flattenParams(config.params);
   }
 
-  return axiosInstance(config) as Promise<T>;
+  // Await the actual response from axiosInstance
+  const response: AxiosResponse<T> = await axiosInstance(config);
+  // Return only the 'data' property, which matches the expected type T
+  return response.data;
 };

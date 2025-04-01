@@ -1,7 +1,7 @@
 import { UserParametersRequestDTO } from '@/api/types';
 import { useAuth } from '@/features/authentication';
+import { genderService } from '@/features/gender';
 import { userService } from '@/features/user';
-import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -44,10 +44,10 @@ const UnifiedForm = () => {
   }, [formData]);
 
   useEffect(() => {
-    const fetchGenders = () => {
-      axios
-        .get('/api/genders')
-        .then((response) => setGenderOptions(response.data))
+    const fetchGenders = async () => {
+      await genderService
+        .getGenders()
+        .then((genders) => setGenderOptions(genders))
         .catch((err) => console.log('Failed to load gender options: ', err));
     };
     fetchGenders();
