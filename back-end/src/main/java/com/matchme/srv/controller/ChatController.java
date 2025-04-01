@@ -76,4 +76,17 @@ public class ChatController {
         return chatService.saveMessage(connectionId, userId, chatMessageRequestDTO.getContent(), Instant.now());
     }
 
+    /**
+     * Marks all messages as read for a given connectionId
+     * @param connectionId The ID of the connection to which the message will be added.
+     * @param authentication The authentication object to retrieve the current user's details.
+     */
+    @PostMapping("/{connectionId}/messages/read")
+    public ChatPreviewResponseDTO readChatMessages(
+            @PathVariable Long connectionId,
+            Authentication authentication
+    ) {
+        Long userId = securityUtils.getCurrentUserId(authentication);
+        return chatService.markMessagesAsRead(connectionId, userId);
+    }
 }
