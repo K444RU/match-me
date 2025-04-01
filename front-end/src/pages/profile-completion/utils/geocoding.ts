@@ -6,7 +6,6 @@ const API_KEY = import.meta.env.VITE_GEOAPI_KEY;
 
 export const geocodingService = {
   searchByCity: async (city: string): Promise<City[]> => {
-    console.log('[Geocoding Service] Runtime Check:', { API_BASE_URL, API_KEY });
     if (!API_KEY || !API_BASE_URL) {
       throw new Error('Missing GEO API key');
     }
