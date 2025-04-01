@@ -1,5 +1,6 @@
 package com.matchme.srv.controller;
 
+import com.matchme.srv.dto.request.MarkReadRequestDTO;
 import com.matchme.srv.dto.request.MessagesSendRequestDTO;
 import com.matchme.srv.dto.request.OnlineStatusResponseDTO;
 import com.matchme.srv.dto.request.TypingStatusRequestDTO;
@@ -110,6 +111,45 @@ public class ChatWebSocketController {
   }
 
   /**
+   * Handles requests from clients to mark messages in a specific connection as read. After marking
+   * messages, it pushes the updated chat preview for that connection back to the user who initiated
+   * the request.
+   *
+   * <p>Clients send messages to /app/chat.markRead
+   *
+   * @param markReadRequest DTO containing the connectionId to mark as read.
+   * @param authentication The authentication object to identify the current user.
+   */
+  @MessageMapping("/chat.markRead")
+  public void markMessagesAsRead(
+      @Payload MarkReadRequestDTO markReadRequest, Authentication authentication) {
+
+    Long userId = securityUtils.getCurrentUserId(authentication);
+    Long connectionId = markReadRequest.getConnectionId();
+
+    log.info(
+        "Received mark read request for connection ID: {} from user ID: {}", connectionId, userId);
+
+    try {
+      ChatPreviewResponseDTO updatedPreview = chatService.markMessagesAsRead(connectionId, userId);
+
+      messagingTemplate.convertAndSendToUser(userId.toString(), PREVIEWS_QUEUE, updatedPreview);
+
+      log.debug("Sent updated preview for connection {} to user {}", connectionId, userId);
+
+    } catch (IllegalArgumentException e) {
+      log.error(
+          "Error marking messages as read for connection {}: {}", connectionId, e.getMessage());
+    } catch (Exception e) {
+      log.error(
+          "Unexpected error marking messages as read for connection {}: {}",
+          connectionId,
+          e.getMessage(),
+          e);
+    }
+  }
+
+  /**
    * Handle typing indicator events. Clients send a message to /app/chat.typing when they start or
    * stop typing.
    *
@@ -155,7 +195,7 @@ public class ChatWebSocketController {
     // Send a pong back to the sender to confirm subscription works
     log.debug("Sending pong to user {}", userId);
     messagingTemplate.convertAndSendToUser(userId.toString(), PONG_QUEUE, responsePayload);
-    
+
     // Also send the current online status information after ping
     // This ensures client gets status info even if they missed the initial broadcast
     sendInitialOnlineStatus(userId);
