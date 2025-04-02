@@ -1,4 +1,4 @@
-import { ChatPreviewResponseDTO } from '@/api/types';
+import { ChatMessageResponseDTO, ChatPreviewResponseDTO } from '@/api/types';
 import { useAuth } from '@/features/authentication';
 import { useWebSocket, WebSocketProvider } from '@/features/chat';
 import { chatService } from '@/features/chat/';
@@ -12,14 +12,15 @@ interface ChatProviderProps {
 
 export const ChatProvider = ({ children, wsUrl }: ChatProviderProps) => {
   const { user } = useAuth();
-  const [chats, setChats] = useState<ChatPreviewResponseDTO[]>([]);
+  const [chatDisplays, setChatDisplays] = useState<ChatPreviewResponseDTO[]>([]);
   const [openChat, setOpenChat] = useState<ChatPreviewResponseDTO | null>(null);
+  const [allChats, setAllChats] = useState<Record<number, ChatMessageResponseDTO[]>>({});
 
   const refreshChats = useCallback(async () => {
     if (!user) return;
     try {
       const data = await chatService.getChatPreviews();
-      setChats(data);
+      setChatDisplays(data);
     } catch (error) {
       console.error('Failed to refresh chats: ', error);
     }
@@ -29,10 +30,12 @@ export const ChatProvider = ({ children, wsUrl }: ChatProviderProps) => {
     <WebSocketProvider wsUrl={wsUrl}>
       <ChatProviderInner
         refreshChats={refreshChats}
-        chats={chats}
+        chatDisplays={chatDisplays}
+        allChats={allChats}
         openChat={openChat}
-        setChats={setChats}
+        setChatDisplays={setChatDisplays}
         setOpenChat={setOpenChat}
+        setAllChats={setAllChats}
       >
         {children}
       </ChatProviderInner>
@@ -42,19 +45,23 @@ export const ChatProvider = ({ children, wsUrl }: ChatProviderProps) => {
 
 interface ChatProviderInnerProps {
   refreshChats: () => void;
-  chats: ChatPreviewResponseDTO[];
+  chatDisplays: ChatPreviewResponseDTO[];
+  allChats: Record<number, ChatMessageResponseDTO[]>;
   openChat: ChatPreviewResponseDTO | null;
-  setChats: React.Dispatch<React.SetStateAction<ChatPreviewResponseDTO[]>>;
+  setChatDisplays: React.Dispatch<React.SetStateAction<ChatPreviewResponseDTO[]>>;
   setOpenChat: React.Dispatch<React.SetStateAction<ChatPreviewResponseDTO | null>>;
+  setAllChats: React.Dispatch<React.SetStateAction<Record<number, ChatMessageResponseDTO[]>>>;
   children: React.ReactNode;
 }
 
 const ChatProviderInner = ({
   refreshChats,
-  chats,
+  chatDisplays,
+  allChats,
   openChat,
-  setChats,
+  setChatDisplays,
   setOpenChat,
+  setAllChats,
   children,
 }: ChatProviderInnerProps) => {
   // Get websocket values (which include incoming chat previews and send functions)
@@ -74,7 +81,7 @@ const ChatProviderInner = ({
 
     console.log('Merging websocket previews into state:', chatPreviews.length);
 
-    setChats((prevChats) => {
+    setChatDisplays((prevChats) => {
       // Fast lookup map
       const chatMap = new Map(prevChats.map((chat) => [chat.connectionId, chat]));
 
@@ -95,7 +102,7 @@ const ChatProviderInner = ({
         return dateB.getTime() - dateA.getTime();
       });
     });
-  }, [chatPreviews, setChats]);
+  }, [chatPreviews, setChatDisplays]);
 
   // Update open chat if needed - in a separate effect to avoid conflicts
   useEffect(() => {
@@ -107,18 +114,47 @@ const ChatProviderInner = ({
     }
   }, [chatPreviews, openChat, setOpenChat]);
 
+  const updateAllChats = useCallback((connectionId: number, messages: ChatMessageResponseDTO[]) => {
+    setAllChats((prev) => {
+      // If there are already messages cached
+      if (prev[connectionId]) {
+        return {
+          ...prev,
+          [connectionId]: [...prev[connectionId], ...messages],
+        };
+      }
+
+      return {
+        ...prev,
+        [connectionId]: messages,
+      };
+    });
+  }, []);
+
   // Create a stable context value
   const contextValue = useMemo(
     () => ({
-      chatPreviews: chats,
+      chatPreviews: chatDisplays,
       openChat,
+      allChats,
       refreshChats,
       setOpenChat,
       sendMessage,
       sendTypingIndicator,
       sendMarkRead,
+      updateAllChats,
     }),
-    [chats, openChat, refreshChats, setOpenChat, sendMessage, sendTypingIndicator, sendMarkRead]
+    [
+      chatDisplays,
+      openChat,
+      allChats,
+      refreshChats,
+      setOpenChat,
+      sendMessage,
+      sendTypingIndicator,
+      sendMarkRead,
+      updateAllChats,
+    ]
   );
 
   return <ChatContext.Provider value={contextValue}>{children}</ChatContext.Provider>;
