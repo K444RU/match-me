@@ -19,12 +19,27 @@ export default function OpenChat() {
   const chatContext = useContext(ChatContext);
   const openChat = chatContext?.openChat || null;
 
-  // Only reconnect if the WebSocket is disconnected
+  const [reconnectAttempted, setReconnectAttempted] = useState(false);
+
+  // Only reconnect if the WebSocket is disconnected - use throtelling
   useEffect(() => {
-    if (!connected) {
-      console.log('🔄 WebSocket disconnected, attempting to reconnect...');
-      reconnect();
+    if (!user || !openChat) return;
+
+    let reconnectTimer: NodeJS.Timeout;
+
+    if (!connected && !reconnectAttempted) {
+      reconnectTimer = setTimeout(() => {
+        console.log('🔄 WebSocket disconnected, attempting to reconnect...');
+        reconnect();
+        setReconnectAttempted(false);
+      }, 1000);
+    } else if (connected && reconnectAttempted) {
+      setReconnectAttempted(false);
     }
+
+    return () => {
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+    };
   }, [connected, reconnect]);
 
   useEffect(() => {
