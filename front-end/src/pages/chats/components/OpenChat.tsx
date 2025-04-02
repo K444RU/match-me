@@ -32,24 +32,36 @@ export default function OpenChat() {
       if (!openChat || !user) return;
 
       setLoading(true);
-      try {
-        const messagesResponse = await chatService.getChatMessages(openChat.connectionId);
 
-        if (!messagesResponse) {
-          setChatMessages([]);
-          return;
-        }
-
-        setChatMessages(messagesResponse.reverse());
-      } catch (error) {
-        console.error('Error fetching messages:', error);
-      } finally {
+      // check if chat is in context already
+      if (chatContext?.allChats[openChat.connectionId]) {
+        setChatMessages(chatContext.allChats[openChat.connectionId]);
         setLoading(false);
+      } else {
+        try {
+          const messagesResponse = await chatService.getChatMessages(openChat.connectionId);
+
+          if (!messagesResponse) {
+            setChatMessages([]);
+            return;
+          }
+
+          const sortedMessages = messagesResponse.reverse();
+          setChatMessages(sortedMessages);
+
+          if (chatContext?.updateAllChats) {
+            chatContext.updateAllChats(openChat.connectionId, sortedMessages);
+          }
+        } catch (error) {
+          console.error('Error fetching messages:', error);
+        } finally {
+          setLoading(false);
+        }
       }
     };
 
     fetchMessages();
-  }, [openChat, user]);
+  }, [openChat, user, chatContext]);
 
   // Early return if no context, user or open chat
   if (!chatContext) return null;
@@ -86,7 +98,13 @@ export default function OpenChat() {
         senderId: user.id || 0,
       };
 
-      setChatMessages((prev) => [...prev, newMessage]);
+      const updatedMessages = [...chatMessages, newMessage];
+      setChatMessages(updatedMessages);
+
+      if (chatContext?.updateAllChats) {
+        chatContext.updateAllChats(openChat.connectionId, [newMessage]);
+      }
+
       setMessage('');
     } catch (error) {
       console.error('Error sending message:', error);
