@@ -188,6 +188,6 @@ class AuthControllerTest {
         mockMvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(signUpRequest)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.number").value("Phone number cannot be empty"));
+                .andExpect(jsonPath("$.number").value("Invalid phone number"));
     }
 }
