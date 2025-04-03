@@ -37,7 +37,6 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     >
       {children}
     </ChatProviderInner>
-
   );
 };
 
@@ -112,22 +111,25 @@ const ChatProviderInner = ({
     }
   }, [chatPreviews, openChat, setOpenChat]);
 
-  const updateAllChats = useCallback((connectionId: number, messages: ChatMessageResponseDTO[]) => {
-    setAllChats((prev) => {
-      // If there are already messages cached
-      if (prev[connectionId]) {
+  const updateAllChats = useCallback(
+    (connectionId: number, messages: ChatMessageResponseDTO[], replace: boolean = false) => {
+      setAllChats((prev) => {
+        // If there are already messages cached
+        if (replace || !prev[connectionId]) {
+          return {
+            ...prev,
+            [connectionId]: messages,
+          };
+        }
+
         return {
           ...prev,
           [connectionId]: [...prev[connectionId], ...messages],
         };
-      }
-
-      return {
-        ...prev,
-        [connectionId]: messages,
-      };
-    });
-  }, []);
+      });
+    },
+    []
+  );
 
   // Create a stable context value
   const contextValue = useMemo(

@@ -10,7 +10,7 @@ export interface ChatContextType {
   sendMessage: (message: MessagesSendRequestDTO) => Promise<void>;
   sendTypingIndicator: (connectionId: number) => void;
   sendMarkRead: (connectionId: number) => void;
-  updateAllChats: (connectionId: number, messages: ChatMessageResponseDTO[]) => void;
+  updateAllChats: (connectionId: number, messages: ChatMessageResponseDTO[], replace?: boolean) => void;
 }
 
 // Default values for the context to avoid null checks

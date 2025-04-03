@@ -20,6 +20,8 @@ export default function OpenChat() {
   const openChat = chatContext?.openChat || null;
 
   useEffect(() => {
+    setChatMessages([]);
+
     const fetchMessages = async () => {
       if (!openChat || !user) return;
 
@@ -42,7 +44,7 @@ export default function OpenChat() {
           setChatMessages(sortedMessages);
 
           if (chatContext?.updateAllChats) {
-            chatContext.updateAllChats(openChat.connectionId, sortedMessages);
+            chatContext.updateAllChats(openChat.connectionId, sortedMessages, true);
           }
         } catch (error) {
           console.error('Error fetching messages:', error);
@@ -130,7 +132,9 @@ export default function OpenChat() {
         ) : chatMessages.length === 0 ? (
           <div className="flex justify-center p-4">No messages yet. Start the conversation!</div>
         ) : (
-          chatMessages.map((msg) => <Message key={msg.messageId} message={msg} isOwn={msg.senderId === user.id} />)
+          chatMessages.map((msg) => (
+            <Message key={`${msg.connectionId}-${msg.messageId}`} message={msg} isOwn={msg.senderId === user.id} />
+          ))
         )}
       </div>
       <div className="mt-4 flex gap-2">
