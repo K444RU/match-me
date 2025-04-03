@@ -14,18 +14,10 @@ export default function OpenChat() {
   const [loading, setLoading] = useState(false);
 
   // Get WebSocket context for sending messages via WebSocket
-  const { connected, sendMessage: sendWebSocketMessage, sendTypingIndicator, reconnect } = useWebSocket();
+  const { connected, sendMessage: sendWebSocketMessage, sendTypingIndicator } = useWebSocket();
 
   const chatContext = useContext(ChatContext);
   const openChat = chatContext?.openChat || null;
-
-  // Only reconnect if the WebSocket is disconnected
-  useEffect(() => {
-    if (!connected) {
-      console.log('🔄 WebSocket disconnected, attempting to reconnect...');
-      reconnect();
-    }
-  }, [connected, reconnect]);
 
   useEffect(() => {
     const fetchMessages = async () => {

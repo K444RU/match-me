@@ -1,16 +1,15 @@
 import { ChatMessageResponseDTO, ChatPreviewResponseDTO } from '@/api/types';
 import { useAuth } from '@/features/authentication';
-import { useWebSocket, WebSocketProvider } from '@/features/chat';
+import { useWebSocket } from '@/features/chat';
 import { chatService } from '@/features/chat/';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ChatContext } from './chat-context';
 
 interface ChatProviderProps {
   children: React.ReactNode;
-  wsUrl: string;
 }
 
-export const ChatProvider = ({ children, wsUrl }: ChatProviderProps) => {
+export const ChatProvider = ({ children }: ChatProviderProps) => {
   const { user } = useAuth();
   const [chatDisplays, setChatDisplays] = useState<ChatPreviewResponseDTO[]>([]);
   const [openChat, setOpenChat] = useState<ChatPreviewResponseDTO | null>(null);
@@ -27,19 +26,18 @@ export const ChatProvider = ({ children, wsUrl }: ChatProviderProps) => {
   }, [user]);
 
   return (
-    <WebSocketProvider wsUrl={wsUrl}>
-      <ChatProviderInner
-        refreshChats={refreshChats}
-        chatDisplays={chatDisplays}
-        allChats={allChats}
-        openChat={openChat}
-        setChatDisplays={setChatDisplays}
-        setOpenChat={setOpenChat}
-        setAllChats={setAllChats}
-      >
-        {children}
-      </ChatProviderInner>
-    </WebSocketProvider>
+    <ChatProviderInner
+      refreshChats={refreshChats}
+      chatDisplays={chatDisplays}
+      allChats={allChats}
+      openChat={openChat}
+      setChatDisplays={setChatDisplays}
+      setOpenChat={setOpenChat}
+      setAllChats={setAllChats}
+    >
+      {children}
+    </ChatProviderInner>
+
   );
 };
 
