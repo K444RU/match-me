@@ -64,9 +64,6 @@ export default function OpenChat() {
     if (!message || !user || !openChat) return;
 
     try {
-      // First send via REST API to ensure persistence
-      await chatService.sendMessage(message.content, message.connectionId);
-
       // Only use WebSocket if already connected
       if (connected) {
         console.log('🚀 Sending message via WebSocket');
@@ -74,10 +71,10 @@ export default function OpenChat() {
           await sendWebSocketMessage(message);
         } catch (wsError) {
           console.error('Failed to send via WebSocket:', wsError);
-          // If WebSocket fails, at least the message is already persisted via REST
         }
       } else {
         console.warn('⚠️ WebSocket not connected, message sent only via REST');
+        await chatService.sendMessage(message.content, message.connectionId);
       }
 
       // Optimistically add the message to the UI
@@ -133,7 +130,7 @@ export default function OpenChat() {
         ) : chatMessages.length === 0 ? (
           <div className="flex justify-center p-4">No messages yet. Start the conversation!</div>
         ) : (
-          chatMessages.map((msg, index) => <Message key={index} message={msg} isOwn={msg.senderId === user.id} />)
+          chatMessages.map((msg) => <Message key={msg.messageId} message={msg} isOwn={msg.senderId === user.id} />)
         )}
       </div>
       <div className="mt-4 flex gap-2">

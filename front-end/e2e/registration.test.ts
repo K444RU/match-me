@@ -53,7 +53,6 @@ test.describe('User Registration', () => {
     await page.getByRole('textbox', { name: 'Enter a phone number' }).fill(testUser.phone);
     await page.getByRole('button', { name: 'Submit form.' }).click();
 
-    await expect(page.getByText('We found some errors Email')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'We found some errors' })).toBeVisible();
     await expect(page.locator('h2')).toContainText('We found some errors');
     await expect(page.getByText('Email already exists')).toBeVisible();

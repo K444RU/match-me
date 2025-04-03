@@ -37,6 +37,7 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     >
       {children}
     </ChatProviderInner>
+
   );
 };
 
