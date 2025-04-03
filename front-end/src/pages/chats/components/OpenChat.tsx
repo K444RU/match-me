@@ -138,7 +138,7 @@ export default function OpenChat() {
         ) : chatMessages.length === 0 ? (
           <div className="flex justify-center p-4">No messages yet. Start the conversation!</div>
         ) : (
-          chatMessages.map((msg, index) => <Message key={index} message={msg} isOwn={msg.senderId === user.id} />)
+          chatMessages.map((msg) => <Message key={msg.messageId} message={msg} isOwn={msg.senderId === user.id} />)
         )}
       </div>
       <div className="mt-4 flex gap-2">
