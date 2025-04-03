@@ -14,33 +14,10 @@ export default function OpenChat() {
   const [loading, setLoading] = useState(false);
 
   // Get WebSocket context for sending messages via WebSocket
-  const { connected, sendMessage: sendWebSocketMessage, sendTypingIndicator, reconnect } = useWebSocket();
+  const { connected, sendMessage: sendWebSocketMessage, sendTypingIndicator } = useWebSocket();
 
   const chatContext = useContext(ChatContext);
   const openChat = chatContext?.openChat || null;
-
-  const [reconnectAttempted, setReconnectAttempted] = useState(false);
-
-  // Only reconnect if the WebSocket is disconnected - use throtelling
-  useEffect(() => {
-    if (!user || !openChat) return;
-
-    let reconnectTimer: NodeJS.Timeout;
-
-    if (!connected && !reconnectAttempted) {
-      reconnectTimer = setTimeout(() => {
-        console.log('🔄 WebSocket disconnected, attempting to reconnect...');
-        reconnect();
-        setReconnectAttempted(false);
-      }, 1000);
-    } else if (connected && reconnectAttempted) {
-      setReconnectAttempted(false);
-    }
-
-    return () => {
-      if (reconnectTimer) clearTimeout(reconnectTimer);
-    };
-  }, [connected, reconnect]);
 
   useEffect(() => {
     const fetchMessages = async () => {
