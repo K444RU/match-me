@@ -3,7 +3,7 @@ import Button from '@/components/ui/buttons/Button';
 import InputField from '@/components/ui/forms/InputField';
 import { useAuth } from '@/features/authentication';
 import { ChatContext, chatService, useWebSocket } from '@/features/chat';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import Message from './Message';
 import { NoChat } from './NoChat';
 
@@ -12,6 +12,9 @@ export default function OpenChat() {
   const [message, setMessage] = useState('');
   const [chatMessages, setChatMessages] = useState<ChatMessageResponseDTO[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMoreOlderMessages, setHasMoreOlderMessages] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Get WebSocket context for sending messages via WebSocket
   const { connected, sendMessage: sendWebSocketMessage, sendTypingIndicator } = useWebSocket();
@@ -19,8 +22,55 @@ export default function OpenChat() {
   const chatContext = useContext(ChatContext);
   const openChat = chatContext?.openChat || null;
 
+  const scrollToBottom = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  };
+
+  const handleScroll = async () => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const SCROLL_THRESHOLD = 50;
+    if (container.scrollTop <= SCROLL_THRESHOLD && !isLoadingMore && hasMoreOlderMessages && chatMessages.length > 0) {
+      setIsLoadingMore(true);
+      //const oldestMessageId = chatMessages[0]?.messageId;
+
+      const oldScrollHeight = container.scrollHeight;
+      const oldScrollTop = container.scrollTop;
+
+      try {
+        if (!openChat) return; // fix the api call logic
+        const olderMessagesResponse = await chatService.getChatMessages(openChat.connectionId);
+
+        if (olderMessagesResponse && olderMessagesResponse.length > 0) {
+          const sortedOlderMessages = olderMessagesResponse.reverse();
+
+          setChatMessages((prevMessages) => [...sortedOlderMessages, ...prevMessages]);
+          setHasMoreOlderMessages(olderMessagesResponse.length === 20);
+
+          requestAnimationFrame(() => {
+            if (scrollContainerRef.current) {
+              const newScrollHeight = scrollContainerRef.current.scrollHeight;
+              scrollContainerRef.current.scrollTop = oldScrollTop + (newScrollHeight - oldScrollHeight);
+            }
+          });
+        } else {
+          setHasMoreOlderMessages(false);
+        }
+      } catch (error) {
+        console.error('Error fetching older messages: ', error);
+      } finally {
+        setIsLoadingMore(false);
+      }
+    }
+  };
+
   useEffect(() => {
     setChatMessages([]);
+    setHasMoreOlderMessages(true);
+    setIsLoadingMore(false);
 
     const fetchMessages = async () => {
       if (!openChat || !user) return;
@@ -28,26 +78,36 @@ export default function OpenChat() {
       setLoading(true);
 
       // check if chat is in context already
-      if (chatContext?.allChats[openChat.connectionId]) {
+      if (chatContext?.allChats[openChat.connectionId]?.length > 0) {
         setChatMessages(chatContext.allChats[openChat.connectionId]);
+
+        setHasMoreOlderMessages(true);
         setLoading(false);
+        requestAnimationFrame(scrollToBottom);
       } else {
         try {
+          // Have to adapt endpoint to support infinite scroll
           const messagesResponse = await chatService.getChatMessages(openChat.connectionId);
 
-          if (!messagesResponse) {
+          if (!messagesResponse || messagesResponse.length === 0) {
             setChatMessages([]);
+            setHasMoreOlderMessages(false);
             return;
           }
 
           const sortedMessages = messagesResponse.reverse();
           setChatMessages(sortedMessages);
 
+          setHasMoreOlderMessages(messagesResponse.length === 20);
+
+          requestAnimationFrame(scrollToBottom);
+
           if (chatContext?.updateAllChats) {
             chatContext.updateAllChats(openChat.connectionId, sortedMessages, true);
           }
         } catch (error) {
           console.error('Error fetching messages:', error);
+          setHasMoreOlderMessages(false);
         } finally {
           setLoading(false);
         }
@@ -56,6 +116,10 @@ export default function OpenChat() {
 
     fetchMessages();
   }, [openChat, user, chatContext]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatMessages]);
 
   // Early return if no context, user or open chat
   if (!chatContext) return null;
@@ -125,8 +189,13 @@ export default function OpenChat() {
   };
 
   return (
-    <div className="flex w-full flex-col bg-background-400 px-4 pb-4 sm:px-6 md:px-8">
-      <div className="mt-4 size-full overflow-y-scroll">
+    <div className="flex size-full flex-col bg-background-400 px-4 pb-4 sm:px-6 md:px-8">
+      {/* onScroll handler */}
+      <div ref={scrollContainerRef} className="mt-4 flex-1 overflow-y-scroll" onScroll={handleScroll}>
+        {/* Loading indicator for older messages */}
+        {isLoadingMore && (
+          <div className="flex justify-center p-2 text-sm text-gray-500">Loading older messages...</div>
+        )}
         {loading ? (
           <div className="flex justify-center p-4">Loading messages...</div>
         ) : chatMessages.length === 0 ? (
