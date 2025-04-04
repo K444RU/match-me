@@ -131,7 +131,15 @@ const ChatProviderInner = ({
         const newMessages = messagesByConnection[connectionId];
         const existingMessages = newAllChats[connectionId] || [];
 
-        newAllChats[connectionId] = [...existingMessages, ...newMessages];
+        // filter out optimistic messages
+        const existingRealMessages = existingMessages.filter((msg) => msg.messageId > 0);
+
+        // filter out potential duplicates
+        const existingRealMessageIds = new Set(existingRealMessages.map((msg) => msg.messageId));
+
+        const uniqueNewMessages = newMessages.filter((newMsg) => !existingRealMessageIds.has(newMsg.messageId));
+
+        newAllChats[connectionId] = [...existingRealMessages, ...uniqueNewMessages];
       }
       return newAllChats;
     });
