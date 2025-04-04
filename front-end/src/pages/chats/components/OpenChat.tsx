@@ -70,7 +70,7 @@ export default function OpenChat() {
       connectionId: message.connectionId,
       content: message.content,
       createdAt: new Date().toISOString(),
-      messageId: chatMessages.length + 1,
+      messageId: -(chatMessages.length + 1),
       senderAlias: user.alias || '',
       senderId: user.id || 0,
     };
