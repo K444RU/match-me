@@ -57,6 +57,19 @@ export default function OpenChat() {
     fetchMessages();
   }, [openChat, user, chatContext]);
 
+  // Effect to listen for updates from the context (e.g., new incoming messages)
+  useEffect(() => {
+    if (openChat && chatContext?.allChats[openChat.connectionId]) {
+      const messagesFromContext = chatContext.allChats[openChat.connectionId];
+      // Only update if the context has messages and they differ from local state
+      // This check prevents unnecessary re-renders if the context updates but the message list hasn't changed
+      if (messagesFromContext && messagesFromContext !== chatMessages) {
+        setChatMessages(messagesFromContext);
+      }
+    }
+    // Depend on the specific chat's message array in the context
+  }, [openChat, chatContext, chatMessages]);
+
   // Early return if no context, user or open chat
   if (!chatContext) return null;
   if (!user) return null;
@@ -130,7 +143,11 @@ export default function OpenChat() {
           <div className="flex justify-center p-4">No messages yet. Start the conversation!</div>
         ) : (
           chatMessages.map((msg) => (
-            <Message key={`${msg.connectionId}-${msg.messageId}`} message={msg} isOwn={msg.senderId === user.id} />
+            <Message
+              key={`${msg.connectionId}-${msg.messageId}-${msg.createdAt}`}
+              message={msg}
+              isOwn={msg.senderId === user.id}
+            />
           ))
         )}
       </div>
