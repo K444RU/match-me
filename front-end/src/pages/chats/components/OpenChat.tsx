@@ -89,9 +89,6 @@ export default function OpenChat() {
         senderId: user.id || 0,
       };
 
-      const updatedMessages = [...chatMessages, newMessage];
-      setChatMessages(updatedMessages);
-
       if (chatContext?.updateAllChats) {
         chatContext.updateAllChats(openChat.connectionId, [newMessage]);
       }
