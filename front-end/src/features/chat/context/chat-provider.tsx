@@ -62,7 +62,8 @@ const ChatProviderInner = ({
   children,
 }: ChatProviderInnerProps) => {
   // Get websocket values (which include incoming chat previews and send functions)
-  const { chatPreviews, sendMessage, sendTypingIndicator, sendMarkRead } = useWebSocket();
+  const { chatPreviews, sendMessage, sendTypingIndicator, sendMarkRead, messageQueue, clearMessageQueue } =
+    useWebSocket();
 
   // Load initial data once when connected
   useEffect(() => {
@@ -110,6 +111,41 @@ const ChatProviderInner = ({
       setOpenChat(updatedChat);
     }
   }, [chatPreviews, openChat, setOpenChat]);
+
+  useEffect(() => {
+    if (!messageQueue || messageQueue.length === 0) return;
+
+    // Group messages in messageQueue by connectionId
+    const messagesByConnection: Record<number, ChatMessageResponseDTO[]> = {};
+    for (const message of messageQueue) {
+      if (!messagesByConnection[message.connectionId]) {
+        messagesByConnection[message.connectionId] = [];
+      }
+      messagesByConnection[message.connectionId].push(message);
+    }
+
+    setAllChats((prevAllChats) => {
+      const newAllChats = { ...prevAllChats };
+      for (const connectionIdStr in messagesByConnection) {
+        const connectionId = parseInt(connectionIdStr, 10);
+        const newMessages = messagesByConnection[connectionId];
+        const existingMessages = newAllChats[connectionId] || [];
+
+        // filter out optimistic messages
+        const existingRealMessages = existingMessages.filter((msg) => msg.messageId > 0);
+
+        // filter out potential duplicates
+        const existingRealMessageIds = new Set(existingRealMessages.map((msg) => msg.messageId));
+
+        const uniqueNewMessages = newMessages.filter((newMsg) => !existingRealMessageIds.has(newMsg.messageId));
+
+        newAllChats[connectionId] = [...existingRealMessages, ...uniqueNewMessages];
+      }
+      return newAllChats;
+    });
+
+    clearMessageQueue();
+  }, [messageQueue, setAllChats, clearMessageQueue]);
 
   const updateAllChats = useCallback(
     (connectionId: number, messages: ChatMessageResponseDTO[], replace: boolean = false) => {

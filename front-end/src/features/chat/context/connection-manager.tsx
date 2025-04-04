@@ -1,5 +1,6 @@
+import { ChatMessageResponseDTO } from '@/api/types';
 import { User } from '@/features/authentication/';
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { useStompClient } from 'react-stomp-hooks';
 import useChatPreviewHandler from '../hooks/useChatPreviewHandler';
 import useMessageHandler from '../hooks/useMessageHandler';
@@ -18,6 +19,8 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
   const currentUser = user;
 
   const [isConnected, setIsConnected] = useState(false);
+
+  const [messageQueue, setMessageQueue] = useState<ChatMessageResponseDTO[]>([]);
 
   useEffect(() => {
     const currentConnected = !!stompClient?.connected;
@@ -40,10 +43,21 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
     };
   }, [stompClient?.connected, isConnected]);
 
+  const handleNewMessage = useCallback((message: ChatMessageResponseDTO) => {
+    console.log('🔄 ConnectionManager: Adding message to queue:', message);
+    setMessageQueue((prevQueue) => [...prevQueue, message]);
+  }, []);
+
+  const clearMessageQueue = useCallback(() => {
+    console.log('🧹 ConnectionManager: Clearing message queue');
+    setMessageQueue([]); // Reset the queue to an empty array
+  }, []);
+
   // Create stable handlers first
-  const { messages, handleMessage, sendMessage, sendMarkRead } = useMessageHandler({
+  const { handleMessage, sendMessage, sendMarkRead } = useMessageHandler({
     stompClient,
     currentUser,
+    onMessageReceived: handleNewMessage,
   });
 
   const { typingUsers, handleTypingIndicator, sendTypingIndicator } = useTypingIndicator({
@@ -73,10 +87,11 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
       sendTypingIndicator,
       sendMarkRead,
       reconnect,
-      messages,
       typingUsers,
       onlineUsers,
       chatPreviews: chatPreviews || [],
+      messageQueue,
+      clearMessageQueue,
     }),
     [
       isConnected,
@@ -84,10 +99,11 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
       sendTypingIndicator,
       sendMarkRead,
       reconnect,
-      messages,
       typingUsers,
       onlineUsers,
       chatPreviews,
+      messageQueue,
+      clearMessageQueue,
     ]
   );
 

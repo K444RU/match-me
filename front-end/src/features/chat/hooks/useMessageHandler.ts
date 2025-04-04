@@ -1,16 +1,15 @@
 import { ChatMessageResponseDTO, MessagesSendRequestDTO } from '@/api/types';
 import { User } from '@/features/authentication';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { Client, IMessage } from 'react-stomp-hooks';
 
 interface UseMessageHandlerProps {
   stompClient: Client | undefined;
   currentUser: User;
+  onMessageReceived: (message: ChatMessageResponseDTO) => void;
 }
 
-export default function useMessageHandler({ stompClient, currentUser }: UseMessageHandlerProps) {
-  const [messages, setMessages] = useState<ChatMessageResponseDTO[]>([]);
-
+export default function useMessageHandler({ stompClient, currentUser, onMessageReceived }: UseMessageHandlerProps) {
   const handleMessage = useCallback((message: IMessage) => {
     // Parse message and update state logic
     try {
@@ -22,18 +21,7 @@ export default function useMessageHandler({ stompClient, currentUser }: UseMessa
         return;
       }
 
-      setMessages((prev) => {
-        // Prevent duplicates
-        const isDuplicate = prev.some(
-          (m) => m.messageId === data.messageId || (m.createdAt === data.createdAt && m.content === data.content)
-        );
-
-        if (isDuplicate) {
-          return prev;
-        }
-
-        return [...prev, data];
-      });
+      onMessageReceived(data);
     } catch (error) {
       console.error('Error parsing message:', error, message.body);
     }
@@ -100,5 +88,5 @@ export default function useMessageHandler({ stompClient, currentUser }: UseMessa
     [stompClient, currentUser?.id]
   );
 
-  return { messages, handleMessage, sendMessage, sendMarkRead };
+  return { handleMessage, sendMessage, sendMarkRead };
 }

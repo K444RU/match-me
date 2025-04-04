@@ -7,10 +7,11 @@ export interface WebSocketContextType {
   sendTypingIndicator: (connectionId: number) => void;
   sendMarkRead: (connectionId: number) => void;
   reconnect: () => void;
-  messages: ChatMessageResponseDTO[];
   typingUsers: Record<string, boolean>;
   onlineUsers: Record<string, boolean>;
   chatPreviews: ChatPreviewResponseDTO[];
+  messageQueue: ChatMessageResponseDTO[];
+  clearMessageQueue: () => void;
 }
 
 const defaultContext: WebSocketContextType = {
@@ -27,10 +28,13 @@ const defaultContext: WebSocketContextType = {
   reconnect: () => {
     console.error('WebSocket context not initialized');
   },
-  messages: [],
+  clearMessageQueue: () => {
+    console.error('WebSocket context not initialized');
+  },
   typingUsers: {},
   onlineUsers: {},
   chatPreviews: [],
+  messageQueue: [],
 };
 
 export const WebSocketContext = createContext<WebSocketContextType>(defaultContext);

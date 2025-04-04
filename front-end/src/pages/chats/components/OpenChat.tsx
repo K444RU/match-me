@@ -65,6 +65,22 @@ export default function OpenChat() {
   const handleSendMessage = async (message: MessagesSendRequestDTO) => {
     if (!message || !user || !openChat) return;
 
+    // Optimistic update first
+    const optimisticMessage: ChatMessageResponseDTO = {
+      connectionId: message.connectionId,
+      content: message.content,
+      createdAt: new Date().toISOString(),
+      messageId: -(chatMessages.length + 1),
+      senderAlias: user.alias || '',
+      senderId: user.id || 0,
+    };
+
+    if (chatContext?.updateAllChats) {
+      chatContext.updateAllChats(openChat.connectionId, [optimisticMessage]);
+    }
+
+    setMessage('');
+
     try {
       // Only use WebSocket if already connected
       if (connected) {
@@ -78,25 +94,6 @@ export default function OpenChat() {
         console.warn('⚠️ WebSocket not connected, message sent only via REST');
         await chatService.sendMessage(message.content, message.connectionId);
       }
-
-      // Optimistically add the message to the UI
-      const newMessage: ChatMessageResponseDTO = {
-        connectionId: message.connectionId,
-        content: message.content,
-        createdAt: new Date().toISOString(),
-        messageId: chatMessages.length + 1,
-        senderAlias: user.alias || '',
-        senderId: user.id || 0,
-      };
-
-      const updatedMessages = [...chatMessages, newMessage];
-      setChatMessages(updatedMessages);
-
-      if (chatContext?.updateAllChats) {
-        chatContext.updateAllChats(openChat.connectionId, [newMessage]);
-      }
-
-      setMessage('');
     } catch (error) {
       console.error('Error sending message:', error);
       // Show error to user
