@@ -2,7 +2,7 @@ import { ChatMessageResponseDTO, ChatPreviewResponseDTO } from '@/api/types';
 import { useAuth } from '@/features/authentication';
 import { useWebSocket } from '@/features/chat';
 import { chatService } from '@/features/chat/';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChatContext } from './chat-context';
 
 interface ChatProviderProps {
@@ -70,30 +70,23 @@ const ChatProviderInner = ({
     refreshChats();
   }, [refreshChats]);
 
-  // Merge websocket previews into our state when they change
+  // Merge websocket previews into state
   useEffect(() => {
     if (!chatPreviews?.length) {
-      console.log('No websocket chat previews to process');
+      // console.log('No websocket chat previews to process');
       return;
     }
 
-    console.log('Merging websocket previews into state:', chatPreviews.length);
+    // console.log('Merging websocket previews into state:', chatPreviews.length);
 
     setChatDisplays((prevChats) => {
-      // Fast lookup map
       const chatMap = new Map(prevChats.map((chat) => [chat.connectionId, chat]));
-
-      // Add new chats from websocket
       for (const preview of chatPreviews) {
         if (preview.connectionId <= 0) continue;
-
         chatMap.set(preview.connectionId, preview);
       }
-
       const mergedChats = Array.from(chatMap.values());
-      console.log('Merged chats result:', mergedChats.length);
-
-      // Sort by timestamp (newest first)
+      // console.log('Merged chats result:', mergedChats.length);
       return mergedChats.sort((a, b) => {
         const dateA = new Date(a.lastMessageTimestamp || 0);
         const dateB = new Date(b.lastMessageTimestamp || 0);
@@ -102,10 +95,9 @@ const ChatProviderInner = ({
     });
   }, [chatPreviews, setChatDisplays]);
 
-  // Update open chat if needed - in a separate effect to avoid conflicts
+  // Update open chat preview if needed
   useEffect(() => {
     if (!openChat || !chatPreviews?.length) return;
-
     const updatedChat = chatPreviews.find((p) => p.connectionId === openChat.connectionId);
     if (updatedChat) {
       setOpenChat(updatedChat);
@@ -148,24 +140,63 @@ const ChatProviderInner = ({
   }, [messageQueue, setAllChats, clearMessageQueue]);
 
   const updateAllChats = useCallback(
-    (connectionId: number, messages: ChatMessageResponseDTO[], replace: boolean = false) => {
+    (connectionId: number, messagesToAdd: ChatMessageResponseDTO[], replace: boolean = false) => {
       setAllChats((prev) => {
-        // If there are already messages cached
-        if (replace || !prev[connectionId]) {
-          return {
-            ...prev,
-            [connectionId]: messages,
-          };
+        const existingMessages = prev[connectionId] || [];
+        let updatedMessages;
+
+        if (replace) {
+          updatedMessages = messagesToAdd;
+        } else {
+          // Filter out duplicates before adding
+          const existingMessageIds = new Set(existingMessages.map((m) => m.messageId));
+          const newMessages = messagesToAdd.filter((m) => !existingMessageIds.has(m.messageId));
+          updatedMessages = [...existingMessages, ...newMessages];
         }
+
+        // Sort messages by date after updating
+        updatedMessages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
         return {
           ...prev,
-          [connectionId]: [...prev[connectionId], ...messages],
+          [connectionId]: updatedMessages,
         };
       });
     },
-    []
+    [setAllChats] // setAllChats is stable
   );
+
+  // Process incoming WebSocket messages and update allChats
+  useEffect(() => {
+    if (!webSocketMessages || webSocketMessages.length === 0) {
+      return;
+    }
+
+    // console.log(`Processing ${webSocketMessages.length} websocket messages...`);
+
+    const newMessagesToProcess: Record<number, ChatMessageResponseDTO[]> = {};
+
+    webSocketMessages.forEach((msg) => {
+      // Check if messageId exists and hasn't been processed from the websocket stream yet
+      if (msg.messageId && !processedMessageIds.current.has(msg.messageId)) {
+        if (!newMessagesToProcess[msg.connectionId]) {
+          newMessagesToProcess[msg.connectionId] = [];
+        }
+        newMessagesToProcess[msg.connectionId].push(msg);
+        processedMessageIds.current.add(msg.messageId); // Mark as processed
+      }
+    });
+
+    // Batch update allChats for each connectionId that received new messages
+    Object.entries(newMessagesToProcess).forEach(([connIdStr, messages]) => {
+      const connId = parseInt(connIdStr, 10);
+      if (!isNaN(connId) && messages.length > 0) {
+        // console.log(`Updating allChats for connection ${connId} with ${messages.length} new messages`);
+        updateAllChats(connId, messages, false); // Append new messages
+      }
+    });
+    // Depend on the webSocketMessages array identity and updateAllChats callback
+  }, [webSocketMessages, updateAllChats]);
 
   // Create a stable context value
   const contextValue = useMemo(
