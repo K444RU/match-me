@@ -16,11 +16,13 @@ import com.matchme.srv.repository.UserMessageRepository;
 import java.time.Instant;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -346,6 +348,65 @@ public class ChatService {
         preview.setUnreadMessageCount(0);
 
         return preview;
+    }
+
+    @Transactional
+    public void markAllMessagesAsReceived(Long userId) {
+        log.info("Checking messages to mark as RECEIVED for newly online user ID: {}", userId);
+        List<Connection> connections = connectionRepository.findConnectionsByUserId(userId);
+        List<MessageEvent> newReceivedEvents = new ArrayList<>();
+        Instant now = Instant.now();
+        int updatedMessagesCount = 0;
+
+        for (Connection connection : connections) {
+        ConnectionState currentState = connectionService.getCurrentState(connection);
+        if (currentState == null || currentState.getStatus() != ConnectionStatus.ACCEPTED) {
+            continue;
+        }
+
+        Long connectionId = connection.getId();
+        User otherParticipant = findOtherParticipant(connection, userId);
+        if (otherParticipant == null) {
+            log.warn(
+                "Could not find other participant for connection ID {} while marking messages received"
+                    + " for user ID {}",
+                connectionId,
+                userId);
+            continue;
+        }
+        Long otherUserId = otherParticipant.getId();
+
+        // Find messages sent BY the other user (TO the current user) in this connection
+        // Use the query that fetches events eagerly
+        List<UserMessage> messagesSentByOther =
+            userMessageRepository.findByConnectionIdAndSenderIdFetchEvents(connectionId, otherUserId);
+
+        for (UserMessage message : messagesSentByOther) {
+            // Find the latest event for this message by timestamp
+            Optional<MessageEvent> latestEventOpt =
+                message.getMessageEvents().stream()
+                    .max(Comparator.comparing(MessageEvent::getTimestamp));
+
+            // If the latest event is 'SENT', add a 'RECEIVED' event
+            if (latestEventOpt.isPresent()
+                && latestEventOpt.get().getMessageEventType() == MessageEventTypeEnum.SENT) {
+            MessageEvent receivedEvent = new MessageEvent();
+            receivedEvent.setMessage(message);
+            receivedEvent.setMessageEventType(MessageEventTypeEnum.RECEIVED);
+            receivedEvent.setTimestamp(now); // Mark as received now
+            newReceivedEvents.add(receivedEvent);
+            updatedMessagesCount++;
+            log.trace("Marking message ID {} as RECEIVED for user ID {}", message.getId(), userId);
+            }
+        }
+        }
+
+        if (!newReceivedEvents.isEmpty()) {
+        messageEventRepository.saveAll(newReceivedEvents);
+        log.info("Marked {} messages as RECEIVED for user ID: {}", updatedMessagesCount, userId);
+        } else {
+        log.info("No messages needed marking as RECEIVED for user ID: {}", userId);
+        }
     }
 
     private MessageEventDTO getLatestMessageEventDTO(UserMessage message) {

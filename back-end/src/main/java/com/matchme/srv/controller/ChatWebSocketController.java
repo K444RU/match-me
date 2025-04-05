@@ -217,6 +217,14 @@ public class ChatWebSocketController {
     if (auth != null) {
       Long userId = securityUtils.getCurrentUserId(auth);
       setUserOnline(userId, true);
+
+      try {
+        chatService.markAllMessagesAsReceived(userId);
+      } catch (Exception e) {
+        log.error("Error marking messages as received for user {}: {}", userId, e.getMessage(), e);
+      }
+    } else {
+      log.warn("User connected but Authentication was null in SessionConnectEvent.");
     }
   }
 

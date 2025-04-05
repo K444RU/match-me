@@ -55,4 +55,17 @@ public interface UserMessageRepository extends JpaRepository<UserMessage, Long> 
         )
       """)
   List<UserMessage> findMessagesToMarkAsRead(@Param("connectionId") Long connectionId, @Param("userId") Long userId, @Param("messageEventType") MessageEventTypeEnum messageEventType);
+
+  
+  /**
+   * Finds messages by connection ID and sender ID, eagerly fetching associated message events.
+   * This helps avoid N+1 query problems when checking event statuses later.
+   *
+   * @param connectionId The ID of the connection.
+   * @param senderId The ID of the user who sent the messages.
+   * @return A list of UserMessage entities with their events fetched.
+   */
+  @Query("SELECT m FROM UserMessage m LEFT JOIN FETCH m.messageEvents WHERE m.connection.id = :connectionId AND m.sender.id = :senderId")
+  List<UserMessage> findByConnectionIdAndSenderIdFetchEvents(@Param("connectionId") Long connectionId, @Param("senderId") Long senderId);
+
 }
