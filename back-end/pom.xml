@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>com.matchme</groupId>
 	<artifactId>srv</artifactId>
-	<version>0.2.1-SNAPSHOT</version>
+	<version>0.2.1</version>
 	<name>srv</name>
 	<description>Match Me project backend</description>
 	<url/>

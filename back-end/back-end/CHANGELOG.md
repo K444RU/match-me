@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.1](https://github.com/K444RU/match-me/compare/back-end-0.2.0...back-end-0.2.1) (2025-04-05)
+
+
+### Bug Fixes
+
+* **AuthControllerTest:** update error message for empty phone number ([d834396](https://github.com/K444RU/match-me/commit/d834396d5964b12752a3befe174a98949d40e7bc))
+* **ConnectionServiceTest:** add missing mock dependency UserScoreService ([e64ec43](https://github.com/K444RU/match-me/commit/e64ec43e583cc3cf83a80fbef3530b2b7b1067ba))
+* **PhoneNumberValidator:** let the @NotBlank annotation handle empty strings ([e62cac4](https://github.com/K444RU/match-me/commit/e62cac400a9686ac2067964ba3e7c8a7d134bbbd))
+
 ## [0.2.0](https://github.com/K444RU/match-me/compare/back-end-0.1.0...back-end-0.2.0) (2025-03-24)
 
 
