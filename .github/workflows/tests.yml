@@ -165,7 +165,7 @@ jobs:
       - name: Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         working-directory: ./front-end
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install chromium
       
       - name: Run Playwright tests
         working-directory: ./front-end
