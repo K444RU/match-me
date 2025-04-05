@@ -1,6 +1,6 @@
 import { ChatMessageResponseDTO } from '@/api/types';
 import { User } from '@/features/authentication/';
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useStompClient } from 'react-stomp-hooks';
 import useChatPreviewHandler from '../hooks/useChatPreviewHandler';
 import useMessageHandler from '../hooks/useMessageHandler';
@@ -17,14 +17,21 @@ interface WebSocketConnectionManagerProps {
 
 export default function WebSocketConnectionManager({ children, user }: WebSocketConnectionManagerProps) {
   const stompClient = useStompClient();
-  const currentUser = user;
-
-  const [isConnected, setIsConnected] = useState(false);
-
-  const [messageQueue, setMessageQueue] = useState<ChatMessageResponseDTO[]>([]);
+  const stompClientRef = useRef(stompClient);
 
   useEffect(() => {
-    const currentConnected = !!stompClient?.connected;
+    if (stompClient !== stompClientRef.current) {
+      stompClientRef.current = stompClient;
+    }
+  }, [stompClient]);
+
+  const currentUser = user;
+  const [isConnected, setIsConnected] = useState(false);
+  const [messageQueue, setMessageQueue] = useState<ChatMessageResponseDTO[]>([]);
+  const [statusUpdateQueue, setStatusUpdateQueue] = useState<MessageStatusUpdateDTO[]>([]);
+
+  useEffect(() => {
+    const currentConnected = !!stompClientRef.current?.connected;
 
     if (currentConnected === isConnected) return;
 
@@ -49,36 +56,27 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
   }, []);
 
   const handleNewMessageStatusUpdate = useCallback((statusUpdate: MessageStatusUpdateDTO) => {
-    setMessageQueue((prevQueue) => {
-      return prevQueue.map((msg) => {
-        if (msg.messageId === statusUpdate.messageId && msg.connectionId === statusUpdate.connectionId) {
-          return {
-            ...msg,
-            event: {
-              type: statusUpdate.type,
-              timestamp: statusUpdate.timestamp,
-            },
-          };
-        }
-        return msg;
-      });
-    });
+    setStatusUpdateQueue((prevQueue) => [...prevQueue, statusUpdate]);
   }, []);
 
   const clearMessageQueue = useCallback(() => {
     setMessageQueue([]); // Reset the queue to an empty array
   }, []);
 
+  const clearStatusUpdateQueue = useCallback(() => {
+    setStatusUpdateQueue([]);
+  }, []);
+
   // Create stable handlers first
   const { handleMessage, handleMessageStatusUpdate, sendMessage, sendMarkRead } = useMessageHandler({
-    stompClient,
+    stompClientRef,
     currentUser,
     onMessageReceived: handleNewMessage,
     onMessageStatusUpdateReceived: handleNewMessageStatusUpdate,
   });
 
   const { typingUsers, handleTypingIndicator, sendTypingIndicator } = useTypingIndicator({
-    stompClient,
+    stompClientRef,
     currentUser,
   });
 
@@ -89,7 +87,8 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
   // Setup subscriptions with the handlers
   const { reconnect } = useSubscriptionManager({
     userId: currentUser?.id,
-    stompClient,
+    stompClientRef,
+    stompClientConnected: !!stompClientRef.current?.connected,
     handleMessage,
     handleMessageStatusUpdate,
     handleTypingIndicator,
@@ -110,6 +109,8 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
       chatPreviews: chatPreviews || [],
       messageQueue,
       clearMessageQueue,
+      statusUpdateQueue,
+      clearStatusUpdateQueue,
     }),
     [
       isConnected,
@@ -122,6 +123,8 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
       chatPreviews,
       messageQueue,
       clearMessageQueue,
+      statusUpdateQueue,
+      clearStatusUpdateQueue,
     ]
   );
 
