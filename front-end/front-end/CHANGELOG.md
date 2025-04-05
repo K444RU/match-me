@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/K444RU/match-me/compare/front-end-0.1.0...front-end-0.1.1) (2025-04-05)
+
+
+### Bug Fixes
+
+* **front-end/OpenChat:** reverse message array order in useState ([3c8516f](https://github.com/K444RU/match-me/commit/3c8516f31ee1793956d063ce856e83d8893d7f5a))
+
 ## [0.1.0](https://github.com/K444RU/match-me/compare/front-end-0.0.8...front-end-0.1.0) (2025-03-25)
 
 
