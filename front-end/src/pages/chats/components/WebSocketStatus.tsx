@@ -7,7 +7,7 @@ export default function WebSocketStatus() {
   return (
     <div
       className={cn(
-        'fixed bottom-4 right-4 z-50 rounded-md p-1.5 text-xs shadow-md',
+        'fixed right-4 top-4 z-50 rounded-md p-1.5 text-xs shadow-md',
         'flex items-center gap-2',
         connected ? 'border border-green-300 bg-green-100' : 'border border-red-300 bg-red-100'
       )}
