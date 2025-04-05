@@ -5,7 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -24,7 +26,6 @@ import jakarta.persistence.EntityNotFoundException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -87,7 +88,8 @@ class ChatWebSocketControllerTests {
               .createdAt(Instant.now())
               .build();
 
-      when(chatService.saveMessage(any(), any(), any(), any())).thenReturn(mockResponse);
+      lenient().when(chatService.saveMessage(any(), any(), any(), any(), anyBoolean()))
+          .thenReturn(mockResponse);
     }
 
     @Test
@@ -109,7 +111,8 @@ class ChatWebSocketControllerTests {
                       eq(validRequest.getConnectionId()),
                       eq(sender.getId()),
                       eq(validRequest.getContent()),
-                      any(Instant.class)),
+                      any(Instant.class),
+                      anyBoolean()),
           () ->
               verify(messagingTemplate)
                   .convertAndSendToUser(
@@ -138,8 +141,9 @@ class ChatWebSocketControllerTests {
           .isInstanceOf(EntityNotFoundException.class)
           .hasMessageContaining("Connection not found");
 
-      verify(chatService).saveMessage(any(), any(), any(), any());
       verify(messagingTemplate, times(0)).convertAndSendToUser(any(), any(), any());
+      verify(chatService)
+          .getOtherUserIdInConnection(eq(validRequest.getConnectionId()), eq(sender.getId()));
     }
   }
 
@@ -247,21 +251,21 @@ class ChatWebSocketControllerTests {
       // Integration tests or specific logging frameworks might be needed for that.
     }
 
-     @Test
-     @DisplayName("Should log error and not send message if service throws other Exception")
-     void markMessagesAsRead_ServiceThrowsRuntimeException_LogsErrorDoesNotSend() {
-        // Arrange
-        when(chatService.markMessagesAsRead(DEFAULT_CONNECTION_ID, DEFAULT_USER_ID))
-            .thenThrow(new RuntimeException("Unexpected database error"));
+    @Test
+    @DisplayName("Should log error and not send message if service throws other Exception")
+    void markMessagesAsRead_ServiceThrowsRuntimeException_LogsErrorDoesNotSend() {
+      // Arrange
+      when(chatService.markMessagesAsRead(DEFAULT_CONNECTION_ID, DEFAULT_USER_ID))
+          .thenThrow(new RuntimeException("Unexpected database error"));
 
-        // Act
-        chatWebSocketController.markMessagesAsRead(validRequest, authentication);
+      // Act
+      chatWebSocketController.markMessagesAsRead(validRequest, authentication);
 
-        // Assert Service Call (still attempted)
-        verify(chatService).markMessagesAsRead(DEFAULT_CONNECTION_ID, DEFAULT_USER_ID);
+      // Assert Service Call (still attempted)
+      verify(chatService).markMessagesAsRead(DEFAULT_CONNECTION_ID, DEFAULT_USER_ID);
 
-        // Assert Messaging Template Call (should NOT have been called)
-        verifyNoInteractions(messagingTemplate);
-     }
+      // Assert Messaging Template Call (should NOT have been called)
+      verifyNoInteractions(messagingTemplate);
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { ChatMessageResponseDTO, ChatPreviewResponseDTO } from '@/api/types';
+import { ChatMessageResponseDTO, ChatPreviewResponseDTO, MessageEventTypeEnum } from '@/api/types';
 import { useAuth } from '@/features/authentication';
 import { useWebSocket } from '@/features/chat';
 import { chatService } from '@/features/chat/';
@@ -62,8 +62,16 @@ const ChatProviderInner = ({
   children,
 }: ChatProviderInnerProps) => {
   // Get websocket values (which include incoming chat previews and send functions)
-  const { chatPreviews, sendMessage, sendTypingIndicator, sendMarkRead, messageQueue, clearMessageQueue } =
-    useWebSocket();
+  const {
+    chatPreviews,
+    sendMessage,
+    sendTypingIndicator,
+    sendMarkRead,
+    messageQueue,
+    clearMessageQueue,
+    statusUpdateQueue,
+    clearStatusUpdateQueue,
+  } = useWebSocket();
 
   // Load initial data once when connected
   useEffect(() => {
@@ -73,11 +81,8 @@ const ChatProviderInner = ({
   // Merge websocket previews into our state when they change
   useEffect(() => {
     if (!chatPreviews?.length) {
-      console.log('No websocket chat previews to process');
       return;
     }
-
-    console.log('Merging websocket previews into state:', chatPreviews.length);
 
     setChatDisplays((prevChats) => {
       // Fast lookup map
@@ -91,7 +96,6 @@ const ChatProviderInner = ({
       }
 
       const mergedChats = Array.from(chatMap.values());
-      console.log('Merged chats result:', mergedChats.length);
 
       // Sort by timestamp (newest first)
       return mergedChats.sort((a, b) => {
@@ -131,6 +135,10 @@ const ChatProviderInner = ({
         const newMessages = messagesByConnection[connectionId];
         const existingMessages = newAllChats[connectionId] || [];
 
+        if (connectionId === openChat?.connectionId && newMessages.length > 0) {
+          sendMarkRead(connectionId);
+        }
+
         // filter out optimistic messages
         const existingRealMessages = existingMessages.filter((msg) => msg.messageId > 0);
 
@@ -145,7 +153,54 @@ const ChatProviderInner = ({
     });
 
     clearMessageQueue();
-  }, [messageQueue, setAllChats, clearMessageQueue]);
+  }, [messageQueue, setAllChats, clearMessageQueue, openChat, sendMarkRead]);
+
+  // Add useEffect to process status updates
+  useEffect(() => {
+    if (!statusUpdateQueue || statusUpdateQueue.length === 0) return;
+
+    let updated = false;
+    setAllChats((prevAllChats) => {
+      const newAllChats = { ...prevAllChats };
+
+      for (const update of statusUpdateQueue) {
+        const connectionMessages = newAllChats[update.connectionId];
+        if (!connectionMessages) {
+          continue; // Chat not loaded yet
+        }
+
+        const messageIndex = connectionMessages.findIndex((msg) => msg.messageId === update.messageId);
+        if (messageIndex === -1) {
+          continue; // Message not found (maybe optimistic?)
+        }
+
+        // Apply the update
+        const existingMessage = connectionMessages[messageIndex];
+        if (existingMessage.event.timestamp !== update.timestamp) {
+          // Prevent re-processing same update if somehow duplicated
+          const updatedMessage = {
+            ...existingMessage,
+            event: {
+              type: update.type,
+              timestamp: update.timestamp,
+            },
+          };
+          newAllChats[update.connectionId] = [
+            ...connectionMessages.slice(0, messageIndex),
+            updatedMessage,
+            ...connectionMessages.slice(messageIndex + 1),
+          ];
+          updated = true;
+        }
+      }
+      return updated ? newAllChats : prevAllChats; // Only update state if changes were made
+    });
+
+    // Clear the queue after processing
+    if (updated) {
+      clearStatusUpdateQueue();
+    }
+  }, [statusUpdateQueue, setAllChats, clearStatusUpdateQueue]);
 
   const updateAllChats = useCallback(
     (connectionId: number, messages: ChatMessageResponseDTO[], replace: boolean = false) => {
@@ -164,7 +219,34 @@ const ChatProviderInner = ({
         };
       });
     },
-    []
+    [setAllChats]
+  );
+
+  const updateMessageStatus = useCallback(
+    (connectionId: number, messageId: number, eventType: MessageEventTypeEnum, timestamp: string) => {
+      setAllChats((prevAllChats) => {
+        if (!prevAllChats[connectionId]) return prevAllChats;
+
+        const updatedMessages = prevAllChats[connectionId].map((msg) => {
+          if (msg.messageId === messageId) {
+            return {
+              ...msg,
+              event: {
+                type: eventType,
+                timestamp,
+              },
+            };
+          }
+          return msg;
+        });
+
+        return {
+          ...prevAllChats,
+          [connectionId]: updatedMessages,
+        };
+      });
+    },
+    [setAllChats]
   );
 
   // Create a stable context value
@@ -179,6 +261,7 @@ const ChatProviderInner = ({
       sendTypingIndicator,
       sendMarkRead,
       updateAllChats,
+      updateMessageStatus,
     }),
     [
       chatDisplays,
@@ -190,6 +273,7 @@ const ChatProviderInner = ({
       sendTypingIndicator,
       sendMarkRead,
       updateAllChats,
+      updateMessageStatus,
     ]
   );
 

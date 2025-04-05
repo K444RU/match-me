@@ -28,8 +28,6 @@ export default function AppSidebar({ onChatSelect }: { onChatSelect: (chat: Chat
 
   const { chatPreviews, sendMarkRead } = useChat();
 
-  console.log('AppSidebar - chatPreviews from CHAT context:', chatPreviews);
-
   return (
     <Sidebar>
       <SidebarContent>

@@ -30,16 +30,25 @@ export const getChatController = () => {
       data: messagesSendRequestDTO,
     });
   };
+  const readChatMessages = (connectionId: number) => {
+    return customInstance<ChatPreviewResponseDTO>({
+      url: `http://localhost:8000/api/chats/${connectionId}/messages/read`,
+      method: 'POST',
+    });
+  };
   const getChatPreviews = () => {
     return customInstance<ChatPreviewResponseDTO[]>({ url: `http://localhost:8000/api/chats/previews`, method: 'GET' });
   };
-  return { getChatMessages, sendChatMessage, getChatPreviews };
+  return { getChatMessages, sendChatMessage, readChatMessages, getChatPreviews };
 };
 export type GetChatMessagesResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getChatController>['getChatMessages']>>
 >;
 export type SendChatMessageResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getChatController>['sendChatMessage']>>
+>;
+export type ReadChatMessagesResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getChatController>['readChatMessages']>>
 >;
 export type GetChatPreviewsResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getChatController>['getChatPreviews']>>

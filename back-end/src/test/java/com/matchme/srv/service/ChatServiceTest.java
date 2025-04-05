@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -15,16 +15,16 @@ import static org.mockito.Mockito.when;
 
 import com.matchme.srv.dto.response.ChatMessageResponseDTO;
 import com.matchme.srv.dto.response.ChatPreviewResponseDTO;
+import com.matchme.srv.dto.response.MessageStatusUpdateDTO;
 import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.model.connection.ConnectionState;
 import com.matchme.srv.model.enums.ConnectionStatus;
 import com.matchme.srv.model.message.MessageEvent;
-import com.matchme.srv.model.message.MessageEventType;
+import com.matchme.srv.model.message.MessageEventTypeEnum;
 import com.matchme.srv.model.message.UserMessage;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.repository.ConnectionRepository;
 import com.matchme.srv.repository.MessageEventRepository;
-import com.matchme.srv.repository.MessageEventTypeRepository;
 import com.matchme.srv.repository.UserMessageRepository;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -46,6 +46,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 @ExtendWith(MockitoExtension.class)
 class ChatServiceTest {
@@ -53,11 +54,12 @@ class ChatServiceTest {
   @Mock private ConnectionRepository connectionRepository;
   @Mock private UserMessageRepository userMessageRepository;
   @Mock private MessageEventRepository messageEventRepository;
-  @Mock private MessageEventTypeRepository messageEventTypeRepository;
   @Mock private ConnectionService connectionService;
+  @Mock private SimpMessagingTemplate messagingTemplate;
   @InjectMocks private ChatService chatService;
 
   @Captor ArgumentCaptor<List<MessageEvent>> messageEventsCaptor;
+  @Captor ArgumentCaptor<List<MessageStatusUpdateDTO>> statusUpdatesCaptor;
 
   private static final Long CONNECTION_ID = 101L;
   private static final String MESSAGE_CONTENT = "Hello!";
@@ -101,7 +103,9 @@ class ChatServiceTest {
           .thenReturn(List.of(connection));
       when(userMessageRepository.findTopByConnectionIdOrderByCreatedAtDesc(CONNECTION_ID))
           .thenReturn(message);
-      when(userMessageRepository.countUnreadMessages(CONNECTION_ID, DEFAULT_USER_ID)).thenReturn(0);
+      when(userMessageRepository.countUnreadMessages(
+              CONNECTION_ID, DEFAULT_USER_ID, MessageEventTypeEnum.READ))
+          .thenReturn(0);
 
       ConnectionState mockState = new ConnectionState();
       mockState.setStatus(ConnectionStatus.ACCEPTED);
@@ -214,7 +218,8 @@ class ChatServiceTest {
 
       // Act
       ChatMessageResponseDTO response =
-          chatService.saveMessage(CONNECTION_ID, DEFAULT_USER_ID, MESSAGE_CONTENT, timestamp);
+          chatService.saveMessage(
+              CONNECTION_ID, DEFAULT_USER_ID, MESSAGE_CONTENT, timestamp, false);
 
       // Assert
       assertAll(
@@ -288,16 +293,14 @@ class ChatServiceTest {
   @DisplayName("markMessagesAsRead Tests")
   class MarkMessagesAsReadTests {
 
-    private MessageEventType readEventType;
+    private MessageEventTypeEnum messageEventType;
     private List<UserMessage> unreadMessages;
 
     @BeforeEach
     void setUp() {
       when(connectionRepository.findById(CONNECTION_ID)).thenReturn(Optional.of(connection));
 
-      readEventType = new MessageEventType();
-      readEventType.setId(2L);
-      readEventType.setName(ChatService.EVENT_TYPE_READ);
+      messageEventType = MessageEventTypeEnum.READ;
 
       UserMessage message1 =
           UserMessage.builder()
@@ -319,23 +322,16 @@ class ChatServiceTest {
               .build();
       unreadMessages = List.of(message1, message2);
 
-      // when(messageEventTypeRepository.findByName(ChatService.EVENT_TYPE_READ))
-      //     .thenReturn(Optional.of(readEventType));
-      // when(userMessageRepository.findMessagesToMarkAsRead(CONNECTION_ID, DEFAULT_USER_ID))
-      //     .thenReturn(unreadMessages);
-      // when(userMessageRepository.findTopByConnectionIdOrderByCreatedAtDesc(CONNECTION_ID))
-      //      .thenReturn(message);
+      lenient().when(userMessageRepository.findTopByConnectionIdOrderByCreatedAtDesc(CONNECTION_ID))
+          .thenReturn(message2);
     }
 
     @Test
     @DisplayName("Should create READ events for unread messages and return updated preview")
     void markMessagesAsRead_WithUnreadMessages_CreatesEventsAndReturnsPreview() {
-      when(messageEventTypeRepository.findByName(ChatService.EVENT_TYPE_READ))
-          .thenReturn(Optional.of(readEventType));
-      when(userMessageRepository.findMessagesToMarkAsRead(CONNECTION_ID, DEFAULT_USER_ID))
+      when(userMessageRepository.findMessagesToMarkAsRead(
+              CONNECTION_ID, DEFAULT_USER_ID, messageEventType))
           .thenReturn(unreadMessages);
-      when(userMessageRepository.findTopByConnectionIdOrderByCreatedAtDesc(CONNECTION_ID))
-          .thenReturn(message);
 
       // Act
       ChatPreviewResponseDTO result =
@@ -348,8 +344,12 @@ class ChatServiceTest {
           () -> assertThat(result.getConnectionId()).isEqualTo(CONNECTION_ID),
           () -> assertThat(result.getConnectedUserId()).isEqualTo(DEFAULT_TARGET_USER_ID),
           () -> assertThat(result.getConnectedUserAlias()).isEqualTo(DEFAULT_ALIAS),
-          () -> assertThat(result.getLastMessageContent()).isEqualTo(MESSAGE_CONTENT),
-          () -> assertThat(result.getLastMessageTimestamp()).isEqualTo(TEST_TIMESTAMP),
+          () ->
+              assertThat(result.getLastMessageContent())
+                  .isEqualTo(unreadMessages.get(1).getContent()),
+          () ->
+              assertThat(result.getLastMessageTimestamp())
+                  .isEqualTo(unreadMessages.get(1).getCreatedAt()),
           () -> assertThat(result.getUnreadMessageCount()).isZero());
 
       // Assert Repository Interactions
@@ -358,8 +358,7 @@ class ChatServiceTest {
           () -> verify(connectionRepository).findById(CONNECTION_ID),
           () ->
               verify(userMessageRepository)
-                  .findMessagesToMarkAsRead(CONNECTION_ID, DEFAULT_USER_ID),
-          () -> verify(messageEventTypeRepository).findByName(ChatService.EVENT_TYPE_READ),
+                  .findMessagesToMarkAsRead(CONNECTION_ID, DEFAULT_USER_ID, messageEventType),
           () ->
               verify(userMessageRepository)
                   .findTopByConnectionIdOrderByCreatedAtDesc(CONNECTION_ID),
@@ -369,7 +368,7 @@ class ChatServiceTest {
             List<MessageEvent> savedEvents = messageEventsCaptor.getValue();
             assertThat(savedEvents).hasSize(unreadMessages.size()); // One event per unread message
             // Check properties of the first saved event
-            assertThat(savedEvents.get(0).getMessageEventType()).isEqualTo(readEventType);
+            assertThat(savedEvents.get(0).getMessageEventType()).isEqualTo(messageEventType);
             assertThat(savedEvents.get(0).getMessage().getId())
                 .isEqualTo(
                     unreadMessages.get(0).getId()); // Ensure it's linked to the correct message
@@ -381,7 +380,8 @@ class ChatServiceTest {
     @DisplayName("Should return preview without saving events if no messages to mark read")
     void markMessagesAsRead_NoUnreadMessages_ReturnsPreviewDoesNotSaveEvents() {
       // Arrange
-      when(userMessageRepository.findMessagesToMarkAsRead(CONNECTION_ID, DEFAULT_USER_ID))
+      when(userMessageRepository.findMessagesToMarkAsRead(
+              CONNECTION_ID, DEFAULT_USER_ID, messageEventType))
           .thenReturn(Collections.emptyList());
       when(userMessageRepository.findTopByConnectionIdOrderByCreatedAtDesc(CONNECTION_ID))
           .thenReturn(message);
@@ -408,11 +408,10 @@ class ChatServiceTest {
           () -> verify(connectionRepository).findById(CONNECTION_ID),
           () ->
               verify(userMessageRepository)
-                  .findMessagesToMarkAsRead(CONNECTION_ID, DEFAULT_USER_ID),
+                  .findMessagesToMarkAsRead(CONNECTION_ID, DEFAULT_USER_ID, messageEventType),
           () ->
               verify(userMessageRepository)
                   .findTopByConnectionIdOrderByCreatedAtDesc(CONNECTION_ID),
-          () -> verifyNoInteractions(messageEventTypeRepository),
           () -> verifyNoInteractions(messageEventRepository));
     }
 
@@ -431,28 +430,6 @@ class ChatServiceTest {
       verify(connectionRepository).findById(CONNECTION_ID);
       verifyNoMoreInteractions(connectionRepository);
       verifyNoInteractions(userMessageRepository);
-      verifyNoInteractions(messageEventTypeRepository);
-      verifyNoInteractions(messageEventRepository);
-    }
-
-    @Test
-    @DisplayName("Should throw exception if READ event type not found")
-    void markMessagesAsRead_ReadEventTypeNotFound_ThrowsIllegalArgumentException() {
-      when(messageEventTypeRepository.findByName(ChatService.EVENT_TYPE_READ))
-          .thenReturn(Optional.empty());
-      when(userMessageRepository.findMessagesToMarkAsRead(CONNECTION_ID, DEFAULT_USER_ID))
-          .thenReturn(unreadMessages);
-
-      // Act & Assert
-      assertThatThrownBy(() -> chatService.markMessagesAsRead(CONNECTION_ID, DEFAULT_USER_ID))
-          .isInstanceOf(IllegalArgumentException.class)
-          .hasMessageContaining("Message event type not found");
-
-      // Verify interactions up to the point of failure
-      verify(connectionRepository).findById(CONNECTION_ID);
-      verify(userMessageRepository).findMessagesToMarkAsRead(CONNECTION_ID, DEFAULT_USER_ID);
-      verify(messageEventTypeRepository).findByName(ChatService.EVENT_TYPE_READ);
-      verify(userMessageRepository, never()).findTopByConnectionIdOrderByCreatedAtDesc(anyLong());
       verifyNoInteractions(messageEventRepository);
     }
   }

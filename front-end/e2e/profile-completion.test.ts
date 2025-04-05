@@ -12,7 +12,6 @@ test.describe('Full User Registration Flow', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.route('https://api.api-ninjas.com/v1/geocoding**', async (route) => {
-      console.log(`[Test Mock] Intercepting route: ${route.request().url()}`);
       await route.fulfill({
         status: 200,
         contentType: 'application/json',

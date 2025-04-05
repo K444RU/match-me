@@ -12,7 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.matchme.srv.model.connection.ConnectionType;
-import com.matchme.srv.model.message.MessageEventType;
 import com.matchme.srv.model.user.UserRoleType;
 import com.matchme.srv.model.user.UserStateTypes;
 import com.matchme.srv.model.user.activity.ActivityLogType;
@@ -23,7 +22,6 @@ import com.matchme.srv.model.user.profile.user_preferences.PreferenceChangeType;
 import com.matchme.srv.repository.ActivityLogTypeRepository;
 import com.matchme.srv.repository.AttributeChangeTypeRepository;
 import com.matchme.srv.repository.ConnectionTypeRepository;
-import com.matchme.srv.repository.MessageEventTypeRepository;
 import com.matchme.srv.repository.PreferenceChangeTypeRepository;
 import com.matchme.srv.repository.ProfileChangeTypeRepository;
 import com.matchme.srv.repository.UserGenderTypeRepository;
@@ -43,9 +41,6 @@ class TypesTest {
 
     @Autowired
     private ConnectionTypeRepository connectionTypeRepository;
-
-    @Autowired
-    private MessageEventTypeRepository messageEventTypeRepository;
 
     @Autowired
     private ActivityLogTypeRepository activityLogTypeRepository;
@@ -90,15 +85,6 @@ class TypesTest {
         assertTrue(types.stream().anyMatch(type -> type.getName().equals("MAYBE_MORE")));
         assertTrue(types.stream().anyMatch(type -> type.getName().equals("INTERESTED")));
         assertTrue(types.stream().anyMatch(type -> type.getName().equals("CLOSED")));
-    }
-
-    @Test
-    void testMessageEventTypesInitialization() {
-        List<MessageEventType> types = messageEventTypeRepository.findAll();
-        assertEquals(3, types.size());
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("SENT")));
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("RECEIVED")));
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("READ")));
     }
 
     @Test

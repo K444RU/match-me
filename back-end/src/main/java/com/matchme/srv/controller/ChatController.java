@@ -73,7 +73,7 @@ public class ChatController {
             Authentication authentication
     ) {
         Long userId = securityUtils.getCurrentUserId(authentication);
-        return chatService.saveMessage(connectionId, userId, chatMessageRequestDTO.getContent(), Instant.now());
+        return chatService.saveMessage(connectionId, userId, chatMessageRequestDTO.getContent(), Instant.now(), false);
     }
 
     /**

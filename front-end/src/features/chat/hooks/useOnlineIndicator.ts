@@ -7,7 +7,6 @@ export default function useOnlineIndicator() {
 
   const handleOnlineIndicator = useCallback((message: IMessage) => {
     try {
-      console.log('Online indicator received:', message.body);
       const parsedBody = JSON.parse(message.body);
 
       if (Array.isArray(parsedBody)) {

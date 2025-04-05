@@ -59,6 +59,12 @@ export default function OpenChat() {
     fetchMessages();
   }, [connectionId, user, updateAllChats, allChats]);
 
+  useEffect(() => {
+    if (connectionId && allChats[connectionId]) {
+      setChatMessages(allChats[connectionId]);
+    }
+  }, [allChats, connectionId]);
+
   // Early return if no context, user or open chat
   if (!chatContext) return null;
   if (!user) return null;
@@ -80,6 +86,10 @@ export default function OpenChat() {
       messageId: -(chatMessages.length + 1),
       senderAlias: user.alias || '',
       senderId: user.id || 0,
+      event: {
+        type: 'SENT',
+        timestamp: new Date().toISOString(),
+      },
     };
 
     if (chatContext?.updateAllChats) {
@@ -89,7 +99,6 @@ export default function OpenChat() {
     try {
       // Only use WebSocket if already connected
       if (connected) {
-        console.log('🚀 Sending message via WebSocket');
         try {
           await sendWebSocketMessage(messageDTO);
         } catch (wsError) {

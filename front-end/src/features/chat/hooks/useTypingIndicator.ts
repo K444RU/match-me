@@ -1,29 +1,28 @@
 import { User } from '@/features/authentication';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { Client, IMessage } from 'react-stomp-hooks';
 import { TypingStatusRequestDTO } from '../types';
 
 interface UseTypingIndicatorProps {
-  stompClient: Client | undefined;
+  stompClientRef: MutableRefObject<Client | undefined>;
   currentUser: User;
 }
 
-export default function useTypingIndicator({ stompClient, currentUser }: UseTypingIndicatorProps) {
+export default function useTypingIndicator({ stompClientRef, currentUser }: UseTypingIndicatorProps) {
   const [typingUsers, setTypingUsers] = useState<Record<string, boolean>>({});
   const typingTimeoutsRef = useRef<Record<string, NodeJS.Timeout>>({});
   const lastTypedRef = useRef<Record<string, number>>({});
 
   // Clear typing indicators after delay
   useEffect(() => {
+    const timeouts = typingTimeoutsRef.current;
     return () => {
-      // Clean up any timeouts on unmount
-      Object.values(typingTimeoutsRef.current).forEach((timeout) => clearTimeout(timeout));
+      Object.values(timeouts).forEach((timeout) => clearTimeout(timeout));
     };
   }, []);
 
   const handleTypingIndicator = useCallback((message: IMessage) => {
     try {
-      console.log('Typing indicator received:', message.body);
       const data = JSON.parse(message.body) as TypingStatusRequestDTO;
 
       // Validate data
@@ -56,11 +55,10 @@ export default function useTypingIndicator({ stompClient, currentUser }: UseTypi
 
   const sendTypingIndicator = useCallback(
     (connectionId: number) => {
-      if (!stompClient?.connected || !currentUser?.id) {
-        console.log('Cannot send typing indicator: WebSocket not connected or user not available');
+      if (!stompClientRef.current?.connected || !currentUser?.id) {
         return;
       }
-      console.log('Sending typing indicator:', connectionId);
+
       // Throttle typing events - only send once per second per connection
       const now = Date.now();
       const connectionKey = String(connectionId);
@@ -86,8 +84,7 @@ export default function useTypingIndicator({ stompClient, currentUser }: UseTypi
       };
 
       try {
-        console.log('Sending typing indicator:', typingData);
-        stompClient.publish({
+        stompClientRef.current?.publish({
           destination: '/app/chat.typing',
           body: JSON.stringify(typingData),
           headers: {
@@ -98,7 +95,7 @@ export default function useTypingIndicator({ stompClient, currentUser }: UseTypi
         console.error('Error sending typing indicator:', error);
       }
     },
-    [stompClient, currentUser]
+    [stompClientRef, currentUser]
   );
 
   return { typingUsers, handleTypingIndicator, sendTypingIndicator };

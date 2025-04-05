@@ -20,7 +20,7 @@ export default function ConnectionRequestHandler() {
     (async () => {
       try {
         const data = await getConnections(user.token);
-        console.log('Connections data:', data);
+
         const pending = data.pendingIncoming || [];
         setPendingIncomingIds(pending);
 

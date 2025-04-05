@@ -9,6 +9,9 @@ import com.matchme.srv.dto.request.settings.PreferencesSettingsRequestDTO;
 import com.matchme.srv.dto.request.settings.ProfileSettingsRequestDTO;
 import com.matchme.srv.dto.response.*;
 import com.matchme.srv.model.connection.ConnectionProvider;
+import com.matchme.srv.model.message.MessageEvent;
+import com.matchme.srv.model.message.MessageEventTypeEnum;
+import com.matchme.srv.model.message.UserMessage;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.UserRoleType;
 import com.matchme.srv.model.user.profile.Hobby;
@@ -18,6 +21,7 @@ import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
 import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
 import com.matchme.srv.security.services.UserDetailsImpl;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
@@ -97,6 +101,7 @@ public class TestDataFactory {
     public static final int DEFAULT_TARGET_AGE_MAX = 30;
     public static final int DEFAULT_TARGET_DISTANCE = 10;
     public static final double DEFAULT_TARGET_PROBABILITY_TOLERANCE = 0.5;
+    public static final String DEFAULT_MESSAGE_CONTENT = "Hello, this is a test message.";
 
     // Invalid
     public static final Long INVALID_USER_ID = 999L;
@@ -398,6 +403,21 @@ public class TestDataFactory {
                 List.of(pendingIncoming),
                 List.of(pendingOutgoing)
         );
+    }
+
+    public static UserMessage createUserMessage(Long id) {
+        return UserMessage.builder()
+                .id(id)
+                .content(DEFAULT_MESSAGE_CONTENT)
+                .createdAt(Instant.now())
+                .build();
+    }
+
+    public static MessageEventDTO createMessageEvent(MessageEventTypeEnum eventType) {
+        return MessageEventDTO.builder()
+                .type(eventType)
+                .timestamp(Instant.now())
+                .build();
     }
 
     /**

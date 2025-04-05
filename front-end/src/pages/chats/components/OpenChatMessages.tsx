@@ -27,9 +27,14 @@ export default function OpenChatMessages({ loading, chatMessages, user }: OpenCh
       ) : chatMessages.length === 0 ? (
         <div className="flex justify-center p-4">No messages yet. Start the conversation!</div>
       ) : (
-        chatMessages.map((msg) => (
-          <Message key={`${msg.connectionId}-${msg.messageId}`} message={msg} isOwn={msg.senderId === user.id} />
-        ))
+        chatMessages.map((msg, index) => {
+          const key = `${msg.connectionId}-${msg.messageId}`;
+          const isOwn = msg.senderId === user.id;
+          // Determine if this is the last message in the array
+          const isLastMessage = index === chatMessages.length - 1;
+
+          return <Message key={key} message={msg} isOwn={isOwn} isLastMessage={isLastMessage} />;
+        })
       )}
       <div ref={messageEndRef} />
     </div>

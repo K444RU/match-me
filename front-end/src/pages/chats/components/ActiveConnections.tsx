@@ -20,7 +20,7 @@ export default function ActiveConnections() {
     (async () => {
       try {
         const data = await getConnections(user.token);
-        console.log('Connections data:', data);
+
         const active = data.active || [];
         setActiveConnections(active);
 
