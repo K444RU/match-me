@@ -1,4 +1,4 @@
-import { ChatMessageResponseDTO, ChatPreviewResponseDTO } from '@/api/types';
+import { ChatMessageResponseDTO, ChatPreviewResponseDTO, MessageEventTypeEnum } from '@/api/types';
 import { useAuth } from '@/features/authentication';
 import { useWebSocket } from '@/features/chat';
 import { chatService } from '@/features/chat/';
@@ -62,8 +62,16 @@ const ChatProviderInner = ({
   children,
 }: ChatProviderInnerProps) => {
   // Get websocket values (which include incoming chat previews and send functions)
-  const { chatPreviews, sendMessage, sendTypingIndicator, sendMarkRead, messageQueue, clearMessageQueue } =
-    useWebSocket();
+  const {
+    chatPreviews,
+    sendMessage,
+    sendTypingIndicator,
+    sendMarkRead,
+    messageQueue,
+    clearMessageQueue,
+    statusUpdateQueue,
+    clearStatusUpdateQueue,
+  } = useWebSocket();
 
   // Load initial data once when connected
   useEffect(() => {
@@ -147,6 +155,67 @@ const ChatProviderInner = ({
     clearMessageQueue();
   }, [messageQueue, setAllChats, clearMessageQueue]);
 
+  // Add useEffect to process status updates
+  useEffect(() => {
+    if (!statusUpdateQueue || statusUpdateQueue.length === 0) return;
+
+    let updated = false;
+    setAllChats((prevAllChats) => {
+      const newAllChats = { ...prevAllChats };
+
+      for (const update of statusUpdateQueue) {
+        console.log('[ChatProvider] Processing status update:', update);
+        const connectionMessages = newAllChats[update.connectionId];
+        if (!connectionMessages) {
+          console.log('[ChatProvider] No messages found for connectionId:', update.connectionId);
+          continue; // Chat not loaded yet
+        }
+
+        const messageIndex = connectionMessages.findIndex((msg) => msg.messageId === update.messageId);
+        if (messageIndex === -1) {
+          console.log('[ChatProvider] Message not found for messageId:', update.messageId);
+          continue; // Message not found (maybe optimistic?)
+        }
+
+        // Apply the update
+        const existingMessage = connectionMessages[messageIndex];
+        console.log('[ChatProvider] Found existing message:', existingMessage);
+        console.log('[ChatProvider] Comparing timestamps:', existingMessage.event.timestamp, '!==', update.timestamp);
+        if (existingMessage.event.timestamp !== update.timestamp) {
+          console.log('[ChatProvider] Timestamps differ, updating message event.');
+          // Prevent re-processing same update if somehow duplicated
+          const updatedMessage = {
+            ...existingMessage,
+            event: {
+              type: update.type,
+              timestamp: update.timestamp,
+            },
+          };
+          newAllChats[update.connectionId] = [
+            ...connectionMessages.slice(0, messageIndex),
+            updatedMessage,
+            ...connectionMessages.slice(messageIndex + 1),
+          ];
+          updated = true;
+          console.log('[ChatProvider] Message updated in newAllChats for connectionId:', update.connectionId);
+        } else {
+          console.log('[ChatProvider] Timestamps match, skipping update.');
+        }
+      }
+      console.log('[ChatProvider] Finished processing queue. Updated flag:', updated);
+      return updated ? newAllChats : prevAllChats; // Only update state if changes were made
+    });
+
+    // Clear the queue after processing
+    console.log('[ChatProvider] Checking if queue needs clearing. Updated flag:', updated);
+    if (updated) {
+      console.log('[ChatProvider] Clearing status update queue.');
+      clearStatusUpdateQueue();
+    } else {
+      console.log('[ChatProvider] No updates made, not clearing queue yet.');
+    }
+  }, [statusUpdateQueue, setAllChats, clearStatusUpdateQueue]);
+
   const updateAllChats = useCallback(
     (connectionId: number, messages: ChatMessageResponseDTO[], replace: boolean = false) => {
       setAllChats((prev) => {
@@ -167,6 +236,33 @@ const ChatProviderInner = ({
     []
   );
 
+  const updateMessageStatus = useCallback(
+    (connectionId: number, messageId: number, eventType: MessageEventTypeEnum, timestamp: string) => {
+      setAllChats((prevAllChats) => {
+        if (!prevAllChats[connectionId]) return prevAllChats;
+
+        const updatedMessages = prevAllChats[connectionId].map((msg) => {
+          if (msg.messageId === messageId) {
+            return {
+              ...msg,
+              event: {
+                type: eventType,
+                timestamp,
+              },
+            };
+          }
+          return msg;
+        });
+
+        return {
+          ...prevAllChats,
+          [connectionId]: updatedMessages,
+        };
+      });
+    },
+    []
+  );
+
   // Create a stable context value
   const contextValue = useMemo(
     () => ({
@@ -179,6 +275,7 @@ const ChatProviderInner = ({
       sendTypingIndicator,
       sendMarkRead,
       updateAllChats,
+      updateMessageStatus,
     }),
     [
       chatDisplays,
@@ -190,6 +287,7 @@ const ChatProviderInner = ({
       sendTypingIndicator,
       sendMarkRead,
       updateAllChats,
+      updateMessageStatus,
     ]
   );
 

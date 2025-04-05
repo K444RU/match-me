@@ -1,4 +1,9 @@
-import { ChatMessageResponseDTO, ChatPreviewResponseDTO, MessagesSendRequestDTO } from '@/api/types';
+import {
+  ChatMessageResponseDTO,
+  ChatPreviewResponseDTO,
+  MessageEventTypeEnum,
+  MessagesSendRequestDTO,
+} from '@/api/types';
 import { createContext, useContext } from 'react';
 
 export interface ChatContextType {
@@ -11,6 +16,12 @@ export interface ChatContextType {
   sendTypingIndicator: (connectionId: number) => void;
   sendMarkRead: (connectionId: number) => void;
   updateAllChats: (connectionId: number, messages: ChatMessageResponseDTO[], replace?: boolean) => void;
+  updateMessageStatus: (
+    connectionId: number,
+    messageId: number,
+    eventType: MessageEventTypeEnum,
+    timestamp: string
+  ) => void;
 }
 
 // Default values for the context to avoid null checks
@@ -34,6 +45,9 @@ const defaultContext: ChatContextType = {
     console.warn('ChatContext not initialized');
   },
   updateAllChats: () => {
+    console.warn('ChatContext not initialized');
+  },
+  updateMessageStatus: () => {
     console.warn('ChatContext not initialized');
   },
 };

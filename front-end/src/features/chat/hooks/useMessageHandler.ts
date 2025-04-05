@@ -1,18 +1,18 @@
 import { ChatMessageResponseDTO, MessagesSendRequestDTO } from '@/api/types';
 import { User } from '@/features/authentication';
-import { useCallback } from 'react';
+import { MutableRefObject, useCallback } from 'react';
 import { Client, IMessage } from 'react-stomp-hooks';
 import { MessageStatusUpdateDTO } from '../types/MessageStatusUpdateDTO';
 
 interface UseMessageHandlerProps {
-  stompClient: Client | undefined;
+  stompClientRef: MutableRefObject<Client | undefined>;
   currentUser: User;
   onMessageReceived: (message: ChatMessageResponseDTO) => void;
   onMessageStatusUpdateReceived: (message: MessageStatusUpdateDTO) => void;
 }
 
 export default function useMessageHandler({
-  stompClient,
+  stompClientRef,
   currentUser,
   onMessageReceived,
   onMessageStatusUpdateReceived,
@@ -37,12 +37,18 @@ export default function useMessageHandler({
   const handleMessageStatusUpdate = useCallback(
     (message: IMessage) => {
       try {
-        const data = JSON.parse(message.body) as MessageStatusUpdateDTO;
-        if (!data || typeof data !== 'object') {
-          console.warn('Received invalid message status format', message.body);
-          return;
+        const parsedData = JSON.parse(message.body);
+
+        // Handle potential array format
+        const dataArray = Array.isArray(parsedData) ? parsedData : [parsedData];
+
+        for (const data of dataArray) {
+          if (!data || typeof data !== 'object' || !data.messageId || !data.connectionId || !data.type) {
+            console.warn('Received invalid message status object format', data);
+            continue; // Skip this invalid object
+          }
+          onMessageStatusUpdateReceived(data as MessageStatusUpdateDTO);
         }
-        onMessageStatusUpdateReceived(data);
       } catch (error) {
         console.error('Error parsing message status:', error, message.body);
       }
@@ -52,7 +58,7 @@ export default function useMessageHandler({
 
   const sendMessage = useCallback(
     async (message: MessagesSendRequestDTO): Promise<void> => {
-      if (!stompClient?.connected) {
+      if (!stompClientRef.current?.connected) {
         console.error('Cannot send message: WebSocket not connected');
         throw new Error('WebSocket not connected');
       }
@@ -72,7 +78,7 @@ export default function useMessageHandler({
             throw new Error(`Invalid connectionId: ${message.connectionId}`);
           }
 
-          stompClient.publish({
+          stompClientRef.current?.publish({
             destination: '/app/chat.sendMessage',
             body: JSON.stringify(message),
             headers: {
@@ -87,17 +93,17 @@ export default function useMessageHandler({
         }
       });
     },
-    [stompClient, currentUser]
+    [stompClientRef, currentUser]
   );
 
   const sendMarkRead = useCallback(
     (connectionId: number) => {
-      if (!stompClient?.connected || !currentUser?.id) {
+      if (!stompClientRef.current?.connected || !currentUser?.id) {
         console.error('Cannot send markRead: STOMP client not connected or no user ID.');
         return;
       }
       try {
-        stompClient.publish({
+        stompClientRef.current?.publish({
           destination: '/app/chat.markRead',
           body: JSON.stringify({ connectionId: connectionId.toString() }),
         });
@@ -105,7 +111,7 @@ export default function useMessageHandler({
         console.error(`Error sending markRead for connection ${connectionId}:`, error);
       }
     },
-    [stompClient, currentUser?.id]
+    [stompClientRef, currentUser?.id]
   );
 
   return { handleMessage, handleMessageStatusUpdate, sendMessage, sendMarkRead };
