@@ -17,21 +17,25 @@ export default function OpenChat() {
   const chatContext = useContext(ChatContext);
   const openChat = chatContext?.openChat || null;
 
+  const connectionId = openChat?.connectionId;
+  const updateAllChats = chatContext.updateAllChats;
+  const allChats = chatContext.allChats;
+
   useEffect(() => {
     setChatMessages([]);
 
     const fetchMessages = async () => {
-      if (!openChat || !user) return;
+      if (!connectionId || !user) return;
 
       setLoading(true);
 
       // check if chat is in context already
-      if (chatContext?.allChats[openChat.connectionId]) {
-        setChatMessages(chatContext.allChats[openChat.connectionId]);
+      if (allChats[connectionId]) {
+        setChatMessages(allChats[connectionId]);
         setLoading(false);
       } else {
         try {
-          const messagesResponse = await chatService.getChatMessages(openChat.connectionId);
+          const messagesResponse = await chatService.getChatMessages(connectionId);
 
           if (!messagesResponse) {
             setChatMessages([]);
@@ -41,8 +45,8 @@ export default function OpenChat() {
           const sortedMessages = messagesResponse.reverse();
           setChatMessages(sortedMessages);
 
-          if (chatContext?.updateAllChats) {
-            chatContext.updateAllChats(openChat.connectionId, sortedMessages, true);
+          if (updateAllChats) {
+            updateAllChats(connectionId, sortedMessages, true);
           }
         } catch (error) {
           console.error('Error fetching messages:', error);
@@ -53,7 +57,7 @@ export default function OpenChat() {
     };
 
     fetchMessages();
-  }, [openChat, user, chatContext]);
+  }, [connectionId, user, updateAllChats, allChats]);
 
   // Early return if no context, user or open chat
   if (!chatContext) return null;
