@@ -59,6 +59,12 @@ export default function OpenChat() {
     fetchMessages();
   }, [connectionId, user, updateAllChats, allChats]);
 
+  useEffect(() => {
+    if (connectionId && allChats[connectionId]) {
+      setChatMessages(allChats[connectionId]);
+    }
+  }, [allChats, connectionId]);
+
   // Early return if no context, user or open chat
   if (!chatContext) return null;
   if (!user) return null;
