@@ -7,6 +7,7 @@ import useMessageHandler from '../hooks/useMessageHandler';
 import useOnlineIndicator from '../hooks/useOnlineIndicator';
 import useSubscriptionManager from '../hooks/useSubscriptionManager';
 import useTypingIndicator from '../hooks/useTypingIndicator';
+import { MessageStatusUpdateDTO } from '../types/MessageStatusUpdateDTO';
 import { WebSocketContext } from './websocket-context';
 
 interface WebSocketConnectionManagerProps {
@@ -48,16 +49,35 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
     setMessageQueue((prevQueue) => [...prevQueue, message]);
   }, []);
 
+  const handleNewMessageStatusUpdate = useCallback((statusUpdate: MessageStatusUpdateDTO) => {
+    console.log('🔄 ConnectionManager: Updating message status:', statusUpdate);
+    setMessageQueue((prevQueue) => {
+      return prevQueue.map((msg) => {
+        if (msg.messageId === statusUpdate.messageId && msg.connectionId === statusUpdate.connectionId) {
+          return {
+            ...msg,
+            event: {
+              type: statusUpdate.type,
+              timestamp: statusUpdate.timestamp,
+            },
+          };
+        }
+        return msg;
+      });
+    });
+  }, []);
+
   const clearMessageQueue = useCallback(() => {
     console.log('🧹 ConnectionManager: Clearing message queue');
     setMessageQueue([]); // Reset the queue to an empty array
   }, []);
 
   // Create stable handlers first
-  const { handleMessage, sendMessage, sendMarkRead } = useMessageHandler({
+  const { handleMessage, handleMessageStatusUpdate, sendMessage, sendMarkRead } = useMessageHandler({
     stompClient,
     currentUser,
     onMessageReceived: handleNewMessage,
+    onMessageStatusUpdateReceived: handleNewMessageStatusUpdate,
   });
 
   const { typingUsers, handleTypingIndicator, sendTypingIndicator } = useTypingIndicator({
@@ -74,6 +94,7 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
     userId: currentUser?.id,
     stompClient,
     handleMessage,
+    handleMessageStatusUpdate,
     handleTypingIndicator,
     handleChatPreviews,
     handleOnlineIndicator,

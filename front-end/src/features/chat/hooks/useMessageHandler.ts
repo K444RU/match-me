@@ -2,14 +2,21 @@ import { ChatMessageResponseDTO, MessagesSendRequestDTO } from '@/api/types';
 import { User } from '@/features/authentication';
 import { useCallback } from 'react';
 import { Client, IMessage } from 'react-stomp-hooks';
+import { MessageStatusUpdateDTO } from '../types/MessageStatusUpdateDTO';
 
 interface UseMessageHandlerProps {
   stompClient: Client | undefined;
   currentUser: User;
   onMessageReceived: (message: ChatMessageResponseDTO) => void;
+  onMessageStatusUpdateReceived: (message: MessageStatusUpdateDTO) => void;
 }
 
-export default function useMessageHandler({ stompClient, currentUser, onMessageReceived }: UseMessageHandlerProps) {
+export default function useMessageHandler({
+  stompClient,
+  currentUser,
+  onMessageReceived,
+  onMessageStatusUpdateReceived,
+}: UseMessageHandlerProps) {
   const handleMessage = useCallback((message: IMessage) => {
     // Parse message and update state logic
     try {
@@ -26,6 +33,22 @@ export default function useMessageHandler({ stompClient, currentUser, onMessageR
       console.error('Error parsing message:', error, message.body);
     }
   }, []);
+
+  const handleMessageStatusUpdate = useCallback(
+    (message: IMessage) => {
+      try {
+        const data = JSON.parse(message.body) as MessageStatusUpdateDTO;
+        if (!data || typeof data !== 'object') {
+          console.warn('Received invalid message status format', message.body);
+          return;
+        }
+        onMessageStatusUpdateReceived(data);
+      } catch (error) {
+        console.error('Error parsing message status:', error, message.body);
+      }
+    },
+    [onMessageStatusUpdateReceived]
+  );
 
   const sendMessage = useCallback(
     async (message: MessagesSendRequestDTO): Promise<void> => {
@@ -88,5 +111,5 @@ export default function useMessageHandler({ stompClient, currentUser, onMessageR
     [stompClient, currentUser?.id]
   );
 
-  return { handleMessage, sendMessage, sendMarkRead };
+  return { handleMessage, handleMessageStatusUpdate, sendMessage, sendMarkRead };
 }

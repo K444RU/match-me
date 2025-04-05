@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 public class MessageStatusUpdateDTO {
   private Long messageId;
   private Long connectionId;
-  private MessageEventTypeEnum status;
+  private MessageEventTypeEnum type;
   private Instant timestamp;
 }

@@ -325,14 +325,16 @@ public class ChatService {
         List<UserMessage> messagesToMarkRead =
             userMessageRepository.findMessagesToMarkAsRead(connectionId, userId, MessageEventTypeEnum.READ);
 
+        User otherParticipant = findOtherParticipant(connection, userId);
+
         if (!messagesToMarkRead.isEmpty()) {
         Instant now = Instant.now();
         List<MessageEvent> readEvents = new ArrayList<>();
         List<MessageStatusUpdateDTO> statusUpdates = new ArrayList<>();
 
         for (UserMessage message : messagesToMarkRead) {
-            if (!message.getSender().getId().equals(userId)) {
-                log.warn("Attempted to mark message {} as read, but it wasn't sent by the expected sender {}. Skipping.", message.getId(), userId);
+            if (message.getSender().getId().equals(userId)) {
+                log.warn("Attempted to mark message {} as read, but we were the sender {}. Skipping.", message.getId(), userId);
                 continue;
             }
 
@@ -349,30 +351,34 @@ public class ChatService {
                 now
             );
             statusUpdates.add(statusUpdate);
-            log.trace("Queued READ status update for msg {} to sender {}", message.getId(), userId);
+            log.trace("Queued READ status update for msg {} to sender {}", message.getId(), message.getSender().getId());
         }
         messageEventRepository.saveAll(readEvents);
         log.info("Saved {} READ events for reader {} in connection {}", readEvents.size(), userId, connectionId);
 
-        if (!statusUpdates.isEmpty()) {
-            messagingTemplate.convertAndSendToUser(userId.toString(), MESSAGE_STATUS_QUEUE, statusUpdates);
-            log.info("Sent {} READ status updates to sender {}", statusUpdates.size(), userId);
+        if (otherParticipant == null) {
+            // Handle this error appropriately, maybe log and don't send notifications
+             log.error("Cannot find sender to notify for read status in connection {}. Reader: {}", connectionId, userId);
+        } else {
+            Long senderId = otherParticipant.getId(); // The user who needs the notification
+
+            if (!statusUpdates.isEmpty()) {
+                messagingTemplate.convertAndSendToUser(senderId.toString(), MESSAGE_STATUS_QUEUE, statusUpdates);
+                log.info("Sent {} READ status updates to sender {}", statusUpdates.size(), senderId);
+            }
         }
         }
 
         ChatPreviewResponseDTO preview = new ChatPreviewResponseDTO();
         preview.setConnectionId(connectionId);
 
-        User otherParticipant = findOtherParticipant(connection, userId);
-
-        if (otherParticipant == null) {
-            throw new IllegalStateException("Cannot mark read without other participant. Connection: " + connectionId);
+        if (otherParticipant != null) { // Check again in case of error above
+            preview.setConnectedUserId(otherParticipant.getId());
+            fillParticipantDetails(preview, otherParticipant);
+       } else {
+            preview.setConnectedUserId(null);
+            preview.setConnectedUserAlias("UNKNOWN");
        }
-
-       Long senderId = otherParticipant.getId();
-
-        preview.setConnectedUserId(otherParticipant.getId());
-        fillParticipantDetails(preview, otherParticipant);
 
         UserMessage lastMessage =
             userMessageRepository.findTopByConnectionIdOrderByCreatedAtDesc(connection.getId());
