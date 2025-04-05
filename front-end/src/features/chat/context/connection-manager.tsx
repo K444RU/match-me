@@ -45,12 +45,10 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
   }, [stompClient?.connected, isConnected]);
 
   const handleNewMessage = useCallback((message: ChatMessageResponseDTO) => {
-    console.log('🔄 ConnectionManager: Adding message to queue:', message);
     setMessageQueue((prevQueue) => [...prevQueue, message]);
   }, []);
 
   const handleNewMessageStatusUpdate = useCallback((statusUpdate: MessageStatusUpdateDTO) => {
-    console.log('🔄 ConnectionManager: Updating message status:', statusUpdate);
     setMessageQueue((prevQueue) => {
       return prevQueue.map((msg) => {
         if (msg.messageId === statusUpdate.messageId && msg.connectionId === statusUpdate.connectionId) {
@@ -68,7 +66,6 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
   }, []);
 
   const clearMessageQueue = useCallback(() => {
-    console.log('🧹 ConnectionManager: Clearing message queue');
     setMessageQueue([]); // Reset the queue to an empty array
   }, []);
 

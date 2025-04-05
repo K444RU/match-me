@@ -136,7 +136,6 @@ export default function useSubscriptionManager({
 
     // Don't re-subscribe if already subscribed
     if (isSubscribedRef.current && Object.keys(subscriptionsRef.current).length > 0) {
-      console.log('Subscriptions already set up, skipping');
       return;
     }
 
@@ -144,13 +143,10 @@ export default function useSubscriptionManager({
     clearSubscriptions();
 
     try {
-      console.log('Setting up WebSocket subscriptions for user:', userId);
-
       // Subscribe to channels
       subscriptionsRef.current.pong = stompClientRef.current.subscribe(
         `/user/${userId}/queue/pong`,
         (message: IMessage) => {
-          console.log('PONG RECEIVED:', message.body);
           lastPingRef.current = Date.now();
         }
       );
@@ -171,14 +167,12 @@ export default function useSubscriptionManager({
 
       subscriptionsRef.current.online = stompClientRef.current.subscribe(`/user/${userId}/queue/online`, (message) => {
         handlersRef.current.handleOnlineIndicator(message);
-        console.log('ONLINE RECEIVED:', message.body);
       });
 
       subscriptionsRef.current.messageStatus = stompClientRef.current.subscribe(
         `/user/${userId}/queue/messageStatus`,
         (message) => {
           handlersRef.current.handleMessageStatusUpdate(message);
-          console.log('MESSAGE STATUS UPDATE:', message.body);
         }
       );
 
@@ -204,7 +198,6 @@ export default function useSubscriptionManager({
     const timeSinceLastChange = Date.now() - lastConnectionChangeRef.current;
 
     if (timeSinceLastChange < 2000) {
-      console.log('Connection state recently changed, avoiding reconnect');
       return;
     }
 

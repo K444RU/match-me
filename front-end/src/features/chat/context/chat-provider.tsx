@@ -73,11 +73,8 @@ const ChatProviderInner = ({
   // Merge websocket previews into our state when they change
   useEffect(() => {
     if (!chatPreviews?.length) {
-      console.log('No websocket chat previews to process');
       return;
     }
-
-    console.log('Merging websocket previews into state:', chatPreviews.length);
 
     setChatDisplays((prevChats) => {
       // Fast lookup map
@@ -91,7 +88,6 @@ const ChatProviderInner = ({
       }
 
       const mergedChats = Array.from(chatMap.values());
-      console.log('Merged chats result:', mergedChats.length);
 
       // Sort by timestamp (newest first)
       return mergedChats.sort((a, b) => {

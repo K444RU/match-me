@@ -93,7 +93,6 @@ export default function OpenChat() {
     try {
       // Only use WebSocket if already connected
       if (connected) {
-        console.log('🚀 Sending message via WebSocket');
         try {
           await sendWebSocketMessage(messageDTO);
         } catch (wsError) {

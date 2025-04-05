@@ -5,7 +5,6 @@ const meController = getMeController();
 
 export const meService = {
   getUserParameters: async (): Promise<SettingsResponseDTO> => {
-    console.log('📡 Fetching user parameters via JWT');
     try {
       const response = await meController.getParameters();
       return response;

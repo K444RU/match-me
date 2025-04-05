@@ -23,7 +23,6 @@ export default function useTypingIndicator({ stompClient, currentUser }: UseTypi
 
   const handleTypingIndicator = useCallback((message: IMessage) => {
     try {
-      console.log('Typing indicator received:', message.body);
       const data = JSON.parse(message.body) as TypingStatusRequestDTO;
 
       // Validate data
@@ -57,10 +56,9 @@ export default function useTypingIndicator({ stompClient, currentUser }: UseTypi
   const sendTypingIndicator = useCallback(
     (connectionId: number) => {
       if (!stompClient?.connected || !currentUser?.id) {
-        console.log('Cannot send typing indicator: WebSocket not connected or user not available');
         return;
       }
-      console.log('Sending typing indicator:', connectionId);
+
       // Throttle typing events - only send once per second per connection
       const now = Date.now();
       const connectionKey = String(connectionId);
@@ -86,7 +84,6 @@ export default function useTypingIndicator({ stompClient, currentUser }: UseTypi
       };
 
       try {
-        console.log('Sending typing indicator:', typingData);
         stompClient.publish({
           destination: '/app/chat.typing',
           body: JSON.stringify(typingData),

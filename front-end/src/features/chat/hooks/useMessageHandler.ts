@@ -72,8 +72,6 @@ export default function useMessageHandler({
             throw new Error(`Invalid connectionId: ${message.connectionId}`);
           }
 
-          console.log('Sending message:', message);
-
           stompClient.publish({
             destination: '/app/chat.sendMessage',
             body: JSON.stringify(message),
@@ -103,7 +101,6 @@ export default function useMessageHandler({
           destination: '/app/chat.markRead',
           body: JSON.stringify({ connectionId: connectionId.toString() }),
         });
-        console.log(`Sent markRead for connection ${connectionId}`);
       } catch (error) {
         console.error(`Error sending markRead for connection ${connectionId}:`, error);
       }

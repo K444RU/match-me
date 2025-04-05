@@ -86,7 +86,7 @@ const RegisterForm = () => {
         // otherwise it is just the normal /profile page.
         // navigate('/profile');
         // setShowOverlay(false);
-        console.log(res);
+
         setResState('success');
         setResTitle('Nice! You have been registered.');
         setResSubtitle('Please verify your email.');

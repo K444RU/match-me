@@ -48,7 +48,7 @@ const UnifiedForm = () => {
       await genderService
         .getGenders()
         .then((genders) => setGenderOptions(genders))
-        .catch((err) => console.log('Failed to load gender options: ', err));
+        .catch((err) => 
     };
     fetchGenders();
   }, []);
