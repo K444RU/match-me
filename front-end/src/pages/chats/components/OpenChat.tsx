@@ -80,6 +80,10 @@ export default function OpenChat() {
       messageId: -(chatMessages.length + 1),
       senderAlias: user.alias || '',
       senderId: user.id || 0,
+      event: {
+        type: 'SENT',
+        timestamp: new Date().toISOString(),
+      },
     };
 
     if (chatContext?.updateAllChats) {
