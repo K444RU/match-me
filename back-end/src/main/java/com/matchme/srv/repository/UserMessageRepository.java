@@ -1,5 +1,6 @@
 package com.matchme.srv.repository;
 
+import com.matchme.srv.model.message.MessageEventTypeEnum;
 import com.matchme.srv.model.message.UserMessage;
 
 import java.util.List;
@@ -28,10 +29,10 @@ public interface UserMessageRepository extends JpaRepository<UserMessage, Long> 
               SELECT 1
               FROM MessageEvent ev
               WHERE ev.message = msg
-                AND ev.messageEventType.name = 'READ'
+                AND ev.messageEventType = :messageEventType
             )
       """)
-  int countUnreadMessages(@Param("connectionId") Long connectionId, @Param("userId") Long userId);
+  int countUnreadMessages(@Param("connectionId") Long connectionId, @Param("userId") Long userId, @Param("messageEventType") MessageEventTypeEnum messageEventType);
 
     /**
    * Finds messages in a connection sent by others that the recipient hasn't read yet.
@@ -50,8 +51,8 @@ public interface UserMessageRepository extends JpaRepository<UserMessage, Long> 
           SELECT 1
           FROM MessageEvent ev
           WHERE ev.message = m
-            AND ev.messageEventType.name = 'READ'
+            AND ev.messageEventType = :messageEventType
         )
       """)
-  List<UserMessage> findMessagesToMarkAsRead(@Param("connectionId") Long connectionId, @Param("userId") Long userId);
+  List<UserMessage> findMessagesToMarkAsRead(@Param("connectionId") Long connectionId, @Param("userId") Long userId, @Param("messageEventType") MessageEventTypeEnum messageEventType);
 }

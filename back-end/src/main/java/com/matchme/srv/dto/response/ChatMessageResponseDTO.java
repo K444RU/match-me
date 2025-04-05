@@ -21,6 +21,6 @@ public class ChatMessageResponseDTO {
     @NotNull private String senderAlias;
     @NotNull private String content;
     @NotNull private Instant createdAt;
-    //toDo: we might add MessageEventType here as well?
+    @NotNull private MessageEventDTO event;
 }
 
