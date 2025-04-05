@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   backend-tests:
-    name: Backend Tests
+    name: Backend
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
@@ -59,7 +59,7 @@ jobs:
           retention-days: 5
 
   frontend-tests:
-    name: Frontend Tests
+    name: Frontend
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
