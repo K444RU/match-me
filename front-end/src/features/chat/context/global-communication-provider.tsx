@@ -1,19 +1,21 @@
-import { ChatPreviewResponseDTO } from '@/api/types';
-import { useAuth } from '@/features/authentication';
-import { useWebSocket, WebSocketProvider } from '@/features/chat';
-import { chatService } from '@/features/chat/';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChatContext } from './chat-context';
+import {ChatPreviewResponseDTO} from '@/api/types';
+import {useAuth} from '@/features/authentication';
+import {useWebSocket, WebSocketProvider} from '@/features/chat';
+import {chatService} from '@/features/chat/';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {CommunicationContext} from './communication-context.ts';
+import {ConnectionUpdateMessage} from "@features/chat/types";
 
-interface ChatProviderProps {
+interface GlobalCommunicationProviderProps {
   children: React.ReactNode;
   wsUrl: string;
 }
 
-export const ChatProvider = ({ children, wsUrl }: ChatProviderProps) => {
+export const GlobalCommunicationProvider = ({ children, wsUrl }: GlobalCommunicationProviderProps) => {
   const { user } = useAuth();
   const [chats, setChats] = useState<ChatPreviewResponseDTO[]>([]);
   const [openChat, setOpenChat] = useState<ChatPreviewResponseDTO | null>(null);
+  const [connectionUpdates, setConnectionUpdates] = useState<ConnectionUpdateMessage[]>([]);
 
   const refreshChats = useCallback(async () => {
     if (!user) return;
@@ -27,39 +29,52 @@ export const ChatProvider = ({ children, wsUrl }: ChatProviderProps) => {
 
   return (
     <WebSocketProvider wsUrl={wsUrl}>
-      <ChatProviderInner
+      <GlobalCommunicationProviderInner
         refreshChats={refreshChats}
         chats={chats}
         openChat={openChat}
         setChats={setChats}
         setOpenChat={setOpenChat}
+        connectionUpdates={connectionUpdates}
+        setConnectionUpdates={setConnectionUpdates}
       >
         {children}
-      </ChatProviderInner>
+      </GlobalCommunicationProviderInner>
     </WebSocketProvider>
   );
 };
 
-interface ChatProviderInnerProps {
+interface GlobalCommunicationProviderInnerProps {
   refreshChats: () => void;
   chats: ChatPreviewResponseDTO[];
   openChat: ChatPreviewResponseDTO | null;
   setChats: React.Dispatch<React.SetStateAction<ChatPreviewResponseDTO[]>>;
   setOpenChat: React.Dispatch<React.SetStateAction<ChatPreviewResponseDTO | null>>;
+  connectionUpdates: ConnectionUpdateMessage[];
+  setConnectionUpdates: React.Dispatch<React.SetStateAction<ConnectionUpdateMessage[]>>;
   children: React.ReactNode;
 }
 
-const ChatProviderInner = ({
+const GlobalCommunicationProviderInner = ({
   refreshChats,
   chats,
   openChat,
   setChats,
   setOpenChat,
+  connectionUpdates,
+  setConnectionUpdates,
   children,
-}: ChatProviderInnerProps) => {
+}: GlobalCommunicationProviderInnerProps) => {
   // Get websocket values (which include incoming chat previews and send functions)
-  const { chatPreviews, sendMessage, sendTypingIndicator } = useWebSocket();
-
+    const {
+        chatPreviews,
+        sendMessage,
+        sendTypingIndicator,
+        connectionUpdates: wsConnectionUpdates,
+        sendConnectionRequest,
+        acceptConnectionRequest,
+        rejectConnectionRequest,
+        disconnectConnection } = useWebSocket();
   // Load initial data once when connected
   useEffect(() => {
     refreshChats();
@@ -107,6 +122,12 @@ const ChatProviderInner = ({
     }
   }, [chatPreviews, openChat, setOpenChat]);
 
+    useEffect(() => {
+        if (wsConnectionUpdates?.length) {
+            setConnectionUpdates((prev) => [...prev, ...wsConnectionUpdates]);
+        }
+    }, [wsConnectionUpdates, setConnectionUpdates]);
+
   // Create a stable context value
   const contextValue = useMemo(
     () => ({
@@ -116,9 +137,13 @@ const ChatProviderInner = ({
       setOpenChat,
       sendMessage,
       sendTypingIndicator,
+      connectionUpdates,
+      sendConnectionRequest,
+      acceptConnectionRequest,
+      rejectConnectionRequest,
+      disconnectConnection,
     }),
-    [chats, openChat, refreshChats, setOpenChat, sendMessage, sendTypingIndicator]
-  );
+      [chats, openChat, refreshChats, setOpenChat, sendMessage, sendTypingIndicator, connectionUpdates, sendConnectionRequest, acceptConnectionRequest, rejectConnectionRequest, disconnectConnection]  );
 
-  return <ChatContext.Provider value={contextValue}>{children}</ChatContext.Provider>;
+  return <CommunicationContext.Provider value={contextValue}>{children}</CommunicationContext.Provider>;
 };

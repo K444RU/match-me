@@ -2,7 +2,7 @@ import { ChatMessageResponseDTO, MessagesSendRequestDTO } from '@/api/types';
 import Button from '@/components/ui/buttons/Button';
 import InputField from '@/components/ui/forms/InputField';
 import { useAuth } from '@/features/authentication';
-import { ChatContext, chatService, useWebSocket } from '@/features/chat';
+import { CommunicationContext, chatService, useWebSocket } from '@/features/chat';
 import { useContext, useEffect, useState } from 'react';
 import Message from './Message';
 import { NoChat } from './NoChat';
@@ -16,7 +16,7 @@ export default function OpenChat() {
   // Get WebSocket context for sending messages via WebSocket
   const { connected, sendMessage: sendWebSocketMessage, sendTypingIndicator, reconnect } = useWebSocket();
 
-  const chatContext = useContext(ChatContext);
+  const chatContext = useContext(CommunicationContext);
   const openChat = chatContext?.openChat || null;
 
   // Only reconnect if the WebSocket is disconnected

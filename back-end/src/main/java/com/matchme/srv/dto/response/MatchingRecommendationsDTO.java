@@ -20,5 +20,7 @@ public class MatchingRecommendationsDTO {
     @NotNull private Integer distance;
     private Set<String> hobbies;
     @NotNull private Double probability;
+    private String connectionStatus;
+    private Long connectionId;
   }
 }

@@ -3,7 +3,7 @@ import MotionSpinner from '@/components/animations/MotionSpinner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { connectionService } from '@/features/chat';
+import {connectionService, useCommunication} from '@/features/chat';
 import { UserPlus } from 'lucide-react';
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -32,6 +32,7 @@ const RecommendationsDialog = ({
   setIsOpen: Dispatch<SetStateAction<boolean>>;
   isOpen: boolean;
 }) => {
+  const { sendConnectionRequest } = useCommunication();
   const [recommendations, setRecommendations] = useState<MatchingRecommendationsDTO>();
   const [connectionStates, setConnectionStates] = useState<ConnectionState>({});
 
@@ -43,15 +44,14 @@ const RecommendationsDialog = ({
           setRecommendations(result);
         }
       };
-
       fetchData();
     }
   }, [isOpen]);
 
   const handleSendConnectionRequest = useCallback(async (userId: number) => {
     try {
-      // TODO: Add send connection request functionality
       setConnectionStates((prev) => ({ ...prev, [userId]: 'loading' }));
+      sendConnectionRequest(userId);
       setTimeout(() => {
         console.log(`Sent request to: ${userId}`);
         setConnectionStates((prev) => ({ ...prev, [userId]: 'sent' }));
@@ -61,7 +61,7 @@ const RecommendationsDialog = ({
       console.error('Error sending a connection request:', error);
       setConnectionStates((prev) => ({ ...prev, [userId]: 'idle' }));
     }
-  }, []);
+  }, [sendConnectionRequest]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

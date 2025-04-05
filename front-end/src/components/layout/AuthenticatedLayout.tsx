@@ -1,5 +1,5 @@
 import { useAuth } from '@/features/authentication';
-import { ChatProvider } from '@/features/chat/';
+import { GlobalCommunicationProvider } from '@/features/chat/';
 import { Outlet } from 'react-router-dom';
 import { SidebarProvider } from '../ui/sidebar';
 
@@ -11,12 +11,12 @@ export default function AuthenticatedLayout() {
   if (!user) return;
 
   return (
-    <ChatProvider wsUrl={WS_URL}>
+    <GlobalCommunicationProvider wsUrl={WS_URL}>
       <SidebarProvider>
         <div className="flex h-screen w-screen overflow-hidden">
           <Outlet />
         </div>
       </SidebarProvider>
-    </ChatProvider>
+    </GlobalCommunicationProvider>
   );
 }

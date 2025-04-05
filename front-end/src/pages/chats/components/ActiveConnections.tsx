@@ -1,8 +1,8 @@
-import { CurrentUserResponseDTO } from '@/api/types';
-import { useAuth } from '@features/authentication';
-import { disconnectConnection, getConnections } from '@features/chat';
-import { userService } from '@features/user';
-import { useEffect, useState } from 'react';
+import {CurrentUserResponseDTO} from '@/api/types';
+import {useAuth} from '@features/authentication';
+import {getConnections, useCommunication} from '@features/chat';
+import {userService} from '@features/user';
+import {useEffect, useState} from 'react';
 
 interface ConnectionProvider {
   connectionId: number;
@@ -11,6 +11,7 @@ interface ConnectionProvider {
 
 export default function ActiveConnections() {
   const { user } = useAuth();
+  const { connectionUpdates, disconnectConnection } = useCommunication();
   const [activeConnections, setActiveConnections] = useState<ConnectionProvider[]>([]);
   const [userData, setUserData] = useState<{ [key: string]: CurrentUserResponseDTO }>({});
 
@@ -43,13 +44,20 @@ export default function ActiveConnections() {
     })();
   }, [user]);
 
-  const handleDisconnect = async (connectionId: number) => {
-    try {
-      await disconnectConnection(connectionId.toString(), user!.token);
-      setActiveConnections(activeConnections.filter((connection) => connection.connectionId !== connectionId));
-    } catch (error) {
-      console.error('Failed to disconnect:', error);
-    }
+  useEffect(() => {
+    connectionUpdates.forEach((update) => {
+      if (update.action === 'REQUEST_ACCEPTED') {
+        setActiveConnections((prev) => [...prev, update.connection]);
+      } else if (update.action === 'DISCONNECTED') {
+        setActiveConnections((prev) =>
+            prev.filter((conn) => conn.connectionId !== update.connection.connectionId)
+        );
+      }
+    });
+  }, [connectionUpdates]);
+
+  const handleDisconnect = (connectionId: number) => {
+    disconnectConnection(connectionId);
   };
 
   return (

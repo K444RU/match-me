@@ -1,8 +1,8 @@
-import { CurrentUserResponseDTO } from '@/api/types';
-import { userService } from '@/features/user';
-import { useAuth } from '@features/authentication';
-import { acceptConnection, getConnections, rejectConnection } from '@features/chat';
-import { useEffect, useState } from 'react';
+import {CurrentUserResponseDTO} from '@/api/types';
+import {userService} from '@/features/user';
+import {useAuth} from '@features/authentication';
+import {getConnections, useCommunication} from '@features/chat';
+import {useEffect, useState} from 'react';
 
 interface ConnectionProvider {
   connectionId: number;
@@ -11,6 +11,7 @@ interface ConnectionProvider {
 
 export default function ConnectionRequestHandler() {
   const { user } = useAuth();
+  const { connectionUpdates, acceptConnectionRequest, rejectConnectionRequest } = useCommunication();
   const [pendingIncomingIds, setPendingIncomingIds] = useState<ConnectionProvider[]>([]);
   const [userData, setUserData] = useState<{ [key: string]: CurrentUserResponseDTO }>({});
 
@@ -43,22 +44,24 @@ export default function ConnectionRequestHandler() {
     })();
   }, [user]);
 
-  const handleAccept = async (connectionId: number) => {
-    try {
-      await acceptConnection(connectionId.toString(), user!.token);
-      setPendingIncomingIds(pendingIncomingIds.filter((request) => request.connectionId !== connectionId));
-    } catch (error) {
-      console.error('Failed to accept connection:', error);
-    }
+  useEffect(() => {
+    connectionUpdates.forEach((update) => {
+      if (update.action === 'NEW_REQUEST') {
+        setPendingIncomingIds((prev) => [...prev, update.connection]);
+      } else if (['REQUEST_ACCEPTED', 'REQUEST_REJECTED'].includes(update.action)) {
+        setPendingIncomingIds((prev) =>
+            prev.filter((req) => req.connectionId !== update.connection.connectionId)
+        );
+      }
+    });
+  }, [connectionUpdates]);
+
+  const handleAccept = (connectionId: number) => {
+    acceptConnectionRequest(connectionId);
   };
 
-  const handleReject = async (connectionId: number) => {
-    try {
-      await rejectConnection(connectionId.toString(), user!.token);
-      setPendingIncomingIds(pendingIncomingIds.filter((request) => request.connectionId !== connectionId));
-    } catch (error) {
-      console.error('Failed to reject connection:', error);
-    }
+  const handleReject = (connectionId: number) => {
+    rejectConnectionRequest(connectionId);
   };
 
   return (

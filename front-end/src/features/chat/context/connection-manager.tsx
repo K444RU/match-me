@@ -1,6 +1,6 @@
 import { User } from '@/features/authentication/';
-import { ReactNode, useMemo } from 'react';
-import { useStompClient } from 'react-stomp-hooks';
+import {ReactNode, useMemo, useState} from 'react';
+import {useStompClient, useSubscription} from 'react-stomp-hooks';
 import useChatPreviewHandler from '../hooks/useChatPreviewHandler';
 import useMessageHandler from '../hooks/useMessageHandler';
 import useOnlineIndicator from '../hooks/useOnlineIndicator';
@@ -32,6 +32,13 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
 
   const { onlineUsers, handleOnlineIndicator } = useOnlineIndicator();
 
+  const [connectionUpdates, setConnectionUpdates] = useState<any[]>([]);
+
+  useSubscription(`/user/{currentUser.id}/queue/connectionUpdates`, (message) => {
+    const update = JSON.parse(message.body);
+    setConnectionUpdates((prev) => [...prev, update]);
+  });
+
   // Setup subscriptions with the handlers
   const { reconnect } = useSubscriptionManager({
     userId: currentUser?.id,
@@ -41,6 +48,50 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
     handleChatPreviews,
     handleOnlineIndicator,
   });
+
+  const sendConnectionRequest = (targetUserId: number) => {
+    if (stompClient?.connected) {
+      stompClient.publish({
+        destination: '/app/connection.sendRequest',
+        body: JSON.stringify(targetUserId),
+      });
+    } else {
+      console.error('STOMP client not connected');
+    }
+  };
+
+  const acceptConnectionRequest = (connectionId: number) => {
+    if (stompClient?.connected) {
+      stompClient.publish({
+        destination: '/app/connection.acceptRequest',
+        body: JSON.stringify(connectionId),
+      });
+    } else {
+      console.error('STOMP client not connected');
+    }
+  };
+
+  const rejectConnectionRequest = (connectionId: number) => {
+    if (stompClient?.connected) {
+      stompClient.publish({
+        destination: '/app/connection.rejectRequest',
+        body: JSON.stringify(connectionId),
+      });
+    } else {
+      console.error('STOMP client not connected');
+    }
+  };
+
+  const disconnectConnection = (connectionId: number) => {
+    if (stompClient?.connected) {
+      stompClient.publish({
+        destination: '/app/connection.disconnect',
+        body: JSON.stringify(connectionId),
+      });
+    } else {
+      console.error('STOMP client not connected');
+    }
+  };
 
   // Context value with stable identity
   const contextValue = useMemo(
@@ -53,6 +104,11 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
       typingUsers,
       onlineUsers,
       chatPreviews: chatPreviews || [],
+      connectionUpdates,
+      sendConnectionRequest,
+      acceptConnectionRequest,
+      rejectConnectionRequest,
+      disconnectConnection,
     }),
     [
       stompClient?.connected,
@@ -63,6 +119,11 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
       typingUsers,
       onlineUsers,
       chatPreviews,
+      connectionUpdates,
+      sendConnectionRequest,
+      acceptConnectionRequest,
+      rejectConnectionRequest,
+      disconnectConnection,
     ]
   );
 

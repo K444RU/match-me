@@ -9,7 +9,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { useChat } from '@/features/chat';
+import { useCommunication } from '@/features/chat';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
@@ -25,7 +25,7 @@ export default function AppSidebar({ onChatSelect }: { onChatSelect: (chat: Chat
   const [isConnectionsModalOpen, setIsConnectionsModalOpen] = useState(false);
   const [isRecommendationsModalOpen, setIsRecommendationsModalOpen] = useState(false);
 
-  const { chatPreviews } = useChat();
+  const { chatPreviews } = useCommunication();
 
   console.log('AppSidebar - chatPreviews from CHAT context:', chatPreviews);
 

@@ -1,13 +1,13 @@
 import { ChatPreviewResponseDTO } from '@/api/types';
 import { Toaster } from '@/components/ui/sonner';
-import { useChat } from '@/features/chat';
+import { useCommunication } from '@/features/chat';
 import { useEffect, useState } from 'react';
 import AppSidebar from './components/AppSidebar';
 import OpenChat from './components/OpenChat';
 
 export default function ChatsPage() {
   const [selectedChat, setSelectedChat] = useState<ChatPreviewResponseDTO | null>(null);
-  const { setOpenChat } = useChat();
+  const { setOpenChat } = useCommunication();
 
   useEffect(() => {
     setOpenChat(selectedChat ?? null);
