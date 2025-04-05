@@ -164,25 +164,19 @@ const ChatProviderInner = ({
       const newAllChats = { ...prevAllChats };
 
       for (const update of statusUpdateQueue) {
-        console.log('[ChatProvider] Processing status update:', update);
         const connectionMessages = newAllChats[update.connectionId];
         if (!connectionMessages) {
-          console.log('[ChatProvider] No messages found for connectionId:', update.connectionId);
           continue; // Chat not loaded yet
         }
 
         const messageIndex = connectionMessages.findIndex((msg) => msg.messageId === update.messageId);
         if (messageIndex === -1) {
-          console.log('[ChatProvider] Message not found for messageId:', update.messageId);
           continue; // Message not found (maybe optimistic?)
         }
 
         // Apply the update
         const existingMessage = connectionMessages[messageIndex];
-        console.log('[ChatProvider] Found existing message:', existingMessage);
-        console.log('[ChatProvider] Comparing timestamps:', existingMessage.event.timestamp, '!==', update.timestamp);
         if (existingMessage.event.timestamp !== update.timestamp) {
-          console.log('[ChatProvider] Timestamps differ, updating message event.');
           // Prevent re-processing same update if somehow duplicated
           const updatedMessage = {
             ...existingMessage,
@@ -197,22 +191,14 @@ const ChatProviderInner = ({
             ...connectionMessages.slice(messageIndex + 1),
           ];
           updated = true;
-          console.log('[ChatProvider] Message updated in newAllChats for connectionId:', update.connectionId);
-        } else {
-          console.log('[ChatProvider] Timestamps match, skipping update.');
         }
       }
-      console.log('[ChatProvider] Finished processing queue. Updated flag:', updated);
       return updated ? newAllChats : prevAllChats; // Only update state if changes were made
     });
 
     // Clear the queue after processing
-    console.log('[ChatProvider] Checking if queue needs clearing. Updated flag:', updated);
     if (updated) {
-      console.log('[ChatProvider] Clearing status update queue.');
       clearStatusUpdateQueue();
-    } else {
-      console.log('[ChatProvider] No updates made, not clearing queue yet.');
     }
   }, [statusUpdateQueue, setAllChats, clearStatusUpdateQueue]);
 

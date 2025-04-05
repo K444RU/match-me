@@ -56,7 +56,6 @@ export default function useTypingIndicator({ stompClientRef, currentUser }: UseT
   const sendTypingIndicator = useCallback(
     (connectionId: number) => {
       if (!stompClientRef.current?.connected || !currentUser?.id) {
-        console.log('Cannot send typing indicator: WebSocket not connected or user not available');
         return;
       }
 
@@ -85,7 +84,6 @@ export default function useTypingIndicator({ stompClientRef, currentUser }: UseT
       };
 
       try {
-        console.log('Sending typing indicator:', typingData);
         stompClientRef.current?.publish({
           destination: '/app/chat.typing',
           body: JSON.stringify(typingData),

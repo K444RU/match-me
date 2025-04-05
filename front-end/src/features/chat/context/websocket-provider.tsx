@@ -28,7 +28,7 @@ export const WebSocketProvider = ({ children, wsUrl }: WebSocketProviderProps) =
       url={wsUrl}
       connectHeaders={connectHeaders}
       debug={(msg: string) => {
-        console.log('STOMP DEBUG:', msg);
+        console.debug('STOMP DEBUG:', msg);
       }}
       reconnectDelay={5000}
       heartbeatIncoming={4000}
