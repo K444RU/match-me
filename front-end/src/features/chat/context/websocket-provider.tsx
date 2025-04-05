@@ -27,12 +27,14 @@ export const WebSocketProvider = ({ children, wsUrl }: WebSocketProviderProps) =
     <StompSessionProvider
       url={wsUrl}
       connectHeaders={connectHeaders}
-      debug={(msg: string) => 
+      debug={(msg: string) => {
+        console.log('STOMP DEBUG:', msg);
+      }}
       reconnectDelay={5000}
       heartbeatIncoming={4000}
       heartbeatOutgoing={4000}
       onStompError={(frame) => {
-        
+        console.error('WebSocket error:', frame);
       }}
     >
       <WebSocketConnectionManager user={currentUser}>{children}</WebSocketConnectionManager>
