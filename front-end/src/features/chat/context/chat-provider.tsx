@@ -131,6 +131,10 @@ const ChatProviderInner = ({
         const newMessages = messagesByConnection[connectionId];
         const existingMessages = newAllChats[connectionId] || [];
 
+        if (connectionId === openChat?.connectionId && newMessages.length > 0) {
+          sendMarkRead(connectionId);
+        }
+
         // filter out optimistic messages
         const existingRealMessages = existingMessages.filter((msg) => msg.messageId > 0);
 
