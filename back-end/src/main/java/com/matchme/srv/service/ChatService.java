@@ -2,16 +2,16 @@ package com.matchme.srv.service;
 
 import com.matchme.srv.dto.response.ChatMessageResponseDTO;
 import com.matchme.srv.dto.response.ChatPreviewResponseDTO;
+import com.matchme.srv.dto.response.MessageEventDTO;
 import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.model.connection.ConnectionState;
 import com.matchme.srv.model.enums.ConnectionStatus;
 import com.matchme.srv.model.message.MessageEvent;
-import com.matchme.srv.model.message.MessageEventType;
+import com.matchme.srv.model.message.MessageEventTypeEnum;
 import com.matchme.srv.model.message.UserMessage;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.repository.ConnectionRepository;
 import com.matchme.srv.repository.MessageEventRepository;
-import com.matchme.srv.repository.MessageEventTypeRepository;
 import com.matchme.srv.repository.UserMessageRepository;
 import java.time.Instant;
 import java.util.*;
@@ -28,7 +28,6 @@ public class ChatService {
     private final ConnectionRepository connectionRepository;
     private final UserMessageRepository userMessageRepository;
     private final MessageEventRepository messageEventRepository;
-    private final MessageEventTypeRepository messageEventTypeRepository;
     private final ConnectionService connectionService;
 
     public static final String EVENT_TYPE_READ = "READ";
@@ -90,7 +89,7 @@ public class ChatService {
             }
 
             // Unread count (DB-level query)
-            int unreadCount = userMessageRepository.countUnreadMessages(connection.getId(), userId);
+            int unreadCount = userMessageRepository.countUnreadMessages(connection.getId(), userId, MessageEventTypeEnum.READ);
             preview.setUnreadMessageCount(unreadCount);
 
             chatPreviews.add(preview);
@@ -171,13 +170,16 @@ public class ChatService {
 
         return messages.map(message -> {
             User sender = message.getSender();
+            MessageEventDTO messageEvent = getLatestMessageEventDTO(message);
+            
             return new ChatMessageResponseDTO(
                     connectionId,
                     message.getId(),
                     sender.getId(),
                     sender.getProfile().getAlias(),
                     message.getContent(),
-                    message.getCreatedAt()
+                    message.getCreatedAt(),
+                    messageEvent
             );
         });
     }
@@ -228,9 +230,10 @@ public class ChatService {
 
         MessageEvent deliveredEvent = new MessageEvent();
         deliveredEvent.setMessage(savedMessage);
-        deliveredEvent.setMessageEventType(new MessageEventType(1L, EVENT_TYPE_SEND));
+        deliveredEvent.setMessageEventType(MessageEventTypeEnum.SENT);
         deliveredEvent.setTimestamp(timestamp);
         savedMessage.getMessageEvents().add(deliveredEvent);
+        MessageEventDTO messageEvent = getLatestMessageEventDTO(savedMessage);
 
         return new ChatMessageResponseDTO(
                 savedMessage.getId(),
@@ -238,7 +241,8 @@ public class ChatService {
                 senderId,
                 savedMessage.getSender().getProfile().getAlias(),
                 savedMessage.getContent(),
-                savedMessage.getCreatedAt()
+                savedMessage.getCreatedAt(),
+                messageEvent
         );
     }
 
@@ -284,14 +288,12 @@ public class ChatService {
         }
 
         List<UserMessage> messagesToMarkRead =
-            userMessageRepository.findMessagesToMarkAsRead(connectionId, userId);
+            userMessageRepository.findMessagesToMarkAsRead(connectionId, userId, MessageEventTypeEnum.READ);
 
         if (!messagesToMarkRead.isEmpty()) {
         Instant now = Instant.now();
-        MessageEventType readEventType =
-            messageEventTypeRepository
-                .findByName(EVENT_TYPE_READ)
-                .orElseThrow(() -> new IllegalArgumentException("Message event type not found"));
+        MessageEventTypeEnum readEventType =
+            MessageEventTypeEnum.READ;
 
         List<MessageEvent> readEvents = new ArrayList<>();
         for (UserMessage message : messagesToMarkRead) {
@@ -329,5 +331,20 @@ public class ChatService {
         preview.setUnreadMessageCount(0);
 
         return preview;
+    }
+
+    private MessageEventDTO getLatestMessageEventDTO(UserMessage message) {
+        if (message.getMessageEvents() == null || message.getMessageEvents().isEmpty()) {
+            return null;
+        }
+
+        MessageEvent latestMessageEvent = message.getMessageEvents().stream()
+                .max(Comparator.comparing(MessageEvent::getTimestamp))
+                .orElseThrow(() -> new RuntimeException("No message events found"));
+
+        return MessageEventDTO.builder()
+                .type(latestMessageEvent.getMessageEventType())
+                .timestamp(latestMessageEvent.getTimestamp())
+                .build();
     }
 }
