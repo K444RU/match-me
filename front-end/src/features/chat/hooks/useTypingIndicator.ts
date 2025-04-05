@@ -1,14 +1,14 @@
 import { User } from '@/features/authentication';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { Client, IMessage } from 'react-stomp-hooks';
 import { TypingStatusRequestDTO } from '../types';
 
 interface UseTypingIndicatorProps {
-  stompClient: Client | undefined;
+  stompClientRef: MutableRefObject<Client | undefined>;
   currentUser: User;
 }
 
-export default function useTypingIndicator({ stompClient, currentUser }: UseTypingIndicatorProps) {
+export default function useTypingIndicator({ stompClientRef, currentUser }: UseTypingIndicatorProps) {
   const [typingUsers, setTypingUsers] = useState<Record<string, boolean>>({});
   const typingTimeoutsRef = useRef<Record<string, NodeJS.Timeout>>({});
   const lastTypedRef = useRef<Record<string, number>>({});
@@ -55,7 +55,8 @@ export default function useTypingIndicator({ stompClient, currentUser }: UseTypi
 
   const sendTypingIndicator = useCallback(
     (connectionId: number) => {
-      if (!stompClient?.connected || !currentUser?.id) {
+      if (!stompClientRef.current?.connected || !currentUser?.id) {
+        console.log('Cannot send typing indicator: WebSocket not connected or user not available');
         return;
       }
 
@@ -84,7 +85,8 @@ export default function useTypingIndicator({ stompClient, currentUser }: UseTypi
       };
 
       try {
-        stompClient.publish({
+        console.log('Sending typing indicator:', typingData);
+        stompClientRef.current?.publish({
           destination: '/app/chat.typing',
           body: JSON.stringify(typingData),
           headers: {
@@ -95,7 +97,7 @@ export default function useTypingIndicator({ stompClient, currentUser }: UseTypi
         console.error('Error sending typing indicator:', error);
       }
     },
-    [stompClient, currentUser]
+    [stompClientRef, currentUser]
   );
 
   return { typingUsers, handleTypingIndicator, sendTypingIndicator };
