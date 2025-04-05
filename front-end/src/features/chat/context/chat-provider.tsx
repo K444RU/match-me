@@ -153,7 +153,7 @@ const ChatProviderInner = ({
     });
 
     clearMessageQueue();
-  }, [messageQueue, setAllChats, clearMessageQueue]);
+  }, [messageQueue, setAllChats, clearMessageQueue, openChat, sendMarkRead]);
 
   // Add useEffect to process status updates
   useEffect(() => {
@@ -219,7 +219,7 @@ const ChatProviderInner = ({
         };
       });
     },
-    []
+    [setAllChats]
   );
 
   const updateMessageStatus = useCallback(
@@ -246,7 +246,7 @@ const ChatProviderInner = ({
         };
       });
     },
-    []
+    [setAllChats]
   );
 
   // Create a stable context value

@@ -15,9 +15,9 @@ export default function useTypingIndicator({ stompClientRef, currentUser }: UseT
 
   // Clear typing indicators after delay
   useEffect(() => {
+    const timeouts = typingTimeoutsRef.current;
     return () => {
-      // Clean up any timeouts on unmount
-      Object.values(typingTimeoutsRef.current).forEach((timeout) => clearTimeout(timeout));
+      Object.values(timeouts).forEach((timeout) => clearTimeout(timeout));
     };
   }, []);
 

@@ -17,22 +17,25 @@ export default function useMessageHandler({
   onMessageReceived,
   onMessageStatusUpdateReceived,
 }: UseMessageHandlerProps) {
-  const handleMessage = useCallback((message: IMessage) => {
-    // Parse message and update state logic
-    try {
-      const data = JSON.parse(message.body) as ChatMessageResponseDTO;
-      // TODO: mark as recieved
-      // Add validation to ensure the message is valid
-      if (!data || typeof data !== 'object') {
-        console.warn('Received invalid message format', message.body);
-        return;
-      }
+  const handleMessage = useCallback(
+    (message: IMessage) => {
+      // Parse message and update state logic
+      try {
+        const data = JSON.parse(message.body) as ChatMessageResponseDTO;
+        // TODO: mark as recieved
+        // Add validation to ensure the message is valid
+        if (!data || typeof data !== 'object') {
+          console.warn('Received invalid message format', message.body);
+          return;
+        }
 
-      onMessageReceived(data);
-    } catch (error) {
-      console.error('Error parsing message:', error, message.body);
-    }
-  }, []);
+        onMessageReceived(data);
+      } catch (error) {
+        console.error('Error parsing message:', error, message.body);
+      }
+    },
+    [onMessageReceived]
+  );
 
   const handleMessageStatusUpdate = useCallback(
     (message: IMessage) => {
