@@ -1,4 +1,4 @@
-name: Test Workflow
+name: Tests
 
 on:
   push:
@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   backend-tests:
-    name: Backend Tests
+    name: Backend
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
@@ -59,7 +59,7 @@ jobs:
           retention-days: 5
 
   frontend-tests:
-    name: Frontend Tests
+    name: Frontend
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -73,7 +73,7 @@ jobs:
           - 5432:5432
         options: >-
           --health-cmd pg_isready
-          --health-interval 10s
+          --health-interval 5s
           --health-timeout 5s
           --health-retries 5
 
@@ -109,9 +109,9 @@ jobs:
       
       # Setup and run frontend
       - name: Install pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 9
           run_install: false
 
       - name: Set up Node.js
@@ -119,11 +119,11 @@ jobs:
         with:
           node-version: '18'
           cache: 'pnpm'
-          cache-dependency-path: 'front-end/package.json'
+          cache-dependency-path: 'front-end/pnpm-lock.yaml'
       
       - name: Install dependencies
         working-directory: ./front-end
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install
         
       # Build and start frontend server
       - name: Build frontend
@@ -152,10 +152,20 @@ jobs:
           VITE_WS_URL: ws://localhost:8000/ws
           VITE_MAX_AVATAR_SIZE_MB: 5
 
-      # Run Playwright tests
+      # Cache and Install Playwright browsers
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
       - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         working-directory: ./front-end
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install chromium
       
       - name: Run Playwright tests
         working-directory: ./front-end
