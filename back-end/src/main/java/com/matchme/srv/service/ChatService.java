@@ -206,7 +206,7 @@ public class ChatService {
     * @see  MessageEvent
     */
     @Transactional
-    public ChatMessageResponseDTO saveMessage(Long connectionId, Long senderId, String content, Instant timestamp) {
+    public ChatMessageResponseDTO saveMessage(Long connectionId, Long senderId, String content, Instant timestamp, boolean isOtherUserOnline) {
         Connection connection = connectionRepository.findById(connectionId)
                 .orElseThrow(() -> new IllegalArgumentException("Connection not found"));
 
@@ -224,15 +224,30 @@ public class ChatService {
                         .orElseThrow(() -> new IllegalArgumentException("User not found")))
                 .content(content)
                 .createdAt(timestamp)
+                .messageEvents(new HashSet<>())
                 .build();
 
+        // Create and add the SENT event
+        MessageEvent sentEvent = new MessageEvent();
+        sentEvent.setMessage(message);
+        sentEvent.setMessageEventType(MessageEventTypeEnum.SENT);
+        sentEvent.setTimestamp(timestamp);
+        message.getMessageEvents().add(sentEvent);
+
+        // If recipient is online, create and add the RECEIVED event immediately
+        if (isOtherUserOnline) {
+            MessageEvent receivedEvent = new MessageEvent();
+            receivedEvent.setMessage(message);
+            receivedEvent.setMessageEventType(MessageEventTypeEnum.RECEIVED);
+            // Use the same timestamp as SENT for simplicity, or Instant.now() if preferred
+            receivedEvent.setTimestamp(timestamp);
+            message.getMessageEvents().add(receivedEvent);
+        }
+
+        // Save the message along with its events
         UserMessage savedMessage = userMessageRepository.save(message);
 
-        MessageEvent deliveredEvent = new MessageEvent();
-        deliveredEvent.setMessage(savedMessage);
-        deliveredEvent.setMessageEventType(MessageEventTypeEnum.SENT);
-        deliveredEvent.setTimestamp(timestamp);
-        savedMessage.getMessageEvents().add(deliveredEvent);
+        // Get the latest event DTO (will be RECEIVED if recipient was online, otherwise SENT)
         MessageEventDTO messageEvent = getLatestMessageEventDTO(savedMessage);
 
         return new ChatMessageResponseDTO(

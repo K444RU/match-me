@@ -82,12 +82,19 @@ public class ChatWebSocketController {
         senderId,
         messageDTO.getConnectionId());
 
-    ChatMessageResponseDTO savedMessage =
-        chatService.saveMessage(
-            messageDTO.getConnectionId(), sender.getId(), messageDTO.getContent(), Instant.now());
-
     Long otherUserId =
         chatService.getOtherUserIdInConnection(messageDTO.getConnectionId(), senderId);
+
+    boolean isOtherUserOnline = isUserOnline(otherUserId);
+    log.debug("Recipient user ID {} online status: {}", otherUserId, isOtherUserOnline);
+
+    ChatMessageResponseDTO savedMessage =
+        chatService.saveMessage(
+            messageDTO.getConnectionId(),
+            sender.getId(),
+            messageDTO.getContent(),
+            Instant.now(),
+            isOtherUserOnline);
 
     // Broadcast the message to both participants in real-time
     // The "/user/{userId}/queue/messages" destination will deliver the message privately
