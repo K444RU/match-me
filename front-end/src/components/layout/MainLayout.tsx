@@ -6,7 +6,7 @@ const MainLayout = () => {
   return (
     <ThemeProvider>
       <Outlet />
-      <Toaster />
+      <Toaster className="bg-black text-white" />
     </ThemeProvider>
   );
 };
