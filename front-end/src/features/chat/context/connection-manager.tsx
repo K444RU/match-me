@@ -72,10 +72,16 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
 
   const { onlineUsers, handleOnlineIndicator } = useOnlineIndicator();
 
+  const userQueueDestination = useMemo(() => `/user/${currentUser.id}/queue/connectionUpdates`, [currentUser.id]);
 
-  useSubscription(`/user/{currentUser.id}/queue/connectionUpdates`, (message) => {
-    const update = JSON.parse(message.body);
-    setConnectionUpdates((prev) => [...prev, update]);
+  useSubscription(userQueueDestination, (message) => {
+    try {
+      const update: ConnectionUpdateMessage = JSON.parse(message.body);
+      console.log('Received Connection Update:', update);
+      setConnectionUpdates((prevUpdates) => [...prevUpdates, update]);
+    } catch (error) {
+      console.error('Failed to parse connection update message:', message.body, error);
+    }
   });
 
   // Setup subscriptions with the handlers
@@ -88,49 +94,49 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
     handleOnlineIndicator,
   });
 
-  const sendConnectionRequest = (targetUserId: number) => {
-    if (stompClient?.connected) {
+  const sendConnectionRequest = useCallback((targetUserId: number) => {
+    if (stompClient?.connected && currentUser.id) {
       stompClient.publish({
         destination: '/app/connection.sendRequest',
         body: JSON.stringify(targetUserId),
       });
     } else {
-      console.error('STOMP client not connected');
+      console.error('STOMP client not connected or user ID missing, cannot send connection request.');
     }
-  };
+  }, [stompClient, currentUser.id]);
 
-  const acceptConnectionRequest = (connectionId: number) => {
+  const acceptConnectionRequest = useCallback((connectionId: number) => {
     if (stompClient?.connected) {
       stompClient.publish({
         destination: '/app/connection.acceptRequest',
         body: JSON.stringify(connectionId),
       });
     } else {
-      console.error('STOMP client not connected');
+      console.error('STOMP client not connected, cannot accept connection request.');
     }
-  };
+  }, [stompClient]);
 
-  const rejectConnectionRequest = (connectionId: number) => {
+  const rejectConnectionRequest = useCallback((connectionId: number) => {
     if (stompClient?.connected) {
       stompClient.publish({
         destination: '/app/connection.rejectRequest',
         body: JSON.stringify(connectionId),
       });
     } else {
-      console.error('STOMP client not connected');
+      console.error('STOMP client not connected, cannot reject connection request.');
     }
-  };
+  }, [stompClient]);
 
-  const disconnectConnection = (connectionId: number) => {
+  const disconnectConnection = useCallback((connectionId: number) => {
     if (stompClient?.connected) {
       stompClient.publish({
         destination: '/app/connection.disconnect',
         body: JSON.stringify(connectionId),
       });
     } else {
-      console.error('STOMP client not connected');
+      console.error('STOMP client not connected, cannot disconnect connection.');
     }
-  };
+  }, [stompClient]);
 
   // Context value with stable identity
   const contextValue = useMemo(
