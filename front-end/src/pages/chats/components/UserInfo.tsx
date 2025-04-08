@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SidebarMenuButton } from '@/components/ui/sidebar';
 import { useAuth } from '@/features/authentication';
-import { Bell, ChevronsUpDown, CreditCard, LogOut, Settings, Sparkles, User } from 'lucide-react';
+import { ChevronsUpDown, LogOut, Settings, User } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SettingsDialog from './SettingsDialog';
@@ -73,13 +73,6 @@ const UserInfo = () => {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <Sparkles />
-              Upgrade to Pro
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
             <DropdownMenuItem onSelect={() => navigate('/me')} className="cursor-pointer">
               <User />
               Profile
@@ -94,14 +87,6 @@ const UserInfo = () => {
             >
               <Settings />
               Settings
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-not-allowed bg-muted hover:bg-muted">
-              <CreditCard />
-              Billing
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-not-allowed bg-muted hover:bg-muted">
-              <Bell />
-              Notifications
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />

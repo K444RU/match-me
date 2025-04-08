@@ -1,4 +1,3 @@
-import { Toaster } from '@/components/ui/sonner';
 import UnifiedForm from './components/UnifiedForm';
 
 const ProfileCompletionPage = () => {
@@ -18,7 +17,6 @@ const ProfileCompletionPage = () => {
   return (
     <div className="mx-auto flex h-screen max-w-7xl items-center justify-center">
       <UnifiedForm />
-      <Toaster className='bg-black text-white'/>
     </div>
   );
 };

@@ -1,12 +1,12 @@
+import { Toaster } from '@/components/ui/sonner';
 import { Outlet } from 'react-router-dom';
-import Navbar from '../Navbar';
 import { ThemeProvider } from '../ThemeProvider';
 
 const MainLayout = () => {
   return (
     <ThemeProvider>
-      <Navbar />
       <Outlet />
+      <Toaster className="bg-black text-white" />
     </ThemeProvider>
   );
 };
