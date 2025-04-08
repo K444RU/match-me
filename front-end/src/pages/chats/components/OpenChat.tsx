@@ -1,8 +1,9 @@
 import { ChatMessageResponseDTO, MessagesSendRequestDTO } from '@/api/types';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth } from '@/features/authentication';
 import { ChatContext, chatService, useWebSocket } from '@/features/chat';
 import { useContext, useEffect, useState } from 'react';
-import { NoChat } from './NoChat';
+import NoChat from './NoChat';
 import OpenChatInput from './OpenChatInput';
 import OpenChatMessages from './OpenChatMessages';
 
@@ -62,7 +63,6 @@ export default function OpenChat() {
   // Early return if no context, user or open chat
   if (!chatContext) return null;
   if (!user) return null;
-  if (!openChat) return <NoChat />;
 
   const onSendMessage = async (message: string) => {
     if (!message || !user || !openChat) return;
@@ -106,9 +106,16 @@ export default function OpenChat() {
   };
 
   return (
-    <div className="flex w-full flex-col bg-background-400 px-4 pb-4 sm:px-6 md:px-8">
-      <OpenChatMessages loading={loading} chatMessages={chatMessages} user={user} />
-      <OpenChatInput onSendMessage={onSendMessage} />
+    <div className="relative flex h-screen w-full">
+      <SidebarTrigger className="absolute left-1 top-1 z-10" />
+      {openChat ? (
+        <div className="flex w-full flex-col bg-background-400 px-4 pb-4 pl-16 sm:px-6 md:px-8">
+          <OpenChatMessages loading={loading} chatMessages={chatMessages} user={user} />
+          <OpenChatInput onSendMessage={onSendMessage} />
+        </div>
+      ) : (
+        <NoChat className="pl-16" />
+      )}
     </div>
   );
 }
