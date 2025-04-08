@@ -76,7 +76,7 @@ export default function OpenChat() {
     const optimisticMessage: ChatMessageResponseDTO = {
       connectionId: messageDTO.connectionId,
       content: messageDTO.content,
-      createdAt: new Date().toISOString(),
+      createdAt: Math.floor(Date.now() / 1000).toString(),
       messageId: -(chatMessages.length + 1),
       senderAlias: user.alias || '',
       senderId: user.id || 0,
