@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import MultipleSelector, { Option } from '@/components/ui/multi-select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/features/authentication';
 import { userService } from '@/features/user';
 import { hobbiesById } from '@/lib/utils/dataConversion';
 import ProfilePictureUploader from '@ui/forms/ProfilePictureUploader.tsx';
@@ -15,6 +16,7 @@ import { SettingsContext } from '../SettingsContext';
 
 const UserProfileCard = () => {
   const settingsContext = useContext(SettingsContext);
+  const { fetchCurrentUser } = useAuth();
 
   const [firstName, setFirstName] = useState<string | null>('');
   const [lastName, setLastName] = useState<string | null>('');
@@ -46,6 +48,7 @@ const UserProfileCard = () => {
         hobbies: hobbies?.map((hobby) => parseInt(hobby.value)),
       });
       await settingsContext.refreshSettings();
+      await fetchCurrentUser();
       toast.success('Profile updated successfully');
     } catch (error) {
       toast.error('Failed to update profile');
@@ -98,6 +101,7 @@ const UserProfileCard = () => {
                 currentImage={settingsContext.settings.profilePicture ?? null}
                 onUploadSuccess={async () => {
                   await settingsContext.refreshSettings();
+                  await fetchCurrentUser();
                 }}
               />
             </div>
