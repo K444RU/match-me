@@ -1,39 +1,27 @@
 import { ChatMessageResponseDTO, MessagesSendRequestDTO } from '@/api/types';
 import { User } from '@/features/authentication';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { Client, IMessage } from 'react-stomp-hooks';
 
 interface UseMessageHandlerProps {
   stompClient: Client | undefined;
   currentUser: User;
+  onMessageReceived: (message: ChatMessageResponseDTO) => void;
 }
 
-export default function useMessageHandler({ stompClient, currentUser }: UseMessageHandlerProps) {
-  const [messages, setMessages] = useState<ChatMessageResponseDTO[]>([]);
-
+export default function useMessageHandler({ stompClient, currentUser, onMessageReceived }: UseMessageHandlerProps) {
   const handleMessage = useCallback((message: IMessage) => {
     // Parse message and update state logic
     try {
       const data = JSON.parse(message.body) as ChatMessageResponseDTO;
-
+      // TODO: mark as recieved
       // Add validation to ensure the message is valid
       if (!data || typeof data !== 'object') {
         console.warn('Received invalid message format', message.body);
         return;
       }
 
-      setMessages((prev) => {
-        // Prevent duplicates
-        const isDuplicate = prev.some(
-          (m) => m.messageId === data.messageId || (m.createdAt === data.createdAt && m.content === data.content)
-        );
-
-        if (isDuplicate) {
-          return prev;
-        }
-
-        return [...prev, data];
-      });
+      onMessageReceived(data);
     } catch (error) {
       console.error('Error parsing message:', error, message.body);
     }
@@ -81,5 +69,24 @@ export default function useMessageHandler({ stompClient, currentUser }: UseMessa
     [stompClient, currentUser]
   );
 
-  return { messages, handleMessage, sendMessage };
+  const sendMarkRead = useCallback(
+    (connectionId: number) => {
+      if (!stompClient?.connected || !currentUser?.id) {
+        console.error('Cannot send markRead: STOMP client not connected or no user ID.');
+        return;
+      }
+      try {
+        stompClient.publish({
+          destination: '/app/chat.markRead',
+          body: JSON.stringify({ connectionId: connectionId.toString() }),
+        });
+        console.log(`Sent markRead for connection ${connectionId}`);
+      } catch (error) {
+        console.error(`Error sending markRead for connection ${connectionId}:`, error);
+      }
+    },
+    [stompClient, currentUser?.id]
+  );
+
+  return { handleMessage, sendMessage, sendMarkRead };
 }

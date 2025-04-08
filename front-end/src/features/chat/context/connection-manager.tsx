@@ -1,5 +1,6 @@
+import { ChatMessageResponseDTO } from '@/api/types';
 import { User } from '@/features/authentication/';
-import {ReactNode, useMemo, useState} from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import {useStompClient, useSubscription} from 'react-stomp-hooks';
 import useChatPreviewHandler from '../hooks/useChatPreviewHandler';
 import useMessageHandler from '../hooks/useMessageHandler';
@@ -7,6 +8,7 @@ import useOnlineIndicator from '../hooks/useOnlineIndicator';
 import useSubscriptionManager from '../hooks/useSubscriptionManager';
 import useTypingIndicator from '../hooks/useTypingIndicator';
 import { WebSocketContext } from './websocket-context';
+import {ConnectionUpdateMessage} from "@features/chat/types";
 
 interface WebSocketConnectionManagerProps {
   children: ReactNode;
@@ -17,10 +19,48 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
   const stompClient = useStompClient();
   const currentUser = user;
 
+  const [isConnected, setIsConnected] = useState(false);
+
+  const [messageQueue, setMessageQueue] = useState<ChatMessageResponseDTO[]>([]);
+
+  const [connectionUpdates, setConnectionUpdates] = useState<ConnectionUpdateMessage[]>([]);
+
+  useEffect(() => {
+    const currentConnected = !!stompClient?.connected;
+
+    if (currentConnected === isConnected) return;
+
+    let timeoutId: NodeJS.Timeout;
+
+    if (!currentConnected) {
+      setIsConnected(false);
+    } else {
+      // add a bit of throtelling to avoid flickering
+      timeoutId = setTimeout(() => {
+        setIsConnected(true);
+      }, 500);
+    }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [stompClient?.connected, isConnected]);
+
+  const handleNewMessage = useCallback((message: ChatMessageResponseDTO) => {
+    console.log('🔄 ConnectionManager: Adding message to queue:', message);
+    setMessageQueue((prevQueue) => [...prevQueue, message]);
+  }, []);
+
+  const clearMessageQueue = useCallback(() => {
+    console.log('🧹 ConnectionManager: Clearing message queue');
+    setMessageQueue([]); // Reset the queue to an empty array
+  }, []);
+
   // Create stable handlers first
-  const { messages, handleMessage, sendMessage } = useMessageHandler({
+  const { handleMessage, sendMessage, sendMarkRead } = useMessageHandler({
     stompClient,
     currentUser,
+    onMessageReceived: handleNewMessage,
   });
 
   const { typingUsers, handleTypingIndicator, sendTypingIndicator } = useTypingIndicator({
@@ -32,7 +72,6 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
 
   const { onlineUsers, handleOnlineIndicator } = useOnlineIndicator();
 
-  const [connectionUpdates, setConnectionUpdates] = useState<any[]>([]);
 
   useSubscription(`/user/{currentUser.id}/queue/connectionUpdates`, (message) => {
     const update = JSON.parse(message.body);
@@ -96,11 +135,11 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
   // Context value with stable identity
   const contextValue = useMemo(
     () => ({
-      connected: !!stompClient?.connected,
+      connected: isConnected,
       sendMessage,
       sendTypingIndicator,
+      sendMarkRead,
       reconnect,
-      messages,
       typingUsers,
       onlineUsers,
       chatPreviews: chatPreviews || [],
@@ -109,13 +148,15 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
       acceptConnectionRequest,
       rejectConnectionRequest,
       disconnectConnection,
+      messageQueue,
+      clearMessageQueue,
     }),
     [
-      stompClient?.connected,
+      isConnected,
       sendMessage,
       sendTypingIndicator,
+      sendMarkRead,
       reconnect,
-      messages,
       typingUsers,
       onlineUsers,
       chatPreviews,
@@ -124,6 +165,8 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
       acceptConnectionRequest,
       rejectConnectionRequest,
       disconnectConnection,
+      messageQueue,
+      clearMessageQueue,
     ]
   );
 

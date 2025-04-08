@@ -8,7 +8,7 @@ export interface CommunicationContextType {
   refreshChats: () => void;
   setOpenChat: (chat: ChatPreviewResponseDTO | null) => void;
   sendMessage: (message: MessagesSendRequestDTO) => Promise<void>;
-  sendTypingIndicator: (connectionId: string) => void;
+  sendTypingIndicator: (connectionId: number) => void;
   connectionUpdates: ConnectionUpdateMessage[];
   sendConnectionRequest: (targetUserId: number) => void;
   acceptConnectionRequest: (connectionId: number) => void;

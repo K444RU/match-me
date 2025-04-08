@@ -24,8 +24,9 @@ export default function AppSidebar({ onChatSelect }: { onChatSelect: (chat: Chat
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isConnectionsModalOpen, setIsConnectionsModalOpen] = useState(false);
   const [isRecommendationsModalOpen, setIsRecommendationsModalOpen] = useState(false);
+  const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
 
-  const { chatPreviews } = useCommunication();
+  const { chatPreviews, sendMarkRead } = useCommunication();
 
   console.log('AppSidebar - chatPreviews from CHAT context:', chatPreviews);
 
@@ -56,8 +57,15 @@ export default function AppSidebar({ onChatSelect }: { onChatSelect: (chat: Chat
             {chatPreviews && chatPreviews.length > 0 ? (
               chatPreviews.map((chat: ChatPreviewResponseDTO) => (
                 <SidebarMenuItem key={chat.connectionId} className="list-none">
-                  <SidebarMenuButton onClick={() => onChatSelect(chat)} className="h-fit w-full">
-                    <ChatPreviewCard chat={chat} />
+                  <SidebarMenuButton
+                    onClick={() => {
+                      setSelectedChatId(chat.connectionId);
+                      sendMarkRead(chat.connectionId);
+                      onChatSelect(chat);
+                    }}
+                    className="h-fit w-full"
+                  >
+                    <ChatPreviewCard chat={chat} isSelected={selectedChatId === chat.connectionId} />
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))

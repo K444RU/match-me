@@ -1,28 +1,37 @@
 package com.matchme.srv.controller;
 
 import static com.matchme.srv.TestDataFactory.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.matchme.srv.dto.request.MarkReadRequestDTO;
 import com.matchme.srv.dto.request.MessagesSendRequestDTO;
 import com.matchme.srv.dto.request.TypingStatusRequestDTO;
 import com.matchme.srv.dto.response.ChatMessageResponseDTO;
+import com.matchme.srv.dto.response.ChatPreviewResponseDTO;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.service.ChatService;
 import com.matchme.srv.service.user.UserQueryService;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -31,7 +40,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 
 @ExtendWith(MockitoExtension.class)
-public class ChatWebSocketControllerTests {
+class ChatWebSocketControllerTests {
 
   @InjectMocks private ChatWebSocketController chatWebSocketController;
 
@@ -43,8 +52,13 @@ public class ChatWebSocketControllerTests {
 
   @Mock private SecurityUtils securityUtils;
 
+  @Captor ArgumentCaptor<ChatMessageResponseDTO> messageCaptor;
+  @Captor ArgumentCaptor<List<ChatPreviewResponseDTO>> previewsCaptor;
+  @Captor ArgumentCaptor<ChatPreviewResponseDTO> previewCaptor;
+
   private User sender;
   private Authentication authentication;
+  private static final Instant TEST_TIMESTAMP = Instant.now().truncatedTo(ChronoUnit.SECONDS);
 
   @BeforeEach
   void setUp() {
@@ -171,5 +185,83 @@ public class ChatWebSocketControllerTests {
       verify(chatService, times(0)).getOtherUserIdInConnection(any(), any());
       verify(securityUtils, times(1)).getCurrentUserId(any());
     }
+  }
+
+  @Nested
+  @DisplayName("markMessagesAsRead Tests")
+  class MarkMessagesAsReadTests {
+    private MarkReadRequestDTO validRequest;
+    private ChatPreviewResponseDTO mockPreviewResponse;
+
+    @BeforeEach
+    void setUp() {
+      validRequest = new MarkReadRequestDTO();
+      validRequest.setConnectionId(DEFAULT_CONNECTION_ID);
+
+      mockPreviewResponse = new ChatPreviewResponseDTO();
+      mockPreviewResponse.setConnectionId(DEFAULT_CONNECTION_ID);
+      mockPreviewResponse.setConnectedUserId(DEFAULT_TARGET_USER_ID);
+      mockPreviewResponse.setConnectedUserAlias(DEFAULT_TARGET_ALIAS);
+      mockPreviewResponse.setLastMessageContent("Last message content");
+      mockPreviewResponse.setLastMessageTimestamp(TEST_TIMESTAMP);
+      mockPreviewResponse.setUnreadMessageCount(0);
+
+      when(chatService.markMessagesAsRead(DEFAULT_CONNECTION_ID, DEFAULT_USER_ID))
+          .thenReturn(mockPreviewResponse);
+    }
+
+    @Test
+    @DisplayName("Should call service and send updated preview to user")
+    void markMessagesAsRead_ValidRequest_CallsServiceAndSendsPreview() {
+      // Act
+      chatWebSocketController.markMessagesAsRead(validRequest, authentication);
+
+      // Assert Service Call
+      verify(chatService).markMessagesAsRead(DEFAULT_CONNECTION_ID, DEFAULT_USER_ID);
+
+      // Assert Messaging Template Call
+      verify(messagingTemplate)
+          .convertAndSendToUser(
+              eq(DEFAULT_USER_ID.toString()), eq("/queue/previews"), previewCaptor.capture());
+      assertThat(previewCaptor.getValue()).isEqualTo(mockPreviewResponse);
+    }
+
+    @Test
+    @DisplayName("Should log error and not send message if service throws IllegalArgumentException")
+    void markMessagesAsRead_ServiceThrowsIllegalArgumentException_LogsErrorDoesNotSend() {
+      // Arrange
+      when(chatService.markMessagesAsRead(DEFAULT_CONNECTION_ID, DEFAULT_USER_ID))
+          .thenThrow(new IllegalArgumentException("Connection not found"));
+
+      // Act
+      // No exception should propagate from the controller method itself due to try-catch
+      chatWebSocketController.markMessagesAsRead(validRequest, authentication);
+
+      // Assert Service Call (still attempted)
+      verify(chatService).markMessagesAsRead(DEFAULT_CONNECTION_ID, DEFAULT_USER_ID);
+
+      // Assert Messaging Template Call (should NOT have been called)
+      verifyNoInteractions(messagingTemplate);
+
+      // Note: We can't easily verify logging with Mockito alone.
+      // Integration tests or specific logging frameworks might be needed for that.
+    }
+
+     @Test
+     @DisplayName("Should log error and not send message if service throws other Exception")
+     void markMessagesAsRead_ServiceThrowsRuntimeException_LogsErrorDoesNotSend() {
+        // Arrange
+        when(chatService.markMessagesAsRead(DEFAULT_CONNECTION_ID, DEFAULT_USER_ID))
+            .thenThrow(new RuntimeException("Unexpected database error"));
+
+        // Act
+        chatWebSocketController.markMessagesAsRead(validRequest, authentication);
+
+        // Assert Service Call (still attempted)
+        verify(chatService).markMessagesAsRead(DEFAULT_CONNECTION_ID, DEFAULT_USER_ID);
+
+        // Assert Messaging Template Call (should NOT have been called)
+        verifyNoInteractions(messagingTemplate);
+     }
   }
 }

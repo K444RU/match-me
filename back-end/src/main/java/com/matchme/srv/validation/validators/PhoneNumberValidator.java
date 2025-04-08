@@ -11,11 +11,13 @@ public class PhoneNumberValidator implements ConstraintValidator<ValidPhoneNumbe
 
     @Override
     public boolean isValid(String phoneField, ConstraintValidatorContext context) {
-        if (phoneField == null || phoneField.isBlank()) {
+        // Let @NotBlank handle empty strings
+        if (phoneField == null || phoneField.isEmpty()) {
             return true;
         }
+
         try {
-            var phoneNumber = phoneUtil.parse(phoneField, "EE");
+            var phoneNumber = phoneUtil.parse(phoneField, null);
             return phoneUtil.isValidNumber(phoneNumber);
         } catch (NumberParseException e) {
             return false;

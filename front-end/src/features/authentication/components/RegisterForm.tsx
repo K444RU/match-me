@@ -9,13 +9,11 @@ import FormResponse from './FormResponse';
 
 const RegisterForm = () => {
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [localNumber, setLocalNumber] = useState('');
-  const [countryCode, setCountryCode] = useState('');
+  const [number, setNumber] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const [phoneError, setPhoneError] = useState('');
+  const [numberError, setNumberError] = useState('');
 
   const [resTitle, setResTitle] = useState('');
   const [resSubtitle, setResSubtitle] = useState('');
@@ -24,56 +22,46 @@ const RegisterForm = () => {
   const navigate = useNavigate();
 
   /**
-     * Updates phone-related information when the user changes the phone number input.
+     * Updates the phone number state and performs validation when the user changes the phone number input.
      *
      * What It Does:
-     * - Takes the phone number the user enters.
-     * - Saves the full phone number (`phone`) for backend use.
-     * - Splits the number into:
-     *   - `countryCode` (e.g., "+372" for the EE).
-     *   - `localNumber` (the rest of the number after the country code).
-     * - If the phone number is invalid or empty, it clears the country code and local number.
+     * - Takes the phone number value entered by the user (expected in E.164 format).
+     * - Saves the full phone number (`number`) state.
+     * - Validates the number using `isValidPhoneNumber` from `react-phone-number-input`.
+     * - Sets or clears the `numberError` state based on the validation result.
 
-     * Why to Use `phone` and `localNumber`:
-     * - `phone` is the complete number, needed for backend systems and international use.
-     * - `localNumber` is just the local part of the number, useful for showing or using it in user-friendly ways.
+     * Why the Full `number` is Used:
+     * - `number` stores the complete E.164 formatted number (e.g., "+37255501444"), which is the standard format needed for backend systems and reliable international validation.
 
      * Example:
      * If the user enters "+37255501444":
-     * - `phone` is "+37255501444".
-     * - `countryCode` is "+372".
-     * - `localNumber` is "55501444".
+     * - `number` state is set to "+37255501444".
+     * - If it's valid according to `isValidPhoneNumber`, `numberError` is cleared. Otherwise, an error message is set.
      *
-     * This separation helps make the app work smoothly for both backend systems and user-facing features.
+     * This approach ensures the number is validated on the front-end and sent in the correct format to the backend.
      */
-  const handlePhoneChange = (val: string | undefined) => {
+  const handleNumberChange = (val: string | undefined) => {
     const E164Number = val ?? '';
-    setPhone(E164Number);
+    setNumber(E164Number);
 
-    let countryCode = '';
-    let localNumber = '';
     let validationError = '';
 
     if (E164Number) {
       const parsedPhoneNumber = parsePhoneNumber(E164Number);
       if (parsedPhoneNumber && isValidPhoneNumber(E164Number)) {
-        countryCode = '+' + parsedPhoneNumber.countryCallingCode;
-        localNumber = parsedPhoneNumber.nationalNumber;
         validationError = '';
       } else {
         validationError = 'Invalid phone number';
       }
     }
 
-    setCountryCode(countryCode);
-    setLocalNumber(localNumber);
-    setPhoneError(validationError);
+    setNumberError(validationError);
   };
 
   const submitForm = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (phoneError) {
+    if (numberError) {
       alert('Please enter a valid phone number before submitting.');
       return;
     }
@@ -83,7 +71,7 @@ const RegisterForm = () => {
     authService
       .register({
         email,
-        number: `${countryCode} ${localNumber}`,
+        number,
         password,
       })
       .then((res) => {
@@ -115,22 +103,34 @@ const RegisterForm = () => {
           return;
         }
 
-        if (err.response.status === 401) {
-          setResTitle('Wrong Credentials');
-          setResSubtitle('Invalid username or password');
-        } else if (err.response.status === 400) {
-          setResTitle('We found some errors');
-          setResSubtitle('');
-          // TODO: Make back-end return better error messages
-          // size must be between 0 and 20 -> what size? (its number...)
-          // Password must be between 6 and 40 characters -> good
-          // Error: email is already taken!
-          Object.keys(err.response.data).forEach((key) => {
-            setResSubtitle((prev) => `${prev}\n${err.response.data[key]}`);
-          });
+        if (err.response) {
+          if (err.response.status === 401) {
+            setResTitle('Wrong Credentials');
+            setResSubtitle('Invalid username or password');
+          } else if (err.response.status === 400) {
+            setResTitle('We found some errors');
+            let errorMessages = '';
+            if (typeof err.response.data === 'object' && err.response.data !== null) {
+              Object.keys(err.response.data).forEach((key) => {
+                // Append with a newline if not the first message
+                errorMessages += (errorMessages ? '\n' : '') + err.response.data[key];
+              });
+            } else if (typeof err.response.data === 'string') {
+              // Handle case where backend sends a single string error
+              errorMessages = err.response.data;
+            } else {
+              // Fallback if the error format is unexpected
+              errorMessages = 'An unexpected validation error occurred.';
+            }
+            setResSubtitle(errorMessages);
+          } else {
+            setResTitle('Something went wrong...');
+            setResSubtitle('Please contact support.');
+          }
         } else {
-          setResTitle('Something went wrong...');
-          setResSubtitle('Please contact support.');
+          // Handle cases where err.response is undefined
+          setResTitle('Error');
+          setResSubtitle('An unexpected error occurred. Please try again.');
         }
       })
       .finally(() => {
@@ -176,14 +176,14 @@ const RegisterForm = () => {
         </label>
         <div className="flex w-full space-x-2">
           <CountryCodePhoneInput
-            value={phone}
+            value={number}
             defaultCountry="EE"
             placeholder="Enter a phone number"
-            onChange={handlePhoneChange}
+            onChange={handleNumberChange}
             className="w-full"
           />
         </div>
-        {phoneError && <p className="text-sm text-red-500"> {phoneError}</p>}
+        {numberError && <p className="text-sm text-red-500"> {numberError}</p>}
       </div>
 
       <button

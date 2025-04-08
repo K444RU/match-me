@@ -5,12 +5,14 @@ import {ConnectionUpdateMessage} from "@features/chat/types";
 export interface WebSocketContextType {
   connected: boolean;
   sendMessage: (message: MessagesSendRequestDTO) => Promise<void>;
-  sendTypingIndicator: (connectionId: string) => void;
+  sendTypingIndicator: (connectionId: number) => void;
+  sendMarkRead: (connectionId: number) => void;
   reconnect: () => void;
-  messages: ChatMessageResponseDTO[];
   typingUsers: Record<string, boolean>;
   onlineUsers: Record<string, boolean>;
   chatPreviews: ChatPreviewResponseDTO[];
+  messageQueue: ChatMessageResponseDTO[];
+  clearMessageQueue: () => void;
   connectionUpdates: ConnectionUpdateMessage[];
   sendConnectionRequest: (targetUserId: number) => void;
   acceptConnectionRequest: (connectionId: number) => void;
@@ -26,10 +28,15 @@ const defaultContext: WebSocketContextType = {
   sendTypingIndicator: () => {
     console.error('WebSocket context not initialized');
   },
+  sendMarkRead: () => {
+    console.error('WebSocket context not initialized');
+  },
   reconnect: () => {
     console.error('WebSocket context not initialized');
   },
-  messages: [],
+  clearMessageQueue: () => {
+    console.error('WebSocket context not initialized');
+  },
   typingUsers: {},
   onlineUsers: {},
   chatPreviews: [],
@@ -38,6 +45,7 @@ const defaultContext: WebSocketContextType = {
   acceptConnectionRequest: () => console.error('WebSocket context not initialized'),
   rejectConnectionRequest: () => console.error('WebSocket context not initialized'),
   disconnectConnection: () => console.error('WebSocket context not initialized'),
+  messageQueue: [],
 };
 
 export const WebSocketContext = createContext<WebSocketContextType>(defaultContext);

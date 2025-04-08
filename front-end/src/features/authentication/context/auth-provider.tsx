@@ -48,13 +48,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       const response = await authService.login(credentials);
 
-      if (response?.data?.token) {
-        localStorage.setItem('authToken', response.data.token);
+      if (response?.token) {
+        localStorage.setItem('authToken', response.token);
         const currentUser = await meService.getCurrentUser();
 
         const userData: User = {
           ...currentUser,
-          token: response.data.token,
+          token: response.token,
         };
 
         setUser(userData);

@@ -1,151 +1,114 @@
 import { ChatMessageResponseDTO, MessagesSendRequestDTO } from '@/api/types';
-import Button from '@/components/ui/buttons/Button';
-import InputField from '@/components/ui/forms/InputField';
 import { useAuth } from '@/features/authentication';
-import { CommunicationContext, chatService, useWebSocket } from '@/features/chat';
+import { ChatContext, chatService, useWebSocket } from '@/features/chat';
 import { useContext, useEffect, useState } from 'react';
-import Message from './Message';
 import { NoChat } from './NoChat';
+import OpenChatInput from './OpenChatInput';
+import OpenChatMessages from './OpenChatMessages';
 
 export default function OpenChat() {
   const { user } = useAuth();
-  const [message, setMessage] = useState('');
   const [chatMessages, setChatMessages] = useState<ChatMessageResponseDTO[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Get WebSocket context for sending messages via WebSocket
-  const { connected, sendMessage: sendWebSocketMessage, sendTypingIndicator, reconnect } = useWebSocket();
+  const { connected, sendMessage: sendWebSocketMessage } = useWebSocket();
 
-  const chatContext = useContext(CommunicationContext);
+  const chatContext = useContext(ChatContext);
   const openChat = chatContext?.openChat || null;
 
-  // Only reconnect if the WebSocket is disconnected
-  useEffect(() => {
-    if (!connected) {
-      console.log('🔄 WebSocket disconnected, attempting to reconnect...');
-      reconnect();
-    }
-  }, [connected, reconnect]);
+  const connectionId = openChat?.connectionId;
+  const updateAllChats = chatContext.updateAllChats;
+  const allChats = chatContext.allChats;
 
   useEffect(() => {
+    setChatMessages([]);
+
     const fetchMessages = async () => {
-      if (!openChat || !user) return;
+      if (!connectionId || !user) return;
 
       setLoading(true);
-      try {
-        const messagesResponse = await chatService.getChatMessages(openChat.connectionId);
 
-        if (!messagesResponse) {
-          setChatMessages([]);
-          return;
-        }
-
-        setChatMessages(messagesResponse.reverse());
-      } catch (error) {
-        console.error('Error fetching messages:', error);
-      } finally {
+      // check if chat is in context already
+      if (allChats[connectionId]) {
+        setChatMessages(allChats[connectionId]);
         setLoading(false);
+      } else {
+        try {
+          const messagesResponse = await chatService.getChatMessages(connectionId);
+
+          if (!messagesResponse) {
+            setChatMessages([]);
+            return;
+          }
+
+          const sortedMessages = messagesResponse.reverse();
+          setChatMessages(sortedMessages);
+
+          if (updateAllChats) {
+            updateAllChats(connectionId, sortedMessages, true);
+          }
+        } catch (error) {
+          console.error('Error fetching messages:', error);
+        } finally {
+          setLoading(false);
+        }
       }
     };
 
     fetchMessages();
-  }, [openChat, user]);
+  }, [connectionId, user, updateAllChats, allChats]);
 
   // Early return if no context, user or open chat
   if (!chatContext) return null;
   if (!user) return null;
   if (!openChat) return <NoChat />;
 
-  const handleSendMessage = async (message: MessagesSendRequestDTO) => {
+  const onSendMessage = async (message: string) => {
     if (!message || !user || !openChat) return;
 
-    try {
-      // First send via REST API to ensure persistence
-      await chatService.sendMessage(message.content, message.connectionId);
+    const messageDTO: MessagesSendRequestDTO = {
+      connectionId: openChat.connectionId,
+      content: message,
+    };
 
+    // Optimistic update first
+    const optimisticMessage: ChatMessageResponseDTO = {
+      connectionId: messageDTO.connectionId,
+      content: messageDTO.content,
+      createdAt: new Date().toISOString(),
+      messageId: -(chatMessages.length + 1),
+      senderAlias: user.alias || '',
+      senderId: user.id || 0,
+    };
+
+    if (chatContext?.updateAllChats) {
+      chatContext.updateAllChats(openChat.connectionId, [optimisticMessage]);
+    }
+
+    try {
       // Only use WebSocket if already connected
       if (connected) {
         console.log('🚀 Sending message via WebSocket');
         try {
-          await sendWebSocketMessage(message);
+          await sendWebSocketMessage(messageDTO);
         } catch (wsError) {
           console.error('Failed to send via WebSocket:', wsError);
-          // If WebSocket fails, at least the message is already persisted via REST
         }
       } else {
         console.warn('⚠️ WebSocket not connected, message sent only via REST');
+        await chatService.sendMessage(messageDTO.content, messageDTO.connectionId);
       }
-
-      // Optimistically add the message to the UI
-      const newMessage: ChatMessageResponseDTO = {
-        connectionId: message.connectionId,
-        content: message.content,
-        createdAt: new Date().toISOString(),
-        messageId: chatMessages.length + 1,
-        senderAlias: user.alias || '',
-        senderId: user.id || 0,
-      };
-
-      setChatMessages((prev) => [...prev, newMessage]);
-      setMessage('');
     } catch (error) {
       console.error('Error sending message:', error);
       // Show error to user
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSendMessage({
-        connectionId: openChat.connectionId,
-        content: message,
-      });
-    } else if (connected && openChat && openChat.connectionId) {
-      // Send typing indicator when user is typing
-      sendTypingIndicator(openChat.connectionId.toString());
-    }
-  };
-
-  const handleMessageChange = (value: string) => {
-    setMessage(value);
-
-    // Only send typing indicator if already connected
-    if (connected && openChat && openChat.connectionId) {
-      sendTypingIndicator(openChat.connectionId.toString());
-    }
-  };
-
   return (
-    <div className="flex w-full flex-col bg-background-400 px-4 pb-4 sm:px-6 md:px-8">
-      <div className="mt-4 size-full overflow-y-scroll">
-        {loading ? (
-          <div className="flex justify-center p-4">Loading messages...</div>
-        ) : chatMessages.length === 0 ? (
-          <div className="flex justify-center p-4">No messages yet. Start the conversation!</div>
-        ) : (
-          chatMessages.map((msg, index) => <Message key={index} message={msg} isOwn={msg.senderId === user.id} />)
-        )}
+      <div className="flex w-full flex-col bg-background-400 px-4 pb-4 sm:px-6 md:px-8">
+        <OpenChatMessages loading={loading} chatMessages={chatMessages} user={user} />
+        <OpenChatInput onSendMessage={onSendMessage} />
       </div>
-      <div className="mt-4 flex gap-2">
-        <InputField
-          placeholder="Aa"
-          name="message"
-          type="text"
-          value={message}
-          onChange={handleMessageChange}
-          onKeyDown={handleKeyDown}
-        />
-        <Button
-          onClick={() =>
-            handleSendMessage({
-              connectionId: openChat.connectionId,
-              content: message,
-            })
-          }
-        >
-          Send
-        </Button>
-      </div>
-    </div>
   );
 }

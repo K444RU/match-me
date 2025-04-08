@@ -1,9 +1,15 @@
 import type { ChatPreviewResponseDTO } from '@/api/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useWebSocket } from '@/features/chat';
+import { cn } from '@/lib/utils';
 import { format, fromUnixTime } from 'date-fns';
 
-export default function ChatPreviewCard({ chat }: { chat: ChatPreviewResponseDTO }) {
+interface ChatPreviewCardProps {
+  chat: ChatPreviewResponseDTO;
+  isSelected?: boolean;
+}
+
+export default function ChatPreviewCard({ chat, isSelected = false }: ChatPreviewCardProps) {
   const { typingUsers, onlineUsers } = useWebSocket();
   const isTyping = typingUsers[chat.connectedUserId];
   const isOnline = onlineUsers[chat.connectedUserId];
@@ -12,7 +18,7 @@ export default function ChatPreviewCard({ chat }: { chat: ChatPreviewResponseDTO
 
   return (
     <>
-      <div className="flex h-16 w-full items-center text-text">
+      <div className={cn('flex h-16 w-full items-center text-text', isSelected && 'rounded-md bg-primary-100')}>
         <div className="m-2 flex size-16 items-center justify-center">
           <div className="relative flex size-12 items-center justify-center">
             <Avatar>

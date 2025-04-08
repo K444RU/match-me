@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Client, IMessage } from 'react-stomp-hooks';
 
 interface UseSubscriptionManagerProps {
@@ -23,6 +23,8 @@ export default function useSubscriptionManager({
   const isSubscribedRef = useRef<boolean>(false);
   const lastPingRef = useRef<number>(0);
   const pingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const lastConnectionChangeRef = useRef<number>(Date.now());
   const handlersRef = useRef({
     handleMessage,
     handleTypingIndicator,
@@ -46,6 +48,35 @@ export default function useSubscriptionManager({
       stompClientRef.current = stompClient;
     }
   }, [stompClient]);
+
+  // Manage stable connection state with debouncing
+  useEffect(() => {
+    if (!stompClient) return;
+
+    const currentConnected = !!stompClient.connected;
+    const now = Date.now();
+
+    if (currentConnected !== isConnected) {
+      lastConnectionChangeRef.current = now;
+    }
+
+    // handle disconnect immediately
+    if (!currentConnected && isConnected) {
+      setIsConnected(false);
+      return;
+    }
+
+    // add debounce for connections
+    if (currentConnected && !isConnected) {
+      const debounceTimer = setTimeout(() => {
+        if (stompClient.connected) {
+          setIsConnected(true);
+        }
+      }, 1000);
+
+      return () => clearTimeout(debounceTimer);
+    }
+  }, [stompClient?.connected, isConnected]);
 
   // Clear subscriptions helper
   const clearSubscriptions = useCallback(() => {
@@ -158,10 +189,28 @@ export default function useSubscriptionManager({
 
   // Reconnection function
   const reconnect = useCallback(() => {
-    clearSubscriptions();
+    const timeSinceLastChange = Date.now() - lastConnectionChangeRef.current;
 
-    if (stompClientRef.current?.connected && userId) {
-      setupSubscriptions();
+    if (timeSinceLastChange < 2000) {
+      console.log('Connection state recently changed, avoiding reconnect');
+      return;
+    }
+
+    // clear subscriptions if disconnected
+    if (!stompClientRef.current?.connected) {
+      clearSubscriptions();
+    }
+
+    if (stompClientRef.current && userId) {
+      if (!stompClientRef.current.connected) {
+        try {
+          stompClientRef.current.activate();
+        } catch (error) {
+          console.error('Error activating STOMP client: ', error);
+        }
+      } else {
+        setupSubscriptions();
+      }
     }
   }, [userId, setupSubscriptions, clearSubscriptions]);
 
@@ -170,7 +219,7 @@ export default function useSubscriptionManager({
     if (stompClient?.connected && userId) {
       setupSubscriptions();
     }
-  }, [stompClient?.connected, userId, setupSubscriptions]);
+  }, [isConnected, userId, setupSubscriptions]);
 
   return { setupSubscriptions, reconnect };
 }
