@@ -13,7 +13,7 @@ export default function OpenChat() {
   const [loading, setLoading] = useState(false);
 
   // Get WebSocket context for sending messages via WebSocket
-  const { connected, sendMessage: sendWebSocketMessage } = useWebSocket();
+  const { connected, sendMessage: sendWebSocketMessage, typingUsers } = useWebSocket();
 
   const chatContext = useContext(ChatContext);
   const openChat = chatContext?.openChat || null;
@@ -21,6 +21,8 @@ export default function OpenChat() {
   const connectionId = openChat?.connectionId;
   const updateAllChats = chatContext.updateAllChats;
   const allChats = chatContext.allChats;
+
+  const isTyping = openChat ? typingUsers[openChat.connectedUserId] : false;
 
   useEffect(() => {
     setChatMessages([]);
@@ -109,9 +111,13 @@ export default function OpenChat() {
     <div className="relative flex h-screen w-full">
       <SidebarTrigger className="absolute left-1 top-1 z-10" />
       {openChat ? (
-        <div className="flex w-full flex-col bg-background-400 px-4 pb-4 pl-16 sm:px-6 md:px-8">
+        <div className="flex w-full flex-col bg-background-400 px-4 sm:px-6 md:px-8">
           <OpenChatMessages loading={loading} chatMessages={chatMessages} user={user} />
-          <OpenChatInput onSendMessage={onSendMessage} />
+          <OpenChatInput
+            onSendMessage={onSendMessage}
+            isTyping={isTyping}
+            recipientAlias={openChat.connectedUserAlias}
+          />
         </div>
       ) : (
         <NoChat className="pl-16" />
