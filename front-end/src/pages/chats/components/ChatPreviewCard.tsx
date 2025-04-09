@@ -2,11 +2,52 @@ import type { ChatPreviewResponseDTO } from '@/api/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useWebSocket } from '@/features/chat';
 import { cn } from '@/lib/utils';
-import { format, fromUnixTime } from 'date-fns';
+import {format, fromUnixTime, isValid} from 'date-fns';
 
 interface ChatPreviewCardProps {
   chat: ChatPreviewResponseDTO;
   isSelected?: boolean;
+}
+
+//TODO: May be find better refactored solution. this currently allows to fix the wrong time format react error on refresh
+function formatTimestampSafely(timestampStr: string | null | undefined): string {
+  const DEFAULT_TIME = '--:--';
+
+  if (timestampStr === null || timestampStr === undefined || timestampStr === '') {
+    return DEFAULT_TIME;
+  }
+
+  const timestampNumber = Number(timestampStr);
+
+  if (isNaN(timestampNumber)) {
+    console.warn(`ChatPreviewCard: Timestamp string "${timestampStr}" could not be converted to a valid number.`);
+    return DEFAULT_TIME;
+  }
+
+  let dateObject: Date;
+  try {
+    if (Math.abs(timestampNumber) > 3000000000) {
+      dateObject = fromUnixTime(timestampNumber / 1000);
+    } else {
+      dateObject = fromUnixTime(timestampNumber);
+    }
+  } catch (e) {
+    console.error(`ChatPreviewCard: Error creating date from timestamp number: ${timestampNumber} (original: "${timestampStr}")`, e);
+    return DEFAULT_TIME;
+  }
+
+
+  if (!isValid(dateObject)) {
+    console.warn(`ChatPreviewCard: Invalid date created from timestamp number: ${timestampNumber} (original: "${timestampStr}")`);
+    return DEFAULT_TIME;
+  }
+
+  try {
+    return format(dateObject, 'kk:mm');
+  } catch (formatError) {
+    console.error(`ChatPreviewCard: Error formatting valid date object:`, dateObject, formatError);
+    return DEFAULT_TIME;
+  }
 }
 
 export default function ChatPreviewCard({ chat, isSelected = false }: ChatPreviewCardProps) {
@@ -15,6 +56,8 @@ export default function ChatPreviewCard({ chat, isSelected = false }: ChatPrevie
   const isOnline = onlineUsers[chat.connectedUserId];
 
   if (!chat) return null;
+
+  const formattedTime = formatTimestampSafely(chat.lastMessageTimestamp);
 
   return (
     <>
@@ -43,7 +86,7 @@ export default function ChatPreviewCard({ chat, isSelected = false }: ChatPrevie
                 ? chat.connectedUserFirstName + ' ' + chat.connectedUserLastName
                 : chat.connectedUserAlias}
             </p>
-            <p className="text-sm leading-none">{format(fromUnixTime(Number(chat.lastMessageTimestamp)), 'kk:mm')}</p>
+            <p className="text-sm leading-none">{formattedTime}</p>
           </div>
           <div className="mt-1 flex w-full items-center justify-between">
             {isTyping ? (

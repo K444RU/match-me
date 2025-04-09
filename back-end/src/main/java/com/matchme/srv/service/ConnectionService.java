@@ -134,10 +134,11 @@ public class ConnectionService {
    * @throws IllegalStateException   If the connection isn’t pending or the user
    *                                 can’t accept it.
    */
-  @Transactional(readOnly = false)
+  @Transactional
   public Connection acceptConnectionRequest(Long connectionId, Long acceptorId) {
-    Connection connection = connectionRepository.findById(connectionId)
-        .orElseThrow(() -> new EntityNotFoundException("Connection not found"));
+    Connection connection = connectionRepository.findByIdWithUsers(connectionId)
+            .orElseThrow(() -> new EntityNotFoundException("Connection not found"));
+
     ConnectionState currentState = getCurrentState(connection);
 
     if (currentState == null || currentState.getStatus() != ConnectionStatus.PENDING) {

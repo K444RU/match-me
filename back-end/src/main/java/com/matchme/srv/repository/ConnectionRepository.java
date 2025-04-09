@@ -7,9 +7,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ConnectionRepository extends JpaRepository<Connection, Long> {
+
+    @Query("SELECT c FROM Connection c JOIN FETCH c.users WHERE c.id = :id")
+    Optional<Connection> findByIdWithUsers(@Param("id") Long id);
 
     /**
      * Finds the connection between two specific users.

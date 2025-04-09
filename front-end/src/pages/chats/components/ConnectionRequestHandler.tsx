@@ -2,7 +2,7 @@ import {CurrentUserResponseDTO} from '@/api/types';
 import {userService} from '@/features/user';
 import {useAuth} from '@features/authentication';
 import {getConnections, useCommunication} from '@features/chat';
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 
 interface ConnectionProvider {
   connectionId: number;
@@ -14,6 +14,27 @@ export default function ConnectionRequestHandler() {
   const { connectionUpdates, acceptConnectionRequest, rejectConnectionRequest } = useCommunication();
   const [pendingIncomingIds, setPendingIncomingIds] = useState<ConnectionProvider[]>([]);
   const [userData, setUserData] = useState<{ [key: string]: CurrentUserResponseDTO }>({});
+
+  const fetchUserData = useCallback(async (userId: number) => {
+    if (userData[userId]) {
+      return;
+    }
+    try {
+      console.log(`Workspaceing user data for ID: ${userId}`);
+      const fetchedUser = await userService.getUser(userId);
+      if (fetchedUser) {
+        setUserData((prev) => ({
+          ...prev,
+          [userId]: fetchedUser,
+        }));
+        console.log(`Successfully fetched and stored user data for ID: ${userId}`);
+      } else {
+        console.warn(`User data not found for ID: ${userId}`);
+      }
+    } catch (error) {
+      console.error(`Failed to fetch user data for ID: ${userId}`, error);
+    }
+  }, [userData]);
 
   useEffect(() => {
     if (!user) return;
@@ -46,14 +67,20 @@ export default function ConnectionRequestHandler() {
   useEffect(() => {
     connectionUpdates.forEach((update) => {
       if (update.action === 'NEW_REQUEST') {
-        setPendingIncomingIds((prev) => [...prev, update.connection]);
+        setPendingIncomingIds((prev) => {
+          if (prev.some(req => req.connectionId === update.connection.connectionId)) {
+            return prev;
+          }
+          return [...prev, update.connection];
+        });
+        fetchUserData(update.connection.userId);
       } else if (['REQUEST_ACCEPTED', 'REQUEST_REJECTED'].includes(update.action)) {
         setPendingIncomingIds((prev) =>
             prev.filter((req) => req.connectionId !== update.connection.connectionId)
         );
       }
     });
-  }, [connectionUpdates]);
+  }, [connectionUpdates, fetchUserData]);
 
   const handleAccept = (connectionId: number) => {
     acceptConnectionRequest(connectionId);

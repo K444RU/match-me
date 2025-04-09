@@ -120,6 +120,20 @@ const GlobalCommunicationProviderInner = ({
         });
     }, [chatPreviews, setChatDisplays]);
 
+    useEffect(() => {
+        if (wsConnectionUpdates.length > 0) {
+            const latestUpdate = wsConnectionUpdates[wsConnectionUpdates.length - 1];
+            if (latestUpdate.action === 'REQUEST_ACCEPTED') {
+                //TODO: Add Reject state here. these two currently working fine
+                refreshChats();
+            } else if (latestUpdate.action === 'DISCONNECTED') {
+                setChatDisplays((prevChats) =>
+                    prevChats.filter((chat) => chat.connectionId !== latestUpdate.connection.connectionId)
+                );
+            }
+        }
+    }, [wsConnectionUpdates, refreshChats, setChatDisplays]);
+
     // Update open chat if needed - in a separate effect to avoid conflicts
     useEffect(() => {
         if (!openChat || !chatPreviews?.length) return;

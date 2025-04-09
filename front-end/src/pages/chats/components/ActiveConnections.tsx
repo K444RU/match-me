@@ -46,7 +46,12 @@ export default function ActiveConnections() {
   useEffect(() => {
     connectionUpdates.forEach((update) => {
       if (update.action === 'REQUEST_ACCEPTED') {
-        setActiveConnections((prev) => [...prev, update.connection]);
+        setActiveConnections((prev) => {
+          if (!prev.some((conn) => conn.connectionId === update.connection.connectionId)) {
+            return [...prev, update.connection];
+          }
+          return prev;
+        });
       } else if (update.action === 'DISCONNECTED') {
         setActiveConnections((prev) =>
             prev.filter((conn) => conn.connectionId !== update.connection.connectionId)

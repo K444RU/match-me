@@ -72,16 +72,10 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
 
   const { onlineUsers, handleOnlineIndicator } = useOnlineIndicator();
 
-  const userQueueDestination = useMemo(() => `/user/${currentUser.id}/queue/connectionUpdates`, [currentUser.id]);
-
-  useSubscription(userQueueDestination, (message) => {
-    try {
-      const update: ConnectionUpdateMessage = JSON.parse(message.body);
-      console.log('Received Connection Update:', update);
-      setConnectionUpdates((prevUpdates) => [...prevUpdates, update]);
-    } catch (error) {
-      console.error('Failed to parse connection update message:', message.body, error);
-    }
+  useSubscription(`/user/${currentUser.id}/queue/connectionUpdates`, (message) => {
+    console.log("Received WebSocket message:", message.body);
+    const update = JSON.parse(message.body);
+    setConnectionUpdates((prev) => [...prev, update]);
   });
 
   // Setup subscriptions with the handlers
