@@ -49,27 +49,42 @@ public class ConnectionService {
     List<ConnectionProvider> pendingOutgoing = new ArrayList<>();
 
     for (Connection connection : connections) {
-      ConnectionState currentState = getCurrentState(connection);
-      if (currentState == null) {
+      ConnectionState latestState = connection.getConnectionStates().stream()
+              .max(Comparator.comparing(ConnectionState::getTimestamp))
+              .orElse(null);
+
+      if (latestState == null) {
         continue;
       }
+
       Long otherUserId = connection.getUsers().stream()
           .map(User::getId)
           .filter(id -> !id.equals(currentUserId))
           .findFirst()
           .orElse(null);
+
       if (otherUserId == null) {
         continue;
       }
+
       ConnectionProvider connectionInformation = new ConnectionProvider(connection.getId(), otherUserId);
-      if (currentState.getStatus() == ConnectionStatus.ACCEPTED) {
-        active.add(connectionInformation);
-      } else if (currentState.getStatus() == ConnectionStatus.PENDING) {
-        if (currentState.getRequesterId().equals(currentUserId)) {
-          pendingOutgoing.add(connectionInformation);
-        } else {
-          pendingIncoming.add(connectionInformation);
-        }
+
+      switch (latestState.getStatus()) {
+        case ACCEPTED:
+          active.add(connectionInformation);
+          break;
+        case PENDING:
+          if (latestState.getRequesterId() != null && latestState.getRequesterId().equals(currentUserId)) {
+            pendingOutgoing.add(connectionInformation);
+          } else {
+            pendingIncoming.add(connectionInformation);
+          }
+          break;
+        case REJECTED:
+        case DISCONNECTED:
+          break;
+        default:
+          break;
       }
     }
     return new ConnectionsDTO(active, pendingIncoming, pendingOutgoing);
@@ -170,7 +185,7 @@ public class ConnectionService {
    */
   @Transactional(readOnly = false)
   public Connection rejectConnectionRequest(Long connectionId, Long rejectorId) {
-    Connection connection = connectionRepository.findById(connectionId)
+    Connection connection = connectionRepository.findByIdWithUsers(connectionId)
         .orElseThrow(() -> new EntityNotFoundException("Connection not found"));
     ConnectionState currentState = getCurrentState(connection);
 

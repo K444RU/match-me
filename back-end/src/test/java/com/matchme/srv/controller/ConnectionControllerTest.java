@@ -2,6 +2,7 @@ package com.matchme.srv.controller;
 
 import com.matchme.srv.dto.response.ConnectionsDTO;
 import com.matchme.srv.exception.GlobalExceptionHandler;
+import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.service.ConnectionService;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,7 +66,8 @@ public class ConnectionControllerTest {
     @Test
     void sendConnectionRequest_success() throws Exception {
         when(securityUtils.getCurrentUserId(authentication)).thenReturn(DEFAULT_USER_ID);
-        doNothing().when(connectionService).sendConnectionRequest(DEFAULT_USER_ID, DEFAULT_TARGET_USER_ID);
+        when(connectionService.sendConnectionRequest(DEFAULT_USER_ID, DEFAULT_TARGET_USER_ID))
+                .thenReturn(DEFAULT_CONNECTION_ID);
 
         mockMvc.perform(post("/connections/requests/" + DEFAULT_TARGET_USER_ID)
                         .principal(authentication))
@@ -77,8 +79,8 @@ public class ConnectionControllerTest {
     @Test
     void sendConnectionRequest_toSelf() throws Exception {
         when(securityUtils.getCurrentUserId(authentication)).thenReturn(DEFAULT_USER_ID);
-        doThrow(new IllegalStateException("Cannot send a connection request to yourself"))
-                .when(connectionService).sendConnectionRequest(DEFAULT_USER_ID, DEFAULT_USER_ID);
+        when(connectionService.sendConnectionRequest(DEFAULT_USER_ID, DEFAULT_USER_ID))
+                .thenThrow(new IllegalStateException("Cannot send a connection request to yourself"));
 
         mockMvc.perform(post("/connections/requests/" + DEFAULT_USER_ID)
                         .principal(authentication))
@@ -90,8 +92,8 @@ public class ConnectionControllerTest {
     @Test
     void sendConnectionRequest_pendingExists() throws Exception {
         when(securityUtils.getCurrentUserId(authentication)).thenReturn(DEFAULT_USER_ID);
-        doThrow(new IllegalStateException("A pending request already exists from you to this user"))
-                .when(connectionService).sendConnectionRequest(DEFAULT_USER_ID, DEFAULT_TARGET_USER_ID);
+        when(connectionService.sendConnectionRequest(DEFAULT_USER_ID, DEFAULT_TARGET_USER_ID))
+                .thenThrow(new IllegalStateException("A pending request already exists from you to this user"));
 
         mockMvc.perform(post("/connections/requests/" + DEFAULT_TARGET_USER_ID)
                         .principal(authentication))
@@ -103,7 +105,10 @@ public class ConnectionControllerTest {
     @Test
     void acceptConnectionRequest_success() throws Exception {
         when(securityUtils.getCurrentUserId(authentication)).thenReturn(DEFAULT_TARGET_USER_ID);
-        doNothing().when(connectionService).acceptConnectionRequest(DEFAULT_CONNECTION_ID, DEFAULT_TARGET_USER_ID);
+        Connection connection = new Connection();
+        connection.setId(DEFAULT_CONNECTION_ID);
+        when(connectionService.acceptConnectionRequest(DEFAULT_CONNECTION_ID, DEFAULT_TARGET_USER_ID))
+                .thenReturn(connection);
 
         mockMvc.perform(patch("/connections/requests/" + DEFAULT_CONNECTION_ID + "/accept")
                         .principal(authentication))
@@ -115,8 +120,8 @@ public class ConnectionControllerTest {
     @Test
     void acceptConnectionRequest_notPending() throws Exception {
         when(securityUtils.getCurrentUserId(authentication)).thenReturn(DEFAULT_TARGET_USER_ID);
-        doThrow(new IllegalStateException("Connection is not in PENDING state"))
-                .when(connectionService).acceptConnectionRequest(DEFAULT_CONNECTION_ID, DEFAULT_TARGET_USER_ID);
+        when(connectionService.acceptConnectionRequest(DEFAULT_CONNECTION_ID, DEFAULT_TARGET_USER_ID))
+                .thenThrow(new IllegalStateException("Connection is not in PENDING state"));
 
         mockMvc.perform(patch("/connections/requests/" + DEFAULT_CONNECTION_ID + "/accept")
                         .principal(authentication))
@@ -128,8 +133,8 @@ public class ConnectionControllerTest {
     @Test
     void acceptConnectionRequest_notAuthorized() throws Exception {
         when(securityUtils.getCurrentUserId(authentication)).thenReturn(DEFAULT_UNAUTHORIZED_USER_ID);
-        doThrow(new IllegalStateException("You are not authorized to accept this request"))
-                .when(connectionService).acceptConnectionRequest(DEFAULT_CONNECTION_ID, DEFAULT_UNAUTHORIZED_USER_ID);
+        when(connectionService.acceptConnectionRequest(DEFAULT_CONNECTION_ID, DEFAULT_UNAUTHORIZED_USER_ID))
+                .thenThrow(new IllegalStateException("You are not authorized to accept this request"));
 
         mockMvc.perform(patch("/connections/requests/" + DEFAULT_CONNECTION_ID + "/accept")
                         .principal(authentication))
@@ -141,7 +146,10 @@ public class ConnectionControllerTest {
     @Test
     void rejectConnectionRequest_success() throws Exception {
         when(securityUtils.getCurrentUserId(authentication)).thenReturn(DEFAULT_TARGET_USER_ID);
-        doNothing().when(connectionService).rejectConnectionRequest(DEFAULT_CONNECTION_ID, DEFAULT_TARGET_USER_ID);
+        Connection connection = new Connection();
+        connection.setId(DEFAULT_CONNECTION_ID);
+        when(connectionService.rejectConnectionRequest(DEFAULT_CONNECTION_ID, DEFAULT_TARGET_USER_ID))
+                .thenReturn(connection);
 
         mockMvc.perform(patch("/connections/requests/" + DEFAULT_CONNECTION_ID + "/reject")
                         .principal(authentication))
@@ -153,8 +161,8 @@ public class ConnectionControllerTest {
     @Test
     void rejectConnectionRequest_notPending() throws Exception {
         when(securityUtils.getCurrentUserId(authentication)).thenReturn(DEFAULT_TARGET_USER_ID);
-        doThrow(new IllegalStateException("Connection is not in PENDING state"))
-                .when(connectionService).rejectConnectionRequest(DEFAULT_CONNECTION_ID, DEFAULT_TARGET_USER_ID);
+        when(connectionService.rejectConnectionRequest(DEFAULT_CONNECTION_ID, DEFAULT_TARGET_USER_ID))
+                .thenThrow(new IllegalStateException("Connection is not in PENDING state"));
 
         mockMvc.perform(patch("/connections/requests/" + DEFAULT_CONNECTION_ID + "/reject")
                         .principal(authentication))
@@ -166,8 +174,8 @@ public class ConnectionControllerTest {
     @Test
     void rejectConnectionRequest_notAuthorized() throws Exception {
         when(securityUtils.getCurrentUserId(authentication)).thenReturn(DEFAULT_UNAUTHORIZED_USER_ID);
-        doThrow(new IllegalStateException("You are not authorized to reject this request"))
-                .when(connectionService).rejectConnectionRequest(DEFAULT_CONNECTION_ID, DEFAULT_UNAUTHORIZED_USER_ID);
+        when(connectionService.rejectConnectionRequest(DEFAULT_CONNECTION_ID, DEFAULT_UNAUTHORIZED_USER_ID))
+                .thenThrow(new IllegalStateException("You are not authorized to reject this request"));
 
         mockMvc.perform(patch("/connections/requests/" + DEFAULT_CONNECTION_ID + "/reject")
                         .principal(authentication))
@@ -179,7 +187,10 @@ public class ConnectionControllerTest {
     @Test
     void disconnect_success() throws Exception {
         when(securityUtils.getCurrentUserId(authentication)).thenReturn(DEFAULT_USER_ID);
-        doNothing().when(connectionService).disconnect(DEFAULT_CONNECTION_ID, DEFAULT_USER_ID);
+        Connection connection = new Connection();
+        connection.setId(DEFAULT_CONNECTION_ID);
+        when(connectionService.disconnect(DEFAULT_CONNECTION_ID, DEFAULT_USER_ID))
+                .thenReturn(connection);
 
         mockMvc.perform(delete("/connections/" + DEFAULT_CONNECTION_ID)
                         .principal(authentication))
@@ -191,8 +202,8 @@ public class ConnectionControllerTest {
     @Test
     void disconnect_notPartOfConnection() throws Exception {
         when(securityUtils.getCurrentUserId(authentication)).thenReturn(DEFAULT_UNAUTHORIZED_USER_ID);
-        doThrow(new IllegalStateException("You are not part of this connection"))
-                .when(connectionService).disconnect(DEFAULT_CONNECTION_ID, DEFAULT_UNAUTHORIZED_USER_ID);
+        when(connectionService.disconnect(DEFAULT_CONNECTION_ID, DEFAULT_UNAUTHORIZED_USER_ID))
+                .thenThrow(new IllegalStateException("You are not part of this connection"));
 
         mockMvc.perform(delete("/connections/" + DEFAULT_CONNECTION_ID)
                         .principal(authentication))
@@ -204,8 +215,8 @@ public class ConnectionControllerTest {
     @Test
     void disconnect_notAccepted() throws Exception {
         when(securityUtils.getCurrentUserId(authentication)).thenReturn(DEFAULT_USER_ID);
-        doThrow(new IllegalStateException("Connection is not in ACCEPTED state"))
-                .when(connectionService).disconnect(DEFAULT_CONNECTION_ID, DEFAULT_USER_ID);
+        when(connectionService.disconnect(DEFAULT_CONNECTION_ID, DEFAULT_USER_ID))
+                .thenThrow(new IllegalStateException("Connection is not in ACCEPTED state"));
 
         mockMvc.perform(delete("/connections/" + DEFAULT_CONNECTION_ID)
                         .principal(authentication))

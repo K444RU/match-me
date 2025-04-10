@@ -124,7 +124,7 @@ class ConnectionServiceTest {
   void acceptConnectionRequest_success() {
     ConnectionState pendingState = createState(ConnectionStatus.PENDING, requester.getId(), target.getId());
     connection.getConnectionStates().add(pendingState);
-    when(connectionRepository.findById(1L)).thenReturn(Optional.of(connection));
+    when(connectionRepository.findByIdWithUsers(1L)).thenReturn(Optional.of(connection));
     when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
     when(connectionRepository.save(any(Connection.class))).thenReturn(connection);
 
@@ -137,7 +137,7 @@ class ConnectionServiceTest {
   void acceptConnectionRequest_notPending_throwsIllegalStateException() {
     ConnectionState acceptedState = createState(ConnectionStatus.ACCEPTED, requester.getId(), target.getId());
     connection.getConnectionStates().add(acceptedState);
-    when(connectionRepository.findById(1L)).thenReturn(Optional.of(connection));
+    when(connectionRepository.findByIdWithUsers(DEFAULT_CONNECTION_ID)).thenReturn(Optional.of(connection));
 
     IllegalStateException exception = assertThrows(IllegalStateException.class,
         () -> connectionService.acceptConnectionRequest(DEFAULT_CONNECTION_ID, target.getId()));
@@ -148,7 +148,7 @@ class ConnectionServiceTest {
   void acceptConnectionRequest_notAuthorized_throwsIllegalStateException() {
     ConnectionState pendingState = createState(ConnectionStatus.PENDING, requester.getId(), target.getId());
     connection.getConnectionStates().add(pendingState);
-    when(connectionRepository.findById(1L)).thenReturn(Optional.of(connection));
+    when(connectionRepository.findByIdWithUsers(DEFAULT_CONNECTION_ID)).thenReturn(Optional.of(connection));
 
     IllegalStateException exception = assertThrows(IllegalStateException.class,
         () -> connectionService.acceptConnectionRequest(DEFAULT_CONNECTION_ID, requester.getId()));
@@ -168,7 +168,7 @@ class ConnectionServiceTest {
   void rejectConnectionRequest_success() {
     ConnectionState pendingState = createState(ConnectionStatus.PENDING, requester.getId(), target.getId());
     connection.getConnectionStates().add(pendingState);
-    when(connectionRepository.findById(1L)).thenReturn(Optional.of(connection));
+    when(connectionRepository.findByIdWithUsers(1L)).thenReturn(Optional.of(connection));
     when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
     when(connectionRepository.save(any(Connection.class))).thenReturn(connection);
 
@@ -181,7 +181,7 @@ class ConnectionServiceTest {
   void rejectConnectionRequest_notPending_throwsIllegalStateException() {
     ConnectionState acceptedState = createState(ConnectionStatus.ACCEPTED, requester.getId(), target.getId());
     connection.getConnectionStates().add(acceptedState);
-    when(connectionRepository.findById(1L)).thenReturn(Optional.of(connection));
+    when(connectionRepository.findByIdWithUsers(DEFAULT_CONNECTION_ID)).thenReturn(Optional.of(connection));
 
     IllegalStateException exception = assertThrows(IllegalStateException.class,
         () -> connectionService.rejectConnectionRequest(DEFAULT_CONNECTION_ID, target.getId()));
@@ -192,7 +192,7 @@ class ConnectionServiceTest {
   void rejectConnectionRequest_notAuthorized_throwsIllegalStateException() {
     ConnectionState pendingState = createState(ConnectionStatus.PENDING, requester.getId(), target.getId());
     connection.getConnectionStates().add(pendingState);
-    when(connectionRepository.findById(1L)).thenReturn(Optional.of(connection));
+    when(connectionRepository.findByIdWithUsers(DEFAULT_CONNECTION_ID)).thenReturn(Optional.of(connection));
 
     IllegalStateException exception = assertThrows(IllegalStateException.class,
         () -> connectionService.rejectConnectionRequest(DEFAULT_CONNECTION_ID, requester.getId()));

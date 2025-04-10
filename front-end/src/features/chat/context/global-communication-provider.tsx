@@ -1,10 +1,11 @@
-import {ChatMessageResponseDTO, ChatPreviewResponseDTO} from '@/api/types';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useAuth} from '@/features/authentication';
 import {useWebSocket} from '@/features/chat';
+import { toast } from 'react-toastify';
+import {ChatMessageResponseDTO, ChatPreviewResponseDTO} from '@/api/types';
+import {CommunicationContext} from '@features/chat';
+import {userService} from "@features/user";
 import {chatService} from '@/features/chat/';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {CommunicationContext} from './communication-context.ts';
-import {ConnectionUpdateMessage} from "@features/chat/types";
 
 interface GlobalCommunicationProviderProps {
     children: React.ReactNode;
@@ -12,9 +13,9 @@ interface GlobalCommunicationProviderProps {
 
 export const GlobalCommunicationProvider = ({children}: GlobalCommunicationProviderProps) => {
     const {user} = useAuth();
+
     const [chatDisplays, setChatDisplays] = useState<ChatPreviewResponseDTO[]>([]);
     const [openChat, setOpenChat] = useState<ChatPreviewResponseDTO | null>(null);
-    const [connectionUpdates, setConnectionUpdates] = useState<ConnectionUpdateMessage[]>([]);
     const [allChats, setAllChats] = useState<Record<number, ChatMessageResponseDTO[]>>({});
 
     const refreshChats = useCallback(async () => {
@@ -36,8 +37,6 @@ export const GlobalCommunicationProvider = ({children}: GlobalCommunicationProvi
             setChatDisplays={setChatDisplays}
             setOpenChat={setOpenChat}
             setAllChats={setAllChats}
-            connectionUpdates={connectionUpdates}
-            setConnectionUpdates={setConnectionUpdates}
         >
             {children}
         </GlobalCommunicationProviderInner>
@@ -51,8 +50,6 @@ interface GlobalCommunicationProviderInnerProps {
     openChat: ChatPreviewResponseDTO | null;
     setChatDisplays: React.Dispatch<React.SetStateAction<ChatPreviewResponseDTO[]>>;
     setOpenChat: React.Dispatch<React.SetStateAction<ChatPreviewResponseDTO | null>>;
-    connectionUpdates: ConnectionUpdateMessage[];
-    setConnectionUpdates: React.Dispatch<React.SetStateAction<ConnectionUpdateMessage[]>>;
     setAllChats: React.Dispatch<React.SetStateAction<Record<number, ChatMessageResponseDTO[]>>>;
     children: React.ReactNode;
 }
@@ -64,8 +61,6 @@ const GlobalCommunicationProviderInner = ({
                                               openChat,
                                               setChatDisplays,
                                               setOpenChat,
-                                              connectionUpdates,
-                                              setConnectionUpdates,
                                               setAllChats,
                                               children,
                                           }: GlobalCommunicationProviderInnerProps) => {
@@ -83,6 +78,9 @@ const GlobalCommunicationProviderInner = ({
         rejectConnectionRequest,
         disconnectConnection
     } = useWebSocket();
+
+    const processedUpdatesCountRef = useRef(0);
+
     // Load initial data once when connected
     useEffect(() => {
         refreshChats();
@@ -120,19 +118,88 @@ const GlobalCommunicationProviderInner = ({
         });
     }, [chatPreviews, setChatDisplays]);
 
+    // Handle Connection updates & trigger Toasts notifications
     useEffect(() => {
-        if (wsConnectionUpdates.length > 0) {
-            const latestUpdate = wsConnectionUpdates[wsConnectionUpdates.length - 1];
-            if (latestUpdate.action === 'REQUEST_ACCEPTED') {
-                //TODO: Add Reject state here. these two currently working fine
-                refreshChats();
-            } else if (latestUpdate.action === 'DISCONNECTED') {
-                setChatDisplays((prevChats) =>
-                    prevChats.filter((chat) => chat.connectionId !== latestUpdate.connection.connectionId)
-                );
-            }
+        const currentLength = wsConnectionUpdates.length;
+        const lastProcessedIndex = Math.min(processedUpdatesCountRef.current, currentLength);
+        const newUpdates = wsConnectionUpdates.slice(lastProcessedIndex);
+
+        if (newUpdates.length > 0) {
+            console.log(`[GlobalCommProvider] Processing ${newUpdates.length} new connection updates:`, newUpdates);
+
+            newUpdates.forEach(update => {
+                if (!update || !update.action || !update.connection || typeof update.connection.userId !== 'number' || typeof update.connection.connectionId !== 'number') {
+                    console.warn("[GlobalCommProvider] Received invalid update structure:", update);
+                    return;
+                }
+
+                const otherUserId = update.connection.userId;
+                const connectionId = update.connection.connectionId;
+
+                console.log("[GlobalCommProvider] Processing update:", update.action, "for connection:", connectionId, "involving user:", otherUserId);
+
+                switch (update.action) {
+                    case 'REQUEST_ACCEPTED':
+                        console.log("[GlobalCommProvider] Accepted detected, refreshing chats & showing toast.");
+                        userService.getUser(otherUserId)
+                            .then(acceptedUser => {
+                                const alias = acceptedUser?.alias || `User ${otherUserId}`;
+                                toast.success(`🤝 Connection with ${alias} accepted!`);
+                            })
+                            .catch(err => {
+                                console.error(`Failed to fetch user ${otherUserId} for accept toast`, err);
+                                toast.success(`🤝 Connection accepted!`);
+                            });
+                        refreshChats();
+                        break;
+
+                    case 'DISCONNECTED':
+                        console.log("[GlobalCommProvider] Disconnected detected, filtering chatDisplay & showing toast for connection:", connectionId);
+                        userService.getUser(otherUserId)
+                            .then(disconnectedUser => {
+                                const alias = disconnectedUser?.alias || `User ${otherUserId}`;
+                                toast.error(`🔌 Disconnected from ${alias}.`);
+                            })
+                            .catch(err => {
+                                console.error(`Failed to fetch user ${otherUserId} for disconnect toast`, err);
+                                toast.error(`🔌 Disconnected.`);
+                            });
+                        setChatDisplays((prevChats) => {
+                            return prevChats.filter((chat) => chat.connectionId !== connectionId);
+                        });
+                        break;
+
+                    case 'NEW_REQUEST':
+                        console.log("[GlobalCommProvider] New request detected, triggering toast.");
+                        toast.info(`📬 New connection request!`);
+                        break;
+
+                    case 'REQUEST_REJECTED':
+                        console.log("[GlobalCommProvider] Rejected detected, showing toast.");
+                        userService.getUser(otherUserId)
+                            .then(otherUser => {
+                                const alias = otherUser?.alias || `User ${otherUserId}`;
+                                toast.warn(`🙅 Connection request involving ${alias} rejected.`);
+                            })
+                            .catch(err => {
+                                console.error(`Failed to fetch user ${otherUserId} for reject toast`, err);
+                                toast.warn(`🙅 Connection request rejected.`);
+                            });
+                        break;
+
+                    case 'REQUEST_SENT':
+                        console.log("[GlobalCommProvider] Request Sent detected, no action needed here.");
+                        break;
+
+                    default:
+                        console.warn("[GlobalCommProvider] Received unhandled connection update action:", update.action);
+                }
+            });
+
+            processedUpdatesCountRef.current = currentLength;
         }
     }, [wsConnectionUpdates, refreshChats, setChatDisplays]);
+
 
     // Update open chat if needed - in a separate effect to avoid conflicts
     useEffect(() => {
@@ -144,11 +211,6 @@ const GlobalCommunicationProviderInner = ({
         }
     }, [chatPreviews, openChat, setOpenChat]);
 
-    useEffect(() => {
-        if (wsConnectionUpdates?.length) {
-            setConnectionUpdates((prev) => [...prev, ...wsConnectionUpdates]);
-        }
-    }, [wsConnectionUpdates, setConnectionUpdates]);
 
     useEffect(() => {
         if (!messageQueue || messageQueue.length === 0) return;
@@ -217,7 +279,7 @@ const GlobalCommunicationProviderInner = ({
             sendTypingIndicator,
             sendMarkRead,
             updateAllChats,
-            connectionUpdates,
+            connectionUpdates: wsConnectionUpdates,
             sendConnectionRequest,
             acceptConnectionRequest,
             rejectConnectionRequest,
@@ -233,7 +295,7 @@ const GlobalCommunicationProviderInner = ({
             sendTypingIndicator,
             sendMarkRead,
             updateAllChats,
-            connectionUpdates,
+            wsConnectionUpdates,
             sendConnectionRequest,
             acceptConnectionRequest,
             rejectConnectionRequest,

@@ -73,9 +73,14 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
   const { onlineUsers, handleOnlineIndicator } = useOnlineIndicator();
 
   useSubscription(`/user/${currentUser.id}/queue/connectionUpdates`, (message) => {
-    console.log("Received WebSocket message:", message.body);
-    const update = JSON.parse(message.body);
-    setConnectionUpdates((prev) => [...prev, update]);
+    try {
+      console.log(`[User ${currentUser.id}] Received RAW connection update:`, message.body);
+      const update = JSON.parse(message.body);
+      console.log(`[User ${currentUser.id}] Parsed connection update:`, update);
+      setConnectionUpdates((prev) => [...prev, update]);
+    } catch (e) {
+      console.error("Failed to parse connection update", e, message.body);
+    }
   });
 
   // Setup subscriptions with the handlers

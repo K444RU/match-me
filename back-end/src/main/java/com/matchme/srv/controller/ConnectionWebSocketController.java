@@ -52,13 +52,12 @@ public class ConnectionWebSocketController {
                 .findFirst()
                 .orElseThrow(()-> new IllegalStateException("Invalid connection"));
 
-        System.out.println("Sending REQUEST_ACCEPTED to acceptor: " + acceptorId);
         messagingTemplate.convertAndSendToUser(
                 acceptorId.toString(),
                 "/queue/connectionUpdates",
                 new ConnectionUpdateMessage("REQUEST_ACCEPTED", new ConnectionProvider(connectionId, otherUserId))
         );
-        System.out.println("Sending REQUEST_ACCEPTED to other user: " + otherUserId);
+
         messagingTemplate.convertAndSendToUser(
                 otherUserId.toString(),
                 "/queue/connectionUpdates",
@@ -66,7 +65,7 @@ public class ConnectionWebSocketController {
         );
     }
 
-    @MessageMapping("/connection/rejectRequest")
+    @MessageMapping("/connection.rejectRequest")
     public void rejectConnectionRequest(@Payload Long connectionId, Authentication authentication) {
         Long rejectorId = securityUtils.getCurrentUserId(authentication);
         Connection connection = connectionService.rejectConnectionRequest(connectionId, rejectorId);
