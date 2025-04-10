@@ -16,10 +16,10 @@ import com.matchme.srv.exception.InvalidVerificationException;
 import com.matchme.srv.exception.ResourceNotFoundException;
 import com.matchme.srv.mapper.AttributesMapper;
 import com.matchme.srv.mapper.PreferencesMapper;
+import com.matchme.srv.model.enums.UserState;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.UserAuth;
 import com.matchme.srv.model.user.UserRoleType;
-import com.matchme.srv.model.user.UserStateTypes;
 import com.matchme.srv.model.user.activity.ActivityLogType;
 import com.matchme.srv.model.user.profile.Hobby;
 import com.matchme.srv.model.user.profile.ProfileChangeType;
@@ -37,7 +37,6 @@ import com.matchme.srv.service.type.PreferenceChangeTypeService;
 import com.matchme.srv.service.type.ProfileChangeTypeService;
 import com.matchme.srv.service.type.UserGenderTypeService;
 import com.matchme.srv.service.type.UserRoleTypeService;
-import com.matchme.srv.service.type.UserStateTypesService;
 import com.matchme.srv.service.user.validation.UserValidationService;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.Collections;
@@ -59,9 +58,7 @@ class UserCreationServiceTests {
   @Mock private UserRepository userRepository;
 
   @Mock private UserRoleTypeService userRoleTypeService;
-
-  @Mock private UserStateTypesService userStateTypesService;
-
+ 
   @Mock private ActivityLogTypeService activityLogTypeService;
 
   @Mock private ProfileChangeTypeService profileChangeTypeService;
@@ -96,13 +93,11 @@ class UserCreationServiceTests {
       String number = "123";
       String password = "password";
       SignupRequestDTO request =
-          SignupRequestDTO.builder().email(email).number(number).password(password).build();
+      SignupRequestDTO.builder().email(email).number(number).password(password).build();
 
-      UserStateTypes userStateTypes = new UserStateTypes();
       UserRoleType role = new UserRoleType();
       ActivityLogType activityLogType = new ActivityLogType();
 
-      when(userStateTypesService.getByName("UNVERIFIED")).thenReturn(userStateTypes);
       when(userRoleTypeService.getByName("ROLE_USER")).thenReturn(role);
       when(activityLogTypeService.getByName("CREATED")).thenReturn(activityLogType);
       when(encoder.encode(password)).thenReturn("encodedPassword");
@@ -126,8 +121,8 @@ class UserCreationServiceTests {
                   .isEqualTo(number),
           () ->
               assertThat(savedUser.getState())
-                  .as("checking if the state is correct")
-                  .isEqualTo(userStateTypes),
+              	.as("checking if the state is correct")
+              	.isEqualTo(UserState.UNVERIFIED), // Check against enum
           () ->
               assertThat(savedUser.getRoles())
                   .as("checking if the roles are correct")
@@ -197,15 +192,15 @@ class UserCreationServiceTests {
       UserAuth userAuth = new UserAuth();
       userAuth.setRecovery(123);
       user.setUserAuth(userAuth);
-
-      UserStateTypes userStateType = new UserStateTypes();
+    
+      // UserStateTypes userStateType = new UserStateTypes(); // Removed old type instantiation
       ActivityLogType activityLogType = new ActivityLogType();
       ProfileChangeType profileChangeType = new ProfileChangeType();
       AttributeChangeType attributeChangeType = new AttributeChangeType();
       PreferenceChangeType preferenceChangeType = new PreferenceChangeType();
-
+    
       when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-      when(userStateTypesService.getByName("VERIFIED")).thenReturn(userStateType);
+      // No need to mock userStateTypesService anymore
       when(activityLogTypeService.getByName("VERIFIED")).thenReturn(activityLogType);
       when(profileChangeTypeService.getByName("CREATED")).thenReturn(profileChangeType);
       when(attributeChangeTypeService.getByName("CREATED")).thenReturn(attributeChangeType);
@@ -218,8 +213,8 @@ class UserCreationServiceTests {
       assertAll(
           () ->
               assertThat(user.getState())
-                  .as("checking if the state is correct")
-                  .isEqualTo(userStateType),
+              	.as("checking if the state is correct")
+              	.isEqualTo(UserState.PROFILE_INCOMPLETE), // Check against enum
           () -> assertThat(userAuth.getRecovery()).as("checking if the recovery is null").isNull(),
           () -> assertThat(user.getProfile()).as("checking if the profile is not null").isNotNull(),
           () ->
@@ -316,15 +311,15 @@ class UserCreationServiceTests {
       UserGenderType genderType = new UserGenderType();
       Hobby hobby1 = Hobby.builder().id(3L).name("3D printing").category("General").build();
       Hobby hobby2 = Hobby.builder().id(4L).name("Acrobatics").category("General").build();
-
-      UserStateTypes userStateType = new UserStateTypes();
-
+    
+      // UserStateTypes userStateType = new UserStateTypes(); // Removed old type instantiation
+    
       when(userRepository.findById(1L)).thenReturn(Optional.of(user));
       when(userGenderTypeService.getById(1L)).thenReturn(genderType);
       when(userGenderTypeService.getById(2L)).thenReturn(genderType);
       when(hobbyService.getById(3L)).thenReturn(hobby1);
       when(hobbyService.getById(4L)).thenReturn(hobby2);
-      when(userStateTypesService.getByName("NEW")).thenReturn(userStateType);
+      // No need to mock userStateTypesService anymore
 
       // Act
       userCreationService.setUserParameters(1L, request);
@@ -352,8 +347,8 @@ class UserCreationServiceTests {
                   .containsExactlyInAnyOrder(hobby1, hobby2),
           () ->
               assertThat(user.getState())
-                  .as("checking if the state is correct")
-                  .isEqualTo(userStateType),
+              	.as("checking if the state is correct")
+              	.isEqualTo(UserState.PROFILE_INCOMPLETE), // Check against enum
           () -> assertThat(user.getScore()).as("checking if the score is not null").isNotNull(),
           () -> verify(userRepository, times(1)).save(user));
 
@@ -378,8 +373,8 @@ class UserCreationServiceTests {
       assertAll(
           () ->
               assertThat(user.getState())
-                  .as("checking if the state is correct")
-                  .isEqualTo(userStateType),
+              	.as("checking if the state is correct")
+              	.isEqualTo(UserState.PROFILE_INCOMPLETE), // Check against enum
           () -> assertThat(user.getScore()).as("checking if the score is not null").isNotNull());
     }
 

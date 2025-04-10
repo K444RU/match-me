@@ -1,5 +1,7 @@
 package com.matchme.srv.repository;
 
+import static com.matchme.srv.model.enums.UserState.ACTIVE;
+
 import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.model.message.MessageEvent;
 import com.matchme.srv.model.message.MessageEventType;
@@ -42,10 +44,12 @@ class UserMessageRepositoryTest {
   void setUp() {
     user1 = new User();
     user1.setEmail("user1@example.com");
+    user1.setState(ACTIVE);
     user1 = userRepository.save(user1);
 
     user2 = new User();
     user2.setEmail("user2@example.com");
+    user2.setState(ACTIVE);
     user2 = userRepository.save(user2);
 
     // Get a reference to the existing "READ" event type (ID 3 from data-test.sql)
@@ -63,6 +67,7 @@ class UserMessageRepositoryTest {
     // Arrange
     User user = new User();
     user.setEmail("test@example.com");
+    user.setState(ACTIVE);
     user = userRepository.save(user);
 
     UserMessage message1 =

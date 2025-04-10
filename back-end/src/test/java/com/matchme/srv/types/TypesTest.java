@@ -14,7 +14,6 @@ import org.springframework.test.context.ActiveProfiles;
 import com.matchme.srv.model.connection.ConnectionType;
 import com.matchme.srv.model.message.MessageEventType;
 import com.matchme.srv.model.user.UserRoleType;
-import com.matchme.srv.model.user.UserStateTypes;
 import com.matchme.srv.model.user.activity.ActivityLogType;
 import com.matchme.srv.model.user.profile.ProfileChangeType;
 import com.matchme.srv.model.user.profile.UserGenderType;
@@ -28,7 +27,6 @@ import com.matchme.srv.repository.PreferenceChangeTypeRepository;
 import com.matchme.srv.repository.ProfileChangeTypeRepository;
 import com.matchme.srv.repository.UserGenderTypeRepository;
 import com.matchme.srv.repository.UserRoleTypeRepository;
-import com.matchme.srv.repository.UserStateTypesRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -58,9 +56,6 @@ class TypesTest {
 
     @Autowired
     private ProfileChangeTypeRepository profileChangeTypeRepository;
-
-    @Autowired
-    private UserStateTypesRepository userStateTypesRepository;
 
     @Test
     void testRolesInitialization() {
@@ -99,20 +94,6 @@ class TypesTest {
         assertTrue(types.stream().anyMatch(type -> type.getName().equals("SENT")));
         assertTrue(types.stream().anyMatch(type -> type.getName().equals("RECEIVED")));
         assertTrue(types.stream().anyMatch(type -> type.getName().equals("READ")));
-    }
-
-    @Test
-    void testUserStateTypesInitialization() {
-        List<UserStateTypes> types = userStateTypesRepository.findAll();
-        assertEquals(8, types.size());
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("UNVERIFIED")));
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("VERIFIED")));
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("NEW")));
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("ACTIVE")));
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("PENDING")));
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("SUSPENDED")));
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("DORMANT")));
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("DISABLED")));
     }
 
     @Test
