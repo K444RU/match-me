@@ -9,43 +9,55 @@ interface ChatPreviewCardProps {
   isSelected?: boolean;
 }
 
-//TODO: May be find better refactored solution. this currently allows to fix the wrong time format react error on refresh
+/**
+ * Formats a timestamp string into a readable 'HH:mm' format, safely handling inconsistent backend data.
+ *
+ * The backend sends timestamps as strings -> lastMessageTimestamp in ChatPreviewResponseDTO
+ * that may represent Unix timestamps in seconds or milliseconds, or even be invalid. This function normalizes these
+ * variations for consistent display in the `ChatPreviewCard`
+ *
+ * What errors it prevents:
+ * - Crashes from null, undefined, or empty strings by returning a fallback ('--:--').
+ * - "Invalid time value" errors in `date-fns` due to unvalidated numeric conversions.
+ * - Incorrect times from misinterpreting seconds vs. milliseconds.
+ *
+ * Why it was necessary:
+ * Previously, `format(fromUnixTime(chat.lastMessage.sentAt), 'kk:mm')` assumed all timestamps
+ * were valid and in seconds. Backend inconsistencies (e.g., millisecond timestamps) caused runtime errors or wrong
+ * time displays, breaking the chat preview.
+ *
+ * Why the old way failed:
+ * Without validation, the app could not handle the unpredictable `lastMessageTimestamp`
+ * format from the backend, leading to unreliable time rendering or crashes.
+ */
 function formatTimestampSafely(timestampStr: string | null | undefined): string {
   const DEFAULT_TIME = '--:--';
 
-  if (timestampStr === null || timestampStr === undefined || timestampStr === '') {
-    return DEFAULT_TIME;
-  }
+  // Early return for falsy inputs (null, undefined, or empty string)
+  if (!timestampStr) return DEFAULT_TIME;
 
   const timestampNumber = Number(timestampStr);
-
   if (isNaN(timestampNumber)) {
     console.warn(`ChatPreviewCard: Timestamp string "${timestampStr}" could not be converted to a valid number.`);
     return DEFAULT_TIME;
   }
 
-  let dateObject: Date;
   try {
-    if (Math.abs(timestampNumber) > 3000000000) {
-      dateObject = fromUnixTime(timestampNumber / 1000);
-    } else {
-      dateObject = fromUnixTime(timestampNumber);
+    // Adjust timestamp: divide by 1000 if in milliseconds
+    const isMilliseconds = Math.abs(timestampNumber) > 3000000000;
+    const timestampInSeconds = isMilliseconds ? timestampNumber / 1000 : timestampNumber;
+    const dateObject = fromUnixTime(timestampInSeconds);
+
+    // Validate the date
+    if (!isValid(dateObject)) {
+      console.warn(`ChatPreviewCard: Invalid date from timestamp: ${timestampNumber} (original: "${timestampStr}")`);
+      return DEFAULT_TIME;
     }
-  } catch (e) {
-    console.error(`ChatPreviewCard: Error creating date from timestamp number: ${timestampNumber} (original: "${timestampStr}")`, e);
-    return DEFAULT_TIME;
-  }
 
-
-  if (!isValid(dateObject)) {
-    console.warn(`ChatPreviewCard: Invalid date created from timestamp number: ${timestampNumber} (original: "${timestampStr}")`);
-    return DEFAULT_TIME;
-  }
-
-  try {
-    return format(dateObject, 'kk:mm');
-  } catch (formatError) {
-    console.error(`ChatPreviewCard: Error formatting valid date object:`, dateObject, formatError);
+    // Format and return the time
+    return format(dateObject, 'HH:mm');
+  } catch (error) {
+    console.error(`ChatPreviewCard: Error processing timestamp: ${timestampNumber} (original: "${timestampStr}")`, error);
     return DEFAULT_TIME;
   }
 }

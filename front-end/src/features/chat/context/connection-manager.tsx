@@ -1,14 +1,14 @@
 import { ChatMessageResponseDTO } from '@/api/types';
 import { User } from '@/features/authentication/';
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
-import {useStompClient, useSubscription} from 'react-stomp-hooks';
+import { useStompClient } from 'react-stomp-hooks';
 import useChatPreviewHandler from '../hooks/useChatPreviewHandler';
 import useMessageHandler from '../hooks/useMessageHandler';
 import useOnlineIndicator from '../hooks/useOnlineIndicator';
 import useSubscriptionManager from '../hooks/useSubscriptionManager';
 import useTypingIndicator from '../hooks/useTypingIndicator';
+import useConnectionRequestManager from '../hooks/useConnectionRequestManager';
 import { WebSocketContext } from './websocket-context';
-import {ConnectionUpdateMessage} from "@features/chat/types";
 
 interface WebSocketConnectionManagerProps {
   children: ReactNode;
@@ -20,10 +20,16 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
   const currentUser = user;
 
   const [isConnected, setIsConnected] = useState(false);
-
   const [messageQueue, setMessageQueue] = useState<ChatMessageResponseDTO[]>([]);
 
-  const [connectionUpdates, setConnectionUpdates] = useState<ConnectionUpdateMessage[]>([]);
+  // Connection management
+  const {
+    connectionUpdates,
+    sendConnectionRequest,
+    acceptConnectionRequest,
+    rejectConnectionRequest,
+    disconnectConnection,
+  } = useConnectionRequestManager({ userId: currentUser.id, stompClient });
 
   useEffect(() => {
     const currentConnected = !!stompClient?.connected;
@@ -69,21 +75,9 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
   });
 
   const { chatPreviews, handleChatPreviews } = useChatPreviewHandler();
-
   const { onlineUsers, handleOnlineIndicator } = useOnlineIndicator();
 
-  useSubscription(`/user/${currentUser.id}/queue/connectionUpdates`, (message) => {
-    try {
-      console.log(`[User ${currentUser.id}] Received RAW connection update:`, message.body);
-      const update = JSON.parse(message.body);
-      console.log(`[User ${currentUser.id}] Parsed connection update:`, update);
-      setConnectionUpdates((prev) => [...prev, update]);
-    } catch (e) {
-      console.error("Failed to parse connection update", e, message.body);
-    }
-  });
-
-  // Setup subscriptions with the handlers
+  // Subscription management
   const { reconnect } = useSubscriptionManager({
     userId: currentUser?.id,
     stompClient,
@@ -92,50 +86,6 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
     handleChatPreviews,
     handleOnlineIndicator,
   });
-
-  const sendConnectionRequest = useCallback((targetUserId: number) => {
-    if (stompClient?.connected && currentUser.id) {
-      stompClient.publish({
-        destination: '/app/connection.sendRequest',
-        body: JSON.stringify(targetUserId),
-      });
-    } else {
-      console.error('STOMP client not connected or user ID missing, cannot send connection request.');
-    }
-  }, [stompClient, currentUser.id]);
-
-  const acceptConnectionRequest = useCallback((connectionId: number) => {
-    if (stompClient?.connected) {
-      stompClient.publish({
-        destination: '/app/connection.acceptRequest',
-        body: JSON.stringify(connectionId),
-      });
-    } else {
-      console.error('STOMP client not connected, cannot accept connection request.');
-    }
-  }, [stompClient]);
-
-  const rejectConnectionRequest = useCallback((connectionId: number) => {
-    if (stompClient?.connected) {
-      stompClient.publish({
-        destination: '/app/connection.rejectRequest',
-        body: JSON.stringify(connectionId),
-      });
-    } else {
-      console.error('STOMP client not connected, cannot reject connection request.');
-    }
-  }, [stompClient]);
-
-  const disconnectConnection = useCallback((connectionId: number) => {
-    if (stompClient?.connected) {
-      stompClient.publish({
-        destination: '/app/connection.disconnect',
-        body: JSON.stringify(connectionId),
-      });
-    } else {
-      console.error('STOMP client not connected, cannot disconnect connection.');
-    }
-  }, [stompClient]);
 
   // Context value with stable identity
   const contextValue = useMemo(

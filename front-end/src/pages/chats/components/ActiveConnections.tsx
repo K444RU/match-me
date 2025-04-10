@@ -3,6 +3,8 @@ import {useAuth} from '@features/authentication';
 import {getConnections, useCommunication} from '@features/chat';
 import {userService} from '@features/user';
 import {useEffect, useRef, useState, useCallback} from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface ConnectionProvider {
   connectionId: number;
@@ -15,6 +17,7 @@ export default function ActiveConnections() {
   const [activeConnections, setActiveConnections] = useState<ConnectionProvider[]>([]);
   const [userData, setUserData] = useState<{ [key: string]: CurrentUserResponseDTO }>({});
   const processedUpdatesCountRef = useRef(0);
+  const [disconnectingConnection, setDisconnectingConnection] = useState<{ connectionId: number; displayName: string } | null>(null);
 
   useEffect(() => {
     if (!user?.token) {
@@ -70,7 +73,6 @@ export default function ActiveConnections() {
     };
   }, [user]);
 
-
   useEffect(() => {
     const currentLength = connectionUpdates.length;
     const lastProcessedIndex = Math.min(processedUpdatesCountRef.current, currentLength);
@@ -111,11 +113,9 @@ export default function ActiveConnections() {
     }
   }, [connectionUpdates]);
 
-
   const handleDisconnect = useCallback((connectionId: number) => {
     disconnectConnection(connectionId);
   }, [disconnectConnection]);
-
 
   return (
       <div className="space-y-2 p-2 border rounded-md shadow-sm bg-card">
@@ -135,10 +135,10 @@ export default function ActiveConnections() {
                 return (
                     <li key={connection.connectionId} className="flex items-center justify-between p-1 hover:bg-muted/50 rounded-md">
                 <span className="text-sm text-foreground truncate pr-2" title={displayName}>
-                    {displayName}
+                  {displayName}
                 </span>
                       <button
-                          onClick={() => handleDisconnect(connection.connectionId)}
+                          onClick={() => setDisconnectingConnection({ connectionId: connection.connectionId, displayName })}
                           className="ml-2 flex-shrink-0 text-xs text-red-600 hover:text-red-800 hover:underline focus:outline-none focus:ring-1 focus:ring-red-500 rounded px-1 py-0.5"
                           aria-label={`Disconnect from ${displayName}`}
                       >
@@ -146,10 +146,35 @@ export default function ActiveConnections() {
                       </button>
                     </li>
                 );
-              })
-              }
+              })}
             </ul>
         )}
+        <Dialog open={!!disconnectingConnection} onOpenChange={(open) => !open && setDisconnectingConnection(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Disconnection</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to disconnect from {disconnectingConnection?.displayName}? This action will also remove the connection for {disconnectingConnection?.displayName}.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDisconnectingConnection(null)}>
+                Cancel
+              </Button>
+              <Button
+                  variant="destructive"
+                  onClick={() => {
+                    if (disconnectingConnection) {
+                      handleDisconnect(disconnectingConnection.connectionId);
+                      setDisconnectingConnection(null);
+                    }
+                  }}
+              >
+                Confirm
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
   );
 }

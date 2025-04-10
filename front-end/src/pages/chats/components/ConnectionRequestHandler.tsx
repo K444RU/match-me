@@ -20,7 +20,7 @@ export default function ConnectionRequestHandler() {
       return;
     }
     try {
-      console.log(`Workspaceing user data for ID: ${userId}`);
+      console.log(`Workspace user data for ID: ${userId}`);
       const fetchedUser = await userService.getUser(userId);
       if (fetchedUser) {
         setUserData((prev) => ({
