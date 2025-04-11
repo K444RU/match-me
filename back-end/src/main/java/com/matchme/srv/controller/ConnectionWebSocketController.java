@@ -24,6 +24,16 @@ public class ConnectionWebSocketController {
     private final SecurityUtils securityUtils;
     private final SimpMessagingTemplate messagingTemplate;
 
+    private static final String QUEUE_CONNECTION_UPDATES = "/queue/connectionUpdates";
+
+    private static final String NEW_REQUEST = "NEW_REQUEST";
+    private static final String REQUEST_SENT = "REQUEST_SENT";
+    private static final String REQUEST_ACCEPTED = "REQUEST_ACCEPTED";
+    private static final String REQUEST_REJECTED = "REQUEST_REJECTED";
+    private static final String DISCONNECTED = "DISCONNECTED";
+
+    private static final String INVALID_CONNECTION = "INVALID_CONNECTION";
+
     @MessageMapping("/connection.sendRequest")
     public void sendConnectionRequest(@Payload Long targetUserId, Authentication authentication) {
         log.info("Received connection request for user: " + targetUserId);
@@ -32,15 +42,15 @@ public class ConnectionWebSocketController {
 
         messagingTemplate.convertAndSendToUser(
                 targetUserId.toString(),
-                "/queue/connectionUpdates",
-                new ConnectionUpdateMessage("NEW_REQUEST", new ConnectionProvider(connectionId, senderId))
+                QUEUE_CONNECTION_UPDATES,
+                new ConnectionUpdateMessage(NEW_REQUEST, new ConnectionProvider(connectionId, senderId))
         );
         log.info("NEW_REQUEST: Sent connection request to user: " + targetUserId);
 
         messagingTemplate.convertAndSendToUser(
                 senderId.toString(),
-                "/queue/connectionUpdates",
-                new ConnectionUpdateMessage("REQUEST_SENT", new ConnectionProvider(connectionId, targetUserId))
+                QUEUE_CONNECTION_UPDATES,
+                new ConnectionUpdateMessage(REQUEST_SENT, new ConnectionProvider(connectionId, targetUserId))
         );
         log.info("REQUEST_SENT: Sent connection request to user: " + targetUserId);
     }
@@ -54,19 +64,19 @@ public class ConnectionWebSocketController {
                 .map(User::getId)
                 .filter(id -> !id.equals(acceptorId))
                 .findFirst()
-                .orElseThrow(()-> new IllegalStateException("Invalid connection"));
+                .orElseThrow(()-> new IllegalStateException(INVALID_CONNECTION));
 
         messagingTemplate.convertAndSendToUser(
                 acceptorId.toString(),
-                "/queue/connectionUpdates",
-                new ConnectionUpdateMessage("REQUEST_ACCEPTED", new ConnectionProvider(connectionId, otherUserId))
+                QUEUE_CONNECTION_UPDATES,
+                new ConnectionUpdateMessage(REQUEST_ACCEPTED, new ConnectionProvider(connectionId, otherUserId))
         );
         log.info("REQUEST_ACCEPTED: Sent connection request to user: " + otherUserId);
 
         messagingTemplate.convertAndSendToUser(
                 otherUserId.toString(),
-                "/queue/connectionUpdates",
-                new ConnectionUpdateMessage("REQUEST_ACCEPTED", new ConnectionProvider(connectionId, acceptorId))
+                QUEUE_CONNECTION_UPDATES,
+                new ConnectionUpdateMessage(REQUEST_ACCEPTED, new ConnectionProvider(connectionId, acceptorId))
         );
         log.info("REQUEST_ACCEPTED: Sent connection request to user: " + acceptorId);
     }
@@ -80,19 +90,19 @@ public class ConnectionWebSocketController {
                 .map(User::getId)
                 .filter(id -> !id.equals(rejectorId))
                 .findFirst()
-                .orElseThrow(()-> new IllegalStateException("Invalid connection"));
+                .orElseThrow(()-> new IllegalStateException(INVALID_CONNECTION));
 
         messagingTemplate.convertAndSendToUser(
                 rejectorId.toString(),
-                "/queue/connectionUpdates",
-                new ConnectionUpdateMessage("REQUEST_REJECTED", new ConnectionProvider(connectionId, otherUserId))
+                QUEUE_CONNECTION_UPDATES,
+                new ConnectionUpdateMessage(REQUEST_REJECTED, new ConnectionProvider(connectionId, otherUserId))
         );
         log.info("REQUEST_REJECTED: Sent connection request to user: " + otherUserId);
 
         messagingTemplate.convertAndSendToUser(
                 otherUserId.toString(),
-                "/queue/connectionUpdates",
-                new ConnectionUpdateMessage("REQUEST_REJECTED", new ConnectionProvider(connectionId, rejectorId))
+                QUEUE_CONNECTION_UPDATES,
+                new ConnectionUpdateMessage(REQUEST_REJECTED, new ConnectionProvider(connectionId, rejectorId))
         );
         log.info("REQUEST_REJECTED: Sent connection request to user: " + rejectorId);
     }
@@ -106,19 +116,19 @@ public class ConnectionWebSocketController {
                 .map(User::getId)
                 .filter(id -> !id.equals(userId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Invalid connection"));
+                .orElseThrow(() -> new IllegalStateException(INVALID_CONNECTION));
 
         messagingTemplate.convertAndSendToUser(
                 userId.toString(),
-                "/queue/connectionUpdates",
-                new ConnectionUpdateMessage("DISCONNECTED", new ConnectionProvider(connectionId, otherUserId))
+                QUEUE_CONNECTION_UPDATES,
+                new ConnectionUpdateMessage(DISCONNECTED, new ConnectionProvider(connectionId, otherUserId))
         );
         log.info("DISCONNECTED: Sent connection request to user: " + otherUserId);
 
         messagingTemplate.convertAndSendToUser(
                 otherUserId.toString(),
-                "/queue/connectionUpdates",
-                new ConnectionUpdateMessage("DISCONNECTED", new ConnectionProvider(connectionId, userId))
+                QUEUE_CONNECTION_UPDATES,
+                new ConnectionUpdateMessage(DISCONNECTED, new ConnectionProvider(connectionId, userId))
         );
         log.info("DISCONNECTED: Sent connection request to user: " + userId);
     }
