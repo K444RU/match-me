@@ -1,8 +1,9 @@
 import { ChatMessageResponseDTO, MessagesSendRequestDTO } from '@/api/types';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth } from '@/features/authentication';
 import { ChatContext, chatService, useWebSocket } from '@/features/chat';
 import { useContext, useEffect, useState } from 'react';
-import { NoChat } from './NoChat';
+import NoChat from './NoChat';
 import OpenChatInput from './OpenChatInput';
 import OpenChatMessages from './OpenChatMessages';
 
@@ -12,7 +13,7 @@ export default function OpenChat() {
   const [loading, setLoading] = useState(false);
 
   // Get WebSocket context for sending messages via WebSocket
-  const { connected, sendMessage: sendWebSocketMessage } = useWebSocket();
+  const { connected, sendMessage: sendWebSocketMessage, typingUsers } = useWebSocket();
 
   const chatContext = useContext(ChatContext);
   const openChat = chatContext?.openChat || null;
@@ -20,6 +21,8 @@ export default function OpenChat() {
   const connectionId = openChat?.connectionId;
   const updateAllChats = chatContext.updateAllChats;
   const allChats = chatContext.allChats;
+
+  const isTyping = openChat ? typingUsers[openChat.connectedUserId] : false;
 
   useEffect(() => {
     setChatMessages([]);
@@ -62,7 +65,6 @@ export default function OpenChat() {
   // Early return if no context, user or open chat
   if (!chatContext) return null;
   if (!user) return null;
-  if (!openChat) return <NoChat />;
 
   const onSendMessage = async (message: string) => {
     if (!message || !user || !openChat) return;
@@ -76,7 +78,7 @@ export default function OpenChat() {
     const optimisticMessage: ChatMessageResponseDTO = {
       connectionId: messageDTO.connectionId,
       content: messageDTO.content,
-      createdAt: new Date().toISOString(),
+      createdAt: Math.floor(Date.now() / 1000).toString(),
       messageId: -(chatMessages.length + 1),
       senderAlias: user.alias || '',
       senderId: user.id || 0,
@@ -106,9 +108,20 @@ export default function OpenChat() {
   };
 
   return (
-      <div className="flex w-full flex-col bg-background-400 px-4 pb-4 sm:px-6 md:px-8">
-        <OpenChatMessages loading={loading} chatMessages={chatMessages} user={user} />
-        <OpenChatInput onSendMessage={onSendMessage} />
-      </div>
+    <div className="relative flex h-screen w-full">
+      <SidebarTrigger className="absolute left-1 top-1 z-10" />
+      {openChat ? (
+        <div className="flex w-full flex-col bg-background-400 px-4 sm:px-6 md:px-8">
+          <OpenChatMessages loading={loading} chatMessages={chatMessages} user={user} />
+          <OpenChatInput
+            onSendMessage={onSendMessage}
+            isTyping={isTyping}
+            recipientAlias={openChat.connectedUserAlias}
+          />
+        </div>
+      ) : (
+        <NoChat className="pl-16" />
+      )}
+    </div>
   );
 }

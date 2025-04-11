@@ -1,4 +1,5 @@
 import { ChatMessageResponseDTO } from '@/api/types';
+import { format, fromUnixTime } from 'date-fns';
 
 interface MessageBoxProps {
   message: ChatMessageResponseDTO;
@@ -16,6 +17,9 @@ export default function Message({ message, isOwn = true }: MessageBoxProps) {
         )}
         <div className={`size-fit rounded-md p-2 px-4 ${isOwn ? 'bg-primary-600 text-white' : 'bg-background-200'}`}>
           {message.content}
+          <div className="flex justify-end">
+            <span className="text-xs">{format(fromUnixTime(Number(message.createdAt)), 'kk:mm')}</span>
+          </div>
         </div>
       </div>
     </div>
