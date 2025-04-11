@@ -49,27 +49,42 @@ public class ConnectionService {
     List<ConnectionProvider> pendingOutgoing = new ArrayList<>();
 
     for (Connection connection : connections) {
-      ConnectionState currentState = getCurrentState(connection);
-      if (currentState == null) {
+      ConnectionState latestState = connection.getConnectionStates().stream()
+              .max(Comparator.comparing(ConnectionState::getTimestamp))
+              .orElse(null);
+
+      if (latestState == null) {
         continue;
       }
+
       Long otherUserId = connection.getUsers().stream()
           .map(User::getId)
           .filter(id -> !id.equals(currentUserId))
           .findFirst()
           .orElse(null);
+
       if (otherUserId == null) {
         continue;
       }
+
       ConnectionProvider connectionInformation = new ConnectionProvider(connection.getId(), otherUserId);
-      if (currentState.getStatus() == ConnectionStatus.ACCEPTED) {
-        active.add(connectionInformation);
-      } else if (currentState.getStatus() == ConnectionStatus.PENDING) {
-        if (currentState.getRequesterId().equals(currentUserId)) {
-          pendingOutgoing.add(connectionInformation);
-        } else {
-          pendingIncoming.add(connectionInformation);
-        }
+
+      switch (latestState.getStatus()) {
+        case ACCEPTED:
+          active.add(connectionInformation);
+          break;
+        case PENDING:
+          if (latestState.getRequesterId() != null && latestState.getRequesterId().equals(currentUserId)) {
+            pendingOutgoing.add(connectionInformation);
+          } else {
+            pendingIncoming.add(connectionInformation);
+          }
+          break;
+        case REJECTED:
+        case DISCONNECTED:
+          break;
+        default:
+          break;
       }
     }
     return new ConnectionsDTO(active, pendingIncoming, pendingOutgoing);
@@ -90,7 +105,7 @@ public class ConnectionService {
    *                               duplicate).
    */
   @Transactional(readOnly = false)
-  public void sendConnectionRequest(Long requesterId, Long targetId) {
+  public Long sendConnectionRequest(Long requesterId, Long targetId) {
     if (requesterId.equals(targetId)) {
       throw new IllegalStateException("Cannot send a connection request to yourself");
     }
@@ -108,12 +123,16 @@ public class ConnectionService {
           case ACCEPTED -> throw new IllegalStateException("You are already connected with this user");
           case REJECTED, DISCONNECTED -> {
             addNewState(existingConnection, ConnectionStatus.PENDING, requesterId, targetId, requesterId);
-            return;
+            return existingConnection.getId();
           }
         }
+      } else {
+        addNewState(existingConnection, ConnectionStatus.PENDING, requesterId, targetId, requesterId);
+        return existingConnection.getId();
       }
     }
-    createPendingConnection(requesterId, targetId);
+    existingConnection = createPendingConnection(requesterId, targetId);
+    return existingConnection.getId();
   }
 
   /**
@@ -130,10 +149,11 @@ public class ConnectionService {
    * @throws IllegalStateException   If the connection isn’t pending or the user
    *                                 can’t accept it.
    */
-  @Transactional(readOnly = false)
-  public void acceptConnectionRequest(Long connectionId, Long acceptorId) {
-    Connection connection = connectionRepository.findById(connectionId)
-        .orElseThrow(() -> new EntityNotFoundException("Connection not found"));
+  @Transactional
+  public Connection acceptConnectionRequest(Long connectionId, Long acceptorId) {
+    Connection connection = connectionRepository.findByIdWithUsers(connectionId)
+            .orElseThrow(() -> new EntityNotFoundException("Connection not found"));
+
     ConnectionState currentState = getCurrentState(connection);
 
     if (currentState == null || currentState.getStatus() != ConnectionStatus.PENDING) {
@@ -146,6 +166,7 @@ public class ConnectionService {
     addNewState(connection, ConnectionStatus.ACCEPTED, currentState.getRequesterId(), acceptorId, acceptorId);
 
     userScoreService.updateUserScore(acceptorId, currentState.getRequesterId(), true);
+    return connection;
   }
 
   /**
@@ -163,8 +184,8 @@ public class ConnectionService {
    *                                 can’t reject it.
    */
   @Transactional(readOnly = false)
-  public void rejectConnectionRequest(Long connectionId, Long rejectorId) {
-    Connection connection = connectionRepository.findById(connectionId)
+  public Connection rejectConnectionRequest(Long connectionId, Long rejectorId) {
+    Connection connection = connectionRepository.findByIdWithUsers(connectionId)
         .orElseThrow(() -> new EntityNotFoundException("Connection not found"));
     ConnectionState currentState = getCurrentState(connection);
 
@@ -178,7 +199,7 @@ public class ConnectionService {
     addNewState(connection, ConnectionStatus.REJECTED, currentState.getRequesterId(), rejectorId, rejectorId);
 
     userScoreService.updateUserScore(rejectorId, currentState.getRequesterId(), false);
-
+    return connection;
   }
 
   /**
@@ -194,7 +215,7 @@ public class ConnectionService {
    *                                 isn’t part of it.
    */
   @Transactional(readOnly = false)
-  public void disconnect(Long connectionId, Long userId) {
+  public Connection disconnect(Long connectionId, Long userId) {
     Connection connection = connectionRepository.findById(connectionId)
         .orElseThrow(() -> new EntityNotFoundException("Connection not found"));
     if (!connection.getUsers().stream().anyMatch(u -> u.getId().equals(userId))) {
@@ -206,6 +227,7 @@ public class ConnectionService {
     }
 
     addNewState(connection, ConnectionStatus.DISCONNECTED, null, null, userId);
+    return connection;
   }
 
   /**
@@ -215,7 +237,7 @@ public class ConnectionService {
    * @param requesterId The ID of the user sending the request.
    * @param targetId    The ID of the user receiving the request.
    */
-  private void createPendingConnection(Long requesterId, Long targetId) {
+  private Connection createPendingConnection(Long requesterId, Long targetId) {
     User requester = userRepository.findById(requesterId)
         .orElseThrow(() -> new EntityNotFoundException("Requester not found"));
     User target = userRepository.findById(targetId)
@@ -235,6 +257,7 @@ public class ConnectionService {
     connection.getConnectionStates().add(state);
 
     connectionRepository.save(connection);
+    return connection;
   }
 
   /**

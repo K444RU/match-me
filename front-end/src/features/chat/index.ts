@@ -1,5 +1,5 @@
-export { ChatContext, useChat } from './context/chat-context';
-export { ChatProvider } from './context/chat-provider';
+export { CommunicationContext, useCommunication } from './context/communication-context.ts';
+export { GlobalCommunicationProvider } from './context/global-communication-provider.tsx';
 export { chatService } from './services/chat-service';
 export { connectionService } from './services/connection-service';
 export {

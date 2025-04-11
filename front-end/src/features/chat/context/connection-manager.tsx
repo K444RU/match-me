@@ -7,6 +7,7 @@ import useMessageHandler from '../hooks/useMessageHandler';
 import useOnlineIndicator from '../hooks/useOnlineIndicator';
 import useSubscriptionManager from '../hooks/useSubscriptionManager';
 import useTypingIndicator from '../hooks/useTypingIndicator';
+import useConnectionRequestManager from '../hooks/useConnectionRequestManager';
 import { WebSocketContext } from './websocket-context';
 
 interface WebSocketConnectionManagerProps {
@@ -19,8 +20,16 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
   const currentUser = user;
 
   const [isConnected, setIsConnected] = useState(false);
-
   const [messageQueue, setMessageQueue] = useState<ChatMessageResponseDTO[]>([]);
+
+  // Connection management
+  const {
+    connectionUpdates,
+    sendConnectionRequest,
+    acceptConnectionRequest,
+    rejectConnectionRequest,
+    disconnectConnection,
+  } = useConnectionRequestManager({ userId: currentUser.id, stompClient });
 
   useEffect(() => {
     const currentConnected = !!stompClient?.connected;
@@ -66,10 +75,9 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
   });
 
   const { chatPreviews, handleChatPreviews } = useChatPreviewHandler();
-
   const { onlineUsers, handleOnlineIndicator } = useOnlineIndicator();
 
-  // Setup subscriptions with the handlers
+  // Subscription management
   const { reconnect } = useSubscriptionManager({
     userId: currentUser?.id,
     stompClient,
@@ -90,6 +98,11 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
       typingUsers,
       onlineUsers,
       chatPreviews: chatPreviews || [],
+      connectionUpdates,
+      sendConnectionRequest,
+      acceptConnectionRequest,
+      rejectConnectionRequest,
+      disconnectConnection,
       messageQueue,
       clearMessageQueue,
     }),
@@ -102,6 +115,11 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
       typingUsers,
       onlineUsers,
       chatPreviews,
+      connectionUpdates,
+      sendConnectionRequest,
+      acceptConnectionRequest,
+      rejectConnectionRequest,
+      disconnectConnection,
       messageQueue,
       clearMessageQueue,
     ]

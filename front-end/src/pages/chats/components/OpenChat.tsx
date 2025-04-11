@@ -1,7 +1,7 @@
 import { ChatMessageResponseDTO, MessagesSendRequestDTO } from '@/api/types';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth } from '@/features/authentication';
-import { ChatContext, chatService, useWebSocket } from '@/features/chat';
+import { CommunicationContext, chatService, useWebSocket } from '@/features/chat';
 import { useContext, useEffect, useState } from 'react';
 import NoChat from './NoChat';
 import OpenChatInput from './OpenChatInput';
@@ -15,12 +15,12 @@ export default function OpenChat() {
   // Get WebSocket context for sending messages via WebSocket
   const { connected, sendMessage: sendWebSocketMessage, typingUsers } = useWebSocket();
 
-  const chatContext = useContext(ChatContext);
-  const openChat = chatContext?.openChat || null;
+  const communicationContext = useContext(CommunicationContext);
+  const openChat = communicationContext?.openChat || null;
 
   const connectionId = openChat?.connectionId;
-  const updateAllChats = chatContext.updateAllChats;
-  const allChats = chatContext.allChats;
+  const updateAllChats = communicationContext.updateAllChats;
+  const allChats = communicationContext.allChats;
 
   const isTyping = openChat ? typingUsers[openChat.connectedUserId] : false;
 
@@ -63,7 +63,7 @@ export default function OpenChat() {
   }, [connectionId, user, updateAllChats, allChats]);
 
   // Early return if no context, user or open chat
-  if (!chatContext) return null;
+  if (!communicationContext) return null;
   if (!user) return null;
 
   const onSendMessage = async (message: string) => {
@@ -84,8 +84,8 @@ export default function OpenChat() {
       senderId: user.id || 0,
     };
 
-    if (chatContext?.updateAllChats) {
-      chatContext.updateAllChats(openChat.connectionId, [optimisticMessage]);
+    if (communicationContext?.updateAllChats) {
+      communicationContext.updateAllChats(openChat.connectionId, [optimisticMessage]);
     }
 
     try {

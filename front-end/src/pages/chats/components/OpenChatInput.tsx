@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChatContext, useWebSocket } from '@/features/chat';
+import { CommunicationContext, useWebSocket } from '@/features/chat';
 import { useContext, useState } from 'react';
 
 interface OpenChatInputProps {
@@ -12,8 +12,8 @@ interface OpenChatInputProps {
 export default function OpenChatInput({ onSendMessage, isTyping, recipientAlias }: OpenChatInputProps) {
   const [message, setMessage] = useState('');
   const { connected, sendTypingIndicator } = useWebSocket();
-  const chatContext = useContext(ChatContext);
-  const openChat = chatContext?.openChat || null;
+  const communicationContext = useContext(CommunicationContext);
+  const openChat = communicationContext?.openChat || null;
 
   if (!openChat) return null;
 

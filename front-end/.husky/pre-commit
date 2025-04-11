@@ -1,2 +1,0 @@
-cd front-end
-pnpm dlx lint-staged

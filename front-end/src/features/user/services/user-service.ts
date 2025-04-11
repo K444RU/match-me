@@ -1,6 +1,6 @@
 import {
   AccountSettingsRequestDTO,
-  AttributesSettingsRequestDTO,
+  AttributesSettingsRequestDTO, CurrentUserResponseDTO,
   PreferencesSettingsRequestDTO,
   ProfilePictureSettingsRequestDTO,
   ProfileSettingsRequestDTO,
@@ -77,7 +77,7 @@ export const userService = {
     }
   },
 
-  getUser: async (userId: number): Promise<unknown> => {
+  getUser: async (userId: number): Promise<CurrentUserResponseDTO> => {
     try {
       console.debug('👤 UserService: Making getUser request');
       const response = await userController.getUser(userId);
