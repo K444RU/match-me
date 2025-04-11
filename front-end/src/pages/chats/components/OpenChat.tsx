@@ -41,7 +41,8 @@ export default function OpenChat() {
     } else {
       try {
         // need to add pagination support
-        const messagesResponse = await chatService.getChatMessages(connectionId);
+        const pagedMessagesResponse = await chatService.getChatMessages(connectionId);
+        const messagesResponse = pagedMessagesResponse.content;
 
         if (!messagesResponse || messagesResponse.length === 0) {
           setChatMessages([]);
@@ -53,7 +54,7 @@ export default function OpenChat() {
         setChatMessages(sortedMessages);
 
         // need to check about this too
-        if (messagesResponse.length < 20 ) {
+        if (messagesResponse.length < 20 || pagedMessagesResponse.last) {
           setHasMoreOlderMessages(false);
         }
 
@@ -77,7 +78,8 @@ export default function OpenChat() {
       //const oldestMessage = chatMessages[0];
       
       //parameters: connectionId, beforeMessageId or timestamp, limit, hasOlderMessages
-      const olderMessagesResponse = await chatService.getChatMessages(connectionId);
+      const pagedOlderMessagesResponse = await chatService.getChatMessages(connectionId);
+      const olderMessagesResponse = pagedOlderMessagesResponse.content;
 
       if (!olderMessagesResponse || olderMessagesResponse.length === 0) {
         setHasMoreOlderMessages(false);
@@ -88,7 +90,7 @@ export default function OpenChat() {
       setChatMessages((prevMessages) => [...sortedMessages, ...prevMessages]);
       
 
-      if (olderMessagesResponse.length < 20) {
+      if (olderMessagesResponse.length < 20 || pagedOlderMessagesResponse.last) {
         setHasMoreOlderMessages(false);
       }
 
