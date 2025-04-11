@@ -8,13 +8,6 @@ import {
 
 const chatController = getChatController();
 
-const getChatMessagesParams: GetChatMessagesParams = {
-  pageable: {
-    page: 0,
-    size: 10,
-  },
-};
-
 export const chatService = {
   getChatPreviews: async (): Promise<ChatPreviewResponseDTO[]> => {
     try {
@@ -29,10 +22,10 @@ export const chatService = {
     }
   },
 
-  getChatMessages: async (connectionId: number): Promise<PageChatMessageResponseDTO> => {
+  getChatMessages: async (connectionId: number, params: GetChatMessagesParams): Promise<PageChatMessageResponseDTO> => {
     try {
       console.debug('🖖 ChatService: Making messages request');
-      const response = await chatController.getChatMessages(connectionId, getChatMessagesParams);
+      const response = await chatController.getChatMessages(connectionId, params);
       // DONT TOUCH THIS, THIS IS CORRECT, TYPE IS JUST FUCKING
       console.debug('🖖 ChatService: Response', response);
       return response ?? [];
