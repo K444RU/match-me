@@ -17,6 +17,7 @@ export const GlobalCommunicationProvider = ({children}: GlobalCommunicationProvi
     const [chatDisplays, setChatDisplays] = useState<ChatPreviewResponseDTO[]>([]);
     const [openChat, setOpenChat] = useState<ChatPreviewResponseDTO | null>(null);
     const [allChats, setAllChats] = useState<Record<number, ChatMessageResponseDTO[]>>({});
+    const [hasMoreMessages, setHasMoreMessages] = useState<Record<number, boolean>>({});
 
     const refreshChats = useCallback(async () => {
         if (!user) return;
@@ -34,9 +35,11 @@ export const GlobalCommunicationProvider = ({children}: GlobalCommunicationProvi
             chatDisplays={chatDisplays}
             allChats={allChats}
             openChat={openChat}
+            hasMoreMessages={hasMoreMessages}
             setChatDisplays={setChatDisplays}
             setOpenChat={setOpenChat}
             setAllChats={setAllChats}
+            setHasMoreMessages={setHasMoreMessages}
         >
             {children}
         </GlobalCommunicationProviderInner>
@@ -48,9 +51,11 @@ interface GlobalCommunicationProviderInnerProps {
     chatDisplays: ChatPreviewResponseDTO[];
     allChats: Record<number, ChatMessageResponseDTO[]>;
     openChat: ChatPreviewResponseDTO | null;
+    hasMoreMessages: Record<number, boolean>;
     setChatDisplays: React.Dispatch<React.SetStateAction<ChatPreviewResponseDTO[]>>;
     setOpenChat: React.Dispatch<React.SetStateAction<ChatPreviewResponseDTO | null>>;
     setAllChats: React.Dispatch<React.SetStateAction<Record<number, ChatMessageResponseDTO[]>>>;
+    setHasMoreMessages: React.Dispatch<React.SetStateAction<Record<number, boolean>>>;
     children: React.ReactNode;
 }
 
@@ -59,9 +64,11 @@ const GlobalCommunicationProviderInner = ({
                                               chatDisplays,
                                               allChats,
                                               openChat,
+                                              hasMoreMessages,
                                               setChatDisplays,
                                               setOpenChat,
                                               setAllChats,
+                                              setHasMoreMessages,
                                               children,
                                           }: GlobalCommunicationProviderInnerProps) => {
     // Get websocket values (which include incoming chat previews and send functions)
@@ -247,6 +254,16 @@ const GlobalCommunicationProviderInner = ({
         clearMessageQueue();
     }, [messageQueue, setAllChats, clearMessageQueue]);
 
+    const updateHasMoreMessages = useCallback(
+      (connectionId: number, hasMore: boolean) => {
+        setHasMoreMessages((prev) => ({
+          ...prev,
+          [connectionId]: hasMore,
+        }));
+      },
+      [setHasMoreMessages]
+    )
+
     const updateAllChats = useCallback(
         (connectionId: number, messages: ChatMessageResponseDTO[], replace: boolean = false) => {
             setAllChats((prev) => {
@@ -273,12 +290,14 @@ const GlobalCommunicationProviderInner = ({
             chatPreviews: chatDisplays,
             openChat,
             allChats,
+            hasMoreMessages,
             refreshChats,
             setOpenChat,
             sendMessage,
             sendTypingIndicator,
             sendMarkRead,
             updateAllChats,
+            updateHasMoreMessages,
             connectionUpdates: wsConnectionUpdates,
             sendConnectionRequest,
             acceptConnectionRequest,
@@ -289,12 +308,14 @@ const GlobalCommunicationProviderInner = ({
             chatDisplays,
             openChat,
             allChats,
+            hasMoreMessages,
             refreshChats,
             setOpenChat,
             sendMessage,
             sendTypingIndicator,
             sendMarkRead,
             updateAllChats,
+            updateHasMoreMessages,
             wsConnectionUpdates,
             sendConnectionRequest,
             acceptConnectionRequest,
