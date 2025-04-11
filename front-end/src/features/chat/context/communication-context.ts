@@ -25,22 +25,22 @@ const defaultContext: CommunicationContextType = {
   openChat: null,
   allChats: {},
   refreshChats: () => {
-    console.warn('ChatContext not initialized');
+    console.warn('CommunicationContext not initialized');
   },
   setOpenChat: () => {
-    console.warn('ChatContext not initialized');
+    console.warn('CommunicationContext not initialized');
   },
   sendMessage: async () => {
-    console.warn('ChatContext not initialized');
+    console.warn('CommunicationContext not initialized');
   },
   sendTypingIndicator: () => {
-    console.warn('ChatContext not initialized');
+    console.warn('CommunicationContext not initialized');
   },
   sendMarkRead: () => {
-    console.warn('ChatContext not initialized');
+    console.warn('CommunicationContext not initialized');
   },
   updateAllChats: () => {
-    console.warn('ChatContext not initialized');
+    console.warn('CommunicationContext not initialized');
   },
   connectionUpdates: [],
   sendConnectionRequest: () => console.error('Communication context not initialized'),

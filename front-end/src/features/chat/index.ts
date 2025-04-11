@@ -10,4 +10,3 @@ export {
 } from './services/connection-service';
 export { WebSocketProvider } from './context/websocket-provider';
 export { useWebSocket } from './context/websocket-context';
-export { ChatContext, useChat } from './context/chat-context.ts';
