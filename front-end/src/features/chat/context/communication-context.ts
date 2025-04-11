@@ -1,10 +1,13 @@
-import { ChatPreviewResponseDTO, MessagesSendRequestDTO } from '@/api/types';
+import { ChatMessageResponseDTO, ChatPreviewResponseDTO, MessagesSendRequestDTO } from '@/api/types';
 import { createContext, useContext } from 'react';
 import {ConnectionUpdateMessage} from "@features/chat/types";
 
 export interface CommunicationContextType {
   chatPreviews: ChatPreviewResponseDTO[];
   openChat: ChatPreviewResponseDTO | null;
+  allChats: Record<number, ChatMessageResponseDTO[]>;
+  sendMarkRead: (connectionId: number) => void;
+  updateAllChats: (connectionId: number, messages: ChatMessageResponseDTO[], replace?: boolean) => void;
   refreshChats: () => void;
   setOpenChat: (chat: ChatPreviewResponseDTO | null) => void;
   sendMessage: (message: MessagesSendRequestDTO) => Promise<void>;
@@ -20,6 +23,7 @@ export interface CommunicationContextType {
 const defaultContext: CommunicationContextType = {
   chatPreviews: [],
   openChat: null,
+  allChats: {},
   refreshChats: () => {
     console.warn('ChatContext not initialized');
   },
@@ -30,6 +34,12 @@ const defaultContext: CommunicationContextType = {
     console.warn('ChatContext not initialized');
   },
   sendTypingIndicator: () => {
+    console.warn('ChatContext not initialized');
+  },
+  sendMarkRead: () => {
+    console.warn('ChatContext not initialized');
+  },
+  updateAllChats: () => {
     console.warn('ChatContext not initialized');
   },
   connectionUpdates: [],
