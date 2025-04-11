@@ -1,4 +1,4 @@
-import { ChatMessageResponseDTO, MessagesSendRequestDTO } from '@/api/types';
+import { ChatMessageResponseDTO, GetChatMessagesParams, MessagesSendRequestDTO } from '@/api/types';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth } from '@/features/authentication';
 import { CommunicationContext, chatService, useWebSocket } from '@/features/chat';
@@ -12,7 +12,6 @@ export default function OpenChat() {
   const [chatMessages, setChatMessages] = useState<ChatMessageResponseDTO[]>([]);
   const [loading, setLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMoreOlderMessages, setHasMoreOlderMessages] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Get WebSocket context for sending messages via WebSocket
@@ -24,6 +23,7 @@ export default function OpenChat() {
   const connectionId = openChat?.connectionId;
   const updateAllChats = communicationContext.updateAllChats;
   const allChats = communicationContext.allChats;
+  const { hasMoreMessages, updateHasMoreMessages } = communicationContext;
 
   const isTyping = openChat ? typingUsers[openChat.connectedUserId] : false;
 
@@ -32,7 +32,6 @@ export default function OpenChat() {
 
     setLoading(true);
     setChatMessages([]);
-    setHasMoreOlderMessages(true);
     setIsLoadingMore(false);
 
     if (allChats[connectionId] && allChats[connectionId].length > 0) {
@@ -40,22 +39,31 @@ export default function OpenChat() {
       setLoading(false);
     } else {
       try {
-        // need to add pagination support
-        const pagedMessagesResponse = await chatService.getChatMessages(connectionId);
+        const getChatMessagesParams: GetChatMessagesParams = {
+          pageable: {
+            page: 0,
+            size: 10,
+          },
+        };
+
+        const pagedMessagesResponse = await chatService.getChatMessages(connectionId, getChatMessagesParams);
         const messagesResponse = pagedMessagesResponse.content;
 
         if (!messagesResponse || messagesResponse.length === 0) {
           setChatMessages([]);
-          setHasMoreOlderMessages(false);
+          if (updateHasMoreMessages && connectionId) {
+            updateHasMoreMessages(connectionId, false);
+          }
           return;
         }
 
         const sortedMessages = messagesResponse.reverse();
         setChatMessages(sortedMessages);
 
-        // need to check about this too
-        if (messagesResponse.length < 20 || pagedMessagesResponse.last) {
-          setHasMoreOlderMessages(false);
+        if (messagesResponse.length < 10 || pagedMessagesResponse.last) {
+          if (updateHasMoreMessages && connectionId) {
+            updateHasMoreMessages(connectionId, false);
+          }
         }
 
         if (updateAllChats) {
@@ -63,59 +71,75 @@ export default function OpenChat() {
         }
       } catch (error) {
         console.error('Error fetching initial messages: ', error);
-        setHasMoreOlderMessages(false);
+        if (updateHasMoreMessages && connectionId) {
+          updateHasMoreMessages(connectionId, false);
+        }
       } finally {
         setLoading(false);
       }
     }
-  }, [user, allChats, updateAllChats]);
+  }, [user, allChats, updateAllChats, updateHasMoreMessages]);
 
   const loadOlderMessages = useCallback(async () => {
-    if (!connectionId || !user || isLoadingMore || !hasMoreOlderMessages || chatMessages.length === 0) return;
+    if (!connectionId || !user || isLoadingMore || hasMoreMessages[connectionId] || chatMessages.length === 0) return;
 
     setIsLoadingMore(true);
     try {
-      //const oldestMessage = chatMessages[0];
+
+      const getChatMessagesParams: GetChatMessagesParams = {
+        pageable: {
+          page: Math.floor(chatMessages.length / 10),
+          size: 10,
+        },
+      };
       
       //parameters: connectionId, beforeMessageId or timestamp, limit, hasOlderMessages
-      const pagedOlderMessagesResponse = await chatService.getChatMessages(connectionId);
+      const pagedOlderMessagesResponse = await chatService.getChatMessages(connectionId, getChatMessagesParams);
       const olderMessagesResponse = pagedOlderMessagesResponse.content;
 
       if (!olderMessagesResponse || olderMessagesResponse.length === 0) {
-        setHasMoreOlderMessages(false);
+        if (updateHasMoreMessages && connectionId) {
+          updateHasMoreMessages(connectionId, false);
+        }
         return;
       }
 
       const sortedMessages = olderMessagesResponse.reverse();
-      setChatMessages((prevMessages) => [...sortedMessages, ...prevMessages]);
+      const completeMessages = [...sortedMessages, ...chatMessages];
+
+
+      setChatMessages(completeMessages);
       
 
-      if (olderMessagesResponse.length < 20 || pagedOlderMessagesResponse.last) {
-        setHasMoreOlderMessages(false);
+      if (olderMessagesResponse.length < 10 || pagedOlderMessagesResponse.last) {
+        if (updateHasMoreMessages && connectionId) {
+          updateHasMoreMessages(connectionId, false);
+        }
       }
 
       if (updateAllChats) {
-        updateAllChats(connectionId, sortedMessages, true);
+        updateAllChats(connectionId, completeMessages, true);
       }
     } catch (error) {
       console.error('Error fetching older messages:', error);
-      setHasMoreOlderMessages(false);
+      if (updateHasMoreMessages && connectionId) {
+        updateHasMoreMessages(connectionId, false);
+      }
     } finally {
       setIsLoadingMore(false);
     }
-  }, [connectionId, user, isLoadingMore, hasMoreOlderMessages, chatMessages, updateAllChats]);
+  }, [connectionId, user, isLoadingMore, hasMoreMessages, chatMessages, updateAllChats, updateHasMoreMessages]);
 
   useEffect(() => {
     if (connectionId) {
       fetchInitialMessages(connectionId);
     } else {
       setChatMessages([]);
-      setHasMoreOlderMessages(false);
       setLoading(false);
       setIsLoadingMore(false);
     }
     
-  }, [connectionId, fetchInitialMessages]);
+  }, [connectionId]);
 
   // Early return if no context, user or open chat
   if (!communicationContext || !user) return null;
@@ -171,7 +195,7 @@ export default function OpenChat() {
             chatMessages={chatMessages} 
             user={user} 
             loadOlderMessages={loadOlderMessages}
-            hasMoreOlderMessages={hasMoreOlderMessages}
+            hasMoreMessages={openChat.connectionId ? hasMoreMessages[openChat.connectionId] ?? true : false}
             isLoadingMore={isLoadingMore}
             scrollContainerRef={scrollContainerRef}
           />

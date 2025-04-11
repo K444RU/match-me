@@ -9,7 +9,7 @@ interface OpenChatMessagesProps {
   chatMessages: ChatMessageResponseDTO[];
   user: User;
   loadOlderMessages: () => void;
-  hasMoreOlderMessages: boolean;
+  hasMoreMessages: boolean;
   isLoadingMore: boolean;
   scrollContainerRef: RefObject<HTMLDivElement>;
 }
@@ -19,12 +19,16 @@ export default function OpenChatMessages({
   chatMessages, 
   user, 
   loadOlderMessages, 
-  hasMoreOlderMessages, 
+  hasMoreMessages, 
   isLoadingMore, 
   scrollContainerRef }: OpenChatMessagesProps) {
   const messageEndRef = useRef<HTMLDivElement>(null);
   const topSentinelRef = useRef<HTMLDivElement>(null);
   const prevScrollHeightRef = useRef<number | null>(null);
+
+  const scrollToBottom = () => {
+    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   // Scroll position handling
   useLayoutEffect(() => {
@@ -38,11 +42,16 @@ export default function OpenChatMessages({
     }
   }, [chatMessages, scrollContainerRef]);
 
+  const pageSize = 10;
+
   // intersection observer for top sentinel
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       const firstEntry = entries[0];
-      if (firstEntry.isIntersecting && hasMoreOlderMessages && !isLoadingMore) {
+      console.log(
+        `Observer Callback: isIntersecting=${firstEntry.isIntersecting}, hasMoreOlderMessages=${hasMoreMessages}, isLoadingMore=${isLoadingMore}`
+      );
+      if (firstEntry.isIntersecting && hasMoreMessages && !isLoadingMore && chatMessages.length >= pageSize) {
         const scrollContainer = scrollContainerRef.current;
         if (scrollContainer) {
           prevScrollHeightRef.current = scrollContainer.scrollHeight;
@@ -66,21 +75,25 @@ export default function OpenChatMessages({
         observer.unobserve(currentTopSentinel);
       }
     };
-  }, [hasMoreOlderMessages, isLoadingMore, loadOlderMessages, scrollContainerRef]);
+  }, [hasMoreMessages, isLoadingMore, loadOlderMessages, scrollContainerRef]);
 
   // Scroll to bottom logic
+  // useEffect(() => {
+  //   const scrollContainer = scrollContainerRef.current;
+  //   if (scrollContainer && !isLoadingMore) {
+  //     const isNearBottom = scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight < 100;
+  //     if (isNearBottom) {
+  //       messageEndRef.current?.scrollIntoView({ behavior: "auto" })
+  //     }
+  //   }
+  // }, [chatMessages.length, isLoadingMore, scrollContainerRef, loading]);
+
   useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (scrollContainer && !isLoadingMore) {
-      const isNearBottom = scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight < 100;
-      if (isNearBottom) {
-        messageEndRef.current?.scrollIntoView({ behavior: "auto" })
-      }
-    }
-  }, [chatMessages.length, isLoadingMore, scrollContainerRef, loading]);
+    scrollToBottom();
+  }, [chatMessages]);
 
   return (
-    <div ref={scrollContainerRef} className="mt-4 flex-1 overflow-y-scroll pr-4 scroll-smooth">
+    <div ref={scrollContainerRef} className="mt-4 flex-1 overflow-y-scroll pr-4">
       {/* Older messages loading */}
       <div ref={topSentinelRef} style={{ height: '1px'}} />
       {isLoadingMore && (
