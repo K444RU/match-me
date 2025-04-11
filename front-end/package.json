@@ -47,7 +47,6 @@
     "react-phone-number-input": "^3.4.11",
     "react-router-dom": "^6.28.0",
     "react-stomp-hooks": "^3.0.1",
-    "react-toastify": "^11.0.5",
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.5.5"
   },

@@ -1,11 +1,11 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useAuth} from '@/features/authentication';
 import {useWebSocket} from '@/features/chat';
-import { toast } from 'react-toastify';
 import {ChatMessageResponseDTO, ChatPreviewResponseDTO} from '@/api/types';
 import {CommunicationContext} from '@features/chat';
 import {userService} from "@features/user";
 import {chatService} from '@/features/chat/';
+import { toast } from 'sonner';
 
 interface GlobalCommunicationProviderProps {
     children: React.ReactNode;
@@ -179,11 +179,11 @@ const GlobalCommunicationProviderInner = ({
                         userService.getUser(otherUserId)
                             .then(otherUser => {
                                 const alias = otherUser?.alias || `User ${otherUserId}`;
-                                toast.warn(`🙅 Connection request involving ${alias} rejected.`);
+                                toast.warning(`🙅 Connection request involving ${alias} rejected.`);
                             })
                             .catch(err => {
                                 console.error(`Failed to fetch user ${otherUserId} for reject toast`, err);
-                                toast.warn(`🙅 Connection request rejected.`);
+                                toast.warning(`🙅 Connection request rejected.`);
                             });
                         break;
 
