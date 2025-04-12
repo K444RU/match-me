@@ -1,5 +1,5 @@
 import InputField from '@/components/ui/forms/InputField';
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { FaArrowRight } from 'react-icons/fa';
 import 'react-day-picker/style.css';
 import { HOBBIES } from '@/assets/hobbies';
@@ -12,6 +12,7 @@ import DatePicker from '@ui/forms/DatePicker.tsx';
 import ProfilePictureUploader from '@ui/forms/ProfilePictureUploader.tsx';
 import { City, UnifiedFormData } from '../types/types';
 import { CitySuggestions } from './CitySuggestions';
+import useBrowserLocation from "@/pages/profile-completion/hooks/useBrowserLocation.ts";
 
 interface AttributesProps {
   onNext: () => void;
@@ -29,8 +30,20 @@ const Attributes: React.FC<AttributesProps> = ({ onNext, formData, onChange, gen
   const [lastName, setLastName] = useState(formData.lastName || '');
   const [alias, setAlias] = useState(formData.alias || '');
   const [hobbies, setHobbies] = useState<Option[] | []>(hobbiesById(formData.hobbies || []));
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
 
+  const {location: browserLocation, error: locationError } = useBrowserLocation();
   const debouncedCitySearchValue = useDebounce(citySearchValue, 1000);
+
+  useEffect(()=> {
+    if(browserLocation && !formData.city) {
+        setCitySearchValue(browserLocation.name);
+        onChange('city', browserLocation);
+    }
+    if (locationError) {
+        console.log(locationError);
+    }
+  }, [browserLocation, locationError, formData.city, onChange]);
 
   const handleCitySelect = async (city: City) => {
     setShowSuggestions(false);
@@ -94,9 +107,11 @@ const Attributes: React.FC<AttributesProps> = ({ onNext, formData, onChange, gen
           <div>
             <label className="mb-1 text-sm font-medium text-gray-700">Profile Picture (Optional)</label>
             <ProfilePictureUploader
-              onUploadSuccess={() => {
-                console.debug('Upload was successful!');
-              }}
+                currentImage={uploadedImage}
+                onUploadSuccess={(base64Image) => {
+                  setUploadedImage(base64Image);
+                  console.debug('Upload was successful!');
+                }}
             />
           </div>
 

@@ -3,6 +3,7 @@ package com.matchme.srv.model.connection;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
@@ -54,17 +55,24 @@ public class DatingPoolSyncService {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void synchronizeDatingPool(Long profileId) {
-
-        UserAttributes attributes = userAttributesRepository.findById(profileId)
-                .orElseThrow(() -> new ResourceNotFoundException("userAttributes for " + profileId.toString()));
+        Optional<UserAttributes> attributesOpt = userAttributesRepository.findById(profileId);
+        if (attributesOpt.isEmpty()) {
+            log.debug("UserAttributes not found for profile ID: {}, skipping sync", profileId);
+            return;
+        }
+        UserAttributes attributes = attributesOpt.get();
 
         if (attributes.getGender() == null || attributes.getBirthdate() == null || attributes.getLocation().isEmpty()) {
             log.debug("Missing required fields in userAttributes {}, skipping sync", profileId);
             return;
         }
 
-        UserPreferences preferences = userPreferencesRepository.findById(profileId)
-                .orElseThrow(() -> new ResourceNotFoundException("userPreferences for " + profileId.toString()));
+        Optional<UserPreferences> preferencesOpt = userPreferencesRepository.findById(profileId);
+        if (preferencesOpt.isEmpty()) {
+            log.debug("UserPreferences not found for profile ID: {}, skipping sync", profileId);
+            return;
+        }
+        UserPreferences preferences = preferencesOpt.get();
 
         if (preferences.getGender() == null || preferences.getAgeMin() == null || preferences.getAgeMax() == null
                 || preferences.getDistance() == null) {
@@ -72,8 +80,12 @@ public class DatingPoolSyncService {
             return;
         }
 
-        UserProfile userProfile = userProfileRepository.findById(profileId)
-                .orElseThrow(() -> new ResourceNotFoundException("userProfile for " + profileId.toString()));
+        Optional<UserProfile> userProfileOpt = userProfileRepository.findById(profileId);
+        if (userProfileOpt.isEmpty()) {
+            log.debug("UserProfile not found for profile ID: {}, skipping sync", profileId);
+            return;
+        }
+        UserProfile userProfile = userProfileOpt.get();
 
         DatingPool entry = matchingRepository.findById(profileId)
                 .orElseGet(() -> {

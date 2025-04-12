@@ -5,7 +5,7 @@ import ReactAvatarEditor from 'react-avatar-editor';
 
 interface ProfilePictureUploaderProps {
   currentImage: string | null;
-  onUploadSuccess?: () => void;
+  onUploadSuccess?: (base64Image: string | null) => void;
 }
 
 const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ currentImage, onUploadSuccess }) => {
@@ -47,7 +47,7 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ current
       try {
         await userService.updateProfilePicture({ base64Image });
         setImage(null);
-        if (onUploadSuccess) onUploadSuccess();
+        if (onUploadSuccess) onUploadSuccess(base64Image);
       } catch (error) {
         console.error('Upload error:', error);
         alert('Failed to upload picture.');
@@ -59,7 +59,7 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ current
     try {
       await userService.updateProfilePicture({ base64Image: undefined });
       setImage(null);
-      if (onUploadSuccess) onUploadSuccess();
+      if (onUploadSuccess) onUploadSuccess(null);
     } catch (error) {
       console.error('Remove error:', error);
       alert('Failed to remove picture.');
