@@ -8,7 +8,7 @@ test.describe('User Login', () => {
   test('should login successfully and redirect to chats', async ({ page }) => {
     await page.getByRole('link', { name: 'Log in' }).click();
     await page.getByRole('textbox', { name: 'Email' }).click();
-    await page.getByRole('textbox', { name: 'Email' }).fill('test1@example.com');
+    await page.getByRole('textbox', { name: 'Email' }).fill('john.doe@example.com');
     await page.getByRole('textbox', { name: 'Password' }).click();
     await page.getByRole('textbox', { name: 'Password' }).fill('123456');
     await page.getByRole('button', { name: 'Submit form.' }).click();
@@ -16,10 +16,10 @@ test.describe('User Login', () => {
     await expect(page).toHaveURL('http://localhost:3000/chats');
   });
 
-  test('should login successfully and redirect to login page', async ({ page }) => {
+  test('should login successfully and redirect back on logout', async ({ page }) => {
     await page.getByRole('link', { name: 'Log in' }).click();
     await page.getByRole('textbox', { name: 'Email' }).click();
-    await page.getByRole('textbox', { name: 'Email' }).fill('test1@example.com');
+    await page.getByRole('textbox', { name: 'Email' }).fill('john.doe@example.com');
     await page.getByRole('textbox', { name: 'Password' }).click();
     await page.getByRole('textbox', { name: 'Password' }).fill('123456');
     await page.getByRole('button', { name: 'Submit form.' }).click();
