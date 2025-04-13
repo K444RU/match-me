@@ -68,8 +68,14 @@ public class ChatService {
 
         // 2) Iterate over each connection
         for (Connection connection : connections) {
-            ConnectionState currentState = connectionService.getCurrentState(connection);
-            if (currentState == null || currentState.getStatus() != ConnectionStatus.ACCEPTED) {
+            ConnectionState latestState = connection.getConnectionStates().stream()
+                    .max(Comparator.comparing(ConnectionState::getTimestamp))
+                    .orElse(null); // Find the state with the most recent timestamp
+
+            // ONLY include the connection if its very latest status is ACCEPTED
+            if (latestState == null || latestState.getStatus() != ConnectionStatus.ACCEPTED) {
+                // If there's no state or the latest isn't ACCEPTED (could be PENDING, REJECTED, DISCONNECTED)
+                // then skip this connection for chat preview purposes.
                 continue;
             }
 

@@ -1,6 +1,7 @@
 import { ChatMessageResponseDTO, MessagesSendRequestDTO } from '@/api/types';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth } from '@/features/authentication';
+import { CommunicationContext, chatService, useWebSocket } from '@/features/chat';
 import { chatService, CommunicationContext, useWebSocket } from '@/features/chat';
 import { useContext, useEffect, useState } from 'react';
 import NoChat from './NoChat';
@@ -17,8 +18,12 @@ export default function OpenChat() {
 
   const communicationContext = useContext(CommunicationContext);
   const openChat = communicationContext?.openChat || null;
+  const communicationContext = useContext(CommunicationContext);
+  const openChat = communicationContext?.openChat || null;
 
   const connectionId = openChat?.connectionId;
+  const updateAllChats = communicationContext.updateAllChats;
+  const allChats = communicationContext.allChats;
   const updateAllChats = communicationContext.updateAllChats;
   const allChats = communicationContext.allChats;
 
@@ -70,6 +75,7 @@ export default function OpenChat() {
 
   // Early return if no context, user or open chat
   if (!communicationContext) return null;
+  if (!communicationContext) return null;
   if (!user) return null;
 
   const onSendMessage = async (message: string) => {
@@ -94,6 +100,8 @@ export default function OpenChat() {
       },
     };
 
+    if (communicationContext?.updateAllChats) {
+      communicationContext.updateAllChats(openChat.connectionId, [optimisticMessage]);
     if (communicationContext?.updateAllChats) {
       communicationContext.updateAllChats(openChat.connectionId, [optimisticMessage]);
     }

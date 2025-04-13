@@ -8,6 +8,7 @@ import useOnlineIndicator from '../hooks/useOnlineIndicator';
 import useSubscriptionManager from '../hooks/useSubscriptionManager';
 import useTypingIndicator from '../hooks/useTypingIndicator';
 import { MessageStatusUpdateDTO } from '../types/MessageStatusUpdateDTO';
+import useConnectionRequestManager from '../hooks/useConnectionRequestManager';
 import { WebSocketContext } from './websocket-context';
 
 interface WebSocketConnectionManagerProps {
@@ -29,6 +30,15 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
   const [isConnected, setIsConnected] = useState(false);
   const [messageQueue, setMessageQueue] = useState<ChatMessageResponseDTO[]>([]);
   const [statusUpdateQueue, setStatusUpdateQueue] = useState<MessageStatusUpdateDTO[]>([]);
+
+  // Connection management
+  const {
+    connectionUpdates,
+    sendConnectionRequest,
+    acceptConnectionRequest,
+    rejectConnectionRequest,
+    disconnectConnection,
+  } = useConnectionRequestManager({ userId: currentUser.id, stompClient });
 
   useEffect(() => {
     const currentConnected = !!stompClientRef.current?.connected;
@@ -81,10 +91,9 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
   });
 
   const { chatPreviews, handleChatPreviews } = useChatPreviewHandler();
-
   const { onlineUsers, handleOnlineIndicator } = useOnlineIndicator();
 
-  // Setup subscriptions with the handlers
+  // Subscription management
   const { reconnect } = useSubscriptionManager({
     userId: currentUser?.id,
     stompClientRef,
@@ -107,6 +116,11 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
       typingUsers,
       onlineUsers,
       chatPreviews: chatPreviews || [],
+      connectionUpdates,
+      sendConnectionRequest,
+      acceptConnectionRequest,
+      rejectConnectionRequest,
+      disconnectConnection,
       messageQueue,
       clearMessageQueue,
       statusUpdateQueue,
@@ -121,6 +135,11 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
       typingUsers,
       onlineUsers,
       chatPreviews,
+      connectionUpdates,
+      sendConnectionRequest,
+      acceptConnectionRequest,
+      rejectConnectionRequest,
+      disconnectConnection,
       messageQueue,
       clearMessageQueue,
       statusUpdateQueue,

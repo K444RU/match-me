@@ -2,11 +2,64 @@ import type { ChatPreviewResponseDTO } from '@/api/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useWebSocket } from '@/features/chat';
 import { cn } from '@/lib/utils';
-import { format, fromUnixTime } from 'date-fns';
+import {format, fromUnixTime, isValid} from 'date-fns';
 
 interface ChatPreviewCardProps {
   chat: ChatPreviewResponseDTO;
   isSelected?: boolean;
+}
+
+/**
+ * Formats a timestamp string into a readable 'HH:mm' format, safely handling inconsistent backend data.
+ *
+ * The backend sends timestamps as strings -> lastMessageTimestamp in ChatPreviewResponseDTO
+ * that may represent Unix timestamps in seconds or milliseconds, or even be invalid. This function normalizes these
+ * variations for consistent display in the `ChatPreviewCard`
+ *
+ * What errors it prevents:
+ * - Crashes from null, undefined, or empty strings by returning a fallback ('--:--').
+ * - "Invalid time value" errors in `date-fns` due to unvalidated numeric conversions.
+ * - Incorrect times from misinterpreting seconds vs. milliseconds.
+ *
+ * Why it was necessary:
+ * Previously, `format(fromUnixTime(chat.lastMessage.sentAt), 'kk:mm')` assumed all timestamps
+ * were valid and in seconds. Backend inconsistencies (e.g., millisecond timestamps) caused runtime errors or wrong
+ * time displays, breaking the chat preview.
+ *
+ * Why the old way failed:
+ * Without validation, the app could not handle the unpredictable `lastMessageTimestamp`
+ * format from the backend, leading to unreliable time rendering or crashes.
+ */
+function formatTimestampSafely(timestampStr: string | null | undefined): string {
+  const DEFAULT_TIME = '--:--';
+
+  // Early return for falsy inputs (null, undefined, or empty string)
+  if (!timestampStr) return DEFAULT_TIME;
+
+  const timestampNumber = Number(timestampStr);
+  if (isNaN(timestampNumber)) {
+    console.warn(`ChatPreviewCard: Timestamp string "${timestampStr}" could not be converted to a valid number.`);
+    return DEFAULT_TIME;
+  }
+
+  try {
+    // Adjust timestamp: divide by 1000 if in milliseconds
+    const isMilliseconds = Math.abs(timestampNumber) > 3000000000;
+    const timestampInSeconds = isMilliseconds ? timestampNumber / 1000 : timestampNumber;
+    const dateObject = fromUnixTime(timestampInSeconds);
+
+    // Validate the date
+    if (!isValid(dateObject)) {
+      console.warn(`ChatPreviewCard: Invalid date from timestamp: ${timestampNumber} (original: "${timestampStr}")`);
+      return DEFAULT_TIME;
+    }
+
+    // Format and return the time
+    return format(dateObject, 'HH:mm');
+  } catch (error) {
+    console.error(`ChatPreviewCard: Error processing timestamp: ${timestampNumber} (original: "${timestampStr}")`, error);
+    return DEFAULT_TIME;
+  }
 }
 
 export default function ChatPreviewCard({ chat, isSelected = false }: ChatPreviewCardProps) {
@@ -15,6 +68,8 @@ export default function ChatPreviewCard({ chat, isSelected = false }: ChatPrevie
   const isOnline = onlineUsers[chat.connectedUserId];
 
   if (!chat) return null;
+
+  const formattedTime = formatTimestampSafely(chat.lastMessageTimestamp);
 
   return (
     <>
@@ -43,7 +98,7 @@ export default function ChatPreviewCard({ chat, isSelected = false }: ChatPrevie
                 ? chat.connectedUserFirstName + ' ' + chat.connectedUserLastName
                 : chat.connectedUserAlias}
             </p>
-            <p className="text-sm leading-none">{format(fromUnixTime(Number(chat.lastMessageTimestamp)), 'kk:mm')}</p>
+            <p className="text-sm leading-none">{formattedTime}</p>
           </div>
           <div className="mt-1 flex w-full items-center justify-between">
             {isTyping ? (

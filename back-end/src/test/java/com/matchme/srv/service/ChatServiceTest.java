@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import com.matchme.srv.TestDataFactory;
 import com.matchme.srv.dto.response.ChatMessageResponseDTO;
 import com.matchme.srv.dto.response.ChatPreviewResponseDTO;
 import com.matchme.srv.dto.response.MessageStatusUpdateDTO;
@@ -27,6 +28,7 @@ import com.matchme.srv.repository.ConnectionRepository;
 import com.matchme.srv.repository.MessageEventRepository;
 import com.matchme.srv.repository.UserMessageRepository;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashSet;
@@ -88,7 +90,10 @@ class ChatServiceTest {
             .messageEvents(new HashSet<>())
             .build();
 
-    connection = Connection.builder().id(CONNECTION_ID).users(Set.of(user, otherUser)).build();
+    connection = Connection.builder()
+            .id(CONNECTION_ID)
+            .users(Set.of(user, otherUser))
+            .build();
   }
 
   @Nested
@@ -99,40 +104,40 @@ class ChatServiceTest {
     @DisplayName("Should return chat previews when connections exist")
     void getChatPreviews_WithConnections_ReturnsPreviews() {
       // Arrange
-      when(connectionRepository.findConnectionsByUserId(DEFAULT_USER_ID))
-          .thenReturn(List.of(connection));
-      when(userMessageRepository.findTopByConnectionIdOrderByCreatedAtDesc(CONNECTION_ID))
-          .thenReturn(message);
-      when(userMessageRepository.countUnreadMessages(
-              CONNECTION_ID, DEFAULT_USER_ID, MessageEventTypeEnum.READ))
-          .thenReturn(0);
+      ConnectionState acceptedState = new ConnectionState();
+      acceptedState.setStatus(ConnectionStatus.ACCEPTED);
+      acceptedState.setTimestamp(LocalDateTime.now());
+      acceptedState.setConnection(connection);
+      acceptedState.setUser(otherUser);
+      connection.getConnectionStates().add(acceptedState);
 
-      ConnectionState mockState = new ConnectionState();
-      mockState.setStatus(ConnectionStatus.ACCEPTED);
-      when(connectionService.getCurrentState(any(Connection.class))).thenReturn(mockState);
+      when(connectionRepository.findConnectionsByUserId(DEFAULT_USER_ID))
+              .thenReturn(List.of(connection));
+      when(userMessageRepository.findTopByConnectionIdOrderByCreatedAtDesc(CONNECTION_ID))
+              .thenReturn(message);
+      when(userMessageRepository.countUnreadMessages(CONNECTION_ID, DEFAULT_USER_ID)).thenReturn(0);
 
       // Act
       List<ChatPreviewResponseDTO> chatPreviews = chatService.getChatPreviews(DEFAULT_USER_ID);
 
       // Assert
       assertAll(
-          () -> assertThat(chatPreviews).hasSize(1),
-          () -> {
-            ChatPreviewResponseDTO preview = chatPreviews.get(0);
-            assertThat(preview.getConnectedUserAlias())
-                .as("checking if the alias is correct")
-                .isEqualTo(DEFAULT_ALIAS);
-            assertThat(preview.getLastMessageContent())
-                .as("checking if the message content is correct")
-                .isEqualTo(MESSAGE_CONTENT);
-            assertThat(preview.getUnreadMessageCount())
-                .as("checking if the unread count is correct")
-                .isZero();
-          },
-          () -> verify(connectionRepository, times(1)).findConnectionsByUserId(DEFAULT_USER_ID));
+              () -> assertThat(chatPreviews).hasSize(1),
+              () -> {
+                ChatPreviewResponseDTO preview = chatPreviews.get(0);
+                assertThat(preview.getConnectedUserAlias())
+                        .as("checking if the alias is correct")
+                        .isEqualTo(DEFAULT_ALIAS);
+                assertThat(preview.getLastMessageContent())
+                        .as("checking if the message content is correct")
+                        .isEqualTo(MESSAGE_CONTENT);
+                assertThat(preview.getUnreadMessageCount())
+                        .as("checking if the unread count is correct")
+                        .isZero();
+              },
+              () -> verify(connectionRepository, times(1)).findConnectionsByUserId(DEFAULT_USER_ID));
     }
   }
-
   @Nested
   @DisplayName("getChatMessages Tests")
   class GetChatMessagesTests {

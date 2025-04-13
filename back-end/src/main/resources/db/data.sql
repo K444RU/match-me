@@ -558,7 +558,8 @@ VALUES
   (1, 'test1@example.com', '111-111-1111', 4),
   (2, 'test2@example.com', '222-222-2222', 4),
   (3, 'test3@example.com', '333-333-3333', 4),
-  (4, 'test4@example.com', '444-444-4444', 4)
+  (4, 'test4@example.com', '444-444-4444', 4),
+  (5, 'test5@example.com', '555-555-5555', 4)
 ON CONFLICT (id) DO NOTHING;
 
 -- Update the users_id_seq sequence, because we don't use JPA, JPA doesn't know where the sequence is
@@ -570,7 +571,8 @@ VALUES
   (1, '$2a$10$sNInvglURuXPEWjojzv/.uPsHsCxBmtUkeevnn0K7BnWdJCrvBwcK', 123456),
   (2, '$2a$10$sNInvglURuXPEWjojzv/.uPsHsCxBmtUkeevnn0K7BnWdJCrvBwcK', 123456),
   (3, '$2a$10$sNInvglURuXPEWjojzv/.uPsHsCxBmtUkeevnn0K7BnWdJCrvBwcK', 123456),
-  (4, '$2a$10$sNInvglURuXPEWjojzv/.uPsHsCxBmtUkeevnn0K7BnWdJCrvBwcK', 123456)
+  (4, '$2a$10$sNInvglURuXPEWjojzv/.uPsHsCxBmtUkeevnn0K7BnWdJCrvBwcK', 123456),
+  (5, '$2a$10$sNInvglURuXPEWjojzv/.uPsHsCxBmtUkeevnn0K7BnWdJCrvBwcK', 123456)
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Insert corresponding user profiles into the "user_profile" table.
@@ -579,7 +581,8 @@ VALUES
   (1, 'John', 'Doe', 'johnny', 'Tallinn'),
   (2, 'Jane', 'Smith', 'jane', 'Tartu'),
   (3, 'Alice', 'Johnson', 'alice', 'Pärnu'),
-  (4, 'Test', 'Match', 'testmatch', 'Paide')
+  (4, 'Test', 'Match', 'testmatch', 'Paide'),
+  (5, 'Madis', 'Paidest', 'madis', 'Tallinn')
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Insert sample user attributes into the "user_attributes" table.
@@ -590,7 +593,8 @@ VALUES
   (1, 1, '1990-01-01', '{58.3859,24.5002}'),
   (2, 1, '1992-05-10', '{58.3859,24.5002}'),
   (3, 2, '1988-11-20', '{58.3859,24.5002}'),
-  (4, 2, '1990-01-01', '{58.3859,24.5002}')
+  (4, 2, '1990-01-01', '{58.3859,24.5002}'),
+  (5, 1, '1990-01-01', '{58.3859,24.5002}')
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Insert sample user preferences into the "user_preferences" table.
@@ -601,7 +605,8 @@ VALUES
   (1, 2, 18, 100, 30, 0.5),  -- John prefers females
   (2, 2, 18, 100, 30, 0.5),  -- Jane prefers males
   (3, 1, 18, 100, 30, 0.5),   -- Alice prefers males
-  (4, 1, 18, 100, 30, 0.5)
+  (4, 1, 18, 100, 30, 0.5),
+  (5, 2, 18, 100, 30, 0.5)
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Insert sample user scores into the "user_scores" table.
@@ -610,7 +615,8 @@ VALUES
   (1, 1000, 1.0, 1000),
   (2, 1000, 1.0, 1000),
   (3, 1000, 1.0, 1000),
-  (4, 1000, 1.0, 1000)
+  (4, 1000, 1.0, 1000),
+  (5, 1000, 1.0, 1000)
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Insert user hobbies
@@ -619,7 +625,8 @@ VALUES
   (1, 1),
   (2, 1),
   (3, 1),
-  (4, 1)
+  (4, 1),
+  (5, 1)
 ON CONFLICT (user_profile_id, hobby_id) DO NOTHING;
 
 INSERT INTO dating_pool (
@@ -667,9 +674,16 @@ INSERT INTO dating_pool (
     100, -- 100 age max
     'tk3e2s', -- tk3e2s ==58.3859, 24.5002
     1000
+), (
+    5, 
+    1,  -- Male
+    2,  -- Looking for Female
+    34, -- 1990-01-01 = 34 years old
+    18, -- 18 years old age min
+    100, -- 100 age max
+    'tk3e2s', -- tk3e2s ==58.3859, 24.5002
+    1000
 ) 
-
-
 ON CONFLICT (profile_id) DO NOTHING;
 
 
@@ -679,7 +693,8 @@ VALUES
   (1, 'tk3'),
   (2, 'tk3'),
   (3, 'tk3'),
-  (4, 'tk3');
+  (4, 'tk3'),
+  (5, 'tk3');
 
 -- Insert hobbies into separate table
 INSERT INTO dating_pool_hobbies (dating_pool_id, hobby_id)
@@ -687,7 +702,8 @@ VALUES
   (1, 1),
   (2, 1),
   (3, 1),
-  (4, 1);
+  (4, 1),
+  (5, 1);
 
 INSERT INTO connections (id) 
 VALUES (1), (2), (3), (4)
@@ -698,7 +714,7 @@ VALUES
   (1, 1), (1, 2),  -- John and Jane
   (2, 1), (2, 3),  -- John and Alice
   (3, 3), (3, 4),  -- Alice and TestMatch
-  (4, 2), (4, 4)   -- Jane and TestMatch
+  (4, 2), (4, 4)  -- Jane and TestMatch
 ON CONFLICT DO NOTHING;
 
 -- Update sequence for connections
