@@ -21,13 +21,9 @@ export default function AuthenticationGuard({
   allowedStates,
   ...props
 }: AuthenticationGuardProps) {
-  const { user, isLoading } = useAuth();
+  const { user } = useAuth();
   let isAllowed = false;
   let finalRedirectPath = redirectPath;
-
-  if (isLoading) {
-    return null;
-  }
 
   if (guardType === 'unauthenticated') {
     isAllowed = !user;
