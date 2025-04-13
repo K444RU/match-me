@@ -1,15 +1,12 @@
+import { AuthProvider } from '@/features/authentication';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './router/router';
-import { AuthProvider } from '@/features/authentication';
-import { StrictMode } from 'react';
 
 const App = () => {
   return (
-    <StrictMode>
-      <AuthProvider>
+    <AuthProvider>
       <RouterProvider router={router} future={{ v7_startTransition: true }} />
     </AuthProvider>
-    </StrictMode>
   );
 };
 
