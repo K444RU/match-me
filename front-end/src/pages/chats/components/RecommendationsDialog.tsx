@@ -70,7 +70,7 @@ const RecommendationsDialog = ({
           <DialogDescription>View your latest matching recommendations here.</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          {recommendations?.recommendations &&
+          {recommendations?.recommendations && recommendations.recommendations.length > 0 ? (
             recommendations.recommendations.map((r) => (
               <div key={r.userId} className="flex justify-between rounded-md p-2 duration-100 hover:bg-text-100">
                 <div className="flex items-center gap-2">
@@ -97,7 +97,12 @@ const RecommendationsDialog = ({
                   )}
                 </Button>
               </div>
-            ))}
+            ))
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <p>No recommendations found 🥲</p>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

@@ -267,14 +267,13 @@ public class UserCreationService {
      boolean firstNamePresent = StringUtils.hasText(profile.getFirst_name());
      boolean lastNamePresent = StringUtils.hasText(profile.getLast_name());
      boolean aliasPresent = StringUtils.hasText(profile.getAlias());
-     boolean hobbiesPresent = !CollectionUtils.isEmpty(profile.getHobbies());
      boolean cityPresent = StringUtils.hasText(profile.getCity());
      boolean genderPresent = attributes.getGender() != null;
      boolean birthdatePresent = attributes.getBirthdate() != null;
      boolean locationPresent = attributes.getLocation() != null && attributes.getLocation().size() == 2 &&
              attributes.getLocation().stream().allMatch(Objects::nonNull);
    
-     if (firstNamePresent && lastNamePresent && aliasPresent && hobbiesPresent && cityPresent &&
+     if (firstNamePresent && lastNamePresent && aliasPresent && cityPresent &&
              genderPresent && birthdatePresent && locationPresent) {
    
          log.info("All required profile fields present for user ID: {}. Attempting to activate profile.", user.getId());
