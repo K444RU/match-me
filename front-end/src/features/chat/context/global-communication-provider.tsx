@@ -3,13 +3,13 @@ import { useAuth } from '@/features/authentication';
 import { useWebSocket } from '@/features/chat';
 import { chatService } from '@/features/chat/';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChatContext } from './chat-context';
+import { CommunicationContext } from './communication-context';
 
-interface ChatProviderProps {
+interface GlobalCommunicationProviderProps {
   children: React.ReactNode;
 }
 
-export const ChatProvider = ({ children }: ChatProviderProps) => {
+export const GlobalCommunicationProvider = ({ children }: GlobalCommunicationProviderProps) => {
   const { user } = useAuth();
   const [chatDisplays, setChatDisplays] = useState<ChatPreviewResponseDTO[]>([]);
   const [openChat, setOpenChat] = useState<ChatPreviewResponseDTO | null>(null);
@@ -26,7 +26,7 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
   }, [user]);
 
   return (
-    <ChatProviderInner
+    <GlobalCommunicationProviderInner
       refreshChats={refreshChats}
       chatDisplays={chatDisplays}
       allChats={allChats}
@@ -36,11 +36,11 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
       setAllChats={setAllChats}
     >
       {children}
-    </ChatProviderInner>
+    </GlobalCommunicationProviderInner>
   );
 };
 
-interface ChatProviderInnerProps {
+interface GlobalCommunicationProviderInnerProps {
   refreshChats: () => void;
   chatDisplays: ChatPreviewResponseDTO[];
   allChats: Record<number, ChatMessageResponseDTO[]>;
@@ -51,7 +51,7 @@ interface ChatProviderInnerProps {
   children: React.ReactNode;
 }
 
-const ChatProviderInner = ({
+const GlobalCommunicationProviderInner = ({
   refreshChats,
   chatDisplays,
   allChats,
@@ -60,7 +60,7 @@ const ChatProviderInner = ({
   setOpenChat,
   setAllChats,
   children,
-}: ChatProviderInnerProps) => {
+}: GlobalCommunicationProviderInnerProps) => {
   // Get websocket values (which include incoming chat previews and send functions)
   const {
     chatPreviews,
@@ -277,5 +277,5 @@ const ChatProviderInner = ({
     ]
   );
 
-  return <ChatContext.Provider value={contextValue}>{children}</ChatContext.Provider>;
+  return <CommunicationContext.Provider value={contextValue}>{children}</CommunicationContext.Provider>;
 };

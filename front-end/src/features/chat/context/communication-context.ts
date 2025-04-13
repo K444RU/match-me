@@ -6,7 +6,7 @@ import {
 } from '@/api/types';
 import { createContext, useContext } from 'react';
 
-export interface ChatContextType {
+export interface CommunicationContextType {
   chatPreviews: ChatPreviewResponseDTO[];
   openChat: ChatPreviewResponseDTO | null;
   allChats: Record<number, ChatMessageResponseDTO[]>;
@@ -25,39 +25,39 @@ export interface ChatContextType {
 }
 
 // Default values for the context to avoid null checks
-const defaultContext: ChatContextType = {
+const defaultContext: CommunicationContextType = {
   chatPreviews: [],
   openChat: null,
   allChats: {},
   refreshChats: () => {
-    console.warn('ChatContext not initialized');
+    console.warn('CommunicationContext not initialized');
   },
   setOpenChat: () => {
-    console.warn('ChatContext not initialized');
+    console.warn('CommunicationContext not initialized');
   },
   sendMessage: async () => {
-    console.warn('ChatContext not initialized');
+    console.warn('CommunicationContext not initialized');
   },
   sendTypingIndicator: () => {
-    console.warn('ChatContext not initialized');
+    console.warn('CommunicationContext not initialized');
   },
   sendMarkRead: () => {
-    console.warn('ChatContext not initialized');
+    console.warn('CommunicationContext not initialized');
   },
   updateAllChats: () => {
-    console.warn('ChatContext not initialized');
+    console.warn('CommunicationContext not initialized');
   },
   updateMessageStatus: () => {
-    console.warn('ChatContext not initialized');
+    console.warn('CommunicationContext not initialized');
   },
 };
 
-export const ChatContext = createContext<ChatContextType>(defaultContext);
+export const CommunicationContext = createContext<CommunicationContextType>(defaultContext);
 
-export const useChat = (): ChatContextType => {
-  const context = useContext(ChatContext);
+export const useCommunication = (): CommunicationContextType => {
+  const context = useContext(CommunicationContext);
   if (!context) {
-    console.error('useChat must be used within a ChatProvider');
+    console.error('useCommunication must be used within a CommunicationProvider');
     return defaultContext;
   }
   return context;
