@@ -53,6 +53,7 @@ export const routes = createRoutesFromElements(
             element={
               <AuthenticationGuard
                 allowedStates={[UserState.PROFILE_INCOMPLETE]}
+                redirectPath="/chats"
               />
             }
           >

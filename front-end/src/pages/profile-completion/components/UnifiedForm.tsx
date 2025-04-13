@@ -3,7 +3,6 @@ import { useAuth } from '@/features/authentication';
 import { genderService } from '@/features/gender';
 import { userService } from '@/features/user';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { UnifiedFormData } from '../types/types';
 import Attributes from './Attributes';
@@ -27,7 +26,6 @@ const PayloadFormData = (formData: UnifiedFormData): UserParametersRequestDTO =>
 });
 
 export default function UnifiedForm() {
-  const navigate = useNavigate();
   const { fetchCurrentUser } = useAuth();
 
   const [formData, setFormData] = useState<UnifiedFormData>(() => ({
@@ -72,7 +70,7 @@ export default function UnifiedForm() {
       await userService.updateParameters(payload);
       localStorage.removeItem('profileData');
       await fetchCurrentUser();
-      navigate('/chats');
+      // Routing should automatically redirect.
     } catch (err) {
       console.error('Error during final submission:', err);
       if (typeof err === 'string') {
