@@ -1,18 +1,20 @@
 package com.matchme.srv.config;
 
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
 import org.springframework.web.socket.handler.WebSocketHandlerDecoratorFactory;
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @RequiredArgsConstructor
@@ -24,7 +26,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
   private static final String WS_ENDPOINT = "/ws";
   private static final String CSRF_TOKEN_ATTR = "CSRF_TOKEN";
   private static final String[] ALLOWED_ORIGINS = {
-    "http://localhost:8000", "http://localhost:3000", "http://127.0.0.1:3000"
+      "http://localhost:8000", 
+      "http://localhost:3000", 
+      "http://127.0.0.1:3000"
   };
   private static final String APPLICATION_DESTINATION_PREFIX = "/app";
   private static final String USER_DESTINATION_PREFIX = "/user";
@@ -37,8 +41,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
   @Override
   public void configureMessageBroker(@NonNull MessageBrokerRegistry config) {
-    config.enableSimpleBroker(SIMPLE_BROKER_DESTINATIONS); // the client subscribes
-    config.setApplicationDestinationPrefixes(APPLICATION_DESTINATION_PREFIX); // These go to server
+    config.enableSimpleBroker(SIMPLE_BROKER_DESTINATIONS)
+            .setHeartbeatValue(new long[]{10000, 10000}) // Server sends heartbeats every 10s, expects client heartbeats every 10s
+            .setTaskScheduler(taskScheduler()); // Provide the TaskScheduler
+    config.setApplicationDestinationPrefixes(APPLICATION_DESTINATION_PREFIX);
     config.setUserDestinationPrefix(USER_DESTINATION_PREFIX);
 
     // Enable more verbose logging for message routing
@@ -66,5 +72,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             super.afterConnectionEstablished(session);
           }
         };
+  }
+
+  @Bean
+  public ThreadPoolTaskScheduler taskScheduler() {
+    ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+    scheduler.setPoolSize(1); // Single thread for scheduling heartbeats
+    scheduler.setThreadNamePrefix("wss-heartbeat-thread-");
+    scheduler.initialize();
+    return scheduler;
   }
 }

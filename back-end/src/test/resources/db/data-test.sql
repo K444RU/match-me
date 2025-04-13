@@ -14,10 +14,6 @@ MERGE INTO connection_types (id, name) VALUES (4, 'MAYBE_MORE');
 MERGE INTO connection_types (id, name) VALUES (5, 'INTERESTED');
 MERGE INTO connection_types (id, name) VALUES (6, 'CLOSED');
 
--- Insert message event types
-MERGE INTO message_event_types (id, name) VALUES (1, 'SENT');
-MERGE INTO message_event_types (id, name) VALUES (2, 'RECEIVED');
-MERGE INTO message_event_types (id, name) VALUES (3, 'READ');
 -- Insert activity log types
 MERGE INTO activity_log_types (id, name) VALUES (1, 'CREATED');
 MERGE INTO activity_log_types (id, name) VALUES (2, 'VERIFIED');

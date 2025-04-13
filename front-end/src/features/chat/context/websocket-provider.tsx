@@ -32,7 +32,7 @@ export const WebSocketProvider = ({ children, wsUrl }: WebSocketProviderProps) =
       heartbeatIncoming={4000}
       heartbeatOutgoing={4000}
       onStompError={(frame) => {
-        console.log('STOMP error:', frame);
+        console.error('WebSocket error:', frame);
       }}
     >
       <WebSocketConnectionManager user={currentUser}>{children}</WebSocketConnectionManager>

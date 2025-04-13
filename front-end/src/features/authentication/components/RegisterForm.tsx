@@ -74,7 +74,7 @@ const RegisterForm = () => {
         number,
         password,
       })
-      .then((res) => {
+      .then((_res) => {
         // TODO: Don't redirect on register & wait for email verify.
         // This current approach would cause a unnecessary
         // waste of resources (unverified accounts in DB)
@@ -86,7 +86,7 @@ const RegisterForm = () => {
         // otherwise it is just the normal /profile page.
         // navigate('/profile');
         // setShowOverlay(false);
-        console.log(res);
+
         setResState('success');
         setResTitle('Nice! You have been registered.');
         setResSubtitle('Please verify your email.');
