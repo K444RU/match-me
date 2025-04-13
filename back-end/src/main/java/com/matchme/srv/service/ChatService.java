@@ -185,8 +185,8 @@ public class ChatService {
             MessageEventDTO messageEvent = getLatestMessageEventDTO(message);
             
             return new ChatMessageResponseDTO(
-                    connectionId,
                     message.getId(),
+                    connectionId,
                     sender.getId(),
                     sender.getProfile().getAlias(),
                     message.getContent(),

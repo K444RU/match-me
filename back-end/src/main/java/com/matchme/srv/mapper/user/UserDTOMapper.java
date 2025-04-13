@@ -38,6 +38,7 @@ public class UserDTOMapper {
                 .profilePicture(base64Picture)
                 .role(user.getRoles())
                 .profileLink("/api/users/" + user.getId() + "/profile")
+                .state(user.getState())
                 .build();
     }
 

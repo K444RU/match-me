@@ -6,6 +6,7 @@
  * OpenAPI spec version: v0.0.1
  */
 import type { UserRoleType } from './userRoleType';
+import type { UserState } from './userState';
 
 export interface CurrentUserResponseDTO {
   alias?: string;
@@ -16,4 +17,5 @@ export interface CurrentUserResponseDTO {
   profileLink?: string;
   profilePicture?: string;
   role?: UserRoleType[];
+  state?: UserState;
 }

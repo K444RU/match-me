@@ -1,5 +1,6 @@
 package com.matchme.srv.dto.response;
 
+import com.matchme.srv.model.enums.UserState;
 import com.matchme.srv.model.user.UserRoleType;
 import lombok.Builder;
 
@@ -14,5 +15,6 @@ public record CurrentUserResponseDTO(
         String alias,
         String profilePicture,
         Set<UserRoleType> role,
-        String profileLink
+        String profileLink,
+        UserState state
 ) {}

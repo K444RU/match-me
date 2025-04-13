@@ -3,6 +3,7 @@ package com.matchme.srv.repository;
 import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.model.connection.ConnectionState;
 import com.matchme.srv.model.enums.ConnectionStatus;
+import static com.matchme.srv.model.enums.UserState.ACTIVE;
 import com.matchme.srv.model.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,10 +33,10 @@ class ConnectionRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        user1 = User.builder().email("user1@example.com").build();
+        user1 = User.builder().email("user1@example.com").state(ACTIVE).build();
         userRepository.save(user1);
 
-        user2 = User.builder().email("user2@example.com").build();
+        user2 = User.builder().email("user2@example.com").state(ACTIVE).build();
         userRepository.save(user2);
 
         connection = Connection.builder().build();
@@ -65,7 +66,7 @@ class ConnectionRepositoryTest {
 
     @Test
     void ConnectionRepository_ExistsConnectionBetween_ReturnFalse() {
-        User user3 = User.builder().email("user3@example.com").build();
+        User user3 = User.builder().email("user3@example.com").state(ACTIVE).build();
         userRepository.save(user3);
 
         boolean result = connectionRepository.existsConnectionBetween(user1.getId(), user3.getId());
@@ -101,7 +102,7 @@ class ConnectionRepositoryTest {
 
     @Test
     void findConnectionBetween_noConnection_returnsNull() {
-        User user3 = User.builder().email("user3@example.com").build();
+        User user3 = User.builder().email("user3@example.com").state(ACTIVE).build();
         userRepository.save(user3);
 
         Connection foundConnection = connectionRepository.findConnectionBetween(user1.getId(), user3.getId());

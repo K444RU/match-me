@@ -43,16 +43,6 @@ INSERT INTO profile_change_types (id, name) VALUES (3, 'BIO') ON CONFLICT (id) D
 INSERT INTO profile_change_types (id, name) VALUES (4, 'PHOTO') ON CONFLICT (id) DO NOTHING;
 INSERT INTO profile_change_types (id, name) VALUES (5, 'INTERESTS') ON CONFLICT (id) DO NOTHING;
 
--- Insert user state types
-INSERT INTO user_state_types (id, name) VALUES (1, 'UNVERIFIED') ON CONFLICT (id) DO NOTHING;
-INSERT INTO user_state_types (id, name) VALUES (2, 'VERIFIED') ON CONFLICT (id) DO NOTHING;
-INSERT INTO user_state_types (id, name) VALUES (3, 'NEW') ON CONFLICT (id) DO NOTHING;
-INSERT INTO user_state_types (id, name) VALUES (4, 'ACTIVE') ON CONFLICT (id) DO NOTHING;
-INSERT INTO user_state_types (id, name) VALUES (5, 'PENDING') ON CONFLICT (id) DO NOTHING;
-INSERT INTO user_state_types (id, name) VALUES (6, 'SUSPENDED') ON CONFLICT (id) DO NOTHING;
-INSERT INTO user_state_types (id, name) VALUES (7, 'DORMANT') ON CONFLICT (id) DO NOTHING;
-INSERT INTO user_state_types (id, name) VALUES (8, 'DISABLED') ON CONFLICT (id) DO NOTHING;
-
 -- Insert hobby categories
 INSERT INTO hobby (id, name, category, sub_category) VALUES (1, '3D printing', 'General', 'Indoors') ON CONFLICT (id) DO NOTHING;
 INSERT INTO hobby (id, name, category, sub_category) VALUES (2, 'Acrobatics', 'General', 'Indoors') ON CONFLICT (id) DO NOTHING;
@@ -553,13 +543,13 @@ INSERT INTO hobby (id, name, category, sub_category) VALUES (494, 'Whale watchin
 -- ----------------------------------------------------------------------
 
 -- Insert sample users into the "users" table.
-INSERT INTO users (id, email, number, user_state_type_id) 
+INSERT INTO users (id, email, number, state) 
 VALUES 
-  (1, 'john.doe@example.com', '111-111-1111', 4),
-  (2, 'jane.smith@example.com', '222-222-2222', 4),
-  (3, 'alice.johnson@example.com', '333-333-3333', 4),
-  (4, 'toomas.saar@example.com', '444-444-4444', 4),
-  (5, 'madis.paidest@example.com', '555-555-5555', 4)
+  (1, 'john.doe@example.com', '111-111-1111', 'ACTIVE'),
+  (2, 'jane.smith@example.com', '222-222-2222', 'ACTIVE'),
+  (3, 'alice.johnson@example.com', '333-333-3333', 'ACTIVE'),
+  (4, 'toomas.saar@example.com', '444-444-4444', 'ACTIVE'),
+  (5, 'madis.paidest@example.com', '555-555-5555', 'ACTIVE')
 ON CONFLICT (id) DO NOTHING;
 
 -- Update the users_id_seq sequence, because we don't use JPA, JPA doesn't know where the sequence is

@@ -33,16 +33,14 @@ import lombok.extern.slf4j.Slf4j;
 public class UserSettingsService {
 
     private final UserRepository userRepository;
-
     private final AttributesMapper attributesMapper;
     private final PreferencesMapper preferencesMapper;
-
     private final HobbyService hobbyService;
     private final UserGenderTypeService userGenderTypeService;
     private final UserValidationService userValidationService;
-
+   
     private static final String USER_NOT_FOUND_MESSAGE = "User not found!";
-
+   
     public void updateAccountSettings(Long userId, AccountSettingsRequestDTO settings) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_MESSAGE));
@@ -77,8 +75,10 @@ public class UserSettingsService {
             profile.setHobbies(new HashSet<>());
         }
 
-        // TODO: Add logging
+        log.info("Updating profile settings for user ID: {}", userId);
+
         userRepository.save(user);
+        log.info("Successfully updated profile settings for user ID: {}", userId);
     }
 
     public void updateAttributesSettings(Long userId, AttributesSettingsRequestDTO settings) {
@@ -95,8 +95,9 @@ public class UserSettingsService {
 
         profile.setCity(settings.getCity());
 
-        // TODO: Add logging
+        log.info("Updating attributes settings for user ID: {}", userId);
         userRepository.save(user);
+        log.info("Successfully updated attributes settings for user ID: {}", userId);
     }
 
     public void updatePreferencesSettings(Long userId, PreferencesSettingsRequestDTO settings) {
@@ -113,8 +114,8 @@ public class UserSettingsService {
         preferences.setDistance(settings.getDistance());
         preferences.setProbabilityTolerance(settings.getProbability_tolerance());
 
-        // TODO: Add logging
+        log.info("Updating preferences settings for user ID: {}", userId);
         userRepository.save(user);
-    }
-
+        log.info("Successfully updated preferences settings for user ID: {}", userId);
+       }
 }
