@@ -55,5 +55,5 @@ export * from './userPreferences';
 export * from './userProfile';
 export * from './userRoleType';
 export * from './userScore';
-export * from './userStateTypes';
+export * from './userState';
 export * from './verifyAccountParams';
