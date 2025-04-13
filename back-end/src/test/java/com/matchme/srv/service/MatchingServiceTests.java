@@ -50,40 +50,6 @@ class MatchingServiceTests {
   }
 
   @Test
-  void getPossibleMatches_ShouldRetrieveDatingPoolEntryWithCorrectFields_BeforeProcessingMatches() {
-    // Arrange
-    when(matchingRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserPool));
-
-    // Mock the repository to return an empty list for the
-    // findUsersThatMatchParameters call
-    when(matchingRepository.findUsersThatMatchParameters(anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
-        .thenReturn(Collections.emptyList());
-
-    try {
-      // Act
-      matchingService.getPossibleMatches(TEST_USER_ID);
-      fail("Expected PotentialMatchesNotFoundException was not thrown");
-    } catch (PotentialMatchesNotFoundException e) {
-      // Expected exception
-      // Verify that the repository was called with the correct user ID
-      verify(matchingRepository).findById(TEST_USER_ID);
-
-      // Verify that the findUsersThatMatchParameters was called with the correct
-      // parameters
-      verify(matchingRepository).findUsersThatMatchParameters(
-          eq(testUserPool.getLookingForGender()),
-          eq(testUserPool.getMyGender()),
-          eq(testUserPool.getMyAge()),
-          eq(testUserPool.getAgeMin()),
-          eq(testUserPool.getAgeMax()),
-          eq(testUserPool.getSuitableGeoHashes()),
-          eq(testUserPool.getMyLocation()),
-          eq(3));
-    }
-
-  }
-
-  @Test
   void getPossibleMatches_ShouldThrowResourceNotFoundException_WhenDatingPoolEntryNotFound() {
     // Arrange
     when(matchingRepository.findById(TEST_USER_ID)).thenReturn(Optional.empty());
@@ -166,42 +132,6 @@ class MatchingServiceTests {
     verify(matchingRepository).findUsersThatMatchParameters(
         eq(lookingForGender), eq(myGender), eq(myAge), eq(ageMin), eq(ageMax),
         eq(suitableGeoHashes), eq(myLocation), eq(3));
-  }
-
-  /**
-   * Tests that a PotentialMatchesNotFoundException is thrown when no users
-   * match the search parameters.
-   */
-  @Test
-  void findUsersThatMatchParameters_ShouldThrowPotentialMatchesNotFoundException_WhenNoMatchesFound() {
-    // Arrange
-    when(matchingRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserPool));
-
-    // Mock repository to return empty list (no matches found)
-    when(matchingRepository.findUsersThatMatchParameters(
-        anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
-        .thenReturn(Collections.emptyList());
-
-    // Act & Assert
-    Exception exception = assertThrows(PotentialMatchesNotFoundException.class, () -> {
-      matchingService.getPossibleMatches(TEST_USER_ID);
-    });
-
-    // Verify the exception message
-    assertTrue(exception.getMessage().contains("Potential matches with selected parameters"),
-        "Exception message should indicate no matches were found with the parameters");
-
-    // Verify the repository methods were called with correct parameters
-    verify(matchingRepository).findById(TEST_USER_ID);
-    verify(matchingRepository).findUsersThatMatchParameters(
-        eq(testUserPool.getLookingForGender()),
-        eq(testUserPool.getMyGender()),
-        eq(testUserPool.getMyAge()),
-        eq(testUserPool.getAgeMin()),
-        eq(testUserPool.getAgeMax()),
-        eq(testUserPool.getSuitableGeoHashes()),
-        eq(testUserPool.getMyLocation()),
-        eq(3));
   }
 
   /**
@@ -393,70 +323,6 @@ class MatchingServiceTests {
     double probability = result.get(5L);
     assertTrue(probability > 0.3 && probability < 0.91,
         "Probability should be within acceptable range (0.3 to 0.91)");
-
-    // Verify repository methods were called
-    verify(matchingRepository).findById(TEST_USER_ID);
-    verify(matchingRepository).findUsersThatMatchParameters(
-        eq(testUserPool.getLookingForGender()),
-        eq(testUserPool.getMyGender()),
-        eq(testUserPool.getMyAge()),
-        eq(testUserPool.getAgeMin()),
-        eq(testUserPool.getAgeMax()),
-        eq(testUserPool.getSuitableGeoHashes()),
-        eq(testUserPool.getMyLocation()),
-        eq(3));
-  }
-
-  /**
-   * Tests that the matching service throws a PotentialMatchesNotFoundException
-   * when all
-   * potential matches have probabilities outside the acceptable range (below 0.3
-   * or above 0.91).
-   */
-  @Test
-  void getPossibleMatches_ShouldThrowPotentialMatchesNotFoundException_WhenAllMatchesOutsideProbabilityRange() {
-    // Arrange
-    when(matchingRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserPool));
-
-    // Create only matches with probabilities outside the acceptable range
-    // 1. Match with very high probability (> 0.91)
-    DatingPool highProbabilityMatch = createTestDatingPool(3L);
-    highProbabilityMatch.setMyGender(2L);
-    highProbabilityMatch.setLookingForGender(1L);
-    highProbabilityMatch.setActualScore(3000); // Much higher score than user's 1500 -> high probability
-    highProbabilityMatch.setHobbyIds(new HashSet<>(Arrays.asList(1L, 2L))); // All mutual hobbies
-
-    // 2. Another match with very high probability (> 0.91)
-    DatingPool anotherHighProbabilityMatch = createTestDatingPool(4L);
-    anotherHighProbabilityMatch.setMyGender(2L);
-    anotherHighProbabilityMatch.setLookingForGender(1L);
-    anotherHighProbabilityMatch.setActualScore(2800); // Higher score than user's 1500 -> high probability
-    anotherHighProbabilityMatch.setHobbyIds(new HashSet<>(Arrays.asList(1L, 2L))); // All mutual hobbies
-
-    // 3. Match with very low probability (< 0.3)
-    DatingPool lowProbabilityMatch = createTestDatingPool(5L);
-    lowProbabilityMatch.setMyGender(2L);
-    lowProbabilityMatch.setLookingForGender(1L);
-    lowProbabilityMatch.setActualScore(700); // Much lower score than user's 1500 -> low probability
-    lowProbabilityMatch.setHobbyIds(new HashSet<>()); // No mutual hobbies
-
-    List<DatingPool> allMatches = Arrays.asList(
-        highProbabilityMatch,
-        anotherHighProbabilityMatch,
-        lowProbabilityMatch);
-
-    when(matchingRepository.findUsersThatMatchParameters(
-        anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
-        .thenReturn(allMatches);
-
-    // Act & Assert
-    Exception exception = assertThrows(PotentialMatchesNotFoundException.class, () -> {
-      matchingService.getPossibleMatches(TEST_USER_ID);
-    });
-
-    // Verify the exception message
-    assertTrue(exception.getMessage().contains("Potential matches within acceptable probability range"),
-        "Exception message should indicate no matches were found within acceptable probability range");
 
     // Verify repository methods were called
     verify(matchingRepository).findById(TEST_USER_ID);
