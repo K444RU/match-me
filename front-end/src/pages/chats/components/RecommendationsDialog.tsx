@@ -13,7 +13,7 @@ type ConnectionState = Record<string, 'idle' | 'loading' | 'sent'>;
 async function fetchRecommendations() {
   try {
     const response = await connectionService.getRecommendations();
-    console.log('Fetched recommendations:', response);
+
     return response;
   } catch (error) {
     toast.error('Failed to fetch recommendations');
@@ -53,7 +53,6 @@ const RecommendationsDialog = ({
       setConnectionStates((prev) => ({ ...prev, [userId]: 'loading' }));
       sendConnectionRequest(userId);
       setTimeout(() => {
-        console.log(`Sent request to: ${userId}`);
         setConnectionStates((prev) => ({ ...prev, [userId]: 'sent' }));
       }, 1000);
     } catch (error) {

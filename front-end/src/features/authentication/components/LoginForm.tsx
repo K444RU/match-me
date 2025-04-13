@@ -10,11 +10,11 @@ import InputField from '../../../components/ui/forms/InputField';
 import FormResponse from './FormResponse';
 
 const testUsers = [
-  { email: 'test1@example.com', password: '123456' },
-  { email: 'test2@example.com', password: '123456' },
-  { email: 'test3@example.com', password: '123456' },
-  { email: 'test4@example.com', password: '123456' },
-  { email: 'test5@example.com', password: '123456' },
+  { email: 'john.doe@example.com', password: '123456' },
+  { email: 'jane.smith@example.com', password: '123456' },
+  { email: 'alice.johnson@example.com', password: '123456' },
+  { email: 'toomas.saar@example.com', password: '123456' },
+  { email: 'madis.paidest@example.com', password: '123456' },
 ];
 
 export default function LoginForm() {

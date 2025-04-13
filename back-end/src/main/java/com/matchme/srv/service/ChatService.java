@@ -2,25 +2,29 @@ package com.matchme.srv.service;
 
 import com.matchme.srv.dto.response.ChatMessageResponseDTO;
 import com.matchme.srv.dto.response.ChatPreviewResponseDTO;
+import com.matchme.srv.dto.response.MessageEventDTO;
+import com.matchme.srv.dto.response.MessageStatusUpdateDTO;
 import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.model.connection.ConnectionState;
 import com.matchme.srv.model.enums.ConnectionStatus;
 import com.matchme.srv.model.message.MessageEvent;
-import com.matchme.srv.model.message.MessageEventType;
+import com.matchme.srv.model.message.MessageEventTypeEnum;
 import com.matchme.srv.model.message.UserMessage;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.repository.ConnectionRepository;
 import com.matchme.srv.repository.MessageEventRepository;
-import com.matchme.srv.repository.MessageEventTypeRepository;
 import com.matchme.srv.repository.UserMessageRepository;
 import java.time.Instant;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -28,11 +32,12 @@ public class ChatService {
     private final ConnectionRepository connectionRepository;
     private final UserMessageRepository userMessageRepository;
     private final MessageEventRepository messageEventRepository;
-    private final MessageEventTypeRepository messageEventTypeRepository;
     private final ConnectionService connectionService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public static final String EVENT_TYPE_READ = "READ";
     public static final String EVENT_TYPE_SEND = "SEND";
+    private static final String MESSAGE_STATUS_QUEUE = "/queue/messageStatus";
 
     /**
      * Retrieves chat previews for the specified user.
@@ -96,7 +101,7 @@ public class ChatService {
             }
 
             // Unread count (DB-level query)
-            int unreadCount = userMessageRepository.countUnreadMessages(connection.getId(), userId);
+            int unreadCount = userMessageRepository.countUnreadMessages(connection.getId(), userId, MessageEventTypeEnum.READ);
             preview.setUnreadMessageCount(unreadCount);
 
             chatPreviews.add(preview);
@@ -177,13 +182,16 @@ public class ChatService {
 
         return messages.map(message -> {
             User sender = message.getSender();
+            MessageEventDTO messageEvent = getLatestMessageEventDTO(message);
+            
             return new ChatMessageResponseDTO(
                     connectionId,
                     message.getId(),
                     sender.getId(),
                     sender.getProfile().getAlias(),
                     message.getContent(),
-                    message.getCreatedAt()
+                    message.getCreatedAt(),
+                    messageEvent
             );
         });
     }
@@ -210,7 +218,7 @@ public class ChatService {
     * @see  MessageEvent
     */
     @Transactional
-    public ChatMessageResponseDTO saveMessage(Long connectionId, Long senderId, String content, Instant timestamp) {
+    public ChatMessageResponseDTO saveMessage(Long connectionId, Long senderId, String content, Instant timestamp, boolean isOtherUserOnline) {
         Connection connection = connectionRepository.findById(connectionId)
                 .orElseThrow(() -> new IllegalArgumentException("Connection not found"));
 
@@ -228,15 +236,45 @@ public class ChatService {
                         .orElseThrow(() -> new IllegalArgumentException("User not found")))
                 .content(content)
                 .createdAt(timestamp)
+                .messageEvents(new HashSet<>())
                 .build();
 
+        // Create and add the SENT event
+        MessageEvent sentEvent = new MessageEvent();
+        sentEvent.setMessage(message);
+        sentEvent.setMessageEventType(MessageEventTypeEnum.SENT);
+        sentEvent.setTimestamp(timestamp);
+        message.getMessageEvents().add(sentEvent);
+
+        Instant receivedTimestamp = null;
+
+        // If recipient is online, create and add the RECEIVED event immediately
+        if (isOtherUserOnline) {
+            MessageEvent receivedEvent = new MessageEvent();
+            receivedEvent.setMessage(message);
+            receivedEvent.setMessageEventType(MessageEventTypeEnum.RECEIVED);
+            // Use the same timestamp as SENT for simplicity, or Instant.now() if preferred
+            receivedEvent.setTimestamp(timestamp);
+            message.getMessageEvents().add(receivedEvent);
+            receivedTimestamp = receivedEvent.getTimestamp();
+        }
+
+        // Save the message along with its events
         UserMessage savedMessage = userMessageRepository.save(message);
 
-        MessageEvent deliveredEvent = new MessageEvent();
-        deliveredEvent.setMessage(savedMessage);
-        deliveredEvent.setMessageEventType(new MessageEventType(1L, EVENT_TYPE_SEND));
-        deliveredEvent.setTimestamp(timestamp);
-        savedMessage.getMessageEvents().add(deliveredEvent);
+        // Get the latest event DTO (will be RECEIVED if recipient was online, otherwise SENT)
+        MessageEventDTO messageEvent = getLatestMessageEventDTO(savedMessage);
+
+        if (receivedTimestamp != null) {
+            MessageStatusUpdateDTO statusUpdate = new MessageStatusUpdateDTO(
+                savedMessage.getId(),
+                connectionId,
+                MessageEventTypeEnum.RECEIVED,
+                receivedTimestamp
+            );
+            messagingTemplate.convertAndSendToUser(senderId.toString(), MESSAGE_STATUS_QUEUE, statusUpdate);
+            log.debug("Sent RECEIVED status update for msg {} to sender {}", savedMessage.getId(), senderId);
+        }
 
         return new ChatMessageResponseDTO(
                 savedMessage.getId(),
@@ -244,7 +282,8 @@ public class ChatService {
                 senderId,
                 savedMessage.getSender().getProfile().getAlias(),
                 savedMessage.getContent(),
-                savedMessage.getCreatedAt()
+                savedMessage.getCreatedAt(),
+                messageEvent
         );
     }
 
@@ -290,40 +329,62 @@ public class ChatService {
         }
 
         List<UserMessage> messagesToMarkRead =
-            userMessageRepository.findMessagesToMarkAsRead(connectionId, userId);
+            userMessageRepository.findMessagesToMarkAsRead(connectionId, userId, MessageEventTypeEnum.READ);
+
+        User otherParticipant = findOtherParticipant(connection, userId);
 
         if (!messagesToMarkRead.isEmpty()) {
         Instant now = Instant.now();
-        MessageEventType readEventType =
-            messageEventTypeRepository
-                .findByName(EVENT_TYPE_READ)
-                .orElseThrow(() -> new IllegalArgumentException("Message event type not found"));
-
         List<MessageEvent> readEvents = new ArrayList<>();
+        List<MessageStatusUpdateDTO> statusUpdates = new ArrayList<>();
+
         for (UserMessage message : messagesToMarkRead) {
+            if (message.getSender().getId().equals(userId)) {
+                log.warn("Attempted to mark message {} as read, but we were the sender {}. Skipping.", message.getId(), userId);
+                continue;
+            }
+
             MessageEvent readEvent = new MessageEvent();
             readEvent.setMessage(message);
-            readEvent.setMessageEventType(readEventType);
+            readEvent.setMessageEventType(MessageEventTypeEnum.READ);
             readEvent.setTimestamp(now);
             readEvents.add(readEvent);
+
+            MessageStatusUpdateDTO statusUpdate = new MessageStatusUpdateDTO(
+                message.getId(),
+                connectionId,
+                MessageEventTypeEnum.READ,
+                now
+            );
+            statusUpdates.add(statusUpdate);
+            log.trace("Queued READ status update for msg {} to sender {}", message.getId(), message.getSender().getId());
         }
         messageEventRepository.saveAll(readEvents);
+        log.info("Saved {} READ events for reader {} in connection {}", readEvents.size(), userId, connectionId);
+
+        if (otherParticipant == null) {
+            // Handle this error appropriately, maybe log and don't send notifications
+             log.error("Cannot find sender to notify for read status in connection {}. Reader: {}", connectionId, userId);
+        } else {
+            Long senderId = otherParticipant.getId(); // The user who needs the notification
+
+            if (!statusUpdates.isEmpty()) {
+                messagingTemplate.convertAndSendToUser(senderId.toString(), MESSAGE_STATUS_QUEUE, statusUpdates);
+                log.info("Sent {} READ status updates to sender {}", statusUpdates.size(), senderId);
+            }
+        }
         }
 
         ChatPreviewResponseDTO preview = new ChatPreviewResponseDTO();
         preview.setConnectionId(connectionId);
 
-        User otherParticipant = findOtherParticipant(connection, userId);
-        if (otherParticipant != null) {
-        preview.setConnectedUserId(otherParticipant.getId());
-        fillParticipantDetails(preview, otherParticipant);
-        } else {
-        preview.setConnectedUserId(null);
-        preview.setConnectedUserAlias("UNKNOWN_ALIAS");
-        preview.setConnectedUserFirstName(null);
-        preview.setConnectedUserLastName(null);
-        preview.setConnectedUserProfilePicture(null);
-        }
+        if (otherParticipant != null) { // Check again in case of error above
+            preview.setConnectedUserId(otherParticipant.getId());
+            fillParticipantDetails(preview, otherParticipant);
+       } else {
+            preview.setConnectedUserId(null);
+            preview.setConnectedUserAlias("UNKNOWN");
+       }
 
         UserMessage lastMessage =
             userMessageRepository.findTopByConnectionIdOrderByCreatedAtDesc(connection.getId());
@@ -335,5 +396,86 @@ public class ChatService {
         preview.setUnreadMessageCount(0);
 
         return preview;
+    }
+
+    @Transactional
+    public void markAllMessagesAsReceived(Long userId) {
+        log.info("Checking messages to mark as RECEIVED for newly online user ID: {}", userId);
+        List<Connection> connections = connectionRepository.findConnectionsByUserId(userId);
+        List<MessageEvent> newReceivedEvents = new ArrayList<>();
+        Map<Long, List<MessageStatusUpdateDTO>> updatesToSend = new HashMap<>();
+        Instant now = Instant.now();
+
+        for (Connection connection : connections) {
+        ConnectionState currentState = connectionService.getCurrentState(connection);
+        if (currentState == null || currentState.getStatus() != ConnectionStatus.ACCEPTED) {
+            continue;
+        }
+
+        Long connectionId = connection.getId();
+        User otherParticipant = findOtherParticipant(connection, userId);
+        if (otherParticipant == null) {
+            log.warn(
+                "Could not find other participant for connection ID {} while marking messages received"
+                    + " for user ID {}",
+                connectionId,
+                userId);
+            continue;
+        }
+        Long otherUserId = otherParticipant.getId();
+
+        // Find messages sent BY the other user (TO the current user) in this connection
+        // Use the query that fetches events eagerly
+        List<UserMessage> messagesSentByOther =
+            userMessageRepository.findByConnectionIdAndSenderIdFetchEvents(connectionId, otherUserId);
+
+            for (UserMessage message : messagesSentByOther) {
+                Optional<MessageEvent> latestEventOpt = message.getMessageEvents().stream()
+                        .max(Comparator.comparing(MessageEvent::getTimestamp));
+
+                if (latestEventOpt.isPresent() && latestEventOpt.get().getMessageEventType() == MessageEventTypeEnum.SENT) {
+                    // Add RECEIVED event
+                    MessageEvent receivedEvent = new MessageEvent();
+                    receivedEvent.setMessage(message);
+                    receivedEvent.setMessageEventType(MessageEventTypeEnum.RECEIVED);
+                    receivedEvent.setTimestamp(now);
+                    newReceivedEvents.add(receivedEvent);
+
+                    // Prepare status update DTO for the original sender 
+                    MessageStatusUpdateDTO statusUpdate = new MessageStatusUpdateDTO(
+                        message.getId(),
+                        connection.getId(),
+                        MessageEventTypeEnum.RECEIVED,
+                        now
+                    );
+                    // Group updates by the sender
+                    updatesToSend.computeIfAbsent(otherUserId, k -> new ArrayList<>()).add(statusUpdate);
+
+                    log.trace("Queued RECEIVED status update for msg {} to sender {}", message.getId(), otherUserId);
+                }
+            }
+        }
+
+        if (!newReceivedEvents.isEmpty()) {
+        messageEventRepository.saveAll(newReceivedEvents);
+        log.info("Marked {} messages as RECEIVED for user ID: {}", newReceivedEvents.size(), userId);
+        } else {
+        log.info("No messages needed marking as RECEIVED for user ID: {}", userId);
+        }
+    }
+
+    private MessageEventDTO getLatestMessageEventDTO(UserMessage message) {
+        if (message.getMessageEvents() == null || message.getMessageEvents().isEmpty()) {
+            return null;
+        }
+
+        MessageEvent latestMessageEvent = message.getMessageEvents().stream()
+                .max(Comparator.comparing(MessageEvent::getTimestamp))
+                .orElseThrow(() -> new RuntimeException("No message events found"));
+
+        return MessageEventDTO.builder()
+                .type(latestMessageEvent.getMessageEventType())
+                .timestamp(latestMessageEvent.getTimestamp())
+                .build();
     }
 }

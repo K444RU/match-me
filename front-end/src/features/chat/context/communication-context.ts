@@ -1,4 +1,9 @@
-import { ChatMessageResponseDTO, ChatPreviewResponseDTO, MessagesSendRequestDTO } from '@/api/types';
+import {
+  ChatMessageResponseDTO,
+  ChatPreviewResponseDTO,
+  MessageEventTypeEnum,
+  MessagesSendRequestDTO,
+} from '@/api/types';
 import { createContext, useContext } from 'react';
 import {ConnectionUpdateMessage} from "@features/chat/types";
 
@@ -12,6 +17,12 @@ export interface CommunicationContextType {
   setOpenChat: (chat: ChatPreviewResponseDTO | null) => void;
   sendMessage: (message: MessagesSendRequestDTO) => Promise<void>;
   sendTypingIndicator: (connectionId: number) => void;
+  updateMessageStatus: (
+    connectionId: number,
+    messageId: number,
+    eventType: MessageEventTypeEnum,
+    timestamp: string
+  ) => void;
   connectionUpdates: ConnectionUpdateMessage[];
   sendConnectionRequest: (targetUserId: number) => void;
   acceptConnectionRequest: (connectionId: number) => void;
@@ -42,6 +53,9 @@ const defaultContext: CommunicationContextType = {
   updateAllChats: () => {
     console.warn('CommunicationContext not initialized');
   },
+  updateMessageStatus: () => {
+    console.warn('CommunicationContext not initialized');
+  },
   connectionUpdates: [],
   sendConnectionRequest: () => console.error('Communication context not initialized'),
   acceptConnectionRequest: () => console.error('Communication context not initialized'),
@@ -54,7 +68,7 @@ export const CommunicationContext = createContext<CommunicationContextType>(defa
 export const useCommunication = (): CommunicationContextType => {
   const context = useContext(CommunicationContext);
   if (!context) {
-    console.error('useChat must be used within a ChatProvider');
+    console.error('useCommunication must be used within a CommunicationProvider');
     return defaultContext;
   }
   return context;

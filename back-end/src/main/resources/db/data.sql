@@ -16,11 +16,6 @@ INSERT INTO connection_types (id, name) VALUES (4, 'MAYBE_MORE') ON CONFLICT (id
 INSERT INTO connection_types (id, name) VALUES (5, 'BLOCKED') ON CONFLICT (id) DO NOTHING;
 INSERT INTO connection_types (id, name) VALUES (6, 'PENDING') ON CONFLICT (id) DO NOTHING;
 
--- Insert message event types
-INSERT INTO message_event_types (id, name) VALUES (1, 'SENT') ON CONFLICT (id) DO NOTHING;
-INSERT INTO message_event_types (id, name) VALUES (2, 'RECEIVED') ON CONFLICT (id) DO NOTHING;
-INSERT INTO message_event_types (id, name) VALUES (3, 'READ') ON CONFLICT (id) DO NOTHING;
-
 -- Insert activity log types
 INSERT INTO activity_log_types (id, name) VALUES (1, 'CREATED') ON CONFLICT (id) DO NOTHING;
 INSERT INTO activity_log_types (id, name) VALUES (2, 'VERIFIED') ON CONFLICT (id) DO NOTHING;
@@ -560,11 +555,11 @@ INSERT INTO hobby (id, name, category, sub_category) VALUES (494, 'Whale watchin
 -- Insert sample users into the "users" table.
 INSERT INTO users (id, email, number, user_state_type_id) 
 VALUES 
-  (1, 'test1@example.com', '111-111-1111', 4),
-  (2, 'test2@example.com', '222-222-2222', 4),
-  (3, 'test3@example.com', '333-333-3333', 4),
-  (4, 'test4@example.com', '444-444-4444', 4),
-  (5, 'test5@example.com', '555-555-5555', 4)
+  (1, 'john.doe@example.com', '111-111-1111', 4),
+  (2, 'jane.smith@example.com', '222-222-2222', 4),
+  (3, 'alice.johnson@example.com', '333-333-3333', 4),
+  (4, 'toomas.saar@example.com', '444-444-4444', 4),
+  (5, 'madis.paidest@example.com', '555-555-5555', 4)
 ON CONFLICT (id) DO NOTHING;
 
 -- Update the users_id_seq sequence, because we don't use JPA, JPA doesn't know where the sequence is
@@ -586,7 +581,7 @@ VALUES
   (1, 'John', 'Doe', 'johnny', 'Tallinn'),
   (2, 'Jane', 'Smith', 'jane', 'Tartu'),
   (3, 'Alice', 'Johnson', 'alice', 'Pärnu'),
-  (4, 'Test', 'Match', 'testmatch', 'Paide'),
+  (4, 'Toomas', 'Saar', 'toomas', 'Paide'),
   (5, 'Madis', 'Paidest', 'madis', 'Tallinn')
 ON CONFLICT (user_id) DO NOTHING;
 
@@ -762,46 +757,46 @@ SELECT setval('user_messages_id_seq', (SELECT MAX(id) FROM user_messages));
 
 -- Insert message events to track sent, received, and read status
 -- SENT events for all messages
-INSERT INTO message_events (message_id, message_event_type_id, timestamp)
+INSERT INTO message_events (message_id, message_event_type, timestamp)
 VALUES
-  (1, 1, NOW() - INTERVAL '2 days'),
-  (2, 1, NOW() - INTERVAL '2 days'),
-  (3, 1, NOW() - INTERVAL '1 day'),
-  (4, 1, NOW() - INTERVAL '3 days'),
-  (5, 1, NOW() - INTERVAL '3 days'),
-  (6, 1, NOW() - INTERVAL '2 days'),
-  (7, 1, NOW() - INTERVAL '1 day'),
-  (8, 1, NOW() - INTERVAL '1 day'),
-  (9, 1, NOW() - INTERVAL '4 days'),
-  (10, 1, NOW() - INTERVAL '4 days'),
-  (11, 1, NOW() - INTERVAL '3 days');
+  (1, 'SENT', NOW() - INTERVAL '2 days'),
+  (2, 'SENT', NOW() - INTERVAL '2 days'),
+  (3, 'SENT', NOW() - INTERVAL '1 day'),
+  (4, 'SENT', NOW() - INTERVAL '3 days'),
+  (5, 'SENT', NOW() - INTERVAL '3 days'),
+  (6, 'SENT', NOW() - INTERVAL '2 days'),
+  (7, 'SENT', NOW() - INTERVAL '1 day'),
+  (8, 'SENT', NOW() - INTERVAL '1 day'),
+  (9, 'SENT', NOW() - INTERVAL '4 days'),
+  (10, 'SENT', NOW() - INTERVAL '4 days'),
+  (11, 'SENT', NOW() - INTERVAL '3 days');
 
 -- RECEIVED events for all messages
-INSERT INTO message_events (message_id, message_event_type_id, timestamp)
+INSERT INTO message_events (message_id, message_event_type, timestamp)
 VALUES
-  (1, 2, NOW() - INTERVAL '2 days' + INTERVAL '1 minute'),
-  (2, 2, NOW() - INTERVAL '2 days' + INTERVAL '1 minute'),
-  (3, 2, NOW() - INTERVAL '1 day' + INTERVAL '1 minute'),
-  (4, 2, NOW() - INTERVAL '3 days' + INTERVAL '1 minute'),
-  (5, 2, NOW() - INTERVAL '3 days' + INTERVAL '1 minute'),
-  (6, 2, NOW() - INTERVAL '2 days' + INTERVAL '1 minute'),
-  (7, 2, NOW() - INTERVAL '1 day' + INTERVAL '1 minute'),
-  (8, 2, NOW() - INTERVAL '1 day' + INTERVAL '1 minute'),
-  (9, 2, NOW() - INTERVAL '4 days' + INTERVAL '1 minute'),
-  (10, 2, NOW() - INTERVAL '4 days' + INTERVAL '1 minute'),
-  (11, 2, NOW() - INTERVAL '3 days' + INTERVAL '1 minute');
+  (1, 'RECEIVED', NOW() - INTERVAL '2 days' + INTERVAL '1 minute'),
+  (2, 'RECEIVED', NOW() - INTERVAL '2 days' + INTERVAL '1 minute'),
+  (3, 'RECEIVED', NOW() - INTERVAL '1 day' + INTERVAL '1 minute'),
+  (4, 'RECEIVED', NOW() - INTERVAL '3 days' + INTERVAL '1 minute'),
+  (5, 'RECEIVED', NOW() - INTERVAL '3 days' + INTERVAL '1 minute'),
+  (6, 'RECEIVED', NOW() - INTERVAL '2 days' + INTERVAL '1 minute'),
+  (7, 'RECEIVED', NOW() - INTERVAL '1 day' + INTERVAL '1 minute'),
+  (8, 'RECEIVED', NOW() - INTERVAL '1 day' + INTERVAL '1 minute'),
+  (9, 'RECEIVED', NOW() - INTERVAL '4 days' + INTERVAL '1 minute'),
+  (10, 'RECEIVED', NOW() - INTERVAL '4 days' + INTERVAL '1 minute'),
+  (11, 'RECEIVED', NOW() - INTERVAL '3 days' + INTERVAL '1 minute');
 
 -- READ events (for messages that have been read)
-INSERT INTO message_events (message_id, message_event_type_id, timestamp)
+INSERT INTO message_events (message_id, message_event_type, timestamp)
 VALUES
-  (1, 3, NOW() - INTERVAL '2 days' + INTERVAL '5 minutes'),
-  (2, 3, NOW() - INTERVAL '2 days' + INTERVAL '5 minutes'),
-  (3, 3, NOW() - INTERVAL '1 day' + INTERVAL '5 minutes'),
-  (4, 3, NOW() - INTERVAL '3 days' + INTERVAL '5 minutes'),
-  (5, 3, NOW() - INTERVAL '3 days' + INTERVAL '5 minutes'),
-  (6, 3, NOW() - INTERVAL '2 days' + INTERVAL '5 minutes'),
-  (7, 3, NOW() - INTERVAL '1 day' + INTERVAL '5 minutes'),
-  (8, 3, NOW() - INTERVAL '1 day' + INTERVAL '5 minutes'),
-  (9, 3, NOW() - INTERVAL '4 days' + INTERVAL '5 minutes'),
-  (10, 3, NOW() - INTERVAL '4 days' + INTERVAL '5 minutes');
+  (1, 'READ', NOW() - INTERVAL '2 days' + INTERVAL '5 minutes'),
+  (2, 'READ', NOW() - INTERVAL '2 days' + INTERVAL '5 minutes'),
+  (3, 'READ', NOW() - INTERVAL '1 day' + INTERVAL '5 minutes'),
+  (4, 'READ', NOW() - INTERVAL '3 days' + INTERVAL '5 minutes'),
+  (5, 'READ', NOW() - INTERVAL '3 days' + INTERVAL '5 minutes'),
+  (6, 'READ', NOW() - INTERVAL '2 days' + INTERVAL '5 minutes'),
+  (7, 'READ', NOW() - INTERVAL '1 day' + INTERVAL '5 minutes'),
+  (8, 'READ', NOW() - INTERVAL '1 day' + INTERVAL '5 minutes'),
+  (9, 'READ', NOW() - INTERVAL '4 days' + INTERVAL '5 minutes'),
+  (10, 'READ', NOW() - INTERVAL '4 days' + INTERVAL '5 minutes');
 -- Note: Message 11 doesn't have a READ event, so it will appear as unread
