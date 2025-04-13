@@ -5,10 +5,10 @@ import com.matchme.srv.dto.request.UserParametersRequestDTO;
 import com.matchme.srv.exception.InvalidVerificationException;
 import com.matchme.srv.mapper.AttributesMapper;
 import com.matchme.srv.mapper.PreferencesMapper;
+import com.matchme.srv.model.enums.UserState;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.UserAuth;
 import com.matchme.srv.model.user.UserRoleType;
-import com.matchme.srv.model.user.UserStateTypes;
 import com.matchme.srv.model.user.activity.ActivityLog;
 import com.matchme.srv.model.user.activity.ActivityLogType;
 import com.matchme.srv.model.user.profile.Hobby;
@@ -30,7 +30,6 @@ import com.matchme.srv.service.type.PreferenceChangeTypeService;
 import com.matchme.srv.service.type.ProfileChangeTypeService;
 import com.matchme.srv.service.type.UserGenderTypeService;
 import com.matchme.srv.service.type.UserRoleTypeService;
-import com.matchme.srv.service.type.UserStateTypesService;
 import com.matchme.srv.service.user.validation.UserValidationService;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -53,7 +52,6 @@ public class UserCreationService {
     private final UserRepository userRepository;
 
     private final UserRoleTypeService userRoleTypeService;
-    private final UserStateTypesService userStateTypesService;
     private final ActivityLogTypeService activityLogTypeService;
     private final ProfileChangeTypeService profileChangeTypeService;
     private final AttributeChangeTypeService attributeChangeTypeService;
@@ -68,7 +66,6 @@ public class UserCreationService {
     private final PreferencesMapper preferencesMapper;
 
     private static final String USER_NOT_FOUND_MESSAGE = "User not found!";
-    private static final String VERIFIED = "VERIFIED";
     private static final String CREATED = "CREATED";
 
     // Creates User entity and UserAuth entity for user, sends verification e-mail
@@ -77,10 +74,11 @@ public class UserCreationService {
         log.info("Creating user with email: {}", signUpRequest.getEmail());
 
         userValidationService.validateUniqueEmailAndNumber(signUpRequest.getEmail(), signUpRequest.getNumber(), null);
+      
+        // UserState state = UserState.UNVERIFIED;
+        UserState state = UserState.PROFILE_INCOMPLETE;
 
-        UserStateTypes state = userStateTypesService.getByName("UNVERIFIED");
-
-        // Create new user (email, number, status) + state
+        // Create new user (email, number, status)
         User newUser = new User(signUpRequest.getEmail(), signUpRequest.getNumber(), state);
         assignDefaultRole(newUser);
 
@@ -114,9 +112,11 @@ public class UserCreationService {
 
         // Verify account
         if (auth.getRecovery() != null && auth.getRecovery().equals(verificationCode)) {
-            user.setState(userStateTypesService.getByName(VERIFIED));
+        	// Set state to PROFILE_INCOMPLETE after email verification
+        	user.setState(UserState.PROFILE_INCOMPLETE);
             auth.setRecovery(null);
-            ActivityLogType logType = activityLogTypeService.getByName(VERIFIED);
+            // Log type might need adjustment if "VERIFIED" log type implies full activation
+            ActivityLogType logType = activityLogTypeService.getByName("VERIFIED"); // Assuming VERIFIED log type is still relevant
             log.info(new ActivityLog(user, logType).toString());
         } else {
             throw new InvalidVerificationException(
@@ -203,11 +203,14 @@ public class UserCreationService {
         } else {
             profile.setHobbies(new HashSet<>());
         }
+      
+        // Set state to PROFILE_INCOMPLETE after initial parameters are set
+        // The transition to ACTIVE will happen in UserSettingsService when all required fields are confirmed
+        user.setState(UserState.PROFILE_INCOMPLETE);
 
-        user.setState(userStateTypesService.getByName("NEW"));
-
-        ActivityLogType activitylogType = activityLogTypeService.getByName(VERIFIED);
-
+        // Log type might need adjustment here too. Maybe a "PROFILE_UPDATED" type?
+        ActivityLogType activitylogType = activityLogTypeService.getByName("VERIFIED"); // Reusing VERIFIED for now
+      
         ActivityLog newEntry = new ActivityLog(user, activitylogType);
 
         // Now user can have a score entity and start looking for a chat
