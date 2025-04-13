@@ -122,7 +122,7 @@ class UserCreationServiceTests {
           () ->
               assertThat(savedUser.getState())
               	.as("checking if the state is correct")
-              	.isEqualTo(UserState.UNVERIFIED), // Check against enum
+              	.isEqualTo(UserState.PROFILE_INCOMPLETE),
           () ->
               assertThat(savedUser.getRoles())
                   .as("checking if the roles are correct")

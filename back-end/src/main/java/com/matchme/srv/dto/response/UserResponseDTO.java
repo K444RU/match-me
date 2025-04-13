@@ -1,7 +1,6 @@
 package com.matchme.srv.dto.response;
 
 import com.matchme.srv.model.user.UserRoleType;
-import com.matchme.srv.model.user.UserStateTypes;
 import com.matchme.srv.model.user.activity.ActivityLog;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_score.UserScore;
