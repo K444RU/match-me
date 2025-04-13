@@ -115,7 +115,7 @@ class ChatServiceTest {
               .thenReturn(List.of(connection));
       when(userMessageRepository.findTopByConnectionIdOrderByCreatedAtDesc(CONNECTION_ID))
               .thenReturn(message);
-      when(userMessageRepository.countUnreadMessages(CONNECTION_ID, DEFAULT_USER_ID)).thenReturn(0);
+      when(userMessageRepository.countUnreadMessages(CONNECTION_ID, DEFAULT_USER_ID, MessageEventTypeEnum.READ)).thenReturn(0);
 
       // Act
       List<ChatPreviewResponseDTO> chatPreviews = chatService.getChatPreviews(DEFAULT_USER_ID);
