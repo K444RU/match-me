@@ -229,10 +229,8 @@ public class MatchingService {
    *
    * @param profileId User ID to find matches for
    * @return Map of user IDs to match probability scores, sorted by probability in
-   *         descending order
+   *         descending order. Returns an empty map if no suitable matches are found.
    * @throws ResourceNotFoundException         if the user is not found
-   * @throws PotentialMatchesNotFoundException if no compatible matches are found
-   *                                           within acceptable probability range
    */
   public Map<Long, Double> getPossibleMatches(Long profileId) {
 
@@ -246,11 +244,11 @@ public class MatchingService {
         entry.getSuitableGeoHashes(), entry.getMyLocation(), 3);
 
     if (possibleMatches.isEmpty()) {
-      throw new PotentialMatchesNotFoundException(
-          "Potential matches with selected parameters for user " + profileId.toString());
+      // Return empty map if initial query yields no results
+      return new LinkedHashMap<>();
     }
     // Calculate match probability, filter and sort
-    Map<Long, Double> bestMatches = possibleMatches.stream()
+    return possibleMatches.stream()
         .map(pool -> Map.entry(pool.getProfileId(),
             calculateProbability(entry.getActualScore(), entry.getHobbyIds(), pool)))
         .filter(pair -> pair.getValue() > MINIMUM_PROBABILITY)
@@ -262,13 +260,6 @@ public class MatchingService {
             Map.Entry::getValue,
             (e1, e2) -> e1,
             LinkedHashMap::new));
-
-    if (bestMatches.isEmpty()) {
-      throw new PotentialMatchesNotFoundException(
-          "Potential matches within acceptable probability range for user " + profileId.toString());
-    }
-
-    return bestMatches;
   }
 
   /**
