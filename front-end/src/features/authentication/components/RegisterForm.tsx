@@ -74,7 +74,7 @@ const RegisterForm = () => {
         number,
         password,
       })
-      .then((res) => {
+      .then((_res) => {
         // TODO: Don't redirect on register & wait for email verify.
         // This current approach would cause a unnecessary
         // waste of resources (unverified accounts in DB)
