@@ -1,5 +1,4 @@
 import { ChatPreviewResponseDTO } from '@/api/types';
-import { Toaster } from '@/components/ui/sonner';
 import { useChat } from '@/features/chat';
 import { useEffect, useState } from 'react';
 import AppSidebar from './components/AppSidebar';
@@ -19,7 +18,6 @@ export default function ChatsPage() {
         <AppSidebar onChatSelect={setSelectedChat} />
         <OpenChat />
       </div>
-      <Toaster />
     </>
   );
 }
