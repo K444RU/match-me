@@ -26,7 +26,7 @@ const PayloadFormData = (formData: UnifiedFormData): UserParametersRequestDTO =>
   probability_tolerance: formData.probabilityTolerance,
 });
 
-const UnifiedForm = () => {
+export default function UnifiedForm() {
   const navigate = useNavigate();
   const { fetchCurrentUser } = useAuth();
 
@@ -105,5 +105,3 @@ const UnifiedForm = () => {
     </>
   );
 };
-
-export default UnifiedForm;
