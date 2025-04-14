@@ -7,8 +7,6 @@ export default function useChatPreviewHandler() {
 
   const handleChatPreviews = useCallback((message: IMessage) => {
     try {
-      console.log('RECEIVED CHAT PREVIEW MESSAGE:', message.body.substring(0, 100) + '...');
-
       // Parse the message data
       let data;
       try {
@@ -23,7 +21,6 @@ export default function useChatPreviewHandler() {
 
       // Skip empty arrays or invalid data
       if (!newPreviews.length) {
-        console.log('No valid previews in message');
         return;
       }
 
@@ -32,17 +29,12 @@ export default function useChatPreviewHandler() {
         (preview) => preview && typeof preview === 'object' && preview.connectionId > 0
       );
 
-      console.log(`Processing ${validPreviews.length} valid previews out of ${newPreviews.length} total`);
-
       if (!validPreviews.length) {
-        console.log('No valid previews after filtering');
         return;
       }
 
       // APPEND OR UPDATE existing previews instead of replacing them
       setChatPreviews((prevPreviews) => {
-        console.log(`Merging ${validPreviews.length} new previews with ${prevPreviews.length} existing`);
-
         const previewMap = new Map(prevPreviews.map((preview) => [preview.connectionId, preview]));
 
         // Update existing previews or add new ones
@@ -52,7 +44,7 @@ export default function useChatPreviewHandler() {
 
         // Convert back to array
         const result = Array.from(previewMap.values());
-        console.log(`Result: ${result.length} total chat previews after merge`);
+
         return result;
       });
     } catch (error) {

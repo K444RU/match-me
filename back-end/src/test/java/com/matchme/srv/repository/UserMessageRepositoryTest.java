@@ -1,8 +1,10 @@
 package com.matchme.srv.repository;
 
+import static com.matchme.srv.model.enums.UserState.ACTIVE;
+
 import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.model.message.MessageEvent;
-import com.matchme.srv.model.message.MessageEventType;
+import com.matchme.srv.model.message.MessageEventTypeEnum;
 import com.matchme.srv.model.message.UserMessage;
 import com.matchme.srv.model.user.User;
 import jakarta.persistence.EntityManager;
@@ -36,20 +38,22 @@ class UserMessageRepositoryTest {
   private Connection connection;
   private User user1;
   private User user2;
-  private MessageEventType readEventType;
+  private MessageEventTypeEnum messageEventType;
 
   @BeforeEach
   void setUp() {
     user1 = new User();
     user1.setEmail("user1@example.com");
+    user1.setState(ACTIVE);
     user1 = userRepository.save(user1);
 
     user2 = new User();
     user2.setEmail("user2@example.com");
+    user2.setState(ACTIVE);
     user2 = userRepository.save(user2);
 
     // Get a reference to the existing "READ" event type (ID 3 from data-test.sql)
-    readEventType = entityManager.getReference(MessageEventType.class, 3L);
+    messageEventType = MessageEventTypeEnum.READ;
 
     // Initialize connection (seems like it was missing)
     connection = Connection.builder().users(Set.of(user1, user2)).build();
@@ -63,6 +67,7 @@ class UserMessageRepositoryTest {
     // Arrange
     User user = new User();
     user.setEmail("test@example.com");
+    user.setState(ACTIVE);
     user = userRepository.save(user);
 
     UserMessage message1 =
@@ -126,7 +131,7 @@ class UserMessageRepositoryTest {
 
     MessageEvent readEventForMsg2 = new MessageEvent();
     readEventForMsg2.setMessage(message2Read);
-    readEventForMsg2.setMessageEventType(readEventType);
+    readEventForMsg2.setMessageEventType(messageEventType);
     readEventForMsg2.setTimestamp(Instant.now());
     entityManager.persist(readEventForMsg2);
 
@@ -153,7 +158,7 @@ class UserMessageRepositoryTest {
 
     // --- Act ---
     List<UserMessage> result =
-        userMessageRepository.findMessagesToMarkAsRead(connection.getId(), user2.getId());
+        userMessageRepository.findMessagesToMarkAsRead(connection.getId(), user2.getId(), MessageEventTypeEnum.READ);
 
     // --- Assert ---
     Assertions.assertThat(result).isNotNull().hasSize(1);
@@ -181,7 +186,7 @@ class UserMessageRepositoryTest {
 
     MessageEvent readEvent = new MessageEvent();
     readEvent.setMessage(messageRead);
-    readEvent.setMessageEventType(readEventType);
+    readEvent.setMessageEventType(messageEventType);
     readEvent.setTimestamp(Instant.now());
     entityManager.persist(readEvent);
 
@@ -199,7 +204,7 @@ class UserMessageRepositoryTest {
 
     // Act: Find messages for user2 to read
     List<UserMessage> result =
-        userMessageRepository.findMessagesToMarkAsRead(connection.getId(), user2.getId());
+        userMessageRepository.findMessagesToMarkAsRead(connection.getId(), user2.getId(), MessageEventTypeEnum.READ);
 
     // Assert
     Assertions.assertThat(result).isNotNull().isEmpty();

@@ -82,12 +82,19 @@ public class ChatWebSocketController {
         senderId,
         messageDTO.getConnectionId());
 
-    ChatMessageResponseDTO savedMessage =
-        chatService.saveMessage(
-            messageDTO.getConnectionId(), sender.getId(), messageDTO.getContent(), Instant.now());
-
     Long otherUserId =
         chatService.getOtherUserIdInConnection(messageDTO.getConnectionId(), senderId);
+
+    boolean isOtherUserOnline = isUserOnline(otherUserId);
+    log.debug("Recipient user ID {} online status: {}", otherUserId, isOtherUserOnline);
+
+    ChatMessageResponseDTO savedMessage =
+        chatService.saveMessage(
+            messageDTO.getConnectionId(),
+            sender.getId(),
+            messageDTO.getContent(),
+            Instant.now(),
+            isOtherUserOnline);
 
     // Broadcast the message to both participants in real-time
     // The "/user/{userId}/queue/messages" destination will deliver the message privately
@@ -210,6 +217,14 @@ public class ChatWebSocketController {
     if (auth != null) {
       Long userId = securityUtils.getCurrentUserId(auth);
       setUserOnline(userId, true);
+
+      try {
+        chatService.markAllMessagesAsReceived(userId);
+      } catch (Exception e) {
+        log.error("Error marking messages as received for user {}: {}", userId, e.getMessage(), e);
+      }
+    } else {
+      log.warn("User connected but Authentication was null in SessionConnectEvent.");
     }
   }
 

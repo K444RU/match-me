@@ -5,11 +5,13 @@
  * kood/Jõhvi match-me task API
  * OpenAPI spec version: v0.0.1
  */
+import type { MessageEventDTO } from './messageEventDTO';
 
 export interface ChatMessageResponseDTO {
   connectionId: number;
   content: string;
   createdAt: string;
+  event: MessageEventDTO;
   messageId: number;
   senderAlias: string;
   senderId: number;

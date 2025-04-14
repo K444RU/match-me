@@ -3,7 +3,6 @@ import { useAuth } from '@/features/authentication';
 import { genderService } from '@/features/gender';
 import { userService } from '@/features/user';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { UnifiedFormData } from '../types/types';
 import Attributes from './Attributes';
@@ -26,8 +25,7 @@ const PayloadFormData = (formData: UnifiedFormData): UserParametersRequestDTO =>
   probability_tolerance: formData.probabilityTolerance,
 });
 
-const UnifiedForm = () => {
-  const navigate = useNavigate();
+export default function UnifiedForm() {
   const { fetchCurrentUser } = useAuth();
 
   const [formData, setFormData] = useState<UnifiedFormData>(() => ({
@@ -48,7 +46,7 @@ const UnifiedForm = () => {
       await genderService
         .getGenders()
         .then((genders) => setGenderOptions(genders))
-        .catch((err) => console.log('Failed to load gender options: ', err));
+        .catch((err) => console.error('Error fetching genders:', err));
     };
     fetchGenders();
   }, []);
@@ -72,7 +70,7 @@ const UnifiedForm = () => {
       await userService.updateParameters(payload);
       localStorage.removeItem('profileData');
       await fetchCurrentUser();
-      navigate('/chats');
+      // Routing should automatically redirect.
     } catch (err) {
       console.error('Error during final submission:', err);
       if (typeof err === 'string') {
@@ -105,5 +103,3 @@ const UnifiedForm = () => {
     </>
   );
 };
-
-export default UnifiedForm;

@@ -1,100 +1,138 @@
 import { LoginRequestDTO } from '@/api/types';
 import { authService } from '@/features/authentication';
 import { meService } from '@/features/user';
-import { ReactNode, useState } from 'react';
-import { AuthContext, User } from './auth-context';
+import { ReactNode, useState, useEffect, useCallback } from 'react';
+import { AuthContext, User, LoginResult, AppError } from './auth-context';
+import axios from 'axios';
 
 interface AuthProviderProps {
-  children: ReactNode;
+	children: ReactNode;
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<User | null>(() => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      try {
-        meService
-          .getCurrentUser()
-          .then((currentUser) => {
-            setUser({
-              ...currentUser,
-              token,
-            });
-          })
-          .catch(() => {
-            localStorage.removeItem('authToken');
-            setUser(null);
-          });
+	const [isLoading, setIsLoading] = useState(true);
+	const [user, setUser] = useState<User | null>(null);
 
-        // Parse the token and create a basic user object
-        return {
-          token,
-          id: 0,
-          email: '',
-          role: [],
-          firstName: '',
-          lastName: '',
-          alias: '',
-        };
-      } catch (_e) {
-        localStorage.removeItem('authToken');
-        return null;
-      }
-    }
-    return null;
-  });
+	// Helper function to fetch user, update state, and handle token storage
+	const updateUserFromToken = useCallback(async (token: string | null): Promise<User | null> => {
+		if (!token) {
+			console.debug('AuthProvider (updateUserFromToken): No token provided, clearing user.');
+			localStorage.removeItem('authToken');
+			setUser(null);
+			return null;
+		}
 
-  const login = async (credentials: LoginRequestDTO) => {
-    try {
-      const response = await authService.login(credentials);
+		try {
+			// Ensure token is stored before fetching user
+			localStorage.setItem('authToken', token);
+			console.debug('AuthProvider (updateUserFromToken): Token stored, fetching user...');
+			const currentUser = await meService.getCurrentUser();
+			const userData: User = { ...currentUser, token };
+			setUser(userData);
+			console.debug('AuthProvider (updateUserFromToken): User fetch success:', currentUser.state);
+			return userData;
+		} catch (error) {
+			console.error('AuthProvider (updateUserFromToken): User fetch failed, clearing token.', error);
+			localStorage.removeItem('authToken');
+			setUser(null);
+			return null;
+		}
+	}, []); // Empty dependency array as it only uses setUser from useState
 
-      if (response?.token) {
-        localStorage.setItem('authToken', response.token);
-        const currentUser = await meService.getCurrentUser();
+	// Initial load effect
+	useEffect(() => {
+		let isMounted = true;
+		const initialLoad = async () => {
+			console.debug('AuthProvider (Init): Starting initial load...');
+			setIsLoading(true);
+			const token = localStorage.getItem('authToken');
+			await updateUserFromToken(token);
+			if (isMounted) {
+				setIsLoading(false);
+				console.debug('AuthProvider (Init): Loading finished.');
+			}
+		};
 
-        const userData: User = {
-          ...currentUser,
-          token: response.token,
-        };
+		initialLoad();
 
-        setUser(userData);
-        console.debug('✔️ AuthContext: User logged in successfully:', userData);
-        console.debug('AuthProvider user (immediately after setUser):', user);
-      } else {
-        console.warn('⚠️ AuthContext: No token in response');
-      }
-      return response;
-    } catch (error) {
-      console.error('💥 AuthContext: Login error:', error);
-      throw error;
-    }
-  };
+		return () => {
+			isMounted = false;
+		};
+		// Include updateUserFromToken in dependency array because it's defined with useCallback
+	}, [updateUserFromToken]);
 
-  const logout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('profileData');
-    setUser(null);
-  };
+	const login = async (credentials: LoginRequestDTO): Promise<LoginResult> => {
+		setIsLoading(true);
+		console.debug('AuthProvider (Login): Attempting login...');
+		try {
+			const response = await authService.login(credentials);
+			if (response?.token) {
+				console.debug('AuthProvider (Login): Token received, updating user...');
+				const userData = await updateUserFromToken(response.token);
+				if (userData) {
+					console.debug('✔️ AuthProvider (Login): Login success, user set:', userData.state);
+					setIsLoading(false);
+					return { success: true, user: userData };
+				} else {
+					console.warn('⚠️ AuthProvider (Login): Token received, but user fetch failed.');
+					setIsLoading(false);
+					return {
+						success: false,
+						error: { title: 'Login Issue', subtitle: 'Could not retrieve user details after login.' },
+					};
+				}
+			} else {
+				console.warn('⚠️ AuthProvider (Login): No token in response from authService.login');
+				await updateUserFromToken(null);
+				setIsLoading(false);
+				return {
+					success: false,
+					error: { title: 'Login Issue', subtitle: 'Login did not return a valid token.' },
+				};
+			}
+		} catch (error) {
+			console.error('💥 AuthProvider (Login): Login error:', error);
+			await updateUserFromToken(null); // Ensure user state is cleared
 
-  const fetchCurrentUser = async () => {
-    try {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        setUser(null);
-        return;
-      }
+			let errorTitle = 'Login Failed';
+			let errorSubtitle = 'An unexpected error occurred. Please try again.';
+			let status: number | undefined;
 
-      const currentUser = await meService.getCurrentUser();
-      setUser({
-        ...currentUser,
-        token,
-      });
-    } catch (error) {
-      console.error('❌ fetchCurrentUser error:', error);
-      localStorage.removeItem('authToken');
-      setUser(null);
-    }
-  };
+			if (axios.isAxiosError(error)) {
+				status = error.response?.status;
+				if (status === 401) {
+					errorTitle = 'Invalid Credentials';
+					errorSubtitle = 'Please check your email and password';
+				}
+				// Add other status code handling if needed
+			}
 
-  return <AuthContext.Provider value={{ user, login, logout, fetchCurrentUser }}>{children}</AuthContext.Provider>;
+			const resultError: AppError = { title: errorTitle, subtitle: errorSubtitle, status };
+			setIsLoading(false); // Set loading false on error path
+			return { success: false, error: resultError };
+		}
+	};
+
+	// Updated logout function
+	const logout = useCallback(() => {
+		console.debug('AuthProvider (Logout): Logging out.');
+		updateUserFromToken(null); // Use helper to clear state and token
+	}, [updateUserFromToken]);
+
+	// Updated fetchCurrentUser function
+	const fetchCurrentUser = useCallback(async () => {
+		setIsLoading(true);
+		console.debug('AuthProvider (fetchCurrentUser): Manual fetch initiated...');
+		const token = localStorage.getItem('authToken');
+		if (!token) {
+			console.debug('AuthProvider (fetchCurrentUser): No token found.');
+			await updateUserFromToken(null); // Ensure state is cleared if token disappears
+		} else {
+			await updateUserFromToken(token);
+		}
+		setIsLoading(false);
+		console.debug('AuthProvider (fetchCurrentUser): Loading finished.');
+	}, [updateUserFromToken]);
+
+	return <AuthContext.Provider value={{ user, isLoading, login, logout, fetchCurrentUser }}>{children}</AuthContext.Provider>;
 };

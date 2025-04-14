@@ -31,6 +31,7 @@ export default function ActiveConnections() {
     const fetchInitialData = async () => {
       try {
         const data = await getConnections(user.token);
+
         const active = data.active || [];
 
         if (!isMounted) return;

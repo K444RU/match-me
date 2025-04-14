@@ -1,5 +1,6 @@
 import {ChatMessageResponseDTO, ChatPreviewResponseDTO, MessagesSendRequestDTO} from '@/api/types';
 import {createContext, useContext} from 'react';
+import { MessageStatusUpdateDTO } from '../types/MessageStatusUpdateDTO';
 import {ConnectionUpdateMessage} from "@features/chat/types";
 
 export interface WebSocketContextType {
@@ -13,6 +14,8 @@ export interface WebSocketContextType {
   chatPreviews: ChatPreviewResponseDTO[];
   messageQueue: ChatMessageResponseDTO[];
   clearMessageQueue: () => void;
+  statusUpdateQueue: MessageStatusUpdateDTO[];
+  clearStatusUpdateQueue: () => void;
   connectionUpdates: ConnectionUpdateMessage[];
   sendConnectionRequest: (targetUserId: number) => void;
   acceptConnectionRequest: (connectionId: number) => void;
@@ -46,6 +49,10 @@ const defaultContext: WebSocketContextType = {
   rejectConnectionRequest: () => console.error('WebSocket context not initialized'),
   disconnectConnection: () => console.error('WebSocket context not initialized'),
   messageQueue: [],
+  statusUpdateQueue: [],
+  clearStatusUpdateQueue: () => {
+    console.error('WebSocket context not initialized');
+  },
 };
 
 export const WebSocketContext = createContext<WebSocketContextType>(defaultContext);

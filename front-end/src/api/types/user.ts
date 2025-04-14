@@ -10,7 +10,7 @@ import type { UserAuth } from './userAuth';
 import type { UserProfile } from './userProfile';
 import type { UserRoleType } from './userRoleType';
 import type { UserScore } from './userScore';
-import type { UserStateTypes } from './userStateTypes';
+import type { UserState } from './userState';
 
 export interface User {
   activity?: ActivityLog[];
@@ -29,6 +29,6 @@ export interface User {
   role?: UserRoleType;
   roles?: UserRoleType[];
   score?: UserScore;
-  state?: UserStateTypes;
+  state?: UserState;
   userAuth?: UserAuth;
 }

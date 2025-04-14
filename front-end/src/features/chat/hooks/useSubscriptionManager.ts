@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { Client, IMessage } from 'react-stomp-hooks';
 
 interface UseSubscriptionManagerProps {
   userId: number | undefined;
-  stompClient: Client | undefined;
+  stompClientRef: MutableRefObject<Client | undefined>;
+  stompClientConnected: boolean;
   handleMessage: (message: IMessage) => void;
+  handleMessageStatusUpdate: (message: IMessage) => void;
   handleTypingIndicator: (message: IMessage) => void;
   handleChatPreviews: (message: IMessage) => void;
   handleOnlineIndicator: (message: IMessage) => void;
@@ -12,14 +14,15 @@ interface UseSubscriptionManagerProps {
 
 export default function useSubscriptionManager({
   userId,
-  stompClient,
+  stompClientRef,
+  stompClientConnected,
   handleMessage,
+  handleMessageStatusUpdate,
   handleTypingIndicator,
   handleChatPreviews,
   handleOnlineIndicator,
 }: UseSubscriptionManagerProps) {
   const subscriptionsRef = useRef<{ [key: string]: { unsubscribe: () => void } }>({});
-  const stompClientRef = useRef<Client | null>(null);
   const isSubscribedRef = useRef<boolean>(false);
   const lastPingRef = useRef<number>(0);
   const pingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -27,6 +30,7 @@ export default function useSubscriptionManager({
   const lastConnectionChangeRef = useRef<number>(Date.now());
   const handlersRef = useRef({
     handleMessage,
+    handleMessageStatusUpdate,
     handleTypingIndicator,
     handleChatPreviews,
     handleOnlineIndicator,
@@ -36,47 +40,40 @@ export default function useSubscriptionManager({
   useEffect(() => {
     handlersRef.current = {
       handleMessage,
+      handleMessageStatusUpdate,
       handleTypingIndicator,
       handleChatPreviews,
       handleOnlineIndicator,
     };
-  }, [handleMessage, handleTypingIndicator, handleChatPreviews, handleOnlineIndicator]);
-
-  // Update client reference
-  useEffect(() => {
-    if (stompClient) {
-      stompClientRef.current = stompClient;
-    }
-  }, [stompClient]);
+  }, [handleMessage, handleMessageStatusUpdate, handleTypingIndicator, handleChatPreviews, handleOnlineIndicator]);
 
   // Manage stable connection state with debouncing
   useEffect(() => {
-    if (!stompClient) return;
+    if (!stompClientRef.current) return;
 
-    const currentConnected = !!stompClient.connected;
     const now = Date.now();
 
-    if (currentConnected !== isConnected) {
+    if (stompClientConnected !== isConnected) {
       lastConnectionChangeRef.current = now;
     }
 
     // handle disconnect immediately
-    if (!currentConnected && isConnected) {
+    if (!stompClientConnected && isConnected) {
       setIsConnected(false);
       return;
     }
 
     // add debounce for connections
-    if (currentConnected && !isConnected) {
+    if (stompClientConnected && !isConnected) {
       const debounceTimer = setTimeout(() => {
-        if (stompClient.connected) {
+        if (stompClientRef.current?.connected) {
           setIsConnected(true);
         }
       }, 1000);
 
       return () => clearTimeout(debounceTimer);
     }
-  }, [stompClient?.connected, isConnected]);
+  }, [stompClientConnected, isConnected, stompClientRef]);
 
   // Clear subscriptions helper
   const clearSubscriptions = useCallback(() => {
@@ -121,7 +118,7 @@ export default function useSubscriptionManager({
     } catch (error) {
       console.error('Error sending ping:', error);
     }
-  }, [userId]);
+  }, [userId, stompClientRef]);
 
   // Setup subscriptions
   const setupSubscriptions = useCallback(() => {
@@ -132,7 +129,6 @@ export default function useSubscriptionManager({
 
     // Don't re-subscribe if already subscribed
     if (isSubscribedRef.current && Object.keys(subscriptionsRef.current).length > 0) {
-      console.log('Subscriptions already set up, skipping');
       return;
     }
 
@@ -140,16 +136,10 @@ export default function useSubscriptionManager({
     clearSubscriptions();
 
     try {
-      console.log('Setting up WebSocket subscriptions for user:', userId);
-
       // Subscribe to channels
-      subscriptionsRef.current.pong = stompClientRef.current.subscribe(
-        `/user/${userId}/queue/pong`,
-        (message: IMessage) => {
-          console.log('PONG RECEIVED:', message.body);
-          lastPingRef.current = Date.now();
-        }
-      );
+      subscriptionsRef.current.pong = stompClientRef.current.subscribe(`/user/${userId}/queue/pong`, () => {
+        lastPingRef.current = Date.now();
+      });
 
       subscriptionsRef.current.messages = stompClientRef.current.subscribe(
         `/user/${userId}/queue/messages`,
@@ -167,8 +157,14 @@ export default function useSubscriptionManager({
 
       subscriptionsRef.current.online = stompClientRef.current.subscribe(`/user/${userId}/queue/online`, (message) => {
         handlersRef.current.handleOnlineIndicator(message);
-        console.log('ONLINE RECEIVED:', message.body);
       });
+
+      subscriptionsRef.current.messageStatus = stompClientRef.current.subscribe(
+        `/user/${userId}/queue/messageStatus`,
+        (message) => {
+          handlersRef.current.handleMessageStatusUpdate(message);
+        }
+      );
 
       // Set up a ping interval
       if (pingIntervalRef.current) {
@@ -185,14 +181,13 @@ export default function useSubscriptionManager({
       console.error('Error setting up subscriptions:', error);
       isSubscribedRef.current = false;
     }
-  }, [userId, sendPing, clearSubscriptions]);
+  }, [userId, sendPing, clearSubscriptions, stompClientRef]);
 
   // Reconnection function
   const reconnect = useCallback(() => {
     const timeSinceLastChange = Date.now() - lastConnectionChangeRef.current;
 
     if (timeSinceLastChange < 2000) {
-      console.log('Connection state recently changed, avoiding reconnect');
       return;
     }
 
@@ -212,14 +207,14 @@ export default function useSubscriptionManager({
         setupSubscriptions();
       }
     }
-  }, [userId, setupSubscriptions, clearSubscriptions]);
+  }, [userId, setupSubscriptions, clearSubscriptions, stompClientRef]);
 
   // Setup subscriptions when client or userId changes
   useEffect(() => {
-    if (stompClient?.connected && userId) {
+    if (stompClientRef.current?.connected && userId) {
       setupSubscriptions();
     }
-  }, [isConnected, userId, setupSubscriptions]);
+  }, [isConnected, userId, setupSubscriptions, stompClientRef]);
 
   return { setupSubscriptions, reconnect };
 }

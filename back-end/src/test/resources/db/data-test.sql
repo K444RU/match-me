@@ -14,10 +14,6 @@ MERGE INTO connection_types (id, name) VALUES (4, 'MAYBE_MORE');
 MERGE INTO connection_types (id, name) VALUES (5, 'INTERESTED');
 MERGE INTO connection_types (id, name) VALUES (6, 'CLOSED');
 
--- Insert message event types
-MERGE INTO message_event_types (id, name) VALUES (1, 'SENT');
-MERGE INTO message_event_types (id, name) VALUES (2, 'RECEIVED');
-MERGE INTO message_event_types (id, name) VALUES (3, 'READ');
 -- Insert activity log types
 MERGE INTO activity_log_types (id, name) VALUES (1, 'CREATED');
 MERGE INTO activity_log_types (id, name) VALUES (2, 'VERIFIED');
@@ -41,15 +37,6 @@ MERGE INTO profile_change_types (id, name) VALUES (2, 'AGE');
 MERGE INTO profile_change_types (id, name) VALUES (3, 'BIO');
 MERGE INTO profile_change_types (id, name) VALUES (4, 'PHOTO');
 MERGE INTO profile_change_types (id, name) VALUES (5, 'INTERESTS');
--- Insert user state types
-MERGE INTO user_state_types (id, name) VALUES (1, 'UNVERIFIED');
-MERGE INTO user_state_types (id, name) VALUES (2, 'VERIFIED');
-MERGE INTO user_state_types (id, name) VALUES (3, 'NEW');
-MERGE INTO user_state_types (id, name) VALUES (4, 'ACTIVE');
-MERGE INTO user_state_types (id, name) VALUES (5, 'PENDING');
-MERGE INTO user_state_types (id, name) VALUES (6, 'SUSPENDED');
-MERGE INTO user_state_types (id, name) VALUES (7, 'DORMANT');
-MERGE INTO user_state_types (id, name) VALUES (8, 'DISABLED');
 -- Insert hobby categories
 MERGE INTO hobby (id, name, category, sub_category) VALUES (1, '3D printing', 'General', 'Indoors');
 MERGE INTO hobby (id, name, category, sub_category) VALUES (2, 'Acrobatics', 'General', 'Indoors');

@@ -6,6 +6,7 @@ import com.matchme.srv.dto.request.LoginRequestDTO;
 import com.matchme.srv.dto.request.SignupRequestDTO;
 import com.matchme.srv.exception.DuplicateFieldException;
 import com.matchme.srv.model.user.activity.ActivityLog;
+import com.matchme.srv.repository.UserRepository;
 import com.matchme.srv.security.WebSecurityConfig;
 import com.matchme.srv.security.jwt.AuthEntryPointJwt;
 import com.matchme.srv.security.jwt.JwtUtils;
@@ -59,6 +60,9 @@ class AuthControllerTest {
     
     @MockitoBean
     private UserDetailsImpl userDetails;
+
+    @MockitoBean
+    private UserRepository userRepository;
 
     @BeforeEach
     void setUp() {

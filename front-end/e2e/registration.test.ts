@@ -46,7 +46,7 @@ test.describe('User Registration', () => {
   test('should show error for already registered email', async ({ page }) => {
     await page.getByRole('link', { name: 'Sign Up' }).click();
     await page.getByRole('textbox', { name: 'Email' }).click();
-    await page.getByRole('textbox', { name: 'Email' }).fill('test1@example.com');
+    await page.getByRole('textbox', { name: 'Email' }).fill('john.doe@example.com');
     await page.getByRole('textbox', { name: 'Password' }).click();
     await page.getByRole('textbox', { name: 'Password' }).fill('123456');
     await page.getByRole('textbox', { name: 'Enter a phone number' }).click();

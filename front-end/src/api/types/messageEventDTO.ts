@@ -6,11 +6,8 @@
  * OpenAPI spec version: v0.0.1
  */
 import type { MessageEventTypeEnum } from './messageEventTypeEnum';
-import type { UserMessage } from './userMessage';
 
-export interface MessageEvent {
-  id?: number;
-  message: UserMessage;
-  messageEventType: MessageEventTypeEnum;
+export interface MessageEventDTO {
   timestamp: string;
+  type: MessageEventTypeEnum;
 }

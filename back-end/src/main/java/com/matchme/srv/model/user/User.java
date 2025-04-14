@@ -1,6 +1,7 @@
 package com.matchme.srv.model.user;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.matchme.srv.model.enums.UserState; // Added enum import
 import com.matchme.srv.model.user.activity.ActivityLog;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_score.UserScore;
@@ -48,9 +49,9 @@ public class User {
     @JsonManagedReference
     private UserAuth userAuth;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_state_type_id")
-    private UserStateTypes state;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "state", nullable = false) 
+    private UserState state;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",
@@ -72,15 +73,15 @@ public class User {
 
     public User() {}
 
-    public User(String email, UserStateTypes state) {
+    public User(String email, UserState state) {
         this.email = email;
         this.state = state;
     }
 
-    public User(String email, String number, UserStateTypes state) {
-        this.email = email;
-        this.number = number;
-        this.state = state;
+    public User(String email, String number, UserState state) {
+    	this.email = email;
+    	this.number = number;
+    	this.state = state;
     }
 
     // Helper methods to maintain bidirectional consistency:
