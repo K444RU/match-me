@@ -119,7 +119,7 @@ export default function ActiveConnections() {
   }, [disconnectConnection]);
 
   return (
-      <div className="space-y-2 p-2 border rounded-md shadow-sm bg-card">
+      <div className="space-y-2 p-2 border rounded-md shadow-xs bg-card">
         <h3 className="text-sm font-semibold text-card-foreground">Active Connections</h3>
         {activeConnections.length === 0 ? (
             <p className="text-sm text-muted-foreground px-1 py-2">No active connections.</p>
@@ -140,7 +140,7 @@ export default function ActiveConnections() {
                 </span>
                       <button
                           onClick={() => setDisconnectingConnection({ connectionId: connection.connectionId, displayName })}
-                          className="ml-2 flex-shrink-0 text-xs text-red-600 hover:text-red-800 hover:underline focus:outline-none focus:ring-1 focus:ring-red-500 rounded px-1 py-0.5"
+                          className="ml-2 shrink-0 text-xs text-red-600 hover:text-red-800 hover:underline focus:outline-hidden focus:ring-1 focus:ring-red-500 rounded-sm px-1 py-0.5"
                           aria-label={`Disconnect from ${displayName}`}
                       >
                         Disconnect

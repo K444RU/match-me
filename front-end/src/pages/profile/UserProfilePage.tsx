@@ -126,7 +126,7 @@ const UserProfilePage = () => {
       {/* Back Button */}
       <button
         onClick={() => navigate(-1)}
-        className="text-primary-foreground hover:bg-primary/90 fixed bottom-4 left-4 z-10 w-48 rounded bg-primary px-4 py-2"
+        className="text-primary-foreground hover:bg-primary/90 fixed bottom-4 left-4 z-10 w-48 rounded-sm bg-primary px-4 py-2"
       >
         Back
       </button>

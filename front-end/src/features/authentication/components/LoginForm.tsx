@@ -77,7 +77,7 @@ export default function LoginForm() {
           {testUsers.map((user) => (
             <Button
               type="button"
-              className="rounded bg-gray-200 px-3 py-1 text-sm"
+              className="rounded-sm bg-gray-200 px-3 py-1 text-sm"
               onClick={() => handleTestUser(user.email, user.password)}
               key={user.email}
             >
