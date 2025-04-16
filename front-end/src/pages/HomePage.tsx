@@ -11,11 +11,11 @@ const HomePage = () => {
   };
 
   return (
-    <>
+    <div>
       <Hero onLearnMore={scrollToHowItWorks} />
       <HowItWorksSection ref={howItWorksRef} />
       <JumpToTopButton />
-    </>
+    </div>
   );
 };
 
