@@ -73,7 +73,7 @@ export default function ChatPreviewCard({ chat, isSelected = false }: ChatPrevie
 
   return (
     <>
-      <div className={cn('flex h-16 w-full items-center text-text', isSelected && 'rounded-md bg-primary-100')}>
+      <div className={cn('flex h-16 w-full items-center', isSelected && 'rounded-md bg-primary/20')}>
         <div className="m-2 flex size-16 items-center justify-center">
           <div className="relative flex size-12 items-center justify-center">
             <Avatar>
