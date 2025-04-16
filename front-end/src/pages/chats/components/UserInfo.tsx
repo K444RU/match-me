@@ -1,4 +1,3 @@
-import defaultProfilePicture from '@/assets/defaultProfilePicture.png';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -11,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SidebarMenuButton } from '@/components/ui/sidebar';
 import { useAuth } from '@/features/authentication';
+import type { User as AuthUser } from '@/features/authentication';
 import { ChevronsUpDown, LogOut, Settings, User } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -28,28 +28,38 @@ const UserInfo = () => {
   const navigate = useNavigate();
   if (!user) return;
 
-  const profileSrc = user.profilePicture || defaultProfilePicture;
+  const profileSrc = user.profilePicture;
+
+  function getInitials(user: AuthUser) {
+    if (!user.alias) {
+      return user.firstName ? user.firstName.charAt(0).toUpperCase() : user.lastName ? user.lastName.charAt(0).toUpperCase() : 'X';
+    } else {
+      return user.alias.charAt(0).toUpperCase();
+    }
+  }
 
   return (
     <>
       <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
         <DropdownMenuTrigger asChild>
-          <SidebarMenuButton
-            size="lg"
-            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-          >
-            <Avatar className="size-8 rounded-lg">
-              <AvatarImage src={profileSrc} alt={user.firstName} />
-              <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-            </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">
-                {user.firstName} {user.lastName}
-              </span>
-              <span className="truncate text-xs">{user.alias}</span>
-            </div>
-            <ChevronsUpDown className="ml-auto size-4" />
-          </SidebarMenuButton>
+          <div>
+            <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            >
+              <Avatar className="size-8 rounded-lg">
+                <AvatarImage src={profileSrc} alt={user.firstName} />
+                <AvatarFallback className="rounded-lg">{getInitials(user)}</AvatarFallback>
+              </Avatar>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold">
+                  {user.firstName} {user.lastName}
+                </span>
+                <span className="truncate text-xs">{user.alias}</span>
+              </div>
+              <ChevronsUpDown className="ml-auto size-4" />
+            </SidebarMenuButton>
+          </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
@@ -61,7 +71,7 @@ const UserInfo = () => {
             <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
               <Avatar className="size-8 rounded-lg">
                 <AvatarImage src={profileSrc} alt={user.firstName} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarFallback className="rounded-lg text-sidebar-accent-foreground">{getInitials(user)}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">
@@ -73,7 +83,7 @@ const UserInfo = () => {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem onSelect={() => navigate('/me')} className="cursor-pointer">
+            <DropdownMenuItem onSelect={() => navigate('/me')}>
               <User />
               Profile
             </DropdownMenuItem>
@@ -83,7 +93,6 @@ const UserInfo = () => {
                 setIsDialogOpen(true);
                 setIsDropdownOpen(false);
               }}
-              className="cursor-pointer"
             >
               <Settings />
               Settings
@@ -91,7 +100,6 @@ const UserInfo = () => {
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            className="cursor-pointer"
             onSelect={() => {
               logout();
               navigate('/login');
