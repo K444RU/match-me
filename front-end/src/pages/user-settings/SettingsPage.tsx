@@ -62,17 +62,17 @@ const SettingsPage = () => {
                 <div>
                     <Tabs defaultValue="account">
                         <TabsList className="w-full">
-                            <TabsTrigger value="account" className="w-full">
-                                Account
+                            <TabsTrigger value="account">
+                                <span className="text-background">Account</span>
                             </TabsTrigger>
-                            <TabsTrigger value="profile" className="w-full">
-                                Profile
+                            <TabsTrigger value="profile">
+                                <span className="text-background">Profile</span>
                             </TabsTrigger>
-                            <TabsTrigger className="w-full" value="preferences">
-                                Preferences
+                            <TabsTrigger value="preferences">
+                                <span className="text-background">Preferences</span>
                             </TabsTrigger>
-                            <TabsTrigger className="w-full" value="attributes">
-                                Attributes
+                            <TabsTrigger value="attributes">
+                                <span className="text-background">Attributes</span>
                             </TabsTrigger>
                         </TabsList>
                         <TabsContent value="account">
