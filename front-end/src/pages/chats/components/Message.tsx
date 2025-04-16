@@ -24,7 +24,7 @@ export default function Message({ message, isOwn = true, isLastMessage }: Messag
               <span className="text-xs">{format(fromUnixTime(Number(message.createdAt)), 'kk:mm')}</span>
             </div>
           )}
-          <div className={`size-fit rounded-md p-2 px-4 ${isOwn ? 'bg-primary-600 text-white' : 'bg-background-200'}`}>
+          <div className={`size-fit rounded-md p-2 px-4 ${isOwn ? 'bg-primary/60' : 'bg-foreground/20'}`}>
             {message.content}
           </div>
           {isLastMessage && <MessageStatus eventType={message.event.type} isOwn={isOwn} />}
