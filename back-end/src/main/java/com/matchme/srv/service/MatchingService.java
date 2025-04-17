@@ -90,6 +90,8 @@ public class MatchingService {
 
       Long profileId = myProfile.getId();
       List<Double> myLocation = myProfile.getAttributes().getLocation();
+      Integer maximumDistance = myProfile.getPreferences().getDistance();
+
       Map<Long, Double> possibleMatches = getPossibleMatches(profileId);
 
       ConnectionsDTO connections = connectionService.getConnections(profileId);
@@ -114,6 +116,10 @@ public class MatchingService {
       List<RecommendedUserDTO> recommendations = new ArrayList<>();
 
       for (Map.Entry<Long, Double> match : possibleMatches.entrySet()) {
+        if (recommendations.size() == DEFAULT_MAX_RESULTS) {
+          break;
+        }
+
         Long matchUserId = match.getKey();
         Double matchScore = match.getValue();
 
@@ -134,7 +140,15 @@ public class MatchingService {
 
         UserAttributes attributes = profile != null ? profile.getAttributes() : null;
         if (attributes == null) {
-            throw new ResourceNotFoundException("User attributes not found for profile ID: " + matchUserId);
+          throw new ResourceNotFoundException("User attributes not found for profile ID: " + matchUserId);
+        }
+
+        // calculate accurate distance
+        Integer reverseDistance = profile.getPreferences().getDistance();
+        Integer distance = calculateDistance(myLocation, attributes.getLocation());
+
+        if (distance > maximumDistance || distance > reverseDistance) {
+          continue;
         }
 
         RecommendedUserDTO dto = new RecommendedUserDTO();
@@ -145,7 +159,7 @@ public class MatchingService {
         dto.setHobbies(convertHobbiesToStrings(profile.getHobbies()));
         dto.setAge(getAgeFromBirthDate(attributes.getBirthdate()));
         dto.setGender(attributes.getGender().toString());
-        dto.setDistance(calculateDistance(myLocation, attributes.getLocation()));
+        dto.setDistance(distance);
         dto.setProbability(matchScore);
 
         String status = connectionStatus.getOrDefault(matchUserId, "NONE");
@@ -229,8 +243,9 @@ public class MatchingService {
    *
    * @param profileId User ID to find matches for
    * @return Map of user IDs to match probability scores, sorted by probability in
-   *         descending order. Returns an empty map if no suitable matches are found.
-   * @throws ResourceNotFoundException         if the user is not found
+   *         descending order. Returns an empty map if no suitable matches are
+   *         found.
+   * @throws ResourceNotFoundException if the user is not found
    */
   public Map<Long, Double> getPossibleMatches(Long profileId) {
 
@@ -239,9 +254,8 @@ public class MatchingService {
         .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + profileId.toString()));
 
     // find users that match parameters
-    List<DatingPool> possibleMatches = matchingRepository.findUsersThatMatchParameters(entry.getLookingForGender(),
-        entry.getMyGender(), entry.getMyAge(), entry.getAgeMin(), entry.getAgeMax(),
-        entry.getSuitableGeoHashes(), entry.getMyLocation(), 3);
+    List<DatingPool> possibleMatches = matchingRepository.findPotentialMatchesDynamically(entry);
+    System.out.println(possibleMatches.toString());
 
     if (possibleMatches.isEmpty()) {
       // Return empty map if initial query yields no results
@@ -254,7 +268,6 @@ public class MatchingService {
         .filter(pair -> pair.getValue() > MINIMUM_PROBABILITY)
         .filter(pair -> pair.getValue() < MAXIMUM_PROBABILITY)
         .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-        .limit(DEFAULT_MAX_RESULTS)
         .collect(Collectors.toMap(
             Map.Entry::getKey,
             Map.Entry::getValue,
