@@ -69,6 +69,7 @@ public class GeohashService {
     GeoHashCircleQuery query = new GeoHashCircleQuery(centerPoint, radiusKm * 1000);
 
     Set<String> geohashes = new HashSet<>();
+    geohashes.add(centerGeohash);
     for (GeoHash hash : query.getSearchHashes()) {
       // // Get the center point of the hash returned by the query
       // WGS84Point hashCenterPoint = hash.getBoundingBoxCenter();
