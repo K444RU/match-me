@@ -71,19 +71,6 @@ public class GeohashService {
     Set<String> geohashes = new HashSet<>();
     geohashes.add(centerGeohash);
     for (GeoHash hash : query.getSearchHashes()) {
-      // // Get the center point of the hash returned by the query
-      // WGS84Point hashCenterPoint = hash.getBoundingBoxCenter();
-
-      // // Create a new GeoHash with the desired character precision
-      // GeoHash preciselyFormattedHash = GeoHash.withCharacterPrecision(
-      // hashCenterPoint.getLatitude(),
-      // hashCenterPoint.getLongitude(),
-      // GEOHASH_PRECISION);
-
-      // // Convert the precisely formatted hash to base32
-      // String hashString = preciselyFormattedHash.toBase32();
-
-      // // Add the correctly formatted geohash string to the set
       geohashes.add(hash.toBase32());
     }
 
