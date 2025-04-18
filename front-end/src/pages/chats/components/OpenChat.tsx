@@ -141,6 +141,12 @@ export default function OpenChat() {
     
   }, [connectionId]);
 
+  useEffect(() => {
+    if (connectionId && allChats[connectionId]) {
+      setChatMessages(allChats[connectionId]);
+    }
+  }, [allChats, connectionId])
+
   // Early return if no context, user or open chat
   if (!communicationContext || !user) return null;
 
@@ -165,6 +171,8 @@ export default function OpenChat() {
     if (communicationContext?.updateAllChats) {
       communicationContext.updateAllChats(openChat.connectionId, [optimisticMessage]);
     }
+
+    setChatMessages(prevMessages => [...prevMessages, optimisticMessage]);
 
     try {
       // Only use WebSocket if already connected
