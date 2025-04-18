@@ -28,6 +28,7 @@ public class ConnectionController {
     Long currentUserId = securityUtils.getCurrentUserId(authentication);
 
     MatchingRecommendationsDTO response = matchingService.getRecommendations(currentUserId);
+      System.out.println("Fetched recommendations are: " + response);
     return ResponseEntity.ok(response);
   }
 

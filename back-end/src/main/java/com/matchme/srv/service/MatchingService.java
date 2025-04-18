@@ -209,7 +209,7 @@ public class MatchingService {
   }
 
   /**
-   * Calculates the current age of a user based on their birth date.
+   * Calculates the current age of a user based on their birthdate.
    *
    * @param birthdate The user's date of birth
    * @return The calculated age in years
@@ -236,12 +236,18 @@ public class MatchingService {
 
     // get the users datingPool entry
     DatingPool entry = matchingRepository.findById(profileId)
-        .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + profileId.toString()));
+        .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + profileId));
 
     // find users that match parameters
-    List<DatingPool> possibleMatches = matchingRepository.findUsersThatMatchParameters(entry.getLookingForGender(),
-        entry.getMyGender(), entry.getMyAge(), entry.getAgeMin(), entry.getAgeMax(),
-        entry.getSuitableGeoHashes(), entry.getMyLocation(), 3);
+    List<DatingPool> possibleMatches = matchingRepository.findUsersThatMatchParameters(
+            entry.getLookingForGender(),
+            entry.getMyGender(),
+            entry.getMyAge(),
+            entry.getAgeMin(),
+            entry.getAgeMax(),
+            entry.getSuitableGeoHashes(),
+            entry.getMyLocation(),
+            3);
 
     if (possibleMatches.isEmpty()) {
       // Return empty map if initial query yields no results
