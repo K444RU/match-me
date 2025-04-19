@@ -1,4 +1,3 @@
-import InputField from '@/components/ui/forms/InputField';
 import React, { useState } from 'react';
 import { FaArrowRight } from 'react-icons/fa';
 import 'react-day-picker/style.css';
@@ -8,10 +7,13 @@ import { Label } from '@/components/ui/label';
 import MultipleSelector, { Option } from '@/components/ui/multi-select';
 import { useDebounce } from '@/lib/hooks/use-debounce';
 import { hobbiesById } from '@/lib/utils/dataConversion';
-import DatePicker from '@ui/forms/DatePicker.tsx';
-import ProfilePictureUploader from '@ui/forms/ProfilePictureUploader.tsx';
+import DatePicker from '@ui/forms/DatePicker';
+import ProfilePictureUploader from '@ui/forms/ProfilePictureUploader';
 import { City, UnifiedFormData } from '../types/types';
-import { CitySuggestions } from './CitySuggestions';
+import CitySuggestions from './CitySuggestions';
+import { Input } from '@/components/ui/input';
+import { Select, SelectValue, SelectTrigger, SelectContent, SelectItem } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 
 interface AttributesProps {
   onNext: () => void;
@@ -20,7 +22,7 @@ interface AttributesProps {
   genderOptions: { id: number; name: string }[];
 }
 
-const Attributes: React.FC<AttributesProps> = ({ onNext, formData, onChange, genderOptions }) => {
+export default function Attributes({ onNext, formData, onChange, genderOptions }: AttributesProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [citySearchValue, setCitySearchValue] = useState(formData.city?.name || '');
@@ -30,7 +32,7 @@ const Attributes: React.FC<AttributesProps> = ({ onNext, formData, onChange, gen
   const [alias, setAlias] = useState(formData.alias || '');
   const [hobbies, setHobbies] = useState<Option[] | []>(hobbiesById(formData.hobbies || []));
 
-  const debouncedCitySearchValue = useDebounce(citySearchValue, 1000);
+  const debouncedCitySearchValue = useDebounce(citySearchValue, 400);
 
   const handleCitySelect = async (city: City) => {
     setShowSuggestions(false);
@@ -62,37 +64,40 @@ const Attributes: React.FC<AttributesProps> = ({ onNext, formData, onChange, gen
   };
 
   return (
-    <div className="mx-auto h-[78vh] w-full max-w-md rounded-lg bg-accent-200 p-6 shadow-md">
-      <form onSubmit={(e) => e.preventDefault()} className="flex h-full flex-col">
-        <h2 className="border-b-2 border-accent text-center text-2xl font-bold text-text">Personal Information</h2>
-        <div className="no-scrollbar flex h-full flex-col gap-4 overflow-y-auto py-4">
+      <form onSubmit={(e) => e.preventDefault()} className="flex flex-col items-center gap-2">
           {error && <div className="text-sm text-red-500">{error}</div>}
 
           {/* Names */}
           <div className="flex gap-2">
             <div className="flex flex-col">
-              <label className="mb-1 text-sm font-medium text-gray-700" htmlFor="city">
+              <Label className="mb-1 text-sm font-medium" htmlFor="city">
                 First name
-              </label>
-              <InputField
+              </Label>
+              <Input
                 type="text"
                 name="firstName"
                 placeholder="Michael"
                 value={firstName}
-                onChange={setFirstName}
+                onChange={(e) => setFirstName(e.target.value)}
               />
             </div>
             <div className="flex flex-col">
-              <label className="mb-1 text-sm font-medium text-gray-700" htmlFor="city">
+              <Label className="mb-1 text-sm font-medium" htmlFor="city">
                 Last name
-              </label>
-              <InputField type="text" name="lastName" placeholder="Doorstep" value={lastName} onChange={setLastName} />
+              </Label>
+              <Input
+                type="text"
+                name="lastName"
+                placeholder="Doorstep"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+              />
             </div>
           </div>
 
           {/* Profile Picture */}
-          <div>
-            <label className="mb-1 text-sm font-medium text-gray-700">Profile Picture (Optional)</label>
+          <div className="w-full space-y-2">
+            <Label className="mb-1 text-sm font-medium">Profile Picture (Optional)</Label>
             <ProfilePictureUploader
               onUploadSuccess={() => {
                 console.debug('Upload was successful!');
@@ -101,16 +106,21 @@ const Attributes: React.FC<AttributesProps> = ({ onNext, formData, onChange, gen
           </div>
 
           {/* Alias */}
-          <div className="flex flex-col">
-            {' '}
-            <label className="mb-1 text-sm font-medium text-gray-700" htmlFor="city">
+          <div className="w-full space-y-2">
+            <Label htmlFor="alias">
               Alias
-            </label>
-            <InputField type="text" name="alias" placeholder="Shotgunner404" value={alias} onChange={setAlias} />
+            </Label>
+            <Input
+              type="text"
+              name="alias"
+              placeholder="Shotgunner404"
+              value={alias}
+              onChange={(e) => setAlias(e.target.value)}
+            />
           </div>
 
           {/* Hobbies */}
-          <div className="flex flex-col space-y-1.5">
+          <div className="w-full space-y-2">
             <Label htmlFor="hobbies">Hobbies</Label>
             <MultipleSelector
               value={hobbies}
@@ -121,55 +131,53 @@ const Attributes: React.FC<AttributesProps> = ({ onNext, formData, onChange, gen
               hideClearAllButton={true}
               maxSelected={5}
               hidePlaceholderWhenSelected={true}
-              className="bg-white"
             />
           </div>
           {/* Gender Dropdown */}
-          <div>
-            <label className="mb-1 text-sm font-medium text-gray-700" htmlFor="gender">
+          <div className="w-full space-y-2">
+            <Label htmlFor="gender">
               Gender
-            </label>
-            <select
-              id="gender"
+            </Label>
+            <Select
               name="gender"
-              value={formData.gender || ''}
-              onChange={(e) => onChange('gender', e.target.value)}
-              className="w-full rounded-md border border-gray-300 p-2"
-              required
+              defaultValue={formData.gender || ''}
+              onValueChange={(value) => onChange('gender', value)}
             >
-              <option value="" disabled>
-                Select Gender
-              </option>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select Gender" />
+              </SelectTrigger>
+              <SelectContent>
               {genderOptions.map((gender) => (
-                <option key={gender.id} value={gender.id}>
+                <SelectItem key={gender.id} value={gender.id.toString()}>
                   {gender.name}
-                </option>
+                </SelectItem>
               ))}
-            </select>
+            </SelectContent>
+          </Select>
           </div>
 
           {/* Birth Date Picker */}
-          <div className="flex flex-col">
-            <label className="mb-1 text-sm font-medium text-gray-700" htmlFor="city">
+          <div className="w-full space-y-2">
+            <Label>
               Date of Birth
-            </label>
+            </Label>
             <DatePicker
               selectedDate={formData.dateOfBirth ? new Date(formData.dateOfBirth) : undefined}
-              onDateChange={(dateString) => onChange('dateOfBirth', dateString)}
+              onDateChange={(date) => onChange('dateOfBirth', date.toISOString())}
             />
           </div>
 
           {/* City Input */}
-          <div className="relative">
-            <label className="mb-1 text-sm font-medium text-gray-700" htmlFor="city">
+          <div className="w-full space-y-2">
+            <Label>
               City
-            </label>
-            <InputField
+            </Label>
+            <Input
               type="text"
               name="city"
               placeholder="Enter your city"
               value={citySearchValue}
-              onChange={handleCityInputChange}
+              onChange={(e) => handleCityInputChange(e.target.value)}
               onFocus={() => setShowSuggestions(true)}
               onBlur={() => {
                 setTimeout(() => {
@@ -190,9 +198,8 @@ const Attributes: React.FC<AttributesProps> = ({ onNext, formData, onChange, gen
               />
             </div>
           </div>
-        </div>
 
-        <button
+        <Button
           className={`flex w-full items-center justify-center gap-2 self-start rounded-md px-5 py-2 font-semibold tracking-wide text-text transition-colors ${
             loading ? 'cursor-not-allowed bg-gray-400' : 'bg-primary hover:bg-primary-200 hover:text-text'
           }`}
@@ -209,10 +216,7 @@ const Attributes: React.FC<AttributesProps> = ({ onNext, formData, onChange, gen
               Continue <FaArrowRight />
             </>
           )}
-        </button>
+        </Button>
       </form>
-    </div>
   );
 };
-
-export default Attributes;
