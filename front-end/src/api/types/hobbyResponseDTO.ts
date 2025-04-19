@@ -6,8 +6,7 @@
  * OpenAPI spec version: v0.0.1
  */
 
-export interface Sortnull {
-  sorted?: boolean;
-  unsorted?: boolean;
-  empty?: boolean;
+export interface HobbyResponseDTO {
+  id?: number;
+  name?: string;
 }
