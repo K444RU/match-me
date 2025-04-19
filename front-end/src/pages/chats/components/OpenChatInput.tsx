@@ -37,7 +37,7 @@ export default function OpenChatInput({ onSendMessage, isTyping, recipientAlias 
   };
 
   return (
-    <div className="mt-4 flex gap-2 pb-1">
+    <div className="flex gap-2">
       <div className="flex w-full flex-col gap-2">
         <Input
           placeholder="Aa"
@@ -47,7 +47,7 @@ export default function OpenChatInput({ onSendMessage, isTyping, recipientAlias 
           onChange={handleMessageChange}
           onKeyDown={handleKeyDown}
         />
-        <div className="mb-1 h-4 animate-pulse text-xs text-accent-800">
+        <div className="h-4 animate-pulse text-xs">
           {isTyping ? `${recipientAlias} is typing...` : ''}
         </div>
       </div>
