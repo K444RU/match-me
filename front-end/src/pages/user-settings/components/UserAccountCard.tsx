@@ -10,6 +10,7 @@ import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { SettingsContext } from '../SettingsContext';
+import { parsePhoneNumber } from 'react-phone-number-input';
 
 const UserAccountCard = () => {
   const settingsContext = useContext(SettingsContext);
@@ -21,12 +22,36 @@ const UserAccountCard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!settingsContext?.settings) return;
+    if (!settingsContext?.settings) {
+      setEmail(undefined);
+      setCountryCode(undefined);
+      setNumber(undefined);
+      return;
+    }
 
     setEmail(settingsContext.settings.email ?? '');
-    const [code, phoneNumber] = (settingsContext.settings.number ?? '').split(' ');
-    setCountryCode(code ?? '');
-    setNumber(phoneNumber ?? '');
+
+    const fullNumber = settingsContext.settings.number;
+    if (fullNumber) {
+      try {
+        const parsed = parsePhoneNumber(fullNumber);
+        if (parsed) {
+          setCountryCode(parsed.countryCallingCode ? `+${parsed.countryCallingCode}` : '');
+          setNumber(parsed.nationalNumber ?? '');
+        } else {
+          console.warn(`Could not parse phone number: ${fullNumber}`);
+          setCountryCode('');
+          setNumber('');
+        }
+      } catch (error) {
+        console.error(`Error parsing phone number ${fullNumber}:`, error);
+        setCountryCode('');
+        setNumber('');
+      }
+    } else {
+      setCountryCode('');
+      setNumber('');
+    }
   }, [settingsContext?.settings]);
 
   const handleUpdate = async () => {
