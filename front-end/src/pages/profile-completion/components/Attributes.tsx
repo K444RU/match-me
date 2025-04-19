@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import { FaArrowRight } from 'react-icons/fa';
 import 'react-day-picker/style.css';
 import { HOBBIES } from '@/assets/hobbies';
