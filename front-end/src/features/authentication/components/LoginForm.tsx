@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useAuth } from '@/features/authentication';
 import MotionSpinner from '@animations/MotionSpinner';
 import React, { useState } from 'react';
-import InputField from '../../../components/ui/forms/InputField';
 import FormResponse from './FormResponse';
 
 const testUsers = [
@@ -53,18 +53,29 @@ export default function LoginForm() {
   return (
     <form onSubmit={submitForm} className="flex flex-col items-center gap-2">
       {resTitle && resSubtitle && <FormResponse title={resTitle} subtitle={resSubtitle} />}
-      <InputField type="email" name="contact_email" placeholder="Email" value={email} onChange={setEmail} required />
-      <InputField
+      <Input
+        type="email"
+        name="contact_email"
+        placeholder="Email"
+        autoComplete="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+        className="bg-background"
+      />
+      <Input
         type="password"
         name="password"
+        autoComplete="current-password"
         placeholder="Password"
         value={password}
-        onChange={setPassword}
+        onChange={(e) => setPassword(e.target.value)}
         required
+        className="bg-background"
       />
       <Button
         disabled={isLoading}
-        className="flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
+        className="flex w-full items-center justify-center gap-2 font-semibold tracking-wide"
         type="submit"
         aria-label="Submit form."
       >
@@ -77,11 +88,12 @@ export default function LoginForm() {
           {testUsers.map((user) => (
             <Button
               type="button"
-              className="rounded-sm bg-gray-200 px-3 py-1 text-sm"
+              className="rounded-sm px-3 py-1 text-sm"
+              variant="secondary"
               onClick={() => handleTestUser(user.email, user.password)}
               key={user.email}
             >
-              {user.email}
+              {user.email.split('@')[0]}
             </Button>
           ))}
         </div>

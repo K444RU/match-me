@@ -1,15 +1,16 @@
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { PhoneInput } from '@/components/ui/phone-input';
 import { authService } from '@/features/authentication';
 import MotionSpinner from '@animations/MotionSpinner';
-import { CountryCodePhoneInput } from '@ui/country-code-phone-input';
 import { useState } from 'react';
-import { isValidPhoneNumber, parsePhoneNumber } from 'react-phone-number-input';
+import { isValidPhoneNumber, parsePhoneNumber, Value } from 'react-phone-number-input';
 import { useNavigate } from 'react-router-dom';
-import InputField from '../../../components/ui/forms/InputField';
 import FormResponse from './FormResponse';
 
-const RegisterForm = () => {
+export default function RegisterForm() {
   const [email, setEmail] = useState('');
-  const [number, setNumber] = useState('');
+  const [number, setNumber] = useState<Value | undefined>(undefined);
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -40,7 +41,7 @@ const RegisterForm = () => {
      *
      * This approach ensures the number is validated on the front-end and sent in the correct format to the backend.
      */
-  const handleNumberChange = (val: string | undefined) => {
+  const handleNumberChange = (val: Value) => {
     const E164Number = val ?? '';
     setNumber(E164Number);
 
@@ -71,7 +72,7 @@ const RegisterForm = () => {
     authService
       .register({
         email,
-        number,
+        number: number?.toString() ?? '',
         password,
       })
       .then((_res) => {
@@ -142,60 +143,48 @@ const RegisterForm = () => {
     <form onSubmit={submitForm} className="flex flex-col items-center gap-4">
       {resTitle && resSubtitle && <FormResponse title={resTitle} subtitle={resSubtitle} state={resState} />}
 
-      <div className="flex w-full flex-col">
-        <label htmlFor="contact_email" className="mb-1 text-sm font-medium text-gray-700">
-          Email
-        </label>
-        <InputField
-          type="email"
-          name="contact_email"
-          placeholder="Email"
-          value={email}
-          onChange={setEmail}
-          required={true}
+      <Input
+        type="email"
+        name="contact_email"
+        placeholder="Email"
+        autoComplete="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+        className="bg-background"
+      />
+
+      <Input
+        type="password"
+        name="password"
+        autoComplete="new-password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+        className="bg-background"
+      />
+
+      <div className="flex w-full space-x-2">
+        <PhoneInput
+          value={number}
+          defaultCountry="EE"
+          placeholder="Enter a phone number"
+          autoComplete="tel"
+          onChange={handleNumberChange}
+          className="w-full rounded-lg"
         />
       </div>
+      {numberError && <p className="text-sm text-red-500"> {numberError}</p>}
 
-      <div className="flex w-full flex-col">
-        <label htmlFor="password" className="mb-1 text-sm font-medium text-gray-700">
-          Password
-        </label>
-        <InputField
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={password}
-          onChange={setPassword}
-          required={true}
-        />
-      </div>
-
-      <div className="flex w-full flex-col">
-        <label htmlFor="phone2" className="mb-1 text-sm font-medium text-gray-700">
-          Country Code & Phone Number
-        </label>
-        <div className="flex w-full space-x-2">
-          <CountryCodePhoneInput
-            value={number}
-            defaultCountry="EE"
-            placeholder="Enter a phone number"
-            onChange={handleNumberChange}
-            className="w-full"
-          />
-        </div>
-        {numberError && <p className="text-sm text-red-500"> {numberError}</p>}
-      </div>
-
-      <button
-        className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-white transition-colors hover:bg-primary-200"
+      <Button
+        className="flex w-full items-center justify-center gap-2 rounded-md font-semibold tracking-wide"
         type="submit"
         aria-label="Submit form."
       >
         <span>Register</span>
         {loading && <MotionSpinner />}
-      </button>
+      </Button>
     </form>
   );
 };
-
-export default RegisterForm;
