@@ -114,7 +114,7 @@ export default function ConnectionRequestHandler() {
                 </button>
                 <button
                   onClick={() => handleReject(request.connectionId)}
-                  className="text-sm text-red-600 hover:underline"
+                  className="text-sm text-destructive hover:underline"
                 >
                   Reject
                 </button>

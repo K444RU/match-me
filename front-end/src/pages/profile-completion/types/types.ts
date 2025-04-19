@@ -14,8 +14,7 @@ export interface UnifiedFormData {
   dateOfBirth: string;
   city: City;
   genderOther: string;
-  ageMin: number;
-  ageMax: number;
+  ageRange: number[];
   distance: number;
   probabilityTolerance: number;
 }

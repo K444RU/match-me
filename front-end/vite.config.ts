@@ -1,9 +1,11 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import path from 'path';
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   server: {
     port: 3000,
     proxy: {
@@ -11,16 +13,23 @@ export default defineConfig({
         target: 'http://localhost:8000/',
         changeOrigin: true,
         // rewrite: (path) => path.replace(/^\/api/, '')
-      }}
+      },
+      '/ws': {
+        target: 'ws://localhost:8000/ws',
+        ws: true,
+        changeOrigin: true,
+      },
+    },
   },
   resolve: {
-    alias: [
-      { find: '@', replacement: '/src' },
-      { find: '@animations', replacement: '/src/components/animations' },
-      { find: '@features', replacement: '/src/features' },
-      { find: '@services', replacement: '/src/services' },
-      { find: '@assets', replacement: '/src/assets' },
-      { find: '@ui', replacement: '/src/components/ui' },
-    ],
-   },
+    alias: 
+    {
+      '@': path.resolve(__dirname, './src'),
+      '@animations': path.resolve(__dirname, './src/components/animations'),
+      '@features': path.resolve(__dirname, './src/features'),
+      '@services': path.resolve(__dirname, './src/services'),
+      '@assets': path.resolve(__dirname, './src/assets'),
+      '@ui': path.resolve(__dirname, './src/components/ui'),
+    },
+  },
 });

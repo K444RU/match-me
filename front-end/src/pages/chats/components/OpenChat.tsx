@@ -118,10 +118,10 @@ export default function OpenChat() {
   };
 
   return (
-    <div className="relative flex h-screen w-full">
+    <div className="relative flex size-full">
       <SidebarTrigger className="absolute left-1 top-1 z-10" />
       {openChat ? (
-        <div className="flex w-full flex-col bg-background-400 px-4 sm:px-6 md:px-8">
+        <div className="bg-background/40 flex flex-1 flex-col gap-4 p-4 sm:px-6 md:px-8 overflow-hidden">
           <OpenChatMessages loading={loading} chatMessages={chatMessages} user={user} />
           <OpenChatInput
             onSendMessage={onSendMessage}
@@ -130,7 +130,7 @@ export default function OpenChat() {
           />
         </div>
       ) : (
-        <NoChat className="pl-16" />
+        <NoChat />
       )}
     </div>
   );

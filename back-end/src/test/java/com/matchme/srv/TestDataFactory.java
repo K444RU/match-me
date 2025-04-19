@@ -56,6 +56,10 @@ public class TestDataFactory {
     public static final Long DEFAULT_GENDER_OTHER_ID = 2L;
     public static final String DEFAULT_GENDER_OTHER_NAME = "FEMALE";
     public static final Set<Long> DEFAULT_HOBBY_IDS = Set.of(1L, 2L);
+    public static final Set<HobbyResponseDTO> DEFAULT_HOBBY_RESPONSE_DTOS = Set.of(
+        HobbyResponseDTO.builder().id(1L).name("3D printing").build(),
+        HobbyResponseDTO.builder().id(2L).name("Acrobatics").build()
+    );
     public static final String DEFAULT_BIRTH_DATE = "1995-01-01";
     public static final Double DEFAULT_LONGITUDE = 25.5412;
     public static final Double DEFAULT_LATITUDE = 58.8879;
@@ -96,6 +100,10 @@ public class TestDataFactory {
     public static final Long DEFAULT_TARGET_GENDER_OTHER_ID = 1L;
     public static final String DEFAULT_TARGET_GENDER_OTHER_NAME = "MALE";
     public static final Set<Long> DEFAULT_TARGET_HOBBY_IDS = Set.of(3L, 4L);
+    public static final Set<HobbyResponseDTO> DEFAULT_TARGET_HOBBY_RESPONSE_DTOS = Set.of(
+        HobbyResponseDTO.builder().id(3L).name("3D printing").build(),
+        HobbyResponseDTO.builder().id(4L).name("Acrobatics").build()
+    );
     public static final int DEFAULT_TARGET_AGE_SELF = 25;
     public static final int DEFAULT_TARGET_AGE_MIN = 20;
     public static final int DEFAULT_TARGET_AGE_MAX = 30;
@@ -154,17 +162,19 @@ public class TestDataFactory {
 
     public static ProfileResponseDTO createProfileResponse() {
         return ProfileResponseDTO.builder()
-                .first_name(DEFAULT_FIRST_NAME)
-                .last_name(DEFAULT_LAST_NAME)
+                .firstName(DEFAULT_FIRST_NAME)
+                .lastName(DEFAULT_LAST_NAME)
                 .city(DEFAULT_CITY)
+                .hobbies(DEFAULT_HOBBY_RESPONSE_DTOS)
                 .build();
     }
 
     public static ProfileResponseDTO createTargetProfileResponse() {
         return ProfileResponseDTO.builder()
-                .first_name(DEFAULT_TARGET_FIRST_NAME)
-                .last_name(DEFAULT_TARGET_LAST_NAME)
+                .firstName(DEFAULT_TARGET_FIRST_NAME)
+                .lastName(DEFAULT_TARGET_LAST_NAME)
                 .city(DEFAULT_TARGET_CITY)
+                .hobbies(DEFAULT_TARGET_HOBBY_RESPONSE_DTOS)
                 .build();
     }
 

@@ -1,7 +1,6 @@
 import MotionSpinner from '@/components/animations/MotionSpinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import DatePicker from '@/components/ui/forms/DatePicker';
 import InputField from '@/components/ui/forms/InputField';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,11 +8,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { GenderContext } from '@/features/gender';
 import { userService } from '@/features/user';
 import { useDebounce } from '@/lib/hooks/use-debounce';
-import { CitySuggestions } from '@/pages/profile-completion/components/CitySuggestions';
+import CitySuggestions from '@/pages/profile-completion/components/CitySuggestions';
 import { City } from '@/pages/profile-completion/types/types';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { SettingsContext } from '../SettingsContext';
+import DatePicker from '@/components/ui/forms/DatePicker';
 
 const UserAttributesCard = () => {
   const genders = useContext(GenderContext);
@@ -86,7 +86,7 @@ const UserAttributesCard = () => {
               {birthDate !== undefined ? (
                 <DatePicker
                   selectedDate={birthDate}
-                  onDateChange={(dateString: string) => setBirthDate(new Date(dateString))}
+                  onDateChange={(date: Date) => setBirthDate(date)}
                 />
               ) : (
                 <Skeleton className="w=full h-[40px] bg-primary" />

@@ -1,7 +1,7 @@
 import MotionSpinner from '@/components/animations/MotionSpinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import MultiHandleSlider from '@/components/ui/forms/MultiRangeSlider';
+import { DualRangeSlider } from '@/components/ui/dual-range-slider';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -9,27 +9,25 @@ import { GenderContext } from '@/features/gender';
 import { userService } from '@/features/user';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import OneHandleSlider from '../../../components/ui/forms/OneHandleSlider';
 import { SettingsContext } from '../SettingsContext';
+import { Slider } from '@/components/ui/slider';
 
-const UserPreferencesCard = () => {
+export default function UserPreferencesCard() {
   const settingsContext = useContext(SettingsContext);
   const genders = useContext(GenderContext);
   const [gender, setGender] = useState<number | null>(null);
-  const [distance, setDistance] = useState<number | null>(null);
-  const [ageMin, setAgeMin] = useState<number | null>(null);
-  const [ageMax, setAgeMax] = useState<number | null>(null);
-  const [probabilityTolerance, setProbabilityTolerance] = useState<number | null>(null);
+  const [distance, setDistance] = useState<number | 50>(50);
+  const [ageValues, setAgeValues] = useState<number[]>([]);
+  const [probabilityTolerance, setProbabilityTolerance] = useState<number | 0.5>(0.5);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!settingsContext?.settings) return;
 
     setGender(settingsContext.settings.genderOther ?? null);
-    setDistance(settingsContext.settings.distance ?? null);
-    setAgeMin(settingsContext.settings.ageMin ?? null);
-    setProbabilityTolerance(settingsContext.settings.probabilityTolerance ?? null);
-    setAgeMax(settingsContext.settings.ageMax ?? null);
+    setDistance(settingsContext.settings.distance ?? 50);
+    setAgeValues([settingsContext.settings.ageMin ?? 18, settingsContext.settings.ageMax ?? 120]);
+    setProbabilityTolerance(settingsContext.settings.probabilityTolerance ?? 0.5);
   }, [settingsContext?.settings]);
 
   const handleUpdate = async () => {
@@ -37,12 +35,12 @@ const UserPreferencesCard = () => {
 
     setLoading(true);
     try {
-      if (!gender || !distance || !ageMin || !ageMax || !probabilityTolerance) return;
+      if (!gender || !distance || !ageValues[0] || !ageValues[1] || !probabilityTolerance) return;
       await userService.updatePreferencesSettings({
         gender_other: gender,
         distance,
-        age_min: ageMin,
-        age_max: ageMax,
+        age_min: ageValues[0],
+        age_max: ageValues[1],
         probability_tolerance: probabilityTolerance,
       });
       await settingsContext.refreshSettings();
@@ -64,45 +62,37 @@ const UserPreferencesCard = () => {
       <CardContent>
         <form>
           <div className="grid w-full items-center gap-4">
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="ageRange">Age range</Label>
-              <MultiHandleSlider
+            <div className="space-y-2">
+              <Label>Age range | {ageValues[0]} - {ageValues[1]}</Label>
+              <DualRangeSlider
                 min={18}
                 max={120}
-                minValue={ageMin}
-                maxValue={ageMax}
-                onInput={({ minValue, maxValue }) => {
-                  setAgeMin(minValue);
-                  setAgeMax(maxValue);
-                }}
-                showInputField={false}
+                step={1}
+                value={ageValues}
+                onValueChange={setAgeValues}
               />
             </div>
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="distance">Distance</Label>
-              <OneHandleSlider
-                name="distance"
+            <div className="space-y-2">
+              <Label htmlFor="distance">Distance | {distance} km</Label>
+              <Slider
                 min={50}
                 max={300}
-                value={distance}
                 step={10}
-                onChange={setDistance}
-                showInputField={false}
+                value={[distance]}
+                onValueChange={(value) => setDistance(value[0])}
               />
             </div>
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="probabilityTolerance">Probability Tolerance</Label>
-              <OneHandleSlider
-                name="probabilityTolerance"
+            <div className="space-y-2">
+              <Label htmlFor="probabilityTolerance">Probability Tolerance | {probabilityTolerance}</Label>
+              <Slider
                 min={0.1}
                 max={1.0}
-                value={probabilityTolerance}
                 step={0.1}
-                onChange={setProbabilityTolerance}
-                showInputField={false}
+                value={[probabilityTolerance]}
+                onValueChange={(value) => setProbabilityTolerance(value[0])}
               />
             </div>
-            <div className="flex flex-col space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="otherGender">Gender</Label>
               {gender !== null && genders !== null ? (
                 <>
@@ -141,5 +131,3 @@ const UserPreferencesCard = () => {
     </Card>
   );
 };
-
-export default UserPreferencesCard;

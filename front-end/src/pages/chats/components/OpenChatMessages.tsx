@@ -21,7 +21,7 @@ export default function OpenChatMessages({ loading, chatMessages, user }: OpenCh
   }, [chatMessages]);
 
   return (
-    <div className="mt-4 size-full overflow-y-scroll pr-4">
+    <div className="mt-4 flex-1 overflow-y-auto">
       {loading ? (
         <div className="flex justify-center p-4">Loading messages...</div>
       ) : chatMessages.length === 0 ? (

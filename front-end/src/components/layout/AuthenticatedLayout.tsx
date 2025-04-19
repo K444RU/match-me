@@ -13,11 +13,9 @@ export default function AuthenticatedLayout() {
   return (
     <WebSocketProvider wsUrl={WS_URL}>
       <GlobalCommunicationProvider>
-        <SidebarProvider>
-          <div className="flex h-screen w-screen overflow-hidden">
-            <Outlet />
-          </div>
-        </SidebarProvider>
+        <div className="flex size-full overflow-hidden">
+          <Outlet />
+        </div>
       </GlobalCommunicationProvider>
     </WebSocketProvider>
   );

@@ -7,6 +7,7 @@ import ProfileCompletionPage from '@/pages/profile-completion/ProfileCompletionP
 import UserProfilePage from '@/pages/profile/UserProfilePage.tsx';
 import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
+import SidebarLayout from '../components/layout/SidebarLayout';
 import ChatsPage from '../pages/chats/ChatsPage';
 import HomePage from '../pages/HomePage';
 import PreviewPage from '../pages/PreviewPage';
@@ -33,30 +34,19 @@ export const routes = createRoutesFromElements(
         {/* Authenticated users can access these routes */}
         <Route element={<AuthenticationGuard guardType="authenticated" redirectPath="/login" />}>
           {/* Group requiring ACTIVE state */}
-          <Route
-            element={
-              <AuthenticationGuard
-                allowedStates={[UserState.ACTIVE]}
-              />
-            }
-          >
+          <Route element={<AuthenticationGuard allowedStates={[UserState.ACTIVE]} />}>
             <Route element={<AuthenticatedLayout />}>
-              <Route path="settings" element={<SettingsPage />} />
-              <Route path="chats" element={<ChatsPage />} />
-              <Route path="me" element={<UserProfilePage />} />
-              <Route path=":id/profile" element={<UserProfilePage />} />
+              <Route element={<SidebarLayout />}>
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="chats" element={<ChatsPage />} />
+                <Route path="me" element={<UserProfilePage />} />
+                <Route path=":id/profile" element={<UserProfilePage />} />
+              </Route>
             </Route>
           </Route>
 
           {/* Group requiring PROFILE_INCOMPLETE state */}
-          <Route
-            element={
-              <AuthenticationGuard
-                allowedStates={[UserState.PROFILE_INCOMPLETE]}
-                redirectPath="/chats"
-              />
-            }
-          >
+          <Route element={<AuthenticationGuard allowedStates={[UserState.PROFILE_INCOMPLETE]} redirectPath="/chats" />}>
             <Route element={<AuthenticatedLayout />}>
               <Route path="profile-completion" element={<ProfileCompletionPage />} />
             </Route>

@@ -10,7 +10,7 @@ interface BlindMenuProps {
 const BlindMenu = ({ setIsConnectionsModalOpen, setIsRecommendationsModalOpen, setIsDropdownOpen }: BlindMenuProps) => {
   return (
     <DropdownMenuContent
-      className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+      className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
       side="bottom"
       align="start"
       sideOffset={4}
@@ -21,7 +21,6 @@ const BlindMenu = ({ setIsConnectionsModalOpen, setIsRecommendationsModalOpen, s
           setIsConnectionsModalOpen(true);
           setIsDropdownOpen(false);
         }}
-        className="h-12 cursor-pointer"
       >
         <Users className="mr-2 size-4" />
         <span>Check my current Connections</span>
@@ -32,7 +31,6 @@ const BlindMenu = ({ setIsConnectionsModalOpen, setIsRecommendationsModalOpen, s
           setIsRecommendationsModalOpen(true);
           setIsDropdownOpen(false);
         }}
-        className="h-12 cursor-pointer"
       >
         <Star className="mr-2 size-4" />
         <span>Get my new Matching Recommendations</span>

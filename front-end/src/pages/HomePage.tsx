@@ -1,7 +1,6 @@
 import { useRef } from 'react';
 import Hero from './sections/Hero';
 import HowItWorksSection from './sections/HowItWorksSection';
-import JumpToTopButton from '../components/ui/buttons/JumpToTopButton';
 
 const HomePage = () => {
   const howItWorksRef = useRef<HTMLDivElement>(null);
@@ -14,7 +13,6 @@ const HomePage = () => {
     <>
       <Hero onLearnMore={scrollToHowItWorks} />
       <HowItWorksSection ref={howItWorksRef} />
-      <JumpToTopButton />
     </>
   );
 };

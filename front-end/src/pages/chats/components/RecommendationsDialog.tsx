@@ -1,12 +1,12 @@
 import { MatchingRecommendationsDTO } from '@/api/types';
 import MotionSpinner from '@/components/animations/MotionSpinner';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {connectionService, useCommunication} from '@/features/chat';
 import { UserPlus } from 'lucide-react';
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import UserAvatar from './UserAvatar';
 
 type ConnectionState = Record<string, 'idle' | 'loading' | 'sent'>;
 
@@ -21,17 +21,13 @@ async function fetchRecommendations() {
   }
 }
 
-function getInitials(firstName: string, lastName: string) {
-  return `${firstName.charAt(0)}${lastName.charAt(0)}`;
-}
-
-const RecommendationsDialog = ({
+export default function RecommendationsDialog({
   setIsOpen,
   isOpen,
 }: {
   setIsOpen: Dispatch<SetStateAction<boolean>>;
   isOpen: boolean;
-}) => {
+}) {
   const { sendConnectionRequest } = useCommunication();
   const [recommendations, setRecommendations] = useState<MatchingRecommendationsDTO>();
   const [connectionStates, setConnectionStates] = useState<ConnectionState>({});
@@ -74,10 +70,7 @@ const RecommendationsDialog = ({
             recommendations.recommendations.map((r) => (
               <div key={r.userId} className="flex justify-between rounded-md p-2 duration-100 hover:bg-text-100">
                 <div className="flex items-center gap-2">
-                  <Avatar>
-                    <AvatarImage src={r.profilePicture} alt={`${r.firstName} avatar`} />
-                    <AvatarFallback>{getInitials(r.firstName, r.lastName)}</AvatarFallback>
-                  </Avatar>
+                  <UserAvatar name={`${r.firstName} ${r.lastName}`} />
                   <span>{`${r.firstName} ${r.lastName}`}</span>
                 </div>
                 <Button
@@ -108,5 +101,3 @@ const RecommendationsDialog = ({
     </Dialog>
   );
 };
-
-export default RecommendationsDialog;

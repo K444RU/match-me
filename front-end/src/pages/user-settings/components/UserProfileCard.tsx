@@ -59,7 +59,7 @@ const UserProfileCard = () => {
   };
 
   return (
-    <Card className="no-scrollbar h-[475px] w-full overflow-y-auto border-none shadow-none">
+    <Card className="no-scrollbar h-[475px] w-full overflow-y-auto border-none">
       <CardHeader>
         <CardTitle>Profile</CardTitle>
         <CardDescription>Edit your profile settings here.</CardDescription>
@@ -96,7 +96,7 @@ const UserProfileCard = () => {
               </div>
             </div>
             <div className="flex flex-col space-y-1.5">
-              <label className="mb-1 text-sm font-medium text-gray-700">Profile Picture</label>
+              <label className="mb-1 text-sm font-medium">Profile Picture</label>
               <ProfilePictureUploader
                 currentImage={settingsContext.settings.profilePicture ?? null}
                 onUploadSuccess={async () => {

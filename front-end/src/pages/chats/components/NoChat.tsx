@@ -6,8 +6,8 @@ interface NoChatProps {
 
 export default function NoChat({ className }: NoChatProps) {
   return (
-    <div className={cn('flex h-screen w-full items-center justify-center bg-background-400', className)}>
-      <div className="rounded-full bg-background-200 p-2 px-4">Click on a Chat to get started.</div>
+    <div className={cn('bg-background/40 flex size-full items-center justify-center', className)}>
+      <div className="bg-background/20 rounded-full p-2 px-4">Click on a Chat to get started.</div>
     </div>
   );
 }

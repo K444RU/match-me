@@ -1,6 +1,9 @@
 import MotionSpinner from '@/components/animations/MotionSpinner';
-import MultiHandleSlider from '@/components/ui/forms/MultiRangeSlider';
-import OneHandleSlider from '@/components/ui/forms/OneHandleSlider';
+import { Button } from '@/components/ui/button';
+import { DualRangeSlider } from '@/components/ui/dual-range-slider';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
 import React, { useState } from 'react';
 import { FaArrowLeft, FaCheck } from 'react-icons/fa';
 import { UnifiedFormData } from '../types/types';
@@ -29,7 +32,7 @@ const Preferences: React.FC<PreferencesProps> = ({
       setError('Please select a gender preference.');
       return false;
     }
-    if (formData.ageMin! > formData.ageMax!) {
+    if (formData.ageRange[0] > formData.ageRange[1]) {
       setError('Minimum age cannot be greater than maximum age.');
       return false;
     }
@@ -44,85 +47,78 @@ const Preferences: React.FC<PreferencesProps> = ({
   };
 
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="w-full max-w-md rounded-lg bg-accent-200 p-6 shadow-md">
-      <h2 className="border-b-2 border-accent text-center text-2xl font-bold text-text">Preferences</h2>
-      <div className="mt-4 flex flex-col gap-4">
-        {error && <div className="text-sm text-red-500">{error}</div>}
+    <form onSubmit={(e) => e.preventDefault()} className="flex flex-col items-center gap-4">
+      {error && <div className="text-sm text-red-500">{error}</div>}
 
-        {/* Gender Preference Dropdown */}
-        <div>
-          <label htmlFor="genderOther" className="mb-1 text-sm font-medium text-gray-700">
-            Gender Preference
-          </label>
-          <select
-            id="genderOther"
-            value={formData.genderOther || ''}
-            onChange={(e) => onChange('genderOther', e.target.value)}
-            className="w-full rounded-md border border-gray-300 p-2"
-            required
-          >
-            <option value="" disabled>
-              Select Gender
-            </option>
+      {/* Gender Preference Dropdown */}
+      {/* Gender Dropdown */}
+      <div className="w-full space-y-2">
+        <Label htmlFor="genderOther">Gender Preference</Label>
+        <Select
+          name="genderOther"
+          defaultValue={formData.genderOther || ''}
+          onValueChange={(value) => onChange('genderOther', value)}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select Gender" />
+          </SelectTrigger>
+          <SelectContent>
             {genderOptions.map((gender) => (
-              <option key={gender.id} value={gender.id}>
+              <SelectItem key={gender.id} value={gender.id.toString()}>
                 {gender.name}
-              </option>
+              </SelectItem>
             ))}
-          </select>
-        </div>
-
-        {/* Distance Slider */}
-        <div>
-          <OneHandleSlider
-            name="distance"
-            min={10}
-            max={300}
-            step={10}
-            value={formData.distance || 300}
-            label="Maximum distance (km)"
-            onChange={(value) => onChange('distance', Number(value))}
-          />
-        </div>
-
-        {/* Age Range Slider */}
-        <div>
-          <MultiHandleSlider
-            min={18}
-            max={120}
-            minValue={formData.ageMin || 18}
-            maxValue={formData.ageMax || 120}
-            label="Preferred Age Range"
-            onInput={({ minValue, maxValue }) => {
-              onChange('ageMin', minValue);
-              onChange('ageMax', maxValue);
-            }}
-          />
-        </div>
-
-        {/* Probability Tolerance Slider */}
-        <div>
-          <OneHandleSlider
-            name="probabilityTolerance"
-            min={0}
-            max={1}
-            step={0.05}
-            value={formData.probabilityTolerance || 0.5}
-            label="Probability Tolerance"
-            onChange={(value) => onChange('probabilityTolerance', Number(value))}
-          />
-        </div>
+          </SelectContent>
+        </Select>
       </div>
 
-      <div className="mt-6 flex justify-between">
-        <button
+      {/* Distance Slider */}
+      <div className="w-full space-y-2">
+        <Label htmlFor="distance">Distance | {formData.distance} km</Label>
+        <Slider
+          min={50}
+          max={300}
+          step={10}
+          value={[formData.distance || 50]}
+          onValueChange={(value) => onChange('distance', value[0])}
+        />
+      </div>
+
+      {/* Age Range Slider */}
+      <div className="w-full space-y-2">
+        <Label>
+          Age range | {formData.ageRange[0]} - {formData.ageRange[1]}
+        </Label>
+        <DualRangeSlider
+          min={18}
+          max={120}
+          step={1}
+          value={formData.ageRange}
+          onValueChange={(value) => onChange('ageRange', value)}
+        />
+      </div>
+
+      {/* Probability Tolerance Slider */}
+      <div className="w-full space-y-2">
+        <Label htmlFor="probabilityTolerance">Probability Tolerance | {formData.probabilityTolerance}</Label>
+        <Slider
+          min={0.1}
+          max={1.0}
+          step={0.1}
+          value={[formData.probabilityTolerance || 0.5]}
+          onValueChange={(value) => onChange('probabilityTolerance', value[0])}
+        />
+      </div>
+
+      <div className="mt-6 flex w-full justify-between">
+        <Button
           type="button"
           onClick={onPrevious}
           className="flex items-center gap-2 rounded-md bg-primary px-5 py-2 font-semibold text-text hover:bg-primary-200"
         >
           <FaArrowLeft /> Back
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={handleFinish}
           disabled={loading}
@@ -139,7 +135,7 @@ const Preferences: React.FC<PreferencesProps> = ({
               Continue <FaCheck />
             </>
           )}
-        </button>
+        </Button>
       </div>
     </form>
   );

@@ -9,7 +9,7 @@ interface MessageStatusProps {
 }
 
 const iconSize = 16;
-const iconColor = 'text-gray-600';
+const iconColor = 'text-secondary';
 
 export default function MessageStatus({ eventType, isOwn, recipientAvatar = '' }: MessageStatusProps) {
   if (!isOwn) {
@@ -36,7 +36,7 @@ export default function MessageStatus({ eventType, isOwn, recipientAvatar = '' }
         <Avatar className="size-4">
           <AvatarImage src={recipientAvatar} alt={`Recipient avatar`} />
           <AvatarFallback className="bg-transparent">
-            <CheckCircle2 size={iconSize} fill="#9ca3af" className={iconColor} />
+            <CheckCircle2 size={iconSize} fill="currentColor" className="text-secondary/50 dark:text-secondary/75"  />
           </AvatarFallback>
         </Avatar>
       );

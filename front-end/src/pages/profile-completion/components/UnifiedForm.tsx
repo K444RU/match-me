@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { UnifiedFormData } from '../types/types';
 import Attributes from './Attributes';
 import Preferences from './Preferences';
+import FormLayout from '@/features/authentication/components/FormLayout';
 
 const PayloadFormData = (formData: UnifiedFormData): UserParametersRequestDTO => ({
   first_name: formData.firstName,
@@ -19,10 +20,10 @@ const PayloadFormData = (formData: UnifiedFormData): UserParametersRequestDTO =>
   latitude: formData.city.latitude,
   longitude: formData.city.longitude,
   gender_other: Number(formData.genderOther),
-  age_min: formData.ageMin,
-  age_max: formData.ageMax,
-  distance: formData.distance,
-  probability_tolerance: formData.probabilityTolerance,
+  age_min: formData.ageRange[0] || 18,
+  age_max: formData.ageRange[1] || 120,
+  distance: formData.distance || 50,
+  probability_tolerance: formData.probabilityTolerance || 0.5,
 });
 
 export default function UnifiedForm() {
@@ -30,6 +31,7 @@ export default function UnifiedForm() {
 
   const [formData, setFormData] = useState<UnifiedFormData>(() => ({
     ...JSON.parse(localStorage.getItem('profileData') || '{}'),
+    ageRange: [18, 120],
     probabilityTolerance: 0.5,
     distance: 300,
   }));
@@ -86,7 +88,7 @@ export default function UnifiedForm() {
   };
 
   return (
-    <>
+    <FormLayout title={step === 0 ? 'Personal Information' : 'Preferences'} className="pb-20">
       {step === 0 && (
         <Attributes onNext={handleNextStep} onChange={handleChange} formData={formData} genderOptions={genderOptions} />
       )}
@@ -100,6 +102,6 @@ export default function UnifiedForm() {
           genderOptions={genderOptions}
         />
       )}
-    </>
+    </FormLayout>
   );
 };

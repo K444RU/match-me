@@ -27,7 +27,7 @@ const InputSelect5 = ({
         {options.map((option: string) => (
           <div
             key={option}
-            className={`px-3 py-2 ${selectedOption === option ? 'rounded-sm border-accent bg-accent text-white' : ''}`}
+            className={`px-3 py-2 ${selectedOption === option ? 'rounded-xs border-accent bg-accent text-white' : ''}`}
             onClick={() => handleOptionClick(option)}
           >
             {option}

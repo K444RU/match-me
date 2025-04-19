@@ -452,6 +452,7 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
         <div
           className={cn(
             'border-input focus-within:ring-ring min-h-10 rounded-md border text-base ring-offset-background focus-within:ring-2 focus-within:ring-offset-2 md:text-sm',
+            'bg-transparent dark:bg-input/30',
             {
               'px-3 py-2': selected.length !== 0,
               'cursor-text': !disabled && selected.length !== 0,
@@ -469,8 +470,8 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
                 <Badge
                   key={option.value}
                   className={cn(
-                    'data-[disabled]:bg-muted-foreground data-[disabled]:text-muted data-[disabled]:hover:bg-muted-foreground',
-                    'data-[fixed]:bg-muted-foreground data-[fixed]:text-muted data-[fixed]:hover:bg-muted-foreground',
+                    'data-disabled:bg-muted-foreground data-disabled:text-muted data-disabled:hover:bg-muted-foreground',
+                    'data-fixed:bg-muted-foreground data-fixed:text-muted data-fixed:hover:bg-muted-foreground',
                     badgeClassName
                   )}
                   data-fixed={option.fixed}
@@ -479,7 +480,7 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
                   {option.label}
                   <button
                     className={cn(
-                      'focus:ring-ring ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-offset-2',
+                      'focus:ring-ring ml-1 rounded-full outline-hidden ring-offset-background focus:ring-2 focus:ring-offset-2',
                       (disabled || option.fixed) && 'hidden'
                     )}
                     onKeyDown={(e) => {
@@ -523,7 +524,7 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
               }}
               placeholder={hidePlaceholderWhenSelected && selected.length !== 0 ? '' : placeholder}
               className={cn(
-                'flex-1 bg-transparent outline-none placeholder:text-muted-foreground',
+                'flex-1 bg-transparent outline-hidden placeholder:text-muted-foreground',
                 {
                   'w-full': hidePlaceholderWhenSelected,
                   'px-3 py-2': selected.length === 0,
@@ -555,7 +556,7 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
           {open && (
             <CommandList
               ref={commandListRef}
-              className="animate-in absolute top-1 z-10 max-h-[300px] w-full overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md outline-none"
+              className="animate-in absolute top-1 z-10 max-h-[300px] w-full overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md outline-hidden"
               onMouseLeave={() => setOnScrollbar(false)}
               onMouseEnter={() => setOnScrollbar(true)}
               onMouseUp={() => inputRef?.current?.focus()}

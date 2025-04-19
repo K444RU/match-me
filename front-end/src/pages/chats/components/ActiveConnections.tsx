@@ -119,7 +119,7 @@ export default function ActiveConnections() {
   }, [disconnectConnection]);
 
   return (
-      <div className="space-y-2 p-2 border rounded-md shadow-sm bg-card">
+      <div className="space-y-2 p-2 border rounded-md shadow-xs bg-card">
         <h3 className="text-sm font-semibold text-card-foreground">Active Connections</h3>
         {activeConnections.length === 0 ? (
             <p className="text-sm text-muted-foreground px-1 py-2">No active connections.</p>
@@ -134,17 +134,19 @@ export default function ActiveConnections() {
                         : `User ${connection.userId}`;
 
                 return (
-                    <li key={connection.connectionId} className="flex items-center justify-between p-1 hover:bg-muted/50 rounded-md">
+                    <li key={connection.connectionId} className="flex items-center justify-between p-1 rounded-md">
                 <span className="text-sm text-foreground truncate pr-2" title={displayName}>
                   {displayName}
                 </span>
-                      <button
+                      <Button
                           onClick={() => setDisconnectingConnection({ connectionId: connection.connectionId, displayName })}
-                          className="ml-2 flex-shrink-0 text-xs text-red-600 hover:text-red-800 hover:underline focus:outline-none focus:ring-1 focus:ring-red-500 rounded px-1 py-0.5"
+                          className="text-xs"
+                          size="sm"
                           aria-label={`Disconnect from ${displayName}`}
+                          variant="destructive"
                       >
                         Disconnect
-                      </button>
+                      </Button>
                     </li>
                 );
               })}
@@ -155,7 +157,7 @@ export default function ActiveConnections() {
             <DialogHeader>
               <DialogTitle>Confirm Disconnection</DialogTitle>
               <DialogDescription>
-                Are you sure you want to disconnect from {disconnectingConnection?.displayName}? This action will also remove the connection for {disconnectingConnection?.displayName}.
+                Are you sure you want to disconnect from {disconnectingConnection?.displayName}?<br />This action will also remove the connection for {disconnectingConnection?.displayName}.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
