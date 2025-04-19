@@ -1,7 +1,7 @@
 import { Toaster } from '@/components/ui/sonner';
 import { Outlet } from 'react-router-dom';
 
-const MainLayout = () => {
+export default function MainLayout() {
   return (
     <>
       <Outlet />
@@ -9,5 +9,3 @@ const MainLayout = () => {
     </>
   );
 };
-
-export default MainLayout;
