@@ -10,10 +10,10 @@ import type { UserState } from './userState';
 
 export interface CurrentUserResponseDTO {
   alias?: string;
-  email?: string;
-  firstName?: string;
-  id?: number;
-  lastName?: string;
+  email: string;
+  firstName: string;
+  id: number;
+  lastName: string;
   profileLink?: string;
   profilePicture?: string;
   role?: UserRoleType[];

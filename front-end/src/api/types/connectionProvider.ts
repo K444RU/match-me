@@ -7,6 +7,6 @@
  */
 
 export interface ConnectionProvider {
-  connectionId: number;
-  userId: number;
+  connectionId?: number;
+  userId?: number;
 }
