@@ -58,14 +58,23 @@ test.describe('Full User Registration Flow', () => {
     await page.getByRole('option', { name: 'Animation' }).click();
     await page.getByRole('option', { name: 'Baton twirling' }).click();
     await page.getByText('Hobbies').click();
-    await page.getByLabel('Gender').selectOption('1');
+
+    const genderDropdown = page.getByRole('combobox').filter({ hasText: 'Select Gender' });
+    await genderDropdown.click();
+
+    const maleOption = page.getByRole('option').filter({ has: page.getByText('MALE', { exact: true }) });
+    await maleOption.waitFor({ state: 'visible', timeout: 5000 });
+    await maleOption.click();
 
     await page.getByRole('button', { name: 'Pick a date' }).click();
-    await page.getByLabel('Choose the Year').selectOption('1990');
-    await page.getByLabel('Choose the Month').selectOption('6');
-    await page.getByRole('button', { name: 'Tuesday, July 10th,' }).click();
+    await page.getByRole('button', { name: 'April 2025' }).click();
+    await page.getByRole('button', { name: 'Go to the previous 12 years' }).click();
+    await page.getByRole('button', { name: 'Go to the previous 12 years' }).click();
+    await page.getByRole('button', { name: '1996', exact: true }).click();
+    await page.getByRole('button', { name: 'Monday, January 8th,' }).click();
+    await page.getByLabel('', { exact: true }).press('Escape');
 
-    const cityInput = page.getByRole('textbox', { name: 'First name Last name Alias' });
+    const cityInput = page.getByRole('textbox', { name: 'Enter your city' });
     await cityInput.click();
 
     // Start waiting for the response BEFORE filling the input
@@ -84,16 +93,15 @@ test.describe('Full User Registration Flow', () => {
     await suggestionListItem.click({ timeout: 10000 });
 
     await page.getByRole('button', { name: 'Continue' }).click();
-    await page.getByLabel('Gender Preference').selectOption('2');
-    await page.locator('#distance').fill('160');
 
-    await page.getByRole('spinbutton', { name: 'Min Value' }).click();
-    await page.getByRole('spinbutton', { name: 'Min Value' }).fill('25');
-    await page.getByRole('spinbutton', { name: 'Max Value' }).click();
-    await page.getByRole('spinbutton', { name: 'Max Value' }).fill('30');
+    const genderDropdown2 = page.getByRole('combobox').filter({ hasText: 'Select Gender' });
+    await genderDropdown2.click();
+
+    const femaleOption = page.getByRole('option').filter({ has: page.getByText('FEMALE', { exact: true }) });
+    await femaleOption.waitFor({ state: 'visible', timeout: 5000 });
+    await femaleOption.click();
 
     await expect(page.getByRole('heading', { name: 'Preferences' })).toBeVisible();
-    await expect(page.locator('form')).toContainText('Preferences');
 
     await expect(page.getByRole('button', { name: 'Continue' })).toBeVisible();
     await page.getByRole('button', { name: 'Continue' }).click();
