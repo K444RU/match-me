@@ -5,7 +5,7 @@ const MainLayout = () => {
   return (
     <>
       <Outlet />
-      <Toaster className="bg-black text-white" />
+      <Toaster />
     </>
   );
 };

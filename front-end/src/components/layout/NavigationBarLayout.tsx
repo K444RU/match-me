@@ -7,7 +7,7 @@ const NavigationBarLayout = () => {
       {/* Navbar takes its necessary height */}
       <Navbar className="h-20"/>
       {/* This div wraps the page content and grows to fill remaining space */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
         {' '}
         {/* Prevents this container from scrolling */}
         <Outlet />
