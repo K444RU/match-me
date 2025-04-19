@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { geocodingService } from '../utils/geocoding';
 import { City } from '../types/types';
 import MotionSpinner from '@/components/animations/MotionSpinner';
+import { Button } from '@/components/ui/button';
 
 interface CitySuggestionsProps {
     searchTerm: string;
@@ -9,11 +10,11 @@ interface CitySuggestionsProps {
     visible: boolean;
 }
 
-export const CitySuggestions: React.FC<CitySuggestionsProps> = ({
+export default function CitySuggestions({
     searchTerm,
     onCitySelect,
     visible
-}) => {
+}: CitySuggestionsProps) {
     const [loading, setLoading] = useState(false);
     const [cities, setCities] = useState<City[]>([]);
     const [error, setError] = useState<string | null>(null);
@@ -49,8 +50,8 @@ export const CitySuggestions: React.FC<CitySuggestionsProps> = ({
 
     if (loading) {
         return (
-            <ul className="mt-1 max-h-60 overflow-y-auto rounded-md border border-gray-300 bg-white shadow-lg">
-                <li className="border-b border-gray-100 p-2 text-sm hover:bg-gray-100">
+            <ul className="mt-1 max-h-60 overflow-y-auto rounded-md border bg-card shadow-lg">
+                <li className="border-b border p-2 text-sm">
                     <span className="font-medium">
                         <MotionSpinner />
                     </span>
@@ -61,8 +62,8 @@ export const CitySuggestions: React.FC<CitySuggestionsProps> = ({
 
     if (error) {
         return (
-            <ul className="mt-1 max-h-60 overflow-y-auto rounded-md border border-gray-300 bg-white shadow-lg">
-                <li className="border-b border-gray-100 p-2 text-sm hover:bg-gray-100">
+            <ul className="mt-1 max-h-60 overflow-y-auto rounded-md border bg-card shadow-lg">
+                <li className="border-b p-2 text-sm">
                     <span className="font-medium text-red-500">{error}</span>
                 </li>
             </ul>
@@ -71,8 +72,8 @@ export const CitySuggestions: React.FC<CitySuggestionsProps> = ({
 
     if (cities.length === 0 && searchTerm.length > 2) {
         return (
-            <ul className="mt-1 max-h-60 overflow-y-auto rounded-md border border-gray-300 bg-white shadow-lg">
-                <li className="border-b border-gray-100 p-2 text-sm hover:bg-gray-100">
+            <ul className="mt-1 max-h-60 overflow-y-auto rounded-md border bg-card shadow-lg">
+                <li className="border-b p-2 text-sm">
                     <span className="font-medium">No cities found.</span>
                 </li>
             </ul>
@@ -80,19 +81,29 @@ export const CitySuggestions: React.FC<CitySuggestionsProps> = ({
     }
 
     return cities.length > 0 ? (
-        <ul className="mt-1 max-h-60 overflow-y-auto rounded-md border border-gray-300 bg-white shadow-lg">
-            {cities.map((city, index) => (
-                <li
+        <ul className="mt-1 max-h-60 overflow-y-auto rounded-md border bg-card shadow-lg">
+            {cities.map((city, index) => {
+                // Round the first item top, last item bottom
+                const rounded = index === 0 ? "rounded-t-md" : index === cities.length - 1 ? "rounded-b-md" : "";
+                // All but last list item has a border-b
+                const border = index === cities.length - 1 ? "" : "border-b";
+
+                return (<li
                     key={index}
-                    className="cursor-pointer border-b border-gray-100 p-2 text-sm hover:bg-gray-100"
-                    onClick={() => onCitySelect(city)}
-                >
+                    className={`${border} text-sm`}
+                    >
+                    <Button
+                        variant="ghost"
+                        className={`w-full justify-start p-2 rounded-none ${rounded}`}
+                        onClick={() => onCitySelect(city)}
+                    >
                     <span className="font-medium">{city.name}</span>
-                    <span className="ml-2 text-xs text-gray-500">
+                    <span className="ml-2 text-xs text-muted-foreground">
                         {city.country}
                     </span>
+                    </Button>
                 </li>
-            ))}
+            )})}
         </ul>
     ) : null;
 };
