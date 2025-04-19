@@ -3,6 +3,7 @@ package com.matchme.srv.mapper.user;
 import com.matchme.srv.dto.response.BiographicalResponseDTO;
 import com.matchme.srv.dto.response.CurrentUserResponseDTO;
 import com.matchme.srv.dto.response.GenderTypeDTO;
+import com.matchme.srv.dto.response.HobbyResponseDTO;
 import com.matchme.srv.dto.response.ProfileResponseDTO;
 import com.matchme.srv.dto.response.SettingsResponseDTO;
 import com.matchme.srv.dto.response.UserParametersResponseDTO;
@@ -91,9 +92,10 @@ public class UserDTOMapper {
 
     public ProfileResponseDTO toProfileResponseDTO(UserProfile profile) {
         return ProfileResponseDTO.builder()
-                .first_name(profile.getFirst_name())
-                .last_name(profile.getLast_name())
+                .firstName(profile.getFirst_name())
+                .lastName(profile.getLast_name())
                 .city(profile.getCity())
+                .hobbies(profile.getHobbies().stream().map(hobby -> HobbyResponseDTO.builder().id(hobby.getId()).name(hobby.getName()).build()).collect(Collectors.toSet()))
                 .build();
     }
 }
