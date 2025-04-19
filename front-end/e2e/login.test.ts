@@ -25,7 +25,7 @@ test.describe('User Login', () => {
     await page.getByRole('button', { name: 'Submit form.' }).click();
     await expect(page).toHaveURL('http://localhost:3000/chats');
 
-    await page.getByRole('button', { name: 'John John Doe johnny' }).click();
+    await page.getByRole('button', { name: 'J John Doe johnny' }).click();
     await page.getByRole('menuitem', { name: 'Log out' }).click();
 
     await expect(page).toHaveURL('http://localhost:3000/login');
