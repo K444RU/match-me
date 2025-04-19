@@ -3,19 +3,19 @@ import { Login } from '@/features/authentication';
 import { useAuth } from '@/features/authentication';
 import { Link } from 'react-router-dom';
 
-const Hero = ({ onLearnMore }: { onLearnMore: () => void }) => {
+export default function Hero({ onLearnMore }: { onLearnMore: () => void }) {
     const { user } = useAuth();
     return (
-        <section className="bg-background h-screen">
+        <section className="h-[calc(100vh-80px)]">
             <div className="max-w-8xl mx-auto flex h-full flex-col items-center justify-center gap-4 px-4 py-16 text-center sm:px-6 lg:px-8">
-                <h1 className="text-text font-extrabold sm:text-5xl lg:text-8xl">
+                <h1 className="font-extrabold text-3xl sm:text-4xl lg:text-8xl tracking-tight ">
                     The{' '}
                     <span className="text-accent underline">
                         data-driven
                     </span>{' '}
                     solution to endless swiping
                 </h1>
-                <p className="max-w-7xl text-4xl font-light tracking-tight">
+                <p className="max-w-2xl text-lg font-light leading-8">
                     Get connections with people that actually match your
                     interests. One flat rate for everyone - no premium tiers, no
                     pay-to-date schemes.
@@ -42,5 +42,3 @@ const Hero = ({ onLearnMore }: { onLearnMore: () => void }) => {
         </section>
     );
 };
-
-export default Hero;
