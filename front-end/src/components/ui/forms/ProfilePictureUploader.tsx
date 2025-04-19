@@ -1,14 +1,15 @@
 import { userService } from '@/features/user';
-import OneHandleSlider from '@ui/forms/OneHandleSlider.tsx';
 import React, { useRef, useState } from 'react';
 import ReactAvatarEditor from 'react-avatar-editor';
+import { Button } from '../button';
+import { Slider } from '../slider';
 
 interface ProfilePictureUploaderProps {
-  currentImage: string | null;
+  currentImage?: string | null;
   onUploadSuccess?: () => void;
 }
 
-const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ currentImage, onUploadSuccess }) => {
+export default function ProfilePictureUploader({ currentImage, onUploadSuccess }: ProfilePictureUploaderProps) {
   const [image, setImage] = useState<File | string | null>(null);
   const [scale, setScale] = useState<number | null>(1);
   const [position, setPosition] = useState<{ x: number; y: number }>({
@@ -67,12 +68,12 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ current
   };
 
   return (
-    <div className="flex items-center gap-6 rounded-lg bg-gray-100 p-6 shadow-md">
+    <div className="flex items-center gap-6 rounded-lg bg-card border p-6 shadow-md">
       {/* Left: Image Preview */}
       <div className="flex flex-col items-center">
         {image ? (
           <div className="flex flex-col items-center">
-            <div className="flex size-48 items-center justify-center rounded-lg bg-gray-200">
+            <div className="flex size-48 items-center justify-center rounded-lg">
               <ReactAvatarEditor
                 ref={editorRef}
                 image={image}
@@ -87,23 +88,20 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ current
               />
             </div>
             <div className="mt-2 w-full">
-              <OneHandleSlider
-                name="zoom"
-                label="Zoom"
+              <Slider
                 min={1}
                 max={2}
                 step={0.1}
-                value={scale}
-                onChange={setScale}
+                value={[scale ?? 1]}
+                onValueChange={(value) => setScale(value[0])}
                 className="w-full"
-                showInputField={false}
               />
             </div>
           </div>
         ) : currentImage ? (
           <img src={currentImage} alt="Profile Picture" className="size-48 rounded-lg object-cover" />
         ) : (
-          <div className="flex h-24 w-36 items-center justify-center rounded-lg bg-gray-200 text-sm text-gray-500">
+          <div className="flex h-24 w-36 items-center justify-center rounded-lg text-sm bg-foreground/5">
             No image selected
           </div>
         )}
@@ -112,43 +110,38 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({ current
       {/* Right: Buttons */}
       <div className="flex flex-col items-center justify-center gap-4">
         {image ? (
-          <button
+          <Button
             type="button"
             onClick={handleSubmit}
-            className="flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
           >
             Upload
-          </button>
+          </Button>
         ) : currentImage ? (
           <>
-            <button
+            <Button
               type="button"
               onClick={handleRemove}
-              className="flex w-full items-center justify-center gap-2 self-start rounded-md bg-red-500 px-5 py-2 font-semibold tracking-wide text-white transition-colors hover:bg-red-600"
+              variant="destructive"
             >
               Remove
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
             >
               Change
-            </button>
+            </Button>
           </>
         ) : (
-          <button
+          <Button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
           >
             Choose File
-          </button>
+          </Button>
         )}
         <input ref={fileInputRef} type="file" onChange={handleNewImage} accept="image/*" className="hidden" />
       </div>
     </div>
   );
 };
-
-export default ProfilePictureUploader;
