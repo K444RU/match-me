@@ -21,22 +21,25 @@ public interface MatchingRepository extends JpaRepository<DatingPool, Long> {
     Optional<DatingPool> findById(Long profileId);
 
     /**
-     * Finds potential matches based on specified matching parameters.
-     * The query filters users based on:
-     * <ul>
-     * <li>Gender preferences (mutual compatibility)</li>
-     * <li>Age range preferences (mutual compatibility)</li>
-     * <li>Geographic location (using geohash matching)</li>
-     * </ul>
+     * Finds potential matches based on mutual compatibility criteria, including gender preferences,
+     * age ranges, and geographic proximity.
+     *
+     * This query ensures that:
+     * - The matched users' gender matches the requesting user's preference (`lookingForGender`).
+     * - The matched users are looking for the requesting user's gender (`gender`).
+     * - Both users' ages fall within each other's preferred age ranges.
+     * - The matched users are located within the specified geohash prefixes (derived from the user's radius preference).
+     * - The requesting user's location is within the matched users' acceptable geohash areas.
+     *
+     * The use of 3-character geohash prefixes via precision balances performance
+     * and accuracy by pre-filtering users in broad geographic areas before precise distance calculations.
      *
      * @param gender           The gender identifier being searched for
-     * @param lookingForGender The gender identifier that should be looking for the
-     *                         user's gender
+     * @param lookingForGender The gender identifier that should be looking for the user's gender
      * @param userAge          The age of the user searching for matches
      * @param minAge           The minimum age preference set by the user
      * @param maxAge           The maximum age preference set by the user
-     * @param locations        Set of geohash areas within the user's preferred
-     *                         distance
+     * @param locations        Set of geohash areas within the user's preferred distance
      * @param userLocation     The user's current geohash location
      * @param precision        The precision of the geohash
      * @return List of dating pool entries matching the specified criteria

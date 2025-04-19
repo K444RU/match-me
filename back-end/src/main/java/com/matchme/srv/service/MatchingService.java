@@ -12,6 +12,7 @@ import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
 import com.matchme.srv.repository.MatchingRepository;
 import com.matchme.srv.repository.UserProfileRepository;
+import com.matchme.srv.util.LocationUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -35,28 +36,17 @@ import java.util.stream.Collectors;
 public class MatchingService {
 
   /**
-   * Minimum probability threshold for considering a match.
-   * Matches below this threshold are filtered out.
+   * Matching algorithm constants:
+   * - MINIMUM_PROBABILITY: Minimum probability threshold for considering a match (below this are filtered out)
+   * - MAXIMUM_PROBABILITY: Maximum probability threshold to prevent overmatching
+   * - DEFAULT_MAX_RESULTS: Maximum number of matches to return in a single request
+   * - SCALING_FACTOR: Affects how much ELO score differences impact match probability
+   * - USER_PROFILE_NOT_FOUND_MESSAGE: Error message for missing user profiles
    */
   private static final double MINIMUM_PROBABILITY = 0.3;
-
-  /**
-   * Maximum number of matches to return in a single request.
-   */
   private static final int DEFAULT_MAX_RESULTS = 10;
-
-  /**
-   * Scaling factor for ELO probability calculation.
-   * Affects how much score differences impact match probability.
-   */
   private static final double SCALING_FACTOR = 1071.0;
-
-  /**
-   * Maximum probability threshold for considering a match.
-   * Matches above this threshold are filtered out to prevent overmatching.
-   */
   private static final double MAXIMUM_PROBABILITY = 0.91;
-
   private static final String USER_PROFILE_NOT_FOUND_MESSAGE = "UserProfile for user ";
 
   private final MatchingRepository matchingRepository;
@@ -64,99 +54,33 @@ public class MatchingService {
   private final ConnectionService connectionService;
 
   /**
-   * Retrieves and constructs detailed recommendation profiles for potential
-   * matches.
-   * This method combines the matching algorithm results with user profiles to
-   * create
-   * a set of 10 recommendations. The process involves:
+   * Retrieves and constructs detailed recommendation profiles for potential matches.
+   * This method combines the matching algorithm results with user profiles to create a set of 10 recommendations.
+   * The process involves:
    * 1. Retrieving the requesting user's profile and location
    * 2. Getting potential matches using the matching algorithm
    * 3. Enriching each match with detailed profile information.
-   * 
    * @param userId The ID of the user requesting recommendations
    * @return MatchingRecommendationsDTO containing a list of recommended users
-   *         with their complete profiles
-   * @throws ResourceNotFoundException         if the requesting user's profile or
-   *                                           any matched user's profile is not
-   *                                           found
-   * @throws PotentialMatchesNotFoundException if no potential matches for the
-   *                                           user are not found
+   * @throws ResourceNotFoundException if user profiles are not found
+   * @throws PotentialMatchesNotFoundException if no potential matches are found
    */
   public MatchingRecommendationsDTO getRecommendations(Long userId) {
-
     try {
       UserProfile myProfile = userProfileRepository.findById(userId)
-          .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + userId.toString()));
+              .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + userId));
 
       Long profileId = myProfile.getId();
       List<Double> myLocation = myProfile.getAttributes().getLocation();
       Map<Long, Double> possibleMatches = getPossibleMatches(profileId);
-
       ConnectionsDTO connections = connectionService.getConnections(profileId);
 
       Map<Long, String> connectionStatus = new HashMap<>();
       Map<Long, Long> connectionIds = new HashMap<>();
-
-      for (ConnectionProvider cp : connections.getActive()) {
-        connectionStatus.put(cp.getUserId(), "ACCEPTED");
-        connectionIds.put(cp.getUserId(), cp.getConnectionId());
-      }
-      for (ConnectionProvider cp : connections.getPendingOutgoing()) {
-        connectionStatus.put(cp.getUserId(), "PENDING_SENT");
-        connectionIds.put(cp.getUserId(), cp.getConnectionId());
-      }
-      for (ConnectionProvider cp : connections.getPendingIncoming()) {
-        connectionStatus.put(cp.getUserId(), "PENDING_RECEIVED");
-        connectionIds.put(cp.getUserId(), cp.getConnectionId());
-      }
+      populateConnectionMaps(connections, connectionStatus, connectionIds);
 
       MatchingRecommendationsDTO response = new MatchingRecommendationsDTO();
-      List<RecommendedUserDTO> recommendations = new ArrayList<>();
-
-      for (Map.Entry<Long, Double> match : possibleMatches.entrySet()) {
-        Long matchUserId = match.getKey();
-        Double matchScore = match.getValue();
-
-        UserProfile profile = userProfileRepository.findById(matchUserId)
-            .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + matchUserId.toString()));
-
-        if (profile == null) {
-          throw new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + matchUserId.toString());
-        }
-
-        String base64Picture = null;
-        if (profile != null
-            && profile.getProfilePicture() != null
-            && profile.getProfilePicture().length > 0) {
-          base64Picture = "data:image/png;base64,"
-              + Base64.getEncoder().encodeToString(profile.getProfilePicture());
-        }
-
-        UserAttributes attributes = profile != null ? profile.getAttributes() : null;
-        if (attributes == null) {
-            throw new ResourceNotFoundException("User attributes not found for profile ID: " + matchUserId);
-        }
-
-        RecommendedUserDTO dto = new RecommendedUserDTO();
-        dto.setUserId(matchUserId);
-        dto.setFirstName(profile.getFirst_name());
-        dto.setLastName(profile.getLast_name());
-        dto.setProfilePicture(base64Picture);
-        dto.setHobbies(convertHobbiesToStrings(profile.getHobbies()));
-        dto.setAge(getAgeFromBirthDate(attributes.getBirthdate()));
-        dto.setGender(attributes.getGender().toString());
-        dto.setDistance(calculateDistance(myLocation, attributes.getLocation()));
-        dto.setProbability(matchScore);
-
-        String status = connectionStatus.getOrDefault(matchUserId, "NONE");
-        dto.setConnectionStatus(status);
-        if (!"NONE".equals(status)) {
-          dto.setConnectionId(connectionIds.get(matchUserId));
-        }
-
-        recommendations.add(dto);
-      }
-
+      List<RecommendedUserDTO> recommendations = buildRecommendations(possibleMatches, myLocation, connectionStatus, connectionIds);
       response.setRecommendations(recommendations);
       return response;
     } catch (PotentialMatchesNotFoundException e) {
@@ -166,40 +90,121 @@ public class MatchingService {
   }
 
   /**
-   * Calculates the distance between two geographic coordinates using the
-   * Haversine formula.
-   * The formula determines the shortest distance over the earth's surface between
-   * two points,
-   * giving an 'as-the-crow-flies' distance between the points.
-   *
-   * @param myLocation    A List containing [latitude, longitude] of the user.
-   * @param matchLocation A List containing [latitude, longitude] of the potential
-   *                      match.
-   * @return The distance between the two points in kilometers, rounded to the
-   *         nearest integer.
-   * @throws IndexOutOfBoundsException if either location List contains fewer than
-   *                                   2 elements
-   * @throws IllegalArgumentException  if coordinates are outside valid ranges
-   *                                   (latitude: -90 to 90, longitude: -180 to
-   *                                   180)
+   * Helper method for getRecommendations that populates connection status and ID maps from ConnectionsDTO.
+   * @param connections DTO containing connection information
+   * @param connectionStatus Map to store user ID to connection status
+   * @param connectionIds Map to store user ID to connection ID
+   */
+  private void populateConnectionMaps(ConnectionsDTO connections, Map<Long, String> connectionStatus, Map<Long, Long> connectionIds) {
+    for (ConnectionProvider cp : connections.getActive()) {
+      connectionStatus.put(cp.getUserId(), "ACCEPTED");
+      connectionIds.put(cp.getUserId(), cp.getConnectionId());
+    }
+    for (ConnectionProvider cp : connections.getPendingOutgoing()) {
+      connectionStatus.put(cp.getUserId(), "PENDING_SENT");
+      connectionIds.put(cp.getUserId(), cp.getConnectionId());
+    }
+    for (ConnectionProvider cp : connections.getPendingIncoming()) {
+      connectionStatus.put(cp.getUserId(), "PENDING_RECEIVED");
+      connectionIds.put(cp.getUserId(), cp.getConnectionId());
+    }
+  }
+
+  /**
+   * Helper method for getRecommendations that builds list of RecommendedUserDTOs from match data.
+   * @param possibleMatches Map of user IDs to match probabilities
+   * @param myLocation User's location for distance calculation
+   * @param connectionStatus Map of user IDs to connection status
+   * @param connectionIds Map of user IDs to connection IDs
+   * @return List of populated RecommendedUserDTOs
+   */
+  private List<RecommendedUserDTO> buildRecommendations(Map<Long, Double> possibleMatches, List<Double> myLocation, Map<Long, String> connectionStatus, Map<Long, Long> connectionIds) {
+    List<RecommendedUserDTO> recommendations = new ArrayList<>();
+
+    List<UserProfile> profiles = userProfileRepository.findAllById(possibleMatches.keySet());
+    Map<Long, UserProfile> profileMap = profiles.stream()
+            .collect(Collectors.toMap(UserProfile::getId, p -> p));
+
+    for (Map.Entry<Long, Double> match : possibleMatches.entrySet()) {
+      Long matchUserId = match.getKey();
+      Double matchScore = match.getValue();
+
+      UserProfile profile = profileMap.get(matchUserId);
+      if (profile == null) {
+        throw new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + matchUserId);
+      }
+
+      RecommendedUserDTO dto = createRecommendedUserDTO(profile, matchScore, myLocation);
+      setConnectionInfo(dto, matchUserId, connectionStatus, connectionIds);
+      recommendations.add(dto);
+    }
+
+    return recommendations;
+  }
+
+  /**
+   * Helper method for getRecommendations that sets connection status and ID on the RecommendedUserDTO.
+   * @param dto RecommendedUserDTO to update
+   * @param matchUserId ID of the matched user
+   * @param connectionStatus Map of user IDs to connection status
+   * @param connectionIds Map of user IDs to connection IDs
+   */
+  private void setConnectionInfo(RecommendedUserDTO dto, Long matchUserId, Map<Long, String> connectionStatus, Map<Long, Long> connectionIds) {
+    String status = connectionStatus.getOrDefault(matchUserId, "NONE");
+    dto.setConnectionStatus(status);
+    if (!"NONE".equals(status)) {
+      dto.setConnectionId(connectionIds.get(matchUserId));
+    }
+  }
+
+  /**
+   * Helper method for getRecommendations that creates a RecommendedUserDTO from profile data and match score.
+   * @param profile UserProfile of the matched user
+   * @param matchScore Probability score of the match
+   * @param myLocation User's location for distance calculation
+   * @return Populated RecommendedUserDTO
+   */
+  private RecommendedUserDTO createRecommendedUserDTO(UserProfile profile, Double matchScore, List<Double> myLocation) {
+    String base64Picture = null;
+    if (profile.getProfilePicture() != null && profile.getProfilePicture().length > 0) {
+      base64Picture = "data:image/png;base64," + Base64.getEncoder().encodeToString(profile.getProfilePicture());
+    }
+
+    UserAttributes attributes = profile.getAttributes();
+    if (attributes == null) {
+      throw new ResourceNotFoundException("User attributes not found for profile ID: " + profile.getId());
+    }
+
+    RecommendedUserDTO dto = new RecommendedUserDTO();
+    dto.setUserId(profile.getId());
+    dto.setFirstName(profile.getFirst_name());
+    dto.setLastName(profile.getLast_name());
+    dto.setProfilePicture(base64Picture);
+    dto.setHobbies(convertHobbiesToStrings(profile.getHobbies()));
+    dto.setAge(getAgeFromBirthDate(attributes.getBirthdate()));
+    dto.setGender(attributes.getGender().toString());
+    dto.setDistance(calculateDistance(myLocation, attributes.getLocation()));
+    dto.setProbability(matchScore);
+
+    return dto;
+  }
+
+  /**
+   * Calculates the distance between two geographic coordinates using the Haversine formula.
+   * @param myLocation User's coordinates [latitude, longitude]
+   * @param matchLocation Match's coordinates [latitude, longitude]
+   * @return Distance in kilometers, rounded to nearest integer
    */
   private Integer calculateDistance(List<Double> myLocation, List<Double> matchLocation) {
-    final double EARTH_RADIUS = 6371; // Radius of Earth in kilometers
-
-    double lat1 = Math.toRadians(myLocation.get(0));
-    double lon1 = Math.toRadians(myLocation.get(1));
-    double lat2 = Math.toRadians(matchLocation.get(0));
-    double lon2 = Math.toRadians(matchLocation.get(1));
-
-    double dLat = lat2 - lat1;
-    double dLon = lon2 - lon1;
-
-    double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1) * Math.cos(lat2) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    return (int) (EARTH_RADIUS * c);
+    if (myLocation.size() < 2 || matchLocation.size() < 2) {
+      throw new IllegalArgumentException("Location lists must contain at least latitude and longitude");
+    }
+    double lat1 = myLocation.get(0);
+    double lon1 = myLocation.get(1);
+    double lat2 = matchLocation.get(0);
+    double lon2 = matchLocation.get(1);
+    double distance = LocationUtils.calculateDistance(lat1, lon1, lat2, lon2);
+    return (int) Math.round(distance);
   }
 
   private Set<String> convertHobbiesToStrings(Set<Hobby> hobbies) {
@@ -209,45 +214,38 @@ public class MatchingService {
   }
 
   /**
-   * Calculates the current age of a user based on their birth date.
-   *
-   * @param birthdate The user's date of birth
-   * @return The calculated age in years
+   * Calculates the current age of a user based on their birthdate.
+   * @param birthdate User's date of birth
+   * @return Calculated age in years
    */
   private Integer getAgeFromBirthDate(LocalDate birthdate) {
     return Period.between(birthdate, LocalDate.now()).getYears();
   }
 
   /**
-   * Retrieves potential matches for a user based on their preferences and
-   * attributes.
-   * The matching process involves:
-   * 1. Retrieving the user's dating pool entry
-   * 2. Finding users that match basic criteria (gender, age, location)
-   * 3. Calculating match probability based on ELO scores and mutual interests
-   * 4. Filtering and sorting matches by probability
-   *
+   * Retrieves potential matches for a user based on their preferences and attributes.
    * @param profileId User ID to find matches for
-   * @return Map of user IDs to match probability scores, sorted by probability in
-   *         descending order. Returns an empty map if no suitable matches are found.
-   * @throws ResourceNotFoundException         if the user is not found
+   * @return Map of user IDs to match probability scores, sorted by probability
+   * @throws ResourceNotFoundException if the user is not found
    */
   public Map<Long, Double> getPossibleMatches(Long profileId) {
-
-    // get the users datingPool entry
     DatingPool entry = matchingRepository.findById(profileId)
-        .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + profileId.toString()));
+        .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + profileId));
 
-    // find users that match parameters
-    List<DatingPool> possibleMatches = matchingRepository.findUsersThatMatchParameters(entry.getLookingForGender(),
-        entry.getMyGender(), entry.getMyAge(), entry.getAgeMin(), entry.getAgeMax(),
-        entry.getSuitableGeoHashes(), entry.getMyLocation(), 3);
+    List<DatingPool> possibleMatches = matchingRepository.findUsersThatMatchParameters(
+            entry.getLookingForGender(),
+            entry.getMyGender(),
+            entry.getMyAge(),
+            entry.getAgeMin(),
+            entry.getAgeMax(),
+            entry.getSuitableGeoHashes(),
+            entry.getMyLocation(),
+            3);
 
     if (possibleMatches.isEmpty()) {
-      // Return empty map if initial query yields no results
       return new LinkedHashMap<>();
     }
-    // Calculate match probability, filter and sort
+
     return possibleMatches.stream()
         .map(pool -> Map.entry(pool.getProfileId(),
             calculateProbability(entry.getActualScore(), entry.getHobbyIds(), pool)))
@@ -263,30 +261,27 @@ public class MatchingService {
   }
 
   /**
-   * Calculates the match probability between two users based on their ELO scores
-   * and mutual interests.
+   * Calculates the match probability between two users based on their ELO scores and mutual interests.
    * The calculation combines:
    * - Base probability using ELO formula: P(A) = 1 / (1 + 10^((RB - RA)/1071))
    * - Hobby similarity bonus using logarithmic scaling
-   *
-   * @param userScore The ELO score of the requesting user
-   * @param hobbies   Set of hobby IDs for the requesting user
-   * @param entry     Dating pool entry of the potential match
-   * @return Calculated match probability between 0.0 and 1.0
+   * @param userScore User's ELO score
+   * @param hobbies User's hobby IDs
+   * @param entry Dating pool entry of potential match
+   * @return Match probability between 0.0 and 1.0
    */
   private Double calculateProbability(Integer userScore, Set<Long> hobbies, DatingPool entry) {
     Double probability = 1.0 / (1.0 + Math.pow(10, (userScore - entry.getActualScore()) / SCALING_FACTOR));
 
-    int mutualhobbies = 0;
-
+    int mutualHobbies = 0;
     for (Long hobby : hobbies) {
       if (entry.getHobbyIds().contains(hobby)) {
-        mutualhobbies++;
+        mutualHobbies++;
       }
     }
 
-    if (mutualhobbies != 0) {
-      probability += (0.2 * (Math.log((double) mutualhobbies + 1) / Math.log((double) hobbies.size() + 1)));
+    if (mutualHobbies != 0) {
+      probability += (0.2 * (Math.log((double) mutualHobbies + 1) / Math.log((double) hobbies.size() + 1)));
     }
 
     return probability;
