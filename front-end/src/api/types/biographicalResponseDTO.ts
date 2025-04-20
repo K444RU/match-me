@@ -5,11 +5,11 @@
  * kood/Jõhvi match-me task API
  * OpenAPI spec version: v0.0.1
  */
-import type { GenderTypeDTO } from './genderTypeDTO';
+import type { UserGenderEnum } from './userGenderEnum';
 
 export interface BiographicalResponseDTO {
-  gender_self?: GenderTypeDTO;
-  gender_other?: GenderTypeDTO;
+  gender_self?: UserGenderEnum;
+  gender_other?: UserGenderEnum;
   hobbies?: number[];
   age_self?: number;
   age_min?: number;

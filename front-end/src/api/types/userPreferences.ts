@@ -6,13 +6,13 @@
  * OpenAPI spec version: v0.0.1
  */
 import type { PreferenceChange } from './preferenceChange';
-import type { UserGenderType } from './userGenderType';
+import type { UserGenderEnum } from './userGenderEnum';
 import type { UserProfile } from './userProfile';
 
 export interface UserPreferences {
   id?: number;
   userProfile?: UserProfile;
-  gender?: UserGenderType;
+  gender?: UserGenderEnum;
   ageMin?: number;
   ageMax?: number;
   distance?: number;

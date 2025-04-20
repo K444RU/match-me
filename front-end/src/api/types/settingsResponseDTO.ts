@@ -5,6 +5,7 @@
  * kood/Jõhvi match-me task API
  * OpenAPI spec version: v0.0.1
  */
+import type { UserGenderEnum } from './userGenderEnum';
 
 export interface SettingsResponseDTO {
   email?: string;
@@ -13,12 +14,12 @@ export interface SettingsResponseDTO {
   lastName?: string;
   alias?: string;
   hobbies?: number[];
-  genderSelf?: number;
+  genderSelf?: UserGenderEnum;
   birthDate?: string;
   city?: string;
   longitude?: number;
   latitude?: number;
-  genderOther?: number;
+  genderOther?: UserGenderEnum;
   ageMin?: number;
   ageMax?: number;
   distance?: number;

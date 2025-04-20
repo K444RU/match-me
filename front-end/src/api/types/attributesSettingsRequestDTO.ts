@@ -5,10 +5,10 @@
  * kood/Jõhvi match-me task API
  * OpenAPI spec version: v0.0.1
  */
+import type { UserGenderEnum } from './userGenderEnum';
 
 export interface AttributesSettingsRequestDTO {
-  /** @minimum 1 */
-  gender_self: number;
+  gender_self: UserGenderEnum;
   birth_date: string;
   /**
    * @minLength 2
