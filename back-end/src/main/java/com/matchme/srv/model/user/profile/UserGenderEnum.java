@@ -8,5 +8,4 @@ public enum UserGenderEnum {
   MALE,
   FEMALE,
   OTHER,
-  EVERYBODY
 }
