@@ -21,6 +21,8 @@ const accountSchema = z.object({
   number: z.string().refine(isValidPhoneNumber, { message: 'Invalid phone number' }),
 });
 
+type AccountFormData = z.infer<typeof accountSchema>;
+
 const UserAccountCard = () => {
   const settingsContext = useContext(SettingsContext);
   const [loading, setLoading] = useState(false);
@@ -28,7 +30,7 @@ const UserAccountCard = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  const form = useForm<z.infer<typeof accountSchema>>({
+  const form = useForm<AccountFormData>({
     resolver: zodResolver(accountSchema),
     defaultValues: {
       email: '',
@@ -50,7 +52,7 @@ const UserAccountCard = () => {
     }
   }, [settingsContext?.settings, form.reset]);
 
-  const onSubmit = async (values: z.infer<typeof accountSchema>) => {
+  const onSubmit = async (values: AccountFormData) => {
     if (!settingsContext?.settings) return;
 
     setLoading(true);

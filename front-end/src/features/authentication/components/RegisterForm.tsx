@@ -7,8 +7,7 @@ import MotionSpinner from '@animations/MotionSpinner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { isValidPhoneNumber, parsePhoneNumber, Value } from 'react-phone-number-input';
-import { useNavigate } from 'react-router-dom';
+import { isValidPhoneNumber } from 'react-phone-number-input';
 import { z } from 'zod';
 import FormResponse from './FormResponse';
 
@@ -18,15 +17,15 @@ const registerSchema = z.object({
   number: z.string().refine(isValidPhoneNumber, { message: 'Invalid phone number' }),
 });
 
+type RegisterFormData = z.infer<typeof registerSchema>;
+
 export default function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const [resTitle, setResTitle] = useState('');
   const [resSubtitle, setResSubtitle] = useState('');
   const [resState, setResState] = useState<'error' | 'success'>('error');
 
-  const navigate = useNavigate();
-
-  const form = useForm<z.infer<typeof registerSchema>>({
+  const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       email: '',
@@ -35,7 +34,7 @@ export default function RegisterForm() {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof registerSchema>) => {
+  const onSubmit = async (values: RegisterFormData) => {
     setLoading(true);
     setResTitle('');
     setResSubtitle('');

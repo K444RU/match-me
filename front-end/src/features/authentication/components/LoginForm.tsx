@@ -23,13 +23,15 @@ const loginSchema = z.object({
   password: z.string().min(6, { message: 'Password must contain at least 6 characters.' }),
 });
 
+type LoginFormData = z.infer<typeof loginSchema>;
+
 export default function LoginForm() {
   const { login, isLoading } = useAuth();
 
   const [resTitle, setResTitle] = useState('');
   const [resSubtitle, setResSubtitle] = useState('');
 
-  const form = useForm<z.infer<typeof loginSchema>>({ resolver: zodResolver(loginSchema) });
+  const form = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
 
   const handleTestUser = (email: string, password: string) => {
     form.setValue('email', email);
@@ -38,7 +40,7 @@ export default function LoginForm() {
     setResSubtitle('');
   };
 
-  const onSubmit = async (values: z.infer<typeof loginSchema>) => {
+  const onSubmit = async (values: LoginFormData) => {
     setResTitle('');
     setResSubtitle('');
 
