@@ -23,7 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.matchme.srv.exception.PotentialMatchesNotFoundException;
 import com.matchme.srv.exception.ResourceNotFoundException;
 import com.matchme.srv.model.connection.DatingPool;
-
+import com.matchme.srv.model.user.profile.UserGenderEnum;
 import com.matchme.srv.repository.MatchingRepository;
 import com.matchme.srv.repository.UserProfileRepository;
 
@@ -76,8 +76,8 @@ class MatchingServiceTests {
   @Test
   void findUsersThatMatchParameters_ShouldReturnOnlyUsersMatchingAllCriteria() {
     // Arrange
-    Long lookingForGender = 2L; // Looking for female
-    Long myGender = 1L; // I am male
+    UserGenderEnum lookingForGender = UserGenderEnum.FEMALE; // Looking for female
+    UserGenderEnum myGender = UserGenderEnum.MALE; // I am male
     Integer myAge = 25;
     Integer ageMin = 21;
     Integer ageMax = 30;
@@ -92,7 +92,7 @@ class MatchingServiceTests {
     matchingUser.setMyLocation("u11def"); // Location within our suitable geohashes
 
     DatingPool nonMatchingGenderUser = createTestDatingPool(3L);
-    nonMatchingGenderUser.setMyGender(1L); // This user is male (not what we're looking for)
+    nonMatchingGenderUser.setMyGender(UserGenderEnum.MALE); // This user is male (not what we're looking for)
     nonMatchingGenderUser.setMyLocation("u10abc");
 
     DatingPool nonMatchingAgeUser = createTestDatingPool(4L);
@@ -147,15 +147,16 @@ class MatchingServiceTests {
 
     // Create a potential match with no mutual hobbies
     DatingPool matchWithoutMutualHobbies = createTestDatingPool(3L);
-    matchWithoutMutualHobbies.setMyGender(2L); // Female
-    matchWithoutMutualHobbies.setLookingForGender(1L); // Looking for male
+    matchWithoutMutualHobbies.setMyGender(UserGenderEnum.FEMALE); // Female
+    matchWithoutMutualHobbies.setLookingForGender(UserGenderEnum.MALE); // Looking for male
     matchWithoutMutualHobbies.setActualScore(1600); // Different score from test user's 1500
     matchWithoutMutualHobbies.setHobbyIds(new HashSet<>(Arrays.asList(3L, 4L))); // No overlap with test user's hobbies
                                                                                  // (1L, 2L)
 
     List<DatingPool> potentialMatches = Collections.singletonList(matchWithoutMutualHobbies);
 
-    when(matchingRepository.findUsersThatMatchParameters(anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
+    when(matchingRepository.findUsersThatMatchParameters(
+        eq(UserGenderEnum.FEMALE), eq(UserGenderEnum.MALE), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
         .thenReturn(potentialMatches);
 
     // Act
@@ -206,14 +207,15 @@ class MatchingServiceTests {
 
     // Create a potential match with mutual hobbies
     DatingPool matchWithMutualHobbies = createTestDatingPool(3L);
-    matchWithMutualHobbies.setMyGender(2L); // Female
-    matchWithMutualHobbies.setLookingForGender(1L); // Looking for male
+    matchWithMutualHobbies.setMyGender(UserGenderEnum.FEMALE); // Female
+    matchWithMutualHobbies.setLookingForGender(UserGenderEnum.MALE); // Looking for male
     matchWithMutualHobbies.setActualScore(1600); // Different score from test user's 1500
     matchWithMutualHobbies.setHobbyIds(new HashSet<>(Arrays.asList(1L, 2L, 3L))); // 2 shared hobbies (1L, 2L)
 
     List<DatingPool> potentialMatches = Collections.singletonList(matchWithMutualHobbies);
 
-    when(matchingRepository.findUsersThatMatchParameters(anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
+    when(matchingRepository.findUsersThatMatchParameters(
+        eq(UserGenderEnum.FEMALE), eq(UserGenderEnum.MALE), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
         .thenReturn(potentialMatches);
 
     // Act
@@ -276,23 +278,23 @@ class MatchingServiceTests {
     // Create matches with different probabilities
     // 1. Match with very high probability (should be filtered out for being > 0.91)
     DatingPool highProbabilityMatch = createTestDatingPool(3L);
-    highProbabilityMatch.setMyGender(2L);
-    highProbabilityMatch.setLookingForGender(1L);
+    highProbabilityMatch.setMyGender(UserGenderEnum.FEMALE);
+    highProbabilityMatch.setLookingForGender(UserGenderEnum.MALE);
     highProbabilityMatch.setActualScore(3000); // Much higher score than user's 1500 -> high probability
     highProbabilityMatch.setHobbyIds(new HashSet<>(Arrays.asList(1L, 2L))); // All mutual hobbies to push probability
                                                                             // higher
 
     // 2. Match with very low probability (should be filtered out for being < 0.3)
     DatingPool lowProbabilityMatch = createTestDatingPool(4L);
-    lowProbabilityMatch.setMyGender(2L);
-    lowProbabilityMatch.setLookingForGender(1L);
+    lowProbabilityMatch.setMyGender(UserGenderEnum.FEMALE);
+    lowProbabilityMatch.setLookingForGender(UserGenderEnum.MALE);
     lowProbabilityMatch.setActualScore(700); // Much lower score than user's 1500 -> low probability
     lowProbabilityMatch.setHobbyIds(new HashSet<>()); // No mutual hobbies to keep probability low
 
     // 3. Match with acceptable probability (should be included)
     DatingPool acceptableProbabilityMatch = createTestDatingPool(5L);
-    acceptableProbabilityMatch.setMyGender(2L);
-    acceptableProbabilityMatch.setLookingForGender(1L);
+    acceptableProbabilityMatch.setMyGender(UserGenderEnum.FEMALE);
+    acceptableProbabilityMatch.setLookingForGender(UserGenderEnum.MALE);
     acceptableProbabilityMatch.setActualScore(1600); // Score to ensure 0.3 < probability < 0.91
     acceptableProbabilityMatch.setHobbyIds(new HashSet<>(Arrays.asList(1L, 3L))); // One mutual hobby
 
@@ -302,7 +304,7 @@ class MatchingServiceTests {
         acceptableProbabilityMatch);
 
     when(matchingRepository.findUsersThatMatchParameters(
-        anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
+        eq(UserGenderEnum.FEMALE), eq(UserGenderEnum.MALE), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
         .thenReturn(allMatches);
 
     // Act
@@ -351,8 +353,8 @@ class MatchingServiceTests {
     List<DatingPool> manyMatches = new ArrayList<>();
     for (int i = 2; i <= 15; i++) {
       DatingPool match = createTestDatingPool((long) i);
-      match.setMyGender(2L);
-      match.setLookingForGender(1L);
+      match.setMyGender(UserGenderEnum.FEMALE);
+      match.setLookingForGender(UserGenderEnum.MALE);
       // Set different scores to create different probabilities
       match.setActualScore(1500 + (i * 10)); // Increasing scores for higher probabilities
 
@@ -367,7 +369,7 @@ class MatchingServiceTests {
     }
 
     when(matchingRepository.findUsersThatMatchParameters(
-        anyLong(), anyLong(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
+        eq(UserGenderEnum.FEMALE), eq(UserGenderEnum.MALE), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
         .thenReturn(manyMatches);
 
     // Act
@@ -433,8 +435,8 @@ class MatchingServiceTests {
   private DatingPool createTestDatingPool(Long userId) {
     DatingPool pool = new DatingPool();
     pool.setProfileId(userId);
-    pool.setMyGender(1L);
-    pool.setLookingForGender(2L);
+    pool.setMyGender(UserGenderEnum.MALE);
+    pool.setLookingForGender(UserGenderEnum.FEMALE);
     pool.setMyAge(25);
     pool.setAgeMin(21);
     pool.setAgeMax(30);

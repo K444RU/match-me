@@ -20,7 +20,6 @@ import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
 import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
 import com.matchme.srv.repository.UserRepository;
 import com.matchme.srv.service.HobbyService;
-import com.matchme.srv.service.type.UserGenderTypeService;
 import com.matchme.srv.service.user.validation.UserValidationService;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -36,7 +35,6 @@ public class UserSettingsService {
     private final AttributesMapper attributesMapper;
     private final PreferencesMapper preferencesMapper;
     private final HobbyService hobbyService;
-    private final UserGenderTypeService userGenderTypeService;
     private final UserValidationService userValidationService;
    
     private static final String USER_NOT_FOUND_MESSAGE = "User not found!";
@@ -89,7 +87,7 @@ public class UserSettingsService {
         UserAttributes attributes = profile.getAttributes();
 
         attributesMapper.toEntity(attributes, settings);
-        attributes.setGender(userGenderTypeService.getById(settings.getGender_self()));
+        attributes.setGender(settings.getGender_self());
         attributes.setLocation(List.of(settings.getLongitude(), settings.getLatitude()));
         attributes.setBirthdate(settings.getBirth_date());
 
@@ -108,7 +106,7 @@ public class UserSettingsService {
         UserPreferences preferences = profile.getPreferences();
 
         preferencesMapper.toEntity(preferences, settings);
-        preferences.setGender(userGenderTypeService.getById(settings.getGender_other()));
+        preferences.setGender(settings.getGender_other());
         preferences.setAgeMin(settings.getAge_min());
         preferences.setAgeMax(settings.getAge_max());
         preferences.setDistance(settings.getDistance());

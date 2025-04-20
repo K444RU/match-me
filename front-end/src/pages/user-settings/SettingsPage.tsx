@@ -5,15 +5,13 @@ import { useAuth } from '@/features/authentication';
 import { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SettingsContext } from './SettingsContext';
-import { GenderContext, genderService } from '@/features/gender';
 import UserAccountCard from './components/UserAccountCard';
 import { toast } from "sonner"
 import { meService } from '@/features/user';
-import { GenderTypeDTO, SettingsResponseDTO } from '@/api/types';
+import { SettingsResponseDTO } from '@/api/types';
 
 const SettingsPage = () => {
     const [settings, setSettings] = useState<SettingsResponseDTO | null>(null);
-    const [genders, setGenders] = useState<GenderTypeDTO[] | null>(null);
     const { user } = useAuth();
     
     useEffect(() => {
@@ -29,16 +27,6 @@ const SettingsPage = () => {
             }
         };
 
-        const fetchGenders = async () => {
-            try {
-                const genders = await genderService.getGenders();
-                setGenders(genders);
-            } catch (error) {
-                console.error('Failed fetching genders:', error);
-            }
-        };
-
-        fetchGenders();
         fetchSettings();
     }, [user]);
 
@@ -58,10 +46,9 @@ const SettingsPage = () => {
         <SettingsContext.Provider
             value={ {settings, refreshSettings}}
         >
-            <GenderContext.Provider value={genders}>
                 <div>
                     <Tabs defaultValue="account">
-                        <TabsList className="w-full">
+                        <TabsList className="w-full grid grid-cols-4">
                             <TabsTrigger value="account">
                                 Account
                             </TabsTrigger>
@@ -89,7 +76,6 @@ const SettingsPage = () => {
                         </TabsContent>
                     </Tabs>
                 </div>
-            </GenderContext.Provider>
         </SettingsContext.Provider>
     );
 };

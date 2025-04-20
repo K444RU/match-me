@@ -20,13 +20,12 @@ import com.matchme.srv.mapper.AttributesMapper;
 import com.matchme.srv.mapper.PreferencesMapper;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.profile.Hobby;
-import com.matchme.srv.model.user.profile.UserGenderType;
+import com.matchme.srv.model.user.profile.UserGenderEnum;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
 import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
 import com.matchme.srv.repository.UserRepository;
 import com.matchme.srv.service.HobbyService;
-import com.matchme.srv.service.type.UserGenderTypeService;
 import com.matchme.srv.service.user.validation.UserValidationService;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDate;
@@ -55,9 +54,6 @@ class UserSettingsServiceTests {
     private PreferencesMapper preferencesMapper;
 
     @Mock
-    private UserGenderTypeService userGenderTypeService;
-
-    @Mock
     private UserValidationService userValidationService;
 
     @Mock
@@ -70,7 +66,6 @@ class UserSettingsServiceTests {
     private static final Long INVALID_USER_ID = 999L;
 
     private User user;
-    private UserGenderType genderType;
 
     @BeforeEach
     void setUp() {
@@ -79,7 +74,6 @@ class UserSettingsServiceTests {
         user.setProfile(new UserProfile());
         user.getProfile().setAttributes(new UserAttributes());
         user.getProfile().setPreferences(new UserPreferences());
-        genderType = new UserGenderType(1L, "Gender");
     }
 
     @Nested
@@ -379,7 +373,7 @@ class UserSettingsServiceTests {
         @BeforeEach
         void setUp() {
             validRequest = new AttributesSettingsRequestDTO();
-            validRequest.setGender_self(1L);
+            validRequest.setGender_self(UserGenderEnum.MALE);
             validRequest.setBirth_date(LocalDate.now().minusYears(18));
             validRequest.setCity("City");
             validRequest.setLongitude(1.0);
@@ -390,7 +384,6 @@ class UserSettingsServiceTests {
         @DisplayName("Should update gender, longitude, latitude, birth date, and city when user exists")
         void updateAttributesSettings_ValidRequest_UpdatesFields() {
             // Arrange
-            when(userGenderTypeService.getById(1L)).thenReturn(genderType);
             when(userRepository.findById(VALID_USER_ID)).thenReturn(Optional.of(user));
 
             // Act
@@ -400,7 +393,7 @@ class UserSettingsServiceTests {
             assertAll(
                     () -> assertThat(user.getProfile().getAttributes().getGender())
                             .as("checking if the user's gender was updated correctly")
-                            .isEqualTo(genderType),
+                            .isEqualTo(UserGenderEnum.MALE),
                     () -> assertThat(user.getProfile().getAttributes().getLocation())
                             .as("checking if the user's location was updated correctly")
                             .isEqualTo(List.of(1.0, 1.0)),
@@ -438,7 +431,7 @@ class UserSettingsServiceTests {
         @BeforeEach
         void setUp() {
             validRequest = new PreferencesSettingsRequestDTO();
-            validRequest.setGender_other(1L);
+            validRequest.setGender_other(UserGenderEnum.FEMALE);
             validRequest.setAge_min(18);
             validRequest.setAge_max(120);
             validRequest.setDistance(50);
@@ -450,7 +443,6 @@ class UserSettingsServiceTests {
                 + " user exists")
         void updatePreferencesSettings_ValidRequest_UpdatesFields() {
             // Arrange
-            when(userGenderTypeService.getById(1L)).thenReturn(genderType);
             when(userRepository.findById(VALID_USER_ID)).thenReturn(Optional.of(user));
 
             // Act
@@ -460,7 +452,7 @@ class UserSettingsServiceTests {
             assertAll(
                     () -> assertThat(user.getProfile().getPreferences().getGender())
                             .as("checking if the user's gender was updated correctly")
-                            .isEqualTo(genderType),
+                            .isEqualTo(UserGenderEnum.FEMALE),
                     () -> assertThat(user.getProfile().getPreferences().getAgeMin())
                             .as("checking if the user's age_min was updated correctly")
                             .isEqualTo(validRequest.getAge_min()),

@@ -2,10 +2,7 @@
 MERGE INTO user_role_types (id, name) VALUES (1, 'ROLE_USER');
 MERGE INTO user_role_types (id, name) VALUES (2, 'ROLE_MODERATOR');
 MERGE INTO user_role_types (id, name) VALUES (3, 'ROLE_ADMIN');
--- Insert genders
-MERGE INTO user_gender_types (id, name) VALUES (1, 'MALE');
-MERGE INTO user_gender_types (id, name) VALUES (2, 'FEMALE');
-MERGE INTO user_gender_types (id, name) VALUES (3, 'OTHER');
+
 -- Insert connection types
 MERGE INTO connection_types (id, name) VALUES (1, 'SEEN');
 MERGE INTO connection_types (id, name) VALUES (2, 'OPENED_PROFILE');

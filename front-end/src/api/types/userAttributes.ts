@@ -6,13 +6,13 @@
  * OpenAPI spec version: v0.0.1
  */
 import type { ProfileChange } from './profileChange';
-import type { UserGenderType } from './userGenderType';
+import type { UserGenderEnum } from './userGenderEnum';
 import type { UserProfile } from './userProfile';
 
 export interface UserAttributes {
   id?: number;
   userProfile?: UserProfile;
-  gender?: UserGenderType;
+  gender?: UserGenderEnum;
   birthdate?: string;
   location?: number[];
   attributeChangeLog?: ProfileChange[];

@@ -121,10 +121,8 @@ class MeControllerTest {
             get("/api/me/bio").principal(authentication).contentType(MediaType.APPLICATION_JSON))
         .andExpectAll(
             status().isOk(),
-            jsonPath("$.gender_self.id", is(DEFAULT_GENDER_SELF_ID.intValue())),
-            jsonPath("$.gender_self.name", is(DEFAULT_GENDER_SELF_NAME)),
-            jsonPath("$.gender_other.id", is(DEFAULT_GENDER_OTHER_ID.intValue())),
-            jsonPath("$.gender_other.name", is(DEFAULT_GENDER_OTHER_NAME)),
+            jsonPath("$.gender_self", is(DEFAULT_GENDER_SELF.toString())),
+            jsonPath("$.gender_other", is(DEFAULT_GENDER_OTHER.toString())),
             jsonPath("$.hobbies", hasSize(DEFAULT_HOBBY_IDS.size())),
             jsonPath("$.age_self", is(DEFAULT_AGE_SELF)),
             jsonPath("$.age_min", is(DEFAULT_AGE_MIN)),
@@ -161,12 +159,12 @@ class MeControllerTest {
                 "$.hobbies",
                 containsInAnyOrder(
                     DEFAULT_HOBBY_IDS.stream().map(Long::intValue).toArray(Integer[]::new))),
-            jsonPath("$.genderSelf", is(DEFAULT_GENDER_SELF_ID.intValue())),
+            jsonPath("$.genderSelf", is(DEFAULT_GENDER_SELF.toString())),
             jsonPath("$.birthDate", is(DEFAULT_BIRTH_DATE)),
             jsonPath("$.city", is(DEFAULT_CITY)),
             jsonPath("$.longitude", is(DEFAULT_LONGITUDE)),
             jsonPath("$.latitude", is(DEFAULT_LATITUDE)),
-            jsonPath("$.genderOther", is(DEFAULT_GENDER_OTHER_ID.intValue())),
+            jsonPath("$.genderOther", is(DEFAULT_GENDER_OTHER.toString())),
             jsonPath("$.ageMin", is(DEFAULT_AGE_MIN)),
             jsonPath("$.ageMax", is(DEFAULT_AGE_MAX)),
             jsonPath("$.distance", is(DEFAULT_DISTANCE)),

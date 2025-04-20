@@ -28,7 +28,6 @@ import com.matchme.srv.service.type.ActivityLogTypeService;
 import com.matchme.srv.service.type.AttributeChangeTypeService;
 import com.matchme.srv.service.type.PreferenceChangeTypeService;
 import com.matchme.srv.service.type.ProfileChangeTypeService;
-import com.matchme.srv.service.type.UserGenderTypeService;
 import com.matchme.srv.service.type.UserRoleTypeService;
 import com.matchme.srv.service.user.validation.UserValidationService;
 
@@ -60,7 +59,6 @@ public class UserCreationService {
     private final AttributeChangeTypeService attributeChangeTypeService;
     private final PreferenceChangeTypeService preferenceChangeTypeService;
     private final HobbyService hobbyService;
-    private final UserGenderTypeService userGenderTypeService;
     private final UserValidationService userValidationService;
 
     private final PasswordEncoder encoder;
@@ -183,7 +181,7 @@ public class UserCreationService {
         }
 
         attributesMapper.toEntity(attributes, parameters);
-        attributes.setGender(userGenderTypeService.getById(parameters.gender_self()));
+        attributes.setGender(parameters.gender_self());
 
         // Add null check for location coordinates
         if (parameters.longitude() == null || parameters.latitude() == null) {
@@ -192,7 +190,7 @@ public class UserCreationService {
         attributes.setLocation(List.of(parameters.longitude(), parameters.latitude()));
 
         preferencesMapper.toEntity(preferences, parameters);
-        preferences.setGender(userGenderTypeService.getById(parameters.gender_other()));
+        preferences.setGender(parameters.gender_other());
 
         profile.setFirst_name(parameters.first_name());
         profile.setLast_name(parameters.last_name());

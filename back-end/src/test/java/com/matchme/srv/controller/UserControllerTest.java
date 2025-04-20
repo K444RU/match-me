@@ -274,10 +274,8 @@ class UserControllerTest {
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpectAll(
                 status().isOk(),
-                jsonPath("$.gender_self.id", is(DEFAULT_GENDER_SELF_ID.intValue())),
-                jsonPath("$.gender_self.name", is(DEFAULT_GENDER_SELF_NAME)),
-                jsonPath("$.gender_other.id", is(DEFAULT_GENDER_OTHER_ID.intValue())),
-                jsonPath("$.gender_other.name", is(DEFAULT_GENDER_OTHER_NAME)),
+                jsonPath("$.gender_self", is(DEFAULT_GENDER_SELF.toString())),
+                jsonPath("$.gender_other", is(DEFAULT_GENDER_OTHER.toString())),
                 jsonPath("$.age_self", is(DEFAULT_AGE_SELF)),
                 jsonPath("$.age_max", is(DEFAULT_AGE_MAX)),
                 jsonPath("$.age_min", is(DEFAULT_AGE_MIN)),
@@ -333,10 +331,8 @@ class UserControllerTest {
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpectAll(
                 status().isOk(),
-                jsonPath("$.gender_self.id", is(DEFAULT_TARGET_GENDER_SELF_ID.intValue())),
-                jsonPath("$.gender_self.name", is(DEFAULT_TARGET_GENDER_SELF_NAME)),
-                jsonPath("$.gender_other.id", is(DEFAULT_TARGET_GENDER_OTHER_ID.intValue())),
-                jsonPath("$.gender_other.name", is(DEFAULT_TARGET_GENDER_OTHER_NAME)),
+                jsonPath("$.gender_self", is(DEFAULT_TARGET_GENDER_SELF.toString())),
+                jsonPath("$.gender_other", is(DEFAULT_TARGET_GENDER_OTHER.toString())),
                 jsonPath("$.age_self", is(DEFAULT_TARGET_AGE_SELF)),
                 jsonPath("$.age_max", is(DEFAULT_TARGET_AGE_MAX)),
                 jsonPath("$.age_min", is(DEFAULT_TARGET_AGE_MIN)),

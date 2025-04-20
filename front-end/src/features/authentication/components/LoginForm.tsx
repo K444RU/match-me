@@ -1,8 +1,12 @@
 import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/features/authentication';
 import MotionSpinner from '@animations/MotionSpinner';
-import React, { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import FormResponse from './FormResponse';
 
 const testUsers = [
@@ -14,25 +18,33 @@ const testUsers = [
   { email: 'invalid@example.com', password: '123456' },
 ];
 
+const loginSchema = z.object({
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+  password: z.string().min(6, { message: 'Password must contain at least 6 characters.' }),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+
 export default function LoginForm() {
   const { login, isLoading } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
 
   const [resTitle, setResTitle] = useState('');
   const [resSubtitle, setResSubtitle] = useState('');
 
+  const form = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
+
   const handleTestUser = (email: string, password: string) => {
-    setEmail(email);
-    setPassword(password);
+    form.setValue('email', email);
+    form.setValue('password', password);
+    setResTitle('');
+    setResSubtitle('');
   };
 
-  const submitForm = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (values: LoginFormData) => {
     setResTitle('');
     setResSubtitle('');
 
-    const result = await login({ email, password });
+    const result = await login(values);
 
     if (result.success && result.user) {
       console.debug(`LoginForm: Login successful via context result.`);
@@ -45,59 +57,66 @@ export default function LoginForm() {
         setResTitle('Login Failed');
         setResSubtitle('An unexpected error occurred.');
       }
-      setPassword('');
+      form.setValue('password', '');
     }
     console.debug('LoginForm: submitForm finished processing result.');
   };
 
   return (
-    <form onSubmit={submitForm} className="flex flex-col items-center gap-2">
-      {resTitle && resSubtitle && <FormResponse title={resTitle} subtitle={resSubtitle} />}
-      <Input
-        type="email"
-        name="contact_email"
-        placeholder="Email"
-        autoComplete="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-        className="bg-background"
-      />
-      <Input
-        type="password"
-        name="password"
-        autoComplete="current-password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-        className="bg-background"
-      />
-      <Button
-        disabled={isLoading}
-        className="flex w-full items-center justify-center gap-2 font-semibold tracking-wide"
-        type="submit"
-        aria-label="Submit form."
-      >
-        <span>Login</span>
-        {isLoading && <MotionSpinner />}
-      </Button>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col items-center gap-2">
+        {resTitle && resSubtitle && <FormResponse title={resTitle} subtitle={resSubtitle} />}
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem className="w-full">
+              <FormControl>
+                <Input type="email" placeholder="Email" autoComplete="email" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem className="w-full">
+              <FormControl>
+                <Input type="password" placeholder="Password" autoComplete="current-password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button
+          disabled={isLoading}
+          className="flex w-full items-center justify-center gap-2 font-semibold tracking-wide"
+          type="submit"
+          aria-label="Submit form."
+        >
+          <span>Login</span>
+          {isLoading && <MotionSpinner />}
+        </Button>
 
-      <div className="mt-4 flex w-full flex-col gap-2">
-        <div className="grid grid-cols-2 gap-2">
-          {testUsers.map((user) => (
-            <Button
-              type="button"
-              className="rounded-sm px-3 py-1 text-sm"
-              variant="secondary"
-              onClick={() => handleTestUser(user.email, user.password)}
-              key={user.email}
-            >
-              {user.email.split('@')[0]}
-            </Button>
-          ))}
+        <div className="mt-4 flex w-full flex-col gap-2">
+          <div className="grid grid-cols-2 gap-2">
+            {testUsers.map((user) => (
+              <Button
+                type="button"
+                className="rounded-sm px-3 py-1 text-sm"
+                variant="secondary"
+                onClick={() => handleTestUser(user.email, user.password)}
+                key={user.email}
+                disabled={isLoading}
+              >
+                {user.email.split('@')[0]}
+              </Button>
+            ))}
+          </div>
         </div>
-      </div>
-    </form>
+      </form>
+    </Form>
   );
 }

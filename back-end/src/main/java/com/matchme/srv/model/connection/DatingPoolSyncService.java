@@ -148,8 +148,8 @@ public class DatingPoolSyncService {
      */
     private void updateDatingPoolEntry(DatingPool entry, UserAttributes attributes,
                                        UserPreferences preferences, UserProfile userProfile) {
-        entry.setMyGender(attributes.getGender().getId());
-        entry.setLookingForGender(preferences.getGender().getId());
+        entry.setMyGender(attributes.getGender());
+        entry.setLookingForGender(preferences.getGender());
 
         entry.setMyAge(getAgeFromBirthDate(attributes.getBirthdate()));
         entry.setAgeMin(preferences.getAgeMin());
