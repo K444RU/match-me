@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Theme, ThemeContext } from './ui/theme-context';
 import type { ThemeProviderState } from './ui/theme-context';
+import { STORAGE_KEYS } from '@/lib/constants/storageKeys';
 
 type ThemeProviderProps = {
   children: React.ReactNode;
 };
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('blind-theme') as Theme) || 'system');
+  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem(STORAGE_KEYS.THEME) as Theme) || 'system');
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -25,7 +26,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const value: ThemeProviderState = {
     theme,
     setTheme: (newTheme: Theme) => {
-      localStorage.setItem('blind-theme', newTheme);
+      localStorage.setItem(STORAGE_KEYS.THEME, newTheme);
       setTheme(newTheme);
     },
   };

@@ -8,6 +8,7 @@ import { UnifiedFormData } from '../types/types';
 import Attributes from './Attributes';
 import Preferences from './Preferences';
 import FormLayout from '@/features/authentication/components/FormLayout';
+import { STORAGE_KEYS } from '@/lib/constants/storageKeys';
 
 const PayloadFormData = (formData: UnifiedFormData): UserParametersRequestDTO => ({
   first_name: formData.firstName,
@@ -30,7 +31,7 @@ export default function UnifiedForm() {
   const { fetchCurrentUser } = useAuth();
 
   const [formData, setFormData] = useState<UnifiedFormData>(() => ({
-    ...JSON.parse(localStorage.getItem('profileData') || '{}'),
+    ...JSON.parse(localStorage.getItem(STORAGE_KEYS.PROFILE_DATA) || '{}'),
     ageRange: [18, 120],
     probabilityTolerance: 0.5,
     distance: 300,
@@ -40,7 +41,7 @@ export default function UnifiedForm() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('profileData', JSON.stringify(formData));
+    localStorage.setItem(STORAGE_KEYS.PROFILE_DATA, JSON.stringify(formData));
   }, [formData]);
 
   useEffect(() => {
@@ -70,7 +71,7 @@ export default function UnifiedForm() {
     const payload = PayloadFormData(formData);
     try {
       await userService.updateParameters(payload);
-      localStorage.removeItem('profileData');
+      localStorage.removeItem(STORAGE_KEYS.PROFILE_DATA);
       await fetchCurrentUser();
       // Routing should automatically redirect.
     } catch (err) {

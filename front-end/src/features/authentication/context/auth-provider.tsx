@@ -4,7 +4,7 @@ import { meService } from '@/features/user';
 import { ReactNode, useState, useEffect, useCallback } from 'react';
 import { AuthContext, User, LoginResult, AppError } from './auth-context';
 import axios from 'axios';
-
+import { STORAGE_KEYS } from '@/lib/constants/storageKeys';
 interface AuthProviderProps {
 	children: ReactNode;
 }
@@ -17,14 +17,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 	const updateUserFromToken = useCallback(async (token: string | null): Promise<User | null> => {
 		if (!token) {
 			console.debug('AuthProvider (updateUserFromToken): No token provided, clearing user.');
-			localStorage.removeItem('authToken');
+			localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
 			setUser(null);
 			return null;
 		}
 
 		try {
 			// Ensure token is stored before fetching user
-			localStorage.setItem('authToken', token);
+			localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
 			console.debug('AuthProvider (updateUserFromToken): Token stored, fetching user...');
 			const currentUser = await meService.getCurrentUser();
 			const userData: User = { ...currentUser, token };
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 			return userData;
 		} catch (error) {
 			console.error('AuthProvider (updateUserFromToken): User fetch failed, clearing token.', error);
-			localStorage.removeItem('authToken');
+			localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
 			setUser(null);
 			return null;
 		}
@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 		const initialLoad = async () => {
 			console.debug('AuthProvider (Init): Starting initial load...');
 			setIsLoading(true);
-			const token = localStorage.getItem('authToken');
+			const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
 			await updateUserFromToken(token);
 			if (isMounted) {
 				setIsLoading(false);
@@ -123,7 +123,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 	const fetchCurrentUser = useCallback(async () => {
 		setIsLoading(true);
 		console.debug('AuthProvider (fetchCurrentUser): Manual fetch initiated...');
-		const token = localStorage.getItem('authToken');
+		const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
 		if (!token) {
 			console.debug('AuthProvider (fetchCurrentUser): No token found.');
 			await updateUserFromToken(null); // Ensure state is cleared if token disappears
