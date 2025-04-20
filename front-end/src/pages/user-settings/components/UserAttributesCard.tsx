@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import DatePicker from '@/components/ui/forms/DatePicker';
-import InputField from '@/components/ui/forms/InputField';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { GenderContext } from '@/features/gender';
 import { userService } from '@/features/user';
@@ -103,14 +102,14 @@ export default function UserAttributesCard() {
 
   if (!settingsContext || !settingsContext.settings) {
     return (
-      <Card className="no-scrollbar flex h-[475px] w-full items-center justify-center border-none shadow-none">
+      <Card className="no-scrollbar flex h-[475px] w-full items-center justify-center">
         <MotionSpinner />
       </Card>
     );
   }
 
   return (
-    <Card className="min-h-[475px] w-full border-none shadow-none h-auto">
+    <Card className="min-h-[475px] w-full">
       <CardHeader>
         <CardTitle>Attributes</CardTitle>
         <CardDescription>Tell us about yourself</CardDescription>

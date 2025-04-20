@@ -71,7 +71,7 @@ export default function UserProfileCard() {
 
   if (!settingsContext || !settingsContext.settings) {
     return (
-      <Card className="no-scrollbar flex h-[475px] w-full items-center justify-center border-none shadow-none">
+      <Card className="no-scrollbar flex h-[475px] w-full items-center justify-center">
         <MotionSpinner />
       </Card>
     );
@@ -101,14 +101,14 @@ export default function UserProfileCard() {
 
   if (!settingsContext || !settingsContext.settings) {
     return (
-      <Card className="no-scrollbar flex h-[475px] w-full items-center justify-center border-none shadow-none">
+      <Card className="no-scrollbar flex h-[475px] w-full items-center justify-center">
         <MotionSpinner />
       </Card>
     );
   }
 
   return (
-    <Card className="no-scrollbar h-[475px] w-full overflow-y-auto border-none">
+    <Card className="no-scrollbar h-[475px] w-full overflow-y-auto">
       <CardHeader>
         <CardTitle>Profile</CardTitle>
         <CardDescription>Edit your profile settings here.</CardDescription>

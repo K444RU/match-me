@@ -76,14 +76,14 @@ export default function UserAccountCard() {
 
   if (!settingsContext || !settingsContext.settings) {
     return (
-      <Card className="no-scrollbar flex h-[475px] w-full items-center justify-center border-none shadow-none">
+      <Card className="no-scrollbar flex h-[475px] w-full items-center justify-center">
         <MotionSpinner />
       </Card>
     );
   }
 
   return (
-    <Card className="h-[475px] w-full border-none shadow-none">
+    <Card className="h-[475px] w-full">
       <CardHeader>
         <CardTitle>Account</CardTitle>
         <CardDescription>Edit your account settings here.</CardDescription>

@@ -61,7 +61,7 @@ const SettingsPage = () => {
             <GenderContext.Provider value={genders}>
                 <div>
                     <Tabs defaultValue="account">
-                        <TabsList className="w-full">
+                        <TabsList className="w-full grid grid-cols-4">
                             <TabsTrigger value="account">
                                 Account
                             </TabsTrigger>

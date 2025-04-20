@@ -68,7 +68,7 @@ export default function UserPreferencesCard() {
 
   if (!settingsContext || !settingsContext.settings) {
     return (
-      <Card className="no-scrollbar flex h-[475px] w-full items-center justify-center border-none shadow-none">
+      <Card className="no-scrollbar flex h-[475px] w-full items-center justify-center">
         <MotionSpinner />
       </Card>
     );
@@ -97,7 +97,7 @@ export default function UserPreferencesCard() {
   };
 
   return (
-    <Card className="h-[475px] w-full border-none shadow-none">
+    <Card className="h-[475px] w-full">
       <CardHeader>
         <CardTitle>Preferences</CardTitle>
         <CardDescription>These settings determine how we find matches for you.</CardDescription>
