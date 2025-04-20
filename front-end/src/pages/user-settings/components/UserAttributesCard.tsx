@@ -23,7 +23,7 @@ const attributesSchema = z.object({
   city: z.string().min(1, { message: 'City is required.' }),
   latitude: z.number({ required_error: 'Latitude is required.' }),
   longitude: z.number({ required_error: 'Longitude is required.' }),
-  gender: z.number({ required_error: 'Gender is required.' }),
+  genderSelf: z.number({ required_error: 'Gender is required.' }),
 });
 
 type AttributesFormData = z.infer<typeof attributesSchema>;
@@ -41,7 +41,7 @@ const UserAttributesCard = () => {
       city: '',
       latitude: undefined,
       longitude: undefined,
-      gender: undefined,
+      genderSelf: undefined,
     },
   });
 
@@ -55,7 +55,7 @@ const UserAttributesCard = () => {
         latitude: typeof settingsContext.settings.latitude === 'number' ? settingsContext.settings.latitude : undefined,
         longitude:
           typeof settingsContext.settings.longitude === 'number' ? settingsContext.settings.longitude : undefined,
-        gender:
+          genderSelf:
           typeof settingsContext.settings.genderSelf === 'number' ? settingsContext.settings.genderSelf : undefined,
         birthDate: settingsContext.settings.birthDate ? new Date(settingsContext.settings.birthDate) : undefined,
       });
@@ -66,7 +66,7 @@ const UserAttributesCard = () => {
         city: '',
         latitude: undefined,
         longitude: undefined,
-        gender: undefined,
+        genderSelf: undefined,
       });
     }
   }, [settingsContext?.settings, form.reset]);
@@ -89,7 +89,7 @@ const UserAttributesCard = () => {
         longitude: values.longitude,
         latitude: values.latitude,
         birth_date: values.birthDate.toISOString().split('T')[0],
-        gender_self: values.gender,
+        gender_self: values.genderSelf,
       });
       await settingsContext.refreshSettings();
       toast.success('Attributes updated successfully');
@@ -177,16 +177,16 @@ const UserAttributesCard = () => {
 
                 <FormField
                   control={form.control}
-                  name="gender"
+                  name="genderSelf"
                   render={({ field }) => (
                     <FormItem className="w-full">
-                      <FormLabel htmlFor="selfGender">Gender</FormLabel>
+                      <FormLabel htmlFor="genderSelf">Gender</FormLabel>
                       <Select
                         value={field.value?.toString() ?? ''}
                         onValueChange={(value) => field.onChange(Number(value))}
                       >
                         <FormControl>
-                          <SelectTrigger id="selfGender" className="w-full">
+                          <SelectTrigger id="genderSelf" className="w-full">
                             <SelectValue placeholder="Select a gender..." />
                           </SelectTrigger>
                         </FormControl>
