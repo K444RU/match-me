@@ -3,7 +3,6 @@ package com.matchme.srv.service.user;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -13,7 +12,6 @@ import com.matchme.srv.dto.request.SignupRequestDTO;
 import com.matchme.srv.dto.request.UserParametersRequestDTO;
 import com.matchme.srv.exception.DuplicateFieldException;
 import com.matchme.srv.exception.InvalidVerificationException;
-import com.matchme.srv.exception.ResourceNotFoundException;
 import com.matchme.srv.mapper.AttributesMapper;
 import com.matchme.srv.mapper.PreferencesMapper;
 import com.matchme.srv.model.enums.UserState;
@@ -57,7 +55,7 @@ class UserCreationServiceTests {
   @Mock private UserRepository userRepository;
 
   @Mock private UserRoleTypeService userRoleTypeService;
- 
+
   @Mock private ActivityLogTypeService activityLogTypeService;
 
   @Mock private ProfileChangeTypeService profileChangeTypeService;
@@ -90,7 +88,7 @@ class UserCreationServiceTests {
       String number = "123";
       String password = "password";
       SignupRequestDTO request =
-      SignupRequestDTO.builder().email(email).number(number).password(password).build();
+          SignupRequestDTO.builder().email(email).number(number).password(password).build();
 
       UserRoleType role = new UserRoleType();
       ActivityLogType activityLogType = new ActivityLogType();
@@ -118,8 +116,8 @@ class UserCreationServiceTests {
                   .isEqualTo(number),
           () ->
               assertThat(savedUser.getState())
-              	.as("checking if the state is correct")
-              	.isEqualTo(UserState.PROFILE_INCOMPLETE),
+                  .as("checking if the state is correct")
+                  .isEqualTo(UserState.PROFILE_INCOMPLETE),
           () ->
               assertThat(savedUser.getRoles())
                   .as("checking if the roles are correct")
@@ -189,13 +187,13 @@ class UserCreationServiceTests {
       UserAuth userAuth = new UserAuth();
       userAuth.setRecovery(123);
       user.setUserAuth(userAuth);
-    
+
       // UserStateTypes userStateType = new UserStateTypes(); // Removed old type instantiation
       ActivityLogType activityLogType = new ActivityLogType();
       ProfileChangeType profileChangeType = new ProfileChangeType();
       AttributeChangeType attributeChangeType = new AttributeChangeType();
       PreferenceChangeType preferenceChangeType = new PreferenceChangeType();
-    
+
       when(userRepository.findById(1L)).thenReturn(Optional.of(user));
       // No need to mock userStateTypesService anymore
       when(activityLogTypeService.getByName("VERIFIED")).thenReturn(activityLogType);
@@ -210,8 +208,8 @@ class UserCreationServiceTests {
       assertAll(
           () ->
               assertThat(user.getState())
-              	.as("checking if the state is correct")
-              	.isEqualTo(UserState.PROFILE_INCOMPLETE), // Check against enum
+                  .as("checking if the state is correct")
+                  .isEqualTo(UserState.PROFILE_INCOMPLETE), // Check against enum
           () -> assertThat(userAuth.getRecovery()).as("checking if the recovery is null").isNull(),
           () -> assertThat(user.getProfile()).as("checking if the profile is not null").isNotNull(),
           () ->
@@ -307,9 +305,9 @@ class UserCreationServiceTests {
 
       Hobby hobby1 = Hobby.builder().id(3L).name("3D printing").category("General").build();
       Hobby hobby2 = Hobby.builder().id(4L).name("Acrobatics").category("General").build();
-    
+
       // UserStateTypes userStateType = new UserStateTypes(); // Removed old type instantiation
-    
+
       when(userRepository.findById(1L)).thenReturn(Optional.of(user));
       when(hobbyService.getById(3L)).thenReturn(hobby1);
       when(hobbyService.getById(4L)).thenReturn(hobby2);
@@ -341,8 +339,8 @@ class UserCreationServiceTests {
                   .containsExactlyInAnyOrder(hobby1, hobby2),
           () ->
               assertThat(user.getState())
-              	.as("checking if the state is correct")
-              	.isEqualTo(UserState.PROFILE_INCOMPLETE), // Check against enum
+                  .as("checking if the state is correct")
+                  .isEqualTo(UserState.PROFILE_INCOMPLETE), // Check against enum
           () -> assertThat(user.getScore()).as("checking if the score is not null").isNotNull(),
           () -> verify(userRepository, times(1)).save(user));
 
@@ -367,8 +365,8 @@ class UserCreationServiceTests {
       assertAll(
           () ->
               assertThat(user.getState())
-              	.as("checking if the state is correct")
-              	.isEqualTo(UserState.PROFILE_INCOMPLETE), // Check against enum
+                  .as("checking if the state is correct")
+                  .isEqualTo(UserState.PROFILE_INCOMPLETE), // Check against enum
           () -> assertThat(user.getScore()).as("checking if the score is not null").isNotNull());
     }
 
@@ -387,25 +385,6 @@ class UserCreationServiceTests {
                   .as("checking if the exception is an instance of IllegalArgumentException")
                   .isInstanceOf(IllegalArgumentException.class)
                   .hasMessageContaining("Longitude and latitude must be provided"),
-          () -> verify(userRepository, times(1)).findById(1L));
-    }
-
-    @Test
-    @DisplayName("Should throw exception when invalid gender")
-    void setUserParameters_WithInvalidGender_ThrowsResourceNotFoundException() {
-      // Assign
-      UserParametersRequestDTO request =
-          UserParametersRequestDTO.builder().gender_self(UserGenderEnum.MALE).gender_other(UserGenderEnum.FEMALE).build();
-
-      when(userRepository.findById(1L)).thenReturn(Optional.of(new User()));
-
-      // Act & Assert
-      assertAll(
-          () ->
-              assertThatThrownBy(() -> userCreationService.setUserParameters(1L, request))
-                  .as("checking if the exception is an instance of ResourceNotFoundException")
-                  .isInstanceOf(ResourceNotFoundException.class)
-                  .hasMessageContaining("Gender not found"),
           () -> verify(userRepository, times(1)).findById(1L));
     }
 
