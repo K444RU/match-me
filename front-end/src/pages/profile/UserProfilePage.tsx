@@ -61,20 +61,22 @@ export default function UserProfilePage() {
   if (!userData) return null;
 
   return (
-    <div className="relative flex flex-1 flex-col overflow-auto bg-background">
+    <div className="relative flex flex-1 flex-col overflow-auto">
       {/* Cover image section */}
-      <div className="relative h-48 w-full bg-accent/20">
-        {isOwner && (
-          <Button variant="secondary" size="icon" className="absolute right-4 top-4 rounded-full">
-            <CameraIcon className="size-5" />
-          </Button>
-        )}
+      <div className="bg-background w-full h-48 relative">
+        <div className="relative h-48 w-full bg-accent/20">
+          {isOwner && (
+            <Button variant="secondary" size="icon" className="absolute right-4 top-4 rounded-full">
+              <CameraIcon className="size-5" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Main content container with proper spacing */}
-      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 pb-16 md:flex-row md:gap-8 md:px-8">
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 pb-16 md:flex-row md:gap-6 md:px-4 lg:px-8">
         {/* Left Column: User profile card */}
-        <div className="relative -mt-16 flex flex-col items-center md:w-1/3">
+        <div className="relative -mt-16 flex flex-col items-center md:w-1/2">
           <Card className="w-full">
             <CardContent className="p-6 text-center">
               <UserAvatar
