@@ -1,4 +1,4 @@
-import { UserGenderEnum, UserParametersRequestDTO } from '@/api/types';
+import { UserParametersRequestDTO } from '@/api/types';
 import { useAuth } from '@/features/authentication';
 import { userService } from '@/features/user';
 import { useEffect, useState } from 'react';
