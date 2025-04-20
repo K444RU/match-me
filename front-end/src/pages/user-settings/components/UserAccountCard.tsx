@@ -1,75 +1,71 @@
 import MotionSpinner from '@/components/animations/MotionSpinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PhoneInput } from '@/components/ui/phone-input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/features/authentication';
 import { userService } from '@/features/user';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useContext, useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { isValidPhoneNumber, parsePhoneNumber } from 'react-phone-number-input';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { z } from 'zod';
 import { SettingsContext } from '../SettingsContext';
-import { parsePhoneNumber } from 'react-phone-number-input';
+
+const accountSchema = z.object({
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+  number: z.string().refine(isValidPhoneNumber, { message: 'Invalid phone number' }),
+});
 
 const UserAccountCard = () => {
   const settingsContext = useContext(SettingsContext);
-  const [email, setEmail] = useState<string>();
-  const [countryCode, setCountryCode] = useState<string>();
-  const [number, setNumber] = useState<string>();
   const [loading, setLoading] = useState(false);
+
   const { logout } = useAuth();
   const navigate = useNavigate();
 
+  const form = useForm<z.infer<typeof accountSchema>>({
+    resolver: zodResolver(accountSchema),
+    defaultValues: {
+      email: '',
+      number: '',
+    },
+  });
+
   useEffect(() => {
-    if (!settingsContext?.settings) {
-      setEmail(undefined);
-      setCountryCode(undefined);
-      setNumber(undefined);
-      return;
-    }
-
-    setEmail(settingsContext.settings.email ?? '');
-
-    const fullNumber = settingsContext.settings.number;
-    if (fullNumber) {
-      try {
-        const parsed = parsePhoneNumber(fullNumber);
-        if (parsed) {
-          setCountryCode(parsed.countryCallingCode ? `+${parsed.countryCallingCode}` : '');
-          setNumber(parsed.nationalNumber ?? '');
-        } else {
-          console.warn(`Could not parse phone number: ${fullNumber}`);
-          setCountryCode('');
-          setNumber('');
-        }
-      } catch (error) {
-        console.error(`Error parsing phone number ${fullNumber}:`, error);
-        setCountryCode('');
-        setNumber('');
-      }
+    if (settingsContext?.settings) {
+      form.reset({
+        email: settingsContext.settings.email ?? '',
+        number: settingsContext.settings.number ?? '',
+      });
     } else {
-      setCountryCode('');
-      setNumber('');
+      form.reset({
+        email: '',
+        number: '',
+      });
     }
-  }, [settingsContext?.settings]);
+  }, [settingsContext?.settings, form.reset]);
 
-  const handleUpdate = async () => {
+  const onSubmit = async (values: z.infer<typeof accountSchema>) => {
     if (!settingsContext?.settings) return;
 
     setLoading(true);
     try {
-      if (!email || !number || !countryCode) return;
-      await userService.updateAccountSettings({
-        email,
-        number: `${countryCode} ${number}`,
-      });
-      if (settingsContext.settings.email !== email) {
+      await userService.updateAccountSettings(values);
+
+      if (settingsContext.settings.email !== values.email) {
         logout();
         navigate('/login');
+        toast.info('Email updated. Please log in again.');
+      } else {
+        await settingsContext.refreshSettings();
+        toast.success('Account updated successfully');
       }
-      await settingsContext.refreshSettings();
-      toast.success('Account updated successfully');
     } catch (error) {
       toast.error('Failed to update account');
       console.error('Error updating account:', error);
@@ -78,6 +74,8 @@ const UserAccountCard = () => {
     }
   };
 
+  const showSkeletons = !settingsContext?.settings;
+
   return (
     <Card className="h-[475px] w-full border-none shadow-none">
       <CardHeader>
@@ -85,58 +83,70 @@ const UserAccountCard = () => {
         <CardDescription>Edit your account settings here.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form>
-          <div className="grid w-full items-center gap-4">
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="email">Email</Label>
-              {email !== undefined && email !== null ? (
-                <Input id="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-              ) : (
-                <Skeleton className="h-[40px] w-full" />
-              )}
-            </div>
-            <div className="flex gap-4">
-              <div className="flex w-1/3 flex-col space-y-1.5">
-                <Label htmlFor="countryCode">Country Code</Label>
-                {countryCode !== undefined && countryCode !== null ? (
-                  <Input
-                    id="countryCode"
-                    placeholder="Country Code"
-                    value={countryCode}
-                    onChange={(e) => setCountryCode(e.target.value)}
-                  />
-                ) : (
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {showSkeletons ? (
+              <div className="grid w-full items-center gap-4">
+                <div className="flex flex-col space-y-1.5">
+                  <Skeleton className="mb-1 h-5 w-10" />
                   <Skeleton className="h-[40px] w-full" />
-                )}
-              </div>
-              <div className="flex w-2/3 flex-col space-y-1.5">
-                <Label htmlFor="phoneNumber">Phone Number</Label>
-                {number !== undefined && number !== null ? (
-                  <Input
-                    id="phoneNumber"
-                    placeholder="Phone Number"
-                    value={number}
-                    onChange={(e) => setNumber(e.target.value)}
-                  />
-                ) : (
+                </div>
+                <div className="flex flex-col space-y-1.5">
+                  <Skeleton className="mb-1 h-5 w-24" />
                   <Skeleton className="h-[40px] w-full" />
-                )}
+                </div>
               </div>
-            </div>
-          </div>
-        </form>
+            ) : (
+              <div className="grid w-full items-center gap-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel htmlFor="email">Email</FormLabel>
+                      <FormControl>
+                        <Input id="email" placeholder="Email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="number"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel htmlFor="phoneNumber">Phone Number</FormLabel>
+                      <FormControl>
+                        <PhoneInput
+                          id="phoneNumber"
+                          placeholder="Enter a phone number"
+                          defaultCountry="EE"
+                          international
+                          {...field}
+                          className="w-full"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+            <CardFooter className="flex justify-end">
+              <Button type="submit" disabled={loading || showSkeletons}>
+                {loading ? (
+                  <>
+                    Updating <MotionSpinner />
+                  </>
+                ) : (
+                  'Update'
+                )}
+              </Button>
+            </CardFooter>
+          </form>
+        </Form>
       </CardContent>
-      <CardFooter className="flex justify-end">
-        <Button onClick={handleUpdate} disabled={loading}>
-          {loading ? (
-            <>
-              Updating <MotionSpinner />
-            </>
-          ) : (
-            'Update'
-          )}
-        </Button>
-      </CardFooter>
     </Card>
   );
 };
