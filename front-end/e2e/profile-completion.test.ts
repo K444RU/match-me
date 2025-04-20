@@ -33,8 +33,10 @@ test.describe('Full User Registration Flow', () => {
     await page.getByRole('textbox', { name: 'Enter a phone number' }).fill(testUser.phone);
     await page.getByRole('button', { name: 'Submit form.' }).click();
 
-    // Verify redirect to login page after registration
-    await expect(page).toHaveURL('http://localhost:3000/login');
+    // Verify not redirected to login page
+    await expect(page).toHaveURL('http://localhost:3000/register');
+
+    await page.getByRole('link', { name: 'Log in' }).click();
 
     // login
     await page.getByRole('textbox', { name: 'Email' }).click();
@@ -62,7 +64,7 @@ test.describe('Full User Registration Flow', () => {
     const genderDropdown = page.getByRole('combobox').filter({ hasText: 'Select Gender' });
     await genderDropdown.click();
 
-    const maleOption = page.getByRole('option').filter({ has: page.getByText('MALE', { exact: true }) });
+    const maleOption = page.getByRole('option').filter({ has: page.getByText('Male', { exact: true }) });
     await maleOption.waitFor({ state: 'visible', timeout: 5000 });
     await maleOption.click();
 
@@ -97,7 +99,7 @@ test.describe('Full User Registration Flow', () => {
     const genderDropdown2 = page.getByRole('combobox').filter({ hasText: 'Select Gender' });
     await genderDropdown2.click();
 
-    const femaleOption = page.getByRole('option').filter({ has: page.getByText('FEMALE', { exact: true }) });
+    const femaleOption = page.getByRole('option').filter({ has: page.getByText('Female', { exact: true }) });
     await femaleOption.waitFor({ state: 'visible', timeout: 5000 });
     await femaleOption.click();
 
