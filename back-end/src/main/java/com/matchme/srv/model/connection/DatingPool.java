@@ -6,11 +6,16 @@ import java.util.Set;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
+import com.matchme.srv.model.user.profile.UserGenderEnum;
+import com.matchme.srv.validation.annotations.ValidGender;
+
 import jakarta.persistence.Index;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -42,8 +47,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE) // Enable second-level caching
 @Table(name = "dating_pool", indexes = {
-        @Index(name = "idx_dating_pool_gender", columnList = "my_gender_id"),
-        @Index(name = "idx_dating_pool_looking_for", columnList = "looking_for_gender_id"),
+        @Index(name = "idx_dating_pool_gender", columnList = "my_gender"),
+        @Index(name = "idx_dating_pool_looking_for", columnList = "looking_for_gender"),
         @Index(name = "idx_dating_pool_age", columnList = "my_age"),
         @Index(name = "idx_dating_pool_location", columnList = "my_location"),
         @Index(name = "idx_dating_pool_score", columnList = "actual_score")
@@ -63,16 +68,20 @@ public class DatingPool {
      * Used for primary matching criteria.
      */
     @NotNull(message = "Gender is required")
-    @Column(name = "my_gender_id", nullable = false)
-    private Long myGender;
+    @Column(name = "my_gender", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @ValidGender(message = "Invalid gender value")
+    private UserGenderEnum myGender;
 
     /**
      * The gender identifier that the user is interested in matching with.
      * Used for primary matching criteria.
      */
     @NotNull(message = "Looking for gender is required")
-    @Column(name = "looking_for_gender_id", nullable = false)
-    private Long lookingForGender;
+    @Column(name = "looking_for_gender", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @ValidGender(message = "Invalid gender value")
+    private UserGenderEnum lookingForGender;
 
     /**
      * The user's current age.

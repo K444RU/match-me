@@ -7,7 +7,7 @@ import java.util.Set;
 
 import com.matchme.srv.model.connection.UserAttributesListener;
 import com.matchme.srv.model.user.profile.ProfileChange;
-import com.matchme.srv.model.user.profile.UserGenderType;
+import com.matchme.srv.model.user.profile.UserGenderEnum;
 import com.matchme.srv.model.user.profile.UserProfile;
 
 import jakarta.persistence.*;
@@ -44,11 +44,11 @@ public class UserAttributes {
 
   /**
    * The user's gender.
-   * References the UserGenderType entity for standardized gender options.
+   * Uses the UserGenderEnum for standardized gender options.
    */
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "gender_id")
-  private UserGenderType gender;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "gender", length = 50)
+  private UserGenderEnum gender;
 
   /**
    * The user's date of birth.

@@ -15,7 +15,6 @@ import com.matchme.srv.model.connection.ConnectionType;
 import com.matchme.srv.model.user.UserRoleType;
 import com.matchme.srv.model.user.activity.ActivityLogType;
 import com.matchme.srv.model.user.profile.ProfileChangeType;
-import com.matchme.srv.model.user.profile.UserGenderType;
 import com.matchme.srv.model.user.profile.user_attributes.AttributeChangeType;
 import com.matchme.srv.model.user.profile.user_preferences.PreferenceChangeType;
 import com.matchme.srv.repository.ActivityLogTypeRepository;
@@ -23,7 +22,6 @@ import com.matchme.srv.repository.AttributeChangeTypeRepository;
 import com.matchme.srv.repository.ConnectionTypeRepository;
 import com.matchme.srv.repository.PreferenceChangeTypeRepository;
 import com.matchme.srv.repository.ProfileChangeTypeRepository;
-import com.matchme.srv.repository.UserGenderTypeRepository;
 import com.matchme.srv.repository.UserRoleTypeRepository;
 
 @SpringBootTest
@@ -33,9 +31,6 @@ class TypesTest {
 
     @Autowired
     private UserRoleTypeRepository roleRepository;
-
-    @Autowired
-    private UserGenderTypeRepository genderRepository;
 
     @Autowired
     private ConnectionTypeRepository connectionTypeRepository;
@@ -59,15 +54,6 @@ class TypesTest {
         assertTrue(roles.stream().anyMatch(role -> role.getName().equals("ROLE_USER")));
         assertTrue(roles.stream().anyMatch(role -> role.getName().equals("ROLE_MODERATOR")));
         assertTrue(roles.stream().anyMatch(role -> role.getName().equals("ROLE_ADMIN")));
-    }
-
-    @Test
-    void testGendersInitialization() {
-        List<UserGenderType> genders = genderRepository.findAll();
-        assertEquals(3, genders.size());
-        assertTrue(genders.stream().anyMatch(gender -> gender.getName().equals("MALE")));
-        assertTrue(genders.stream().anyMatch(gender -> gender.getName().equals("FEMALE")));
-        assertTrue(genders.stream().anyMatch(gender -> gender.getName().equals("OTHER")));
     }
 
     @Test

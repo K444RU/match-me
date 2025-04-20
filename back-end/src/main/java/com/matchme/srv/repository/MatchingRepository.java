@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.matchme.srv.model.connection.DatingPool;
-
+import com.matchme.srv.model.user.profile.UserGenderEnum;
 /**
  * Repository interface for managing DatingPool entities.
  * Provides methods for querying and retrieving potential matches based on user
@@ -54,8 +54,8 @@ public interface MatchingRepository extends JpaRepository<DatingPool, Long> {
             substring(:userLocation, 1, :precision) MEMBER OF dp.suitableGeoHashes
             """)
     List<DatingPool> findUsersThatMatchParameters(
-            @Param("gender") Long gender,
-            @Param("lookingForGender") Long lookingForGender,
+            @Param("gender") UserGenderEnum gender,
+            @Param("lookingForGender") UserGenderEnum lookingForGender,
             @Param("userAge") Integer userAge,
             @Param("minAge") Integer minAge,
             @Param("maxAge") Integer maxAge,

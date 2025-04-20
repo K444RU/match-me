@@ -3,11 +3,6 @@ INSERT INTO user_role_types (id, name) VALUES (1, 'ROLE_USER') ON CONFLICT (id) 
 INSERT INTO user_role_types (id, name) VALUES (2, 'ROLE_MODERATOR') ON CONFLICT (id) DO NOTHING;
 INSERT INTO user_role_types (id, name) VALUES (3, 'ROLE_ADMIN') ON CONFLICT (id) DO NOTHING;
 
--- Insert genders
-INSERT INTO user_gender_types (id, name) VALUES (1, 'MALE') ON CONFLICT (id) DO NOTHING;
-INSERT INTO user_gender_types (id, name) VALUES (2, 'FEMALE') ON CONFLICT (id) DO NOTHING;
-INSERT INTO user_gender_types (id, name) VALUES (3, 'OTHER') ON CONFLICT (id) DO NOTHING;
-
 -- Insert connection types
 INSERT INTO connection_types (id, name) VALUES (1, 'SEEN') ON CONFLICT (id) DO NOTHING;
 INSERT INTO connection_types (id, name) VALUES (2, 'OPENED_PROFILE') ON CONFLICT (id) DO NOTHING;
@@ -578,25 +573,25 @@ ON CONFLICT (user_id) DO NOTHING;
 -- Insert sample user attributes into the "user_attributes" table.
 -- NOTE: "gender_id" values reference user_gender_types (1 = MALE, 2 = FEMALE)
 --       and location is stored as an array literal (PostgreSQL syntax).
-INSERT INTO user_attributes (user_id, gender_id, birthdate, location) 
+INSERT INTO user_attributes (user_id, gender, birthdate, location) 
 VALUES 
-  (1, 1, '1990-01-01', '{58.3859,24.5002}'),
-  (2, 1, '1992-05-10', '{58.3859,24.5002}'),
-  (3, 2, '1988-11-20', '{58.3859,24.5002}'),
-  (4, 2, '1990-01-01', '{58.3859,24.5002}'),
-  (5, 1, '1990-01-01', '{58.3859,24.5002}')
+  (1, 'MALE', '1990-01-01', '{58.3859,24.5002}'),
+  (2, 'MALE', '1992-05-10', '{58.3859,24.5002}'),
+  (3, 'FEMALE', '1988-11-20', '{58.3859,24.5002}'),
+  (4, 'MALE', '1990-01-01', '{58.3859,24.5002}'),
+  (5, 'FEMALE', '1990-01-01', '{58.3859,24.5002}')
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Insert sample user preferences into the "user_preferences" table.
 -- Here we assume the gender preference (stored as gender_id) indicates the
 -- preferred gender for matching (e.g. John (id 1) prefers females which is id 2).
-INSERT INTO user_preferences (user_id, gender_id, age_min, age_max, distance, probability_tolerance)
+INSERT INTO user_preferences (user_id, gender, age_min, age_max, distance, probability_tolerance)
 VALUES 
-  (1, 2, 18, 100, 50, 0.5),  -- John prefers females
-  (2, 2, 18, 100, 50, 0.5),  -- Jane prefers males
-  (3, 1, 18, 100, 50, 0.5),   -- Alice prefers males
-  (4, 1, 18, 100, 50, 0.5),
-  (5, 2, 18, 100, 50, 0.5)
+  (1, 'FEMALE', 18, 100, 50, 0.5),  -- John prefers females
+  (2, 'MALE', 18, 100, 50, 0.5),  -- Jane prefers males
+  (3, 'MALE', 18, 100, 50, 0.5),   -- Alice prefers males
+  (4, 'FEMALE', 18, 100, 50, 0.5),
+  (5, 'MALE', 18, 100, 50, 0.5)
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Insert sample user scores into the "user_scores" table.
@@ -621,8 +616,8 @@ ON CONFLICT (user_profile_id, hobby_id) DO NOTHING;
 
 INSERT INTO dating_pool (
     profile_id, 
-    my_gender_id, 
-    looking_for_gender_id, 
+    my_gender, 
+    looking_for_gender, 
     my_age, 
     age_min, 
     age_max, 
@@ -630,8 +625,8 @@ INSERT INTO dating_pool (
     actual_score
 ) VALUES (
     1, 
-    1,  -- Male
-    2,  -- Looking for Female
+    'MALE',  -- Male
+    'FEMALE',  -- Looking for Female
     34, -- 1990-01-01 = 34 years old
     18, -- 18 years old age min
     100, -- 100 age max
@@ -639,8 +634,8 @@ INSERT INTO dating_pool (
     1000
 ), (
     2, 
-    1,  -- Male
-    2,  -- Looking for Female
+    'MALE',  -- Male
+    'FEMALE',  -- Looking for Female
     32, -- 1992-05-10 = 32 years old
     18, -- 18 years old age min
     100, -- 100 age max
@@ -648,8 +643,8 @@ INSERT INTO dating_pool (
     1000
 ), (
     3, 
-    2,  -- Female
-    1,  -- Looking for Male
+    'FEMALE',  -- Female
+    'MALE',  -- Looking for Male
     36, -- 1988-11-20 = 36 years old
     18, -- 18 years old age min
     100, -- 100 age max
@@ -657,8 +652,8 @@ INSERT INTO dating_pool (
     1000
 ), (
     4, 
-    2,  -- Female
-    1,  -- Looking for Male
+    'FEMALE',  -- Female
+    'MALE',  -- Looking for Male
     34, -- 1990-01-01 = 34 years old
     18, -- 18 years old age min
     100, -- 100 age max
@@ -666,8 +661,8 @@ INSERT INTO dating_pool (
     1000
 ), (
     5, 
-    1,  -- Male
-    2,  -- Looking for Female
+    'MALE',  -- Male
+    'FEMALE',  -- Looking for Female
     34, -- 1990-01-01 = 34 years old
     18, -- 18 years old age min
     100, -- 100 age max

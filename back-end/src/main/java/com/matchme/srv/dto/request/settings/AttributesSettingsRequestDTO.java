@@ -3,6 +3,8 @@ package com.matchme.srv.dto.request.settings;
 import java.time.LocalDate;
 
 import com.matchme.srv.constraints.BirthDate;
+import com.matchme.srv.model.user.profile.UserGenderEnum;
+import com.matchme.srv.validation.annotations.ValidGender;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -23,8 +25,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class AttributesSettingsRequestDTO {
     @NotNull(message = "Self gender must be specified")
-    @Min(value = 1, message = "Invalid gender value")
-    private Long gender_self;
+    @ValidGender(message = "Invalid gender value")
+    private UserGenderEnum gender_self;
 
     @NotNull(message = "Birth date must be specified")
     @BirthDate(message = "Birth date must be greater than or equal to 18 years old")

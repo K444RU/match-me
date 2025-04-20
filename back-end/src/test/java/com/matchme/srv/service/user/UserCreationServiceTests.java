@@ -23,7 +23,7 @@ import com.matchme.srv.model.user.UserRoleType;
 import com.matchme.srv.model.user.activity.ActivityLogType;
 import com.matchme.srv.model.user.profile.Hobby;
 import com.matchme.srv.model.user.profile.ProfileChangeType;
-import com.matchme.srv.model.user.profile.UserGenderType;
+import com.matchme.srv.model.user.profile.UserGenderEnum;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_attributes.AttributeChangeType;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
@@ -35,7 +35,6 @@ import com.matchme.srv.service.type.ActivityLogTypeService;
 import com.matchme.srv.service.type.AttributeChangeTypeService;
 import com.matchme.srv.service.type.PreferenceChangeTypeService;
 import com.matchme.srv.service.type.ProfileChangeTypeService;
-import com.matchme.srv.service.type.UserGenderTypeService;
 import com.matchme.srv.service.type.UserRoleTypeService;
 import com.matchme.srv.service.user.validation.UserValidationService;
 import jakarta.persistence.EntityNotFoundException;
@@ -74,8 +73,6 @@ class UserCreationServiceTests {
   @Mock private AttributesMapper attributesMapper;
 
   @Mock private PreferencesMapper preferencesMapper;
-
-  @Mock private UserGenderTypeService userGenderTypeService;
 
   @Mock private HobbyService hobbyService;
 
@@ -299,8 +296,8 @@ class UserCreationServiceTests {
           UserParametersRequestDTO.builder()
               .longitude(12.34)
               .latitude(56.78)
-              .gender_self(1L)
-              .gender_other(2L)
+              .gender_self(UserGenderEnum.MALE)
+              .gender_other(UserGenderEnum.FEMALE)
               .first_name("John")
               .last_name("Doe")
               .alias("JD")
@@ -308,15 +305,12 @@ class UserCreationServiceTests {
               .hobbies(Set.of(3L, 4L))
               .build();
 
-      UserGenderType genderType = new UserGenderType();
       Hobby hobby1 = Hobby.builder().id(3L).name("3D printing").category("General").build();
       Hobby hobby2 = Hobby.builder().id(4L).name("Acrobatics").category("General").build();
     
       // UserStateTypes userStateType = new UserStateTypes(); // Removed old type instantiation
     
       when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-      when(userGenderTypeService.getById(1L)).thenReturn(genderType);
-      when(userGenderTypeService.getById(2L)).thenReturn(genderType);
       when(hobbyService.getById(3L)).thenReturn(hobby1);
       when(hobbyService.getById(4L)).thenReturn(hobby2);
       // No need to mock userStateTypesService anymore
@@ -361,14 +355,14 @@ class UserCreationServiceTests {
           () ->
               assertThat(attributes.getGender())
                   .as("checking if the gender is correct")
-                  .isEqualTo(genderType));
+                  .isEqualTo(UserGenderEnum.MALE));
 
       UserPreferences preferences = profile.getPreferences();
       assertAll(
           () ->
               assertThat(preferences.getGender())
                   .as("checking if the gender is correct")
-                  .isEqualTo(genderType));
+                  .isEqualTo(UserGenderEnum.FEMALE));
 
       assertAll(
           () ->
@@ -401,10 +395,9 @@ class UserCreationServiceTests {
     void setUserParameters_WithInvalidGender_ThrowsResourceNotFoundException() {
       // Assign
       UserParametersRequestDTO request =
-          UserParametersRequestDTO.builder().gender_self(99L).gender_other(2L).build();
+          UserParametersRequestDTO.builder().gender_self(UserGenderEnum.MALE).gender_other(UserGenderEnum.FEMALE).build();
 
       when(userRepository.findById(1L)).thenReturn(Optional.of(new User()));
-      when(userGenderTypeService.getById(99L)).thenThrow(new ResourceNotFoundException("Gender"));
 
       // Act & Assert
       assertAll(
@@ -425,13 +418,12 @@ class UserCreationServiceTests {
           UserParametersRequestDTO.builder()
               .longitude(12.34)
               .latitude(56.78)
-              .gender_self(1L)
-              .gender_other(2L)
+              .gender_self(UserGenderEnum.MALE)
+              .gender_other(UserGenderEnum.FEMALE)
               .hobbies(Collections.emptySet())
               .build();
 
       when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-      when(userGenderTypeService.getById(anyLong())).thenReturn(new UserGenderType());
 
       // Act
       userCreationService.setUserParameters(1L, request);
@@ -454,13 +446,12 @@ class UserCreationServiceTests {
           UserParametersRequestDTO.builder()
               .longitude(12.34)
               .latitude(56.78)
-              .gender_self(1L)
-              .gender_other(2L)
+              .gender_self(UserGenderEnum.MALE)
+              .gender_other(UserGenderEnum.FEMALE)
               .alias("JD")
               .build();
 
       when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-      when(userGenderTypeService.getById(anyLong())).thenReturn(new UserGenderType());
 
       // Act
       userCreationService.setUserParameters(1L, request);
@@ -486,7 +477,6 @@ class UserCreationServiceTests {
       UserParametersRequestDTO request = validRequest();
 
       when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-      when(userGenderTypeService.getById(anyLong())).thenReturn(new UserGenderType());
 
       // Act
       userCreationService.setUserParameters(1L, request);
@@ -507,7 +497,6 @@ class UserCreationServiceTests {
       UserParametersRequestDTO request = validRequest();
 
       when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-      when(userGenderTypeService.getById(anyLong())).thenReturn(new UserGenderType());
 
       // Act
       userCreationService.setUserParameters(1L, request);
@@ -531,7 +520,6 @@ class UserCreationServiceTests {
       UserParametersRequestDTO request = validRequest();
 
       when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-      when(userGenderTypeService.getById(anyLong())).thenReturn(new UserGenderType());
 
       // Act
       userCreationService.setUserParameters(1L, request);
@@ -611,7 +599,6 @@ class UserCreationServiceTests {
       UserParametersRequestDTO request = validRequest();
 
       when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-      when(userGenderTypeService.getById(anyLong())).thenReturn(new UserGenderType());
 
       // Act
       userCreationService.setUserParameters(1L, request);
@@ -643,7 +630,6 @@ class UserCreationServiceTests {
       UserParametersRequestDTO request = validRequest();
 
       when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-      when(userGenderTypeService.getById(anyLong())).thenReturn(new UserGenderType());
 
       // Act
       userCreationService.setUserParameters(1L, request);
@@ -671,7 +657,6 @@ class UserCreationServiceTests {
       UserParametersRequestDTO request = validRequest();
 
       when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-      when(userGenderTypeService.getById(anyLong())).thenReturn(new UserGenderType());
 
       // Act
       userCreationService.setUserParameters(1L, request);
@@ -690,8 +675,8 @@ class UserCreationServiceTests {
       return UserParametersRequestDTO.builder()
           .longitude(12.34)
           .latitude(56.78)
-          .gender_self(1L)
-          .gender_other(2L)
+          .gender_self(UserGenderEnum.MALE)
+          .gender_other(UserGenderEnum.FEMALE)
           .build();
     }
   }

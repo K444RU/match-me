@@ -13,7 +13,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.matchme.srv.dto.response.ChatMessageResponseDTO;
 import com.matchme.srv.dto.response.ChatPreviewResponseDTO;
-import com.matchme.srv.model.message.MessageEvent;
 import com.matchme.srv.model.message.MessageEventTypeEnum;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.security.jwt.SecurityUtils;
@@ -23,7 +22,6 @@ import com.matchme.srv.service.user.UserQueryService;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

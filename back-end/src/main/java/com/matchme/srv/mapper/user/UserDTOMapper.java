@@ -2,7 +2,6 @@ package com.matchme.srv.mapper.user;
 
 import com.matchme.srv.dto.response.BiographicalResponseDTO;
 import com.matchme.srv.dto.response.CurrentUserResponseDTO;
-import com.matchme.srv.dto.response.GenderTypeDTO;
 import com.matchme.srv.dto.response.HobbyResponseDTO;
 import com.matchme.srv.dto.response.ProfileResponseDTO;
 import com.matchme.srv.dto.response.SettingsResponseDTO;
@@ -72,14 +71,8 @@ public class UserDTOMapper {
 
     public BiographicalResponseDTO tobBiographicalResponseDTO(UserProfile profile) {
         return BiographicalResponseDTO.builder()
-                .gender_self(
-                        new GenderTypeDTO(
-                                profile.getAttributes().getGender().getId(),
-                                profile.getAttributes().getGender().getName()))
-                .gender_other(
-                        new GenderTypeDTO(
-                                profile.getPreferences().getGender().getId(),
-                                profile.getPreferences().getGender().getName()))
+                .gender_self(profile.getAttributes().getGender())
+                .gender_other(profile.getPreferences().getGender())
                 .hobbies(profile.getHobbies().stream().map(Hobby::getId).collect(Collectors.toSet()))
                 .age_self(
                         Period.between(profile.getAttributes().getBirthdate(), LocalDate.now()).getYears())

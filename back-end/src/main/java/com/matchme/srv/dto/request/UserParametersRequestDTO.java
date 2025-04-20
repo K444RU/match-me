@@ -3,7 +3,9 @@ package com.matchme.srv.dto.request;
 import java.time.LocalDate;
 import java.util.Set;
 import com.matchme.srv.constraints.BirthDate;
+import com.matchme.srv.model.user.profile.UserGenderEnum;
 import com.matchme.srv.validation.annotations.NotBlankIfPresent;
+import com.matchme.srv.validation.annotations.ValidGender;
 
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -37,8 +39,8 @@ public record UserParametersRequestDTO(
   Set<Long> hobbies,
 
   @NotNull(message = "Self gender must be specified")
-  @Min(value = 1, message = "Invalid gender value")
-  Long gender_self,
+  @ValidGender(message = "Invalid gender value")
+  UserGenderEnum gender_self,
 
   @NotNull(message = "Birth date must be specified")
   @BirthDate(message = "Birth date must be greater than or equal to 18 years old")
@@ -58,8 +60,8 @@ public record UserParametersRequestDTO(
   Double latitude,
 
   @NotNull(message = "Preferred gender must be specified")
-  @Min(value = 1, message = "Invalid gender value")
-  Long gender_other,
+  @ValidGender(message = "Invalid gender value")
+  UserGenderEnum gender_other,
 
   @NotNull(message = "Minimum age must be specified")
   @Min(value = 18, message = "Minimum age must be at least 18")

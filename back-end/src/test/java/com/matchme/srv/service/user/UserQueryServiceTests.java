@@ -14,6 +14,7 @@ import com.matchme.srv.dto.response.UserParametersResponseDTO;
 import com.matchme.srv.mapper.UserParametersMapper;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.UserAuth;
+import com.matchme.srv.model.user.profile.UserGenderEnum;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.repository.UserRepository;
 import com.matchme.srv.service.AccessValidationService;
@@ -95,12 +96,12 @@ class UserQueryServiceTests {
             "Doe", // last_name
             "JohnDoe", // alias
             Set.of(1L), // hobbies
-            1L, // gender_self
+            UserGenderEnum.MALE, // gender_self
             "1990-01-01", // birth_date
             "New York", // city
             1.0, // longitude
             1.0, // latitude
-            1L, // gender_other
+            UserGenderEnum.FEMALE, // gender_other
             18, // age_min
             99, // age_max
             100, // distance
