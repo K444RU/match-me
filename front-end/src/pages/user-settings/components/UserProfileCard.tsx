@@ -35,7 +35,7 @@ const profileSchema = z.object({
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
-const UserProfileCard = () => {
+export default function UserProfileCard() {
   const settingsContext = useContext(SettingsContext);
   const [loading, setLoading] = useState(false);
 
@@ -200,5 +200,3 @@ const UserProfileCard = () => {
     </Card>
   );
 };
-
-export default UserProfileCard;

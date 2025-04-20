@@ -28,7 +28,7 @@ const attributesSchema = z.object({
 
 type AttributesFormData = z.infer<typeof attributesSchema>;
 
-const UserAttributesCard = () => {
+export default function UserAttributesCard() {
   const genders = useContext(GenderContext);
   const settingsContext = useContext(SettingsContext);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -223,5 +223,3 @@ const UserAttributesCard = () => {
     </Card>
   );
 };
-
-export default UserAttributesCard;

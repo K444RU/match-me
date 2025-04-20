@@ -23,7 +23,7 @@ const accountSchema = z.object({
 
 type AccountFormData = z.infer<typeof accountSchema>;
 
-const UserAccountCard = () => {
+export default function UserAccountCard() {
   const settingsContext = useContext(SettingsContext);
   const [loading, setLoading] = useState(false);
 
@@ -151,5 +151,3 @@ const UserAccountCard = () => {
     </Card>
   );
 };
-
-export default UserAccountCard;
