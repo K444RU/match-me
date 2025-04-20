@@ -592,11 +592,11 @@ ON CONFLICT (user_id) DO NOTHING;
 -- preferred gender for matching (e.g. John (id 1) prefers females which is id 2).
 INSERT INTO user_preferences (user_id, gender_id, age_min, age_max, distance, probability_tolerance)
 VALUES 
-  (1, 2, 18, 100, 30, 0.5),  -- John prefers females
-  (2, 2, 18, 100, 30, 0.5),  -- Jane prefers males
-  (3, 1, 18, 100, 30, 0.5),   -- Alice prefers males
-  (4, 1, 18, 100, 30, 0.5),
-  (5, 2, 18, 100, 30, 0.5)
+  (1, 2, 18, 100, 50, 0.5),  -- John prefers females
+  (2, 2, 18, 100, 50, 0.5),  -- Jane prefers males
+  (3, 1, 18, 100, 50, 0.5),   -- Alice prefers males
+  (4, 1, 18, 100, 50, 0.5),
+  (5, 2, 18, 100, 50, 0.5)
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Insert sample user scores into the "user_scores" table.
