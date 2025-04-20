@@ -189,7 +189,7 @@ export default function UserPreferencesCard() {
                           ))}
                       </SelectContent>
                     </Select>
-                    <FormDescription>What gender are you?</FormDescription>
+                    <FormDescription>What gender do you prefer?</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

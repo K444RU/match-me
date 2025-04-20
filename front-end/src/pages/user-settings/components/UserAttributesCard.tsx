@@ -16,6 +16,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { SettingsContext } from '../SettingsContext';
+import { Input } from '@/components/ui/input';
 
 const attributesSchema = z.object({
   birthDate: z.date({ required_error: 'Birth date is required.' }),
@@ -139,10 +140,11 @@ export default function UserAttributesCard() {
                     <FormItem className="relative">
                       <FormLabel htmlFor="city">City</FormLabel>
                       <FormControl>
-                        <InputField
+                        <Input
                           {...field}
                           type="text"
                           placeholder="Enter your city"
+                          className=""
                           onFocus={() => setShowSuggestions(true)}
                           onBlur={() => {
                             setTimeout(() => {
@@ -153,7 +155,7 @@ export default function UserAttributesCard() {
                       </FormControl>
                       <FormDescription>This will be used to find matches near you.</FormDescription>
                       <FormMessage />
-                      <div className={`absolute top-full z-10 w-full ${!showSuggestions ? `hidden` : ``}`}>
+                      <div className={`absolute top-[calc(100%-1.5rem)] z-10 w-full ${!showSuggestions ? `hidden` : ``}`}>
                         <CitySuggestions
                           searchTerm={debouncedCitySearchValue}
                           onCitySelect={handleCitySelect}

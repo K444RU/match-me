@@ -2,7 +2,7 @@ import { HOBBIES } from '@/assets/hobbies';
 import MotionSpinner from '@/components/animations/MotionSpinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import ProfilePictureUploader from '@/components/ui/forms/ProfilePictureUploader';
 import { Input } from '@/components/ui/input';
 import MultipleSelector from '@/components/ui/multi-select';
@@ -164,6 +164,7 @@ export default function UserProfileCard() {
                     <FormControl>
                       <Input id="alias" placeholder="Alias" {...field} />
                     </FormControl>
+                    <FormDescription>This will be used to identify you in the app, when omitted, full name will be shown.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
