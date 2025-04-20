@@ -5,7 +5,6 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import DatePicker from '@/components/ui/forms/DatePicker';
 import InputField from '@/components/ui/forms/InputField';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
 import { GenderContext } from '@/features/gender';
 import { userService } from '@/features/user';
 import { useDebounce } from '@/lib/hooks/use-debounce';
@@ -101,7 +100,13 @@ export default function UserAttributesCard() {
     }
   };
 
-  const showSkeletons = !settingsContext?.settings || form.getValues('birthDate') === undefined;
+  if (!settingsContext || !settingsContext.settings) {
+    return (
+      <Card className="no-scrollbar flex h-[475px] w-full items-center justify-center border-none shadow-none">
+        <MotionSpinner />
+      </Card>
+    );
+  }
 
   return (
     <Card className="min-h-[475px] w-full border-none shadow-none h-auto">
@@ -112,22 +117,6 @@ export default function UserAttributesCard() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <CardContent>
-            {showSkeletons ? (
-              <div className="grid w-full items-center gap-4">
-                <div className="flex flex-col space-y-1.5">
-                  <Skeleton className="mb-1 h-5 w-20" />
-                  <Skeleton className="h-[40px] w-full" />
-                </div>
-                <div className="flex flex-col space-y-1.5">
-                  <Skeleton className="mb-1 h-5 w-10" />
-                  <Skeleton className="h-[40px] w-full" />
-                </div>
-                <div className="flex flex-col space-y-1.5">
-                  <Skeleton className="mb-1 h-5 w-16" />
-                  <Skeleton className="h-[40px] w-full" />
-                </div>
-              </div>
-            ) : (
               <div className="grid w-full items-center gap-4">
                 <FormField
                   control={form.control}
@@ -182,6 +171,7 @@ export default function UserAttributesCard() {
                     <FormItem className="w-full">
                       <FormLabel htmlFor="genderSelf">Gender</FormLabel>
                       <Select
+                        key={`gender-select-${field.value}`}
                         value={field.value?.toString() ?? ''}
                         onValueChange={(value) => field.onChange(Number(value))}
                       >
@@ -205,10 +195,9 @@ export default function UserAttributesCard() {
                   )}
                 />
               </div>
-            )}
           </CardContent>
           <CardFooter className="flex justify-end">
-            <Button type="submit" disabled={loading || showSkeletons}>
+            <Button type="submit" disabled={loading}>
               {loading ? (
                 <>
                   Updating <MotionSpinner />

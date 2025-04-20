@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { PhoneInput } from '@/components/ui/phone-input';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/features/authentication';
 import { userService } from '@/features/user';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -75,7 +74,13 @@ export default function UserAccountCard() {
     }
   };
 
-  const showSkeletons = !settingsContext?.settings;
+  if (!settingsContext || !settingsContext.settings) {
+    return (
+      <Card className="no-scrollbar flex h-[475px] w-full items-center justify-center border-none shadow-none">
+        <MotionSpinner />
+      </Card>
+    );
+  }
 
   return (
     <Card className="h-[475px] w-full border-none shadow-none">
@@ -86,18 +91,6 @@ export default function UserAccountCard() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <CardContent>
-            {showSkeletons ? (
-              <div className="grid w-full items-center gap-4">
-                <div className="flex flex-col space-y-1.5">
-                  <Skeleton className="mb-1 h-5 w-10" />
-                  <Skeleton className="h-[40px] w-full" />
-                </div>
-                <div className="flex flex-col space-y-1.5">
-                  <Skeleton className="mb-1 h-5 w-24" />
-                  <Skeleton className="h-[40px] w-full" />
-                </div>
-              </div>
-            ) : (
               <div className="grid w-full items-center gap-4">
                 <FormField
                   control={form.control}
@@ -133,10 +126,9 @@ export default function UserAccountCard() {
                   )}
                 />
               </div>
-            )}
           </CardContent>
           <CardFooter className="flex justify-end">
-            <Button type="submit" disabled={loading || showSkeletons}>
+            <Button type="submit" disabled={loading}>
               {loading ? (
                 <>
                   Updating <MotionSpinner />

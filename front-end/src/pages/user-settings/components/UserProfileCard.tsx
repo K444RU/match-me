@@ -99,6 +99,14 @@ export default function UserProfileCard() {
     }
   };
 
+  if (!settingsContext || !settingsContext.settings) {
+    return (
+      <Card className="no-scrollbar flex h-[475px] w-full items-center justify-center border-none shadow-none">
+        <MotionSpinner />
+      </Card>
+    );
+  }
+
   return (
     <Card className="no-scrollbar h-[475px] w-full overflow-y-auto border-none">
       <CardHeader>
@@ -199,4 +207,4 @@ export default function UserProfileCard() {
       </Form>
     </Card>
   );
-};
+}
