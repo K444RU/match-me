@@ -545,11 +545,11 @@ INSERT INTO hobby (id, name, category, sub_category) VALUES (494, 'Whale watchin
 -- Insert sample users into the "users" table.
 INSERT INTO users (id, email, number, state) 
 VALUES 
-  (1, 'john.doe@example.com', '111-111-1111', 'ACTIVE'),
-  (2, 'jane.smith@example.com', '222-222-2222', 'ACTIVE'),
-  (3, 'alice.johnson@example.com', '333-333-3333', 'ACTIVE'),
-  (4, 'toomas.saar@example.com', '444-444-4444', 'ACTIVE'),
-  (5, 'madis.paidest@example.com', '555-555-5555', 'ACTIVE')
+  (1, 'john.doe@example.com', '+37253414494', 'ACTIVE'),
+  (2, 'jane.smith@example.com', '+37255433546', 'ACTIVE'),
+  (3, 'alice.johnson@example.com', '+37255554445', 'ACTIVE'),
+  (4, 'toomas.saar@example.com', '+37255554444', 'ACTIVE'),
+  (5, 'madis.paidest@example.com', '+37255554443', 'ACTIVE')
 ON CONFLICT (id) DO NOTHING;
 
 -- Update the users_id_seq sequence, because we don't use JPA, JPA doesn't know where the sequence is
