@@ -179,14 +179,14 @@ const UserAttributesCard = () => {
                   control={form.control}
                   name="gender"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="w-full">
                       <FormLabel htmlFor="selfGender">Gender</FormLabel>
                       <Select
                         value={field.value?.toString() ?? ''}
                         onValueChange={(value) => field.onChange(Number(value))}
                       >
                         <FormControl>
-                          <SelectTrigger id="selfGender">
+                          <SelectTrigger id="selfGender" className="w-full">
                             <SelectValue placeholder="Select a gender..." />
                           </SelectTrigger>
                         </FormControl>
