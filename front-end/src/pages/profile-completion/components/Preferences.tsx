@@ -7,6 +7,7 @@ import { Slider } from '@/components/ui/slider';
 import React, { useState } from 'react';
 import { FaArrowLeft, FaCheck } from 'react-icons/fa';
 import { UnifiedFormData } from '../types/types';
+import { genders } from '@/assets/genders';
 
 interface PreferencesProps {
   onPrevious: () => void;
@@ -14,7 +15,6 @@ interface PreferencesProps {
   formData: UnifiedFormData;
   loading: boolean;
   onChange: (name: keyof UnifiedFormData, value: UnifiedFormData[keyof UnifiedFormData]) => void;
-  genderOptions: { id: number; name: string }[];
 }
 
 const Preferences: React.FC<PreferencesProps> = ({
@@ -23,7 +23,6 @@ const Preferences: React.FC<PreferencesProps> = ({
   formData,
   loading,
   onChange,
-  genderOptions,
 }) => {
   const [error, setError] = useState<string | null>(null);
 
@@ -51,7 +50,6 @@ const Preferences: React.FC<PreferencesProps> = ({
       {error && <div className="text-sm text-red-500">{error}</div>}
 
       {/* Gender Preference Dropdown */}
-      {/* Gender Dropdown */}
       <div className="w-full space-y-2">
         <Label htmlFor="genderOther">Gender Preference</Label>
         <Select
@@ -63,9 +61,9 @@ const Preferences: React.FC<PreferencesProps> = ({
             <SelectValue placeholder="Select Gender" />
           </SelectTrigger>
           <SelectContent>
-            {genderOptions.map((gender) => (
-              <SelectItem key={gender.id} value={gender.id.toString()}>
-                {gender.name}
+            {genders.map((gender) => (
+              <SelectItem key={gender.value} value={gender.value.toString()}>
+                {gender.label}
               </SelectItem>
             ))}
           </SelectContent>

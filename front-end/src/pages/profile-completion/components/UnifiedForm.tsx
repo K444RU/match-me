@@ -1,6 +1,5 @@
-import { UserParametersRequestDTO } from '@/api/types';
+import { UserGenderEnum, UserParametersRequestDTO } from '@/api/types';
 import { useAuth } from '@/features/authentication';
-import { genderService } from '@/features/gender';
 import { userService } from '@/features/user';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -15,12 +14,12 @@ const PayloadFormData = (formData: UnifiedFormData): UserParametersRequestDTO =>
   last_name: formData.lastName,
   alias: formData.alias,
   hobbies: formData.hobbies || [],
-  gender_self: Number(formData.gender),
+  gender_self: formData.genderSelf,
   birth_date: formData.dateOfBirth,
   city: formData.city.name,
   latitude: formData.city.latitude,
   longitude: formData.city.longitude,
-  gender_other: Number(formData.genderOther),
+  gender_other: formData.genderOther,
   age_min: formData.ageRange[0] || 18,
   age_max: formData.ageRange[1] || 120,
   distance: formData.distance || 50,
@@ -36,23 +35,12 @@ export default function UnifiedForm() {
     probabilityTolerance: 0.5,
     distance: 300,
   }));
-  const [genderOptions, setGenderOptions] = useState<{ id: number; name: string }[]>([]);
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.PROFILE_DATA, JSON.stringify(formData));
   }, [formData]);
-
-  useEffect(() => {
-    const fetchGenders = async () => {
-      await genderService
-        .getGenders()
-        .then((genders) => setGenderOptions(genders))
-        .catch((err) => console.error('Error fetching genders:', err));
-    };
-    fetchGenders();
-  }, []);
 
   const handleNextStep = () => {
     setStep((prev) => prev + 1);
@@ -91,7 +79,7 @@ export default function UnifiedForm() {
   return (
     <FormLayout title={step === 0 ? 'Personal Information' : 'Preferences'} className="pb-20">
       {step === 0 && (
-        <Attributes onNext={handleNextStep} onChange={handleChange} formData={formData} genderOptions={genderOptions} />
+        <Attributes onNext={handleNextStep} onChange={handleChange} formData={formData} />
       )}
       {step === 1 && (
         <Preferences
@@ -100,7 +88,6 @@ export default function UnifiedForm() {
           formData={formData}
           loading={loading}
           onChange={handleChange}
-          genderOptions={genderOptions}
         />
       )}
     </FormLayout>

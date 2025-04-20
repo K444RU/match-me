@@ -1,11 +1,11 @@
+import { UserGenderEnum } from '@/api/types';
 import MotionSpinner from '@/components/animations/MotionSpinner';
+import GenderSelect from '@/components/forms/GenderSelect';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { DualRangeSlider } from '@/components/ui/dual-range-slider';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Slider } from '@/components/ui/slider';
-import { GenderContext } from '@/features/gender';
 import { userService } from '@/features/user';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useContext, useEffect, useState } from 'react';
@@ -15,7 +15,7 @@ import { z } from 'zod';
 import { SettingsContext } from '../SettingsContext';
 
 const preferencesSchema = z.object({
-  genderOther: z.number({ required_error: 'Preferred gender is required.' }),
+  genderOther: z.nativeEnum(UserGenderEnum, { required_error: 'Preferred gender is required.' }),
   distance: z.number().min(50).max(300),
   ageRange: z
     .array(z.number())
@@ -30,7 +30,6 @@ type PreferencesFormData = z.infer<typeof preferencesSchema>;
 
 export default function UserPreferencesCard() {
   const settingsContext = useContext(SettingsContext);
-  const genders = useContext(GenderContext);
   const [loading, setLoading] = useState(false);
 
   const form = useForm<PreferencesFormData>({
@@ -47,7 +46,7 @@ export default function UserPreferencesCard() {
     if (settingsContext?.settings) {
       form.reset({
         genderOther:
-          typeof settingsContext.settings.genderOther === 'number' ? settingsContext.settings.genderOther : undefined,
+          typeof settingsContext.settings.genderOther === 'string' ? settingsContext.settings.genderOther : undefined,
         distance: settingsContext.settings.distance ?? 50,
         ageRange: [settingsContext.settings.ageMin ?? 18, settingsContext.settings.ageMax ?? 120],
         probabilityTolerance: settingsContext.settings.probabilityTolerance ?? 0.5,
@@ -164,35 +163,11 @@ export default function UserPreferencesCard() {
                   </FormItem>
                 )}
               />
-              <FormField
+              <GenderSelect
                 control={form.control}
                 name="genderOther"
-                render={({ field }) => (
-                  <FormItem className="w-full">
-                    <FormLabel htmlFor="genderOther">Gender</FormLabel>
-                    <Select
-                      key={`gender-select-${field.value}`}
-                      value={field.value?.toString() ?? ''}
-                      onValueChange={(value) => field.onChange(Number(value))}
-                    >
-                      <FormControl>
-                        <SelectTrigger id="genderOther" className="w-full">
-                          <SelectValue placeholder="Select a gender..." />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent position="popper">
-                        {genders &&
-                          genders.map((gender) => (
-                            <SelectItem key={gender.id} value={gender.id.toString()}>
-                              {gender.name}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>What gender do you prefer?</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                label="Gender"
+                description="What gender do you prefer?"
               />
             </div>
           </CardContent>

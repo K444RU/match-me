@@ -1,10 +1,11 @@
+import { UserGenderEnum } from '@/api/types';
 import MotionSpinner from '@/components/animations/MotionSpinner';
+import GenderSelect from '@/components/forms/GenderSelect';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import DatePicker from '@/components/ui/forms/DatePicker';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { GenderContext } from '@/features/gender';
+import { Input } from '@/components/ui/input';
 import { userService } from '@/features/user';
 import { useDebounce } from '@/lib/hooks/use-debounce';
 import CitySuggestions from '@/pages/profile-completion/components/CitySuggestions';
@@ -15,20 +16,18 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { SettingsContext } from '../SettingsContext';
-import { Input } from '@/components/ui/input';
 
 const attributesSchema = z.object({
   birthDate: z.date({ required_error: 'Birth date is required.' }),
   city: z.string().min(1, { message: 'City is required.' }),
   latitude: z.number({ required_error: 'Latitude is required.' }),
   longitude: z.number({ required_error: 'Longitude is required.' }),
-  genderSelf: z.number({ required_error: 'Gender is required.' }),
+  genderSelf: z.nativeEnum(UserGenderEnum, { required_error: 'Gender is required.' }),
 });
 
 type AttributesFormData = z.infer<typeof attributesSchema>;
 
 export default function UserAttributesCard() {
-  const genders = useContext(GenderContext);
   const settingsContext = useContext(SettingsContext);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -54,8 +53,8 @@ export default function UserAttributesCard() {
         latitude: typeof settingsContext.settings.latitude === 'number' ? settingsContext.settings.latitude : undefined,
         longitude:
           typeof settingsContext.settings.longitude === 'number' ? settingsContext.settings.longitude : undefined,
-          genderSelf:
-          typeof settingsContext.settings.genderSelf === 'number' ? settingsContext.settings.genderSelf : undefined,
+        genderSelf:
+          typeof settingsContext.settings.genderSelf === 'string' ? settingsContext.settings.genderSelf : undefined,
         birthDate: settingsContext.settings.birthDate ? new Date(settingsContext.settings.birthDate) : undefined,
       });
     } else {
@@ -117,85 +116,56 @@ export default function UserAttributesCard() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <CardContent>
-              <div className="grid w-full items-center gap-4">
-                <FormField
-                  control={form.control}
-                  name="birthDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Birth Date</FormLabel>
-                      <FormControl>
-                        <DatePicker selectedDate={field.value} onDateChange={field.onChange} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            <div className="grid w-full items-center gap-4">
+              <FormField
+                control={form.control}
+                name="birthDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Birth Date</FormLabel>
+                    <FormControl>
+                      <DatePicker selectedDate={field.value} onDateChange={field.onChange} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="city"
-                  render={({ field }) => (
-                    <FormItem className="relative">
-                      <FormLabel htmlFor="city">City</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type="text"
-                          placeholder="Enter your city"
-                          className=""
-                          onFocus={() => setShowSuggestions(true)}
-                          onBlur={() => {
-                            setTimeout(() => {
-                              setShowSuggestions(false);
-                            }, 500);
-                          }}
-                        />
-                      </FormControl>
-                      <FormDescription>This will be used to find matches near you.</FormDescription>
-                      <FormMessage />
-                      <div className={`absolute top-[calc(100%-1.5rem)] z-10 w-full ${!showSuggestions ? `hidden` : ``}`}>
-                        <CitySuggestions
-                          searchTerm={debouncedCitySearchValue}
-                          onCitySelect={handleCitySelect}
-                          visible={showSuggestions}
-                        />
-                      </div>
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem className="relative">
+                    <FormLabel htmlFor="city">City</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="text"
+                        placeholder="Enter your city"
+                        className=""
+                        onFocus={() => setShowSuggestions(true)}
+                        onBlur={() => {
+                          setTimeout(() => {
+                            setShowSuggestions(false);
+                          }, 500);
+                        }}
+                      />
+                    </FormControl>
+                    <FormDescription>This will be used to find matches near you.</FormDescription>
+                    <FormMessage />
+                    <div className={`absolute top-[calc(100%-1.5rem)] z-10 w-full ${!showSuggestions ? `hidden` : ``}`}>
+                      <CitySuggestions
+                        searchTerm={debouncedCitySearchValue}
+                        onCitySelect={handleCitySelect}
+                        visible={showSuggestions}
+                      />
+                    </div>
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="genderSelf"
-                  render={({ field }) => (
-                    <FormItem className="w-full">
-                      <FormLabel htmlFor="genderSelf">Gender</FormLabel>
-                      <Select
-                        key={`gender-select-${field.value}`}
-                        value={field.value?.toString() ?? ''}
-                        onValueChange={(value) => field.onChange(Number(value))}
-                      >
-                        <FormControl>
-                          <SelectTrigger id="genderSelf" className="w-full">
-                            <SelectValue placeholder="Select a gender..." />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent position="popper">
-                          {genders &&
-                            genders.map((gender) => (
-                              <SelectItem key={gender.id} value={gender.id.toString()}>
-                                {gender.name}
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>What gender are you?</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <GenderSelect control={form.control} name="genderSelf" description="What gender are you?" />
+            </div>
           </CardContent>
           <CardFooter className="flex justify-end">
             <Button type="submit" disabled={loading}>
@@ -212,4 +182,4 @@ export default function UserAttributesCard() {
       </Form>
     </Card>
   );
-};
+}

@@ -15,15 +15,15 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectValue, SelectTrigger, SelectContent, SelectItem } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import useBrowserLocation from "@/pages/profile-completion/hooks/useBrowserLocation.ts";
+import { genders } from '@/assets/genders';
 
 interface AttributesProps {
   onNext: () => void;
   formData: UnifiedFormData;
   onChange: (name: keyof UnifiedFormData, value: UnifiedFormData[keyof UnifiedFormData]) => void;
-  genderOptions: { id: number; name: string }[];
 }
 
-export default function Attributes({ onNext, formData, onChange, genderOptions }: AttributesProps) {
+export default function Attributes({ onNext, formData, onChange }: AttributesProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [citySearchValue, setCitySearchValue] = useState(formData.city?.name || '');
@@ -61,7 +61,7 @@ export default function Attributes({ onNext, formData, onChange, genderOptions }
   };
 
   const validateAndProceed = () => {
-    if (!formData.gender || !formData.dateOfBirth || !formData.city || !firstName || !lastName || !alias) {
+    if (!formData.genderSelf || !formData.dateOfBirth || !formData.city || !firstName || !lastName || !alias) {
       setError('Please fill in all required fields.');
       return;
     }
@@ -155,16 +155,16 @@ export default function Attributes({ onNext, formData, onChange, genderOptions }
             </Label>
             <Select
               name="gender"
-              defaultValue={formData.gender || ''}
-              onValueChange={(value) => onChange('gender', value)}
+              defaultValue={formData.genderSelf || ''}
+              onValueChange={(value) => onChange('genderSelf', value)}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select Gender" />
               </SelectTrigger>
               <SelectContent>
-              {genderOptions.map((gender) => (
-                <SelectItem key={gender.id} value={gender.id.toString()}>
-                  {gender.name}
+              {genders.map((gender) => (
+                <SelectItem key={gender.value} value={gender.value.toString()}>
+                  {gender.label}
                 </SelectItem>
               ))}
             </SelectContent>

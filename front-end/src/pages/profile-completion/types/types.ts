@@ -1,3 +1,5 @@
+import { UserGenderEnum } from '@/api/types';
+
 export interface City {
     name: string;
     latitude: number;
@@ -10,10 +12,10 @@ export interface UnifiedFormData {
   lastName: string;
   alias: string | "";
   hobbies?: number[] | null;
-  gender: string;
+  genderSelf: UserGenderEnum;
   dateOfBirth: string;
   city: City;
-  genderOther: string;
+  genderOther: UserGenderEnum;
   ageRange: number[];
   distance: number;
   probabilityTolerance: number;
