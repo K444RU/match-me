@@ -66,7 +66,7 @@ export interface UserParametersRequestDTO {
    */
   distance: number;
   /**
-   * @minimum 0
+   * @minimum 0.1
    * @maximum 1
    */
   probability_tolerance: number;

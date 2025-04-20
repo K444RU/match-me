@@ -13,12 +13,12 @@ export interface PageChatMessageResponseDTO {
   totalElements?: number;
   totalPages?: number;
   pageable?: Pageablenull;
-  first?: boolean;
-  last?: boolean;
   size?: number;
   content?: ChatMessageResponseDTO[];
   number?: number;
   sort?: Sortnull;
+  first?: boolean;
+  last?: boolean;
   numberOfElements?: number;
   empty?: boolean;
 }
