@@ -7,7 +7,7 @@ type ThemeProviderProps = {
 };
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('vite-ui-theme') as Theme) || 'system');
+  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('blind-theme') as Theme) || 'system');
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -25,7 +25,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const value: ThemeProviderState = {
     theme,
     setTheme: (newTheme: Theme) => {
-      localStorage.setItem('vite-ui-theme', newTheme);
+      localStorage.setItem('blind-theme', newTheme);
       setTheme(newTheme);
     },
   };
