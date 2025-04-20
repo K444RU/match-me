@@ -18,6 +18,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 		if (!token) {
 			console.debug('AuthProvider (updateUserFromToken): No token provided, clearing user.');
 			localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+			localStorage.removeItem(STORAGE_KEYS.PROFILE_DATA);
 			setUser(null);
 			return null;
 		}
