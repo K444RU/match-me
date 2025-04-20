@@ -83,9 +83,9 @@ const UserAccountCard = () => {
         <CardTitle>Account</CardTitle>
         <CardDescription>Edit your account settings here.</CardDescription>
       </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <CardContent>
             {showSkeletons ? (
               <div className="grid w-full items-center gap-4">
                 <div className="flex flex-col space-y-1.5">
@@ -134,20 +134,20 @@ const UserAccountCard = () => {
                 />
               </div>
             )}
-            <CardFooter className="flex justify-end">
-              <Button type="submit" disabled={loading || showSkeletons}>
-                {loading ? (
-                  <>
-                    Updating <MotionSpinner />
-                  </>
-                ) : (
-                  'Update'
-                )}
-              </Button>
-            </CardFooter>
-          </form>
-        </Form>
-      </CardContent>
+          </CardContent>
+          <CardFooter className="flex justify-end">
+            <Button type="submit" disabled={loading || showSkeletons}>
+              {loading ? (
+                <>
+                  Updating <MotionSpinner />
+                </>
+              ) : (
+                'Update'
+              )}
+            </Button>
+          </CardFooter>
+        </form>
+      </Form>
     </Card>
   );
 };
