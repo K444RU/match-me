@@ -5,6 +5,8 @@ import java.util.Set;
 import com.matchme.srv.constraints.BirthDate;
 import com.matchme.srv.validation.annotations.NotBlankIfPresent;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -75,7 +77,7 @@ public record UserParametersRequestDTO(
   Integer distance,
 
   @NotNull(message = "Probability tolerance must be specified")
-  @Min(value = 0, message = "Probability tolerance must be greater than or equal to 0")
-  @Max(value = 1, message = "Probability tolerance must be less than or equal to 1")
+  @DecimalMin(value = "0.1", message = "Probability tolerance must be greater than or equal to 0.1")
+  @DecimalMax(value = "1.0", message = "Probability tolerance must be less than or equal to 1.0")
   Double probability_tolerance
 ) {}
