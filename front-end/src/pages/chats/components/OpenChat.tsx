@@ -198,7 +198,7 @@ export default function OpenChat() {
   };
 
   return (
-    <div className="relative flex h-screen w-full">
+    <div className="relative flex h-full w-full">
       <SidebarTrigger className="absolute left-1 top-1 z-10 lg:hidden" />
       {openChat ? (
         <div className="flex w-full flex-col bg-background-400 px-4 sm:px-6 md:px-8">
