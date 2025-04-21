@@ -2,8 +2,8 @@ import { ChatMessageResponseDTO } from '@/api/types';
 import { User } from '@/features/authentication';
 import { RefObject, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Message from './Message';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 interface OpenChatMessagesProps {
   loading: boolean;
@@ -90,11 +90,9 @@ export default function OpenChatMessages({
 
   if (loading && (!chatMessages || chatMessages.length === 0)) {
     return (
-      <div className="flex flex-1 flex-col space-y-4 overflow-y-auto p-4">
-        {/* Loading Skeletons */}
-        {[...Array(5)].map((_, i) => (
-          <Skeleton key={i} className={`h-10 w-3/5 ${i % 2 === 0 ? 'self-start' : 'self-end'}`} />
-        ))}
+      <div className="flex flex-1 flex-col items-center justify-center p-4"> 
+        <Loader2 className="mb-2 size-6 animate-spin text-muted-foreground" />
+        <span className="text-muted-foreground">Loading messages...</span>
       </div>
     );
   }
