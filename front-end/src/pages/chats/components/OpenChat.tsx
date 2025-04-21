@@ -210,6 +210,7 @@ export default function OpenChat() {
             hasMoreMessages={openChat.connectionId ? hasMoreMessages[openChat.connectionId] ?? true : false}
             isLoadingMore={isLoadingMore}
             scrollContainerRef={scrollContainerRef}
+            connectionId={openChat.connectionId}
           />
           <OpenChatInput
             onSendMessage={onSendMessage}

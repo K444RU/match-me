@@ -1,8 +1,9 @@
 import { ChatMessageResponseDTO } from '@/api/types';
 import { User } from '@/features/authentication';
-import { RefObject, useEffect, useLayoutEffect, useRef } from 'react';
+import { RefObject, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Message from './Message';
-import { Loader2 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 
 interface OpenChatMessagesProps {
   loading: boolean;
@@ -12,6 +13,7 @@ interface OpenChatMessagesProps {
   hasMoreMessages: boolean;
   isLoadingMore: boolean;
   scrollContainerRef: RefObject<HTMLDivElement>;
+  connectionId: number | undefined;
 }
 
 export default function OpenChatMessages({ 
@@ -21,102 +23,113 @@ export default function OpenChatMessages({
   loadOlderMessages, 
   hasMoreMessages, 
   isLoadingMore, 
-  scrollContainerRef }: OpenChatMessagesProps) {
+  scrollContainerRef,
+  connectionId }: OpenChatMessagesProps) {
   const messageEndRef = useRef<HTMLDivElement>(null);
-  const topSentinelRef = useRef<HTMLDivElement>(null);
+  const shouldScrollToBottomRef = useRef(true);
   const prevScrollHeightRef = useRef<number | null>(null);
+  const [isInitialLoadMap, setIsInitialLoadMap] = useState<Record<number, boolean>>({});
 
-  const scrollToBottom = () => {
-    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const scrollToBottom = useCallback((behavior : ScrollBehavior = 'auto') => {
+    messageEndRef.current?.scrollIntoView({ behavior });
+  }, []); 
 
-  // Scroll position handling
+  // reset initial load when connectionId changes
+  useEffect(() => {
+    if (connectionId && isInitialLoadMap[connectionId] === undefined) {
+      setIsInitialLoadMap(prev => ({ ...prev, [connectionId]: true}));
+      shouldScrollToBottomRef.current = true;
+    }
+  }, [connectionId, isInitialLoadMap]);
+
+  // handle scrolling and trigger older messages loading
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    // update shouldScrollToBottomRef based on current position
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
+    shouldScrollToBottomRef.current = isNearBottom;
+
+    // load older messages when scrolled to top
+    if (container.scrollTop === 0 && hasMoreMessages && !isLoadingMore && connectionId) {
+      prevScrollHeightRef.current = container.scrollHeight;
+      loadOlderMessages();
+    }
+  }, [scrollContainerRef, hasMoreMessages, isLoadingMore, loadOlderMessages, connectionId]);
+
+  // attach scroll listener
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      handleScroll();
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, [handleScroll, scrollContainerRef]);
+
+  // handles scroll adjustments
   useLayoutEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer) return;
+    const container = scrollContainerRef.current;
+    if (!container || !connectionId) return;
 
-    if (prevScrollHeightRef.current !== null) {
-      const scrollHeightDiff = scrollContainer.scrollHeight - prevScrollHeightRef.current;
-      scrollContainer.scrollTop = scrollHeightDiff;
+    const isInitial = isInitialLoadMap[connectionId] ?? false;
+
+    if (prevScrollHeightRef.current !== null && !isLoadingMore) {
+      const heightDifference = container.scrollHeight - prevScrollHeightRef.current;
+      container.scrollTop += heightDifference;
       prevScrollHeightRef.current = null;
+    } else if (isInitial && chatMessages.length > 0) {
+      scrollToBottom('auto');
+      setIsInitialLoadMap(prev => ({ ...prev, [connectionId]: false }));
+      shouldScrollToBottomRef.current = true;
+    } else if (shouldScrollToBottomRef.current && !isLoadingMore) {
+      scrollToBottom('smooth');
     }
-  }, [chatMessages, scrollContainerRef]);
+  }, [chatMessages, isLoadingMore, scrollContainerRef, scrollToBottom, connectionId, isInitialLoadMap]);
 
-  const pageSize = 10;
-
-  // intersection observer for top sentinel
-  useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      const firstEntry = entries[0];
-      console.log(
-        `Observer Callback: isIntersecting=${firstEntry.isIntersecting}, hasMoreOlderMessages=${hasMoreMessages}, isLoadingMore=${isLoadingMore}`
-      );
-      if (firstEntry.isIntersecting && hasMoreMessages && !isLoadingMore && chatMessages.length >= pageSize) {
-        const scrollContainer = scrollContainerRef.current;
-        if (scrollContainer) {
-          prevScrollHeightRef.current = scrollContainer.scrollHeight;
-        }
-        loadOlderMessages();
-      }
-      },
-      {
-        root: scrollContainerRef.current,
-        threshold: 1.0,
-      }
+  if (loading && (!chatMessages || chatMessages.length === 0)) {
+    return (
+      <div className="flex flex-1 flex-col space-y-4 overflow-y-auto p-4">
+        {/* Loading Skeletons */}
+        {[...Array(5)].map((_, i) => (
+          <Skeleton key={i} className={`h-10 w-3/5 ${i % 2 === 0 ? 'self-start' : 'self-end'}`} />
+        ))}
+      </div>
     );
-
-    const currentTopSentinel = topSentinelRef.current;
-    if (currentTopSentinel) {
-      observer.observe(currentTopSentinel);
-    }
-
-    return () => {
-      if (currentTopSentinel) {
-        observer.unobserve(currentTopSentinel);
-      }
-    };
-  }, [hasMoreMessages, isLoadingMore, loadOlderMessages, scrollContainerRef]);
-
-  // Scroll to bottom logic
-  // useEffect(() => {
-  //   const scrollContainer = scrollContainerRef.current;
-  //   if (scrollContainer && !isLoadingMore) {
-  //     const isNearBottom = scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight < 100;
-  //     if (isNearBottom) {
-  //       messageEndRef.current?.scrollIntoView({ behavior: "auto" })
-  //     }
-  //   }
-  // }, [chatMessages.length, isLoadingMore, scrollContainerRef, loading]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [chatMessages]);
+  }
 
   return (
-    <div ref={scrollContainerRef} className="mt-4 flex-1 overflow-y-scroll pr-4">
-      {/* Older messages loading */}
-      <div ref={topSentinelRef} style={{ height: '1px'}} />
-      {isLoadingMore && (
-        <div className="flex items-center justify-center p-2 text-sm text-muted-foreground">
-          <Loader2 className="mr-2 size-4 animate-spin" />
-          Loading older messages...
-        </div>
+    <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 space-y-2">
+      {/* Button to load older messages, shown if not loading and more exist */}
+      {hasMoreMessages && !isLoadingMore && (
+         <div className="text-center">
+            <Button variant="outline" size="sm" onClick={() => {
+              const container = scrollContainerRef.current;
+              if(container) prevScrollHeightRef.current = container.scrollHeight; // Store height before load
+              loadOlderMessages();
+            }}>
+              Load Older Messages
+            </Button>
+         </div>
       )}
-      {/* Initial loading */}
-      {loading && !isLoadingMore ? (
-        <div className="flex h-full items-center justify-center p-4">Loading messages...</div>
-      ) : chatMessages.length === 0 && !loading ? (
-        <div className="flex h-full items-center justify-center p-4">No messages yet. Start the conversation!</div>
-      ) : (
-        chatMessages.map((msg, index) => {
-          const key = `${msg.connectionId}-${msg.messageId}`;
-          const isOwn = msg.senderId === user.id;
-          // Determine if this is the last message in the array
-          const isLastMessage = index === chatMessages.length - 1;
+      {/* Loading indicator when fetching older messages */}
+      {isLoadingMore && <div className="text-center text-sm text-muted-foreground">Loading older messages...</div>}
+      {/* Indicator when no more older messages */}
+      {!hasMoreMessages && chatMessages.length > 0 && !isLoadingMore && (
+        <div className="text-center text-xs text-muted-foreground pt-2">No older messages</div>
+      )}
 
-          return <Message key={key} message={msg} isOwn={isOwn} isLastMessage={isLastMessage} />;
-        })
-      )}
+      
+      {/* Render messages */}
+      {chatMessages.map((msg, index) => {
+        const key = `${msg.connectionId}-${msg.messageId}`;
+        const isOwn = msg.senderId === user.id;
+        // Determine if this is the last message in the array
+        const isLastMessage = index === chatMessages.length - 1;
+
+        return <Message key={key} message={msg} isOwn={isOwn} isLastMessage={isLastMessage} />;
+      })}
       <div ref={messageEndRef} />
     </div>
   );
