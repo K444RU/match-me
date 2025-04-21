@@ -1,19 +1,12 @@
 import { getChatController } from '@/api/chat-controller';
 import {
-  ChatMessageResponseDTO,
   ChatPreviewResponseDTO,
   GetChatMessagesParams,
   MessagesSendRequestDTO,
+  PageChatMessageResponseDTO,
 } from '@/api/types';
 
 const chatController = getChatController();
-
-const getChatMessagesParams: GetChatMessagesParams = {
-  pageable: {
-    page: 0,
-    size: 10,
-  },
-};
 
 export const chatService = {
   getChatPreviews: async (): Promise<ChatPreviewResponseDTO[]> => {
@@ -27,11 +20,13 @@ export const chatService = {
     }
   },
 
-  getChatMessages: async (connectionId: number): Promise<ChatMessageResponseDTO[]> => {
+  getChatMessages: async (connectionId: number, params: GetChatMessagesParams): Promise<PageChatMessageResponseDTO> => {
     try {
-      const response = await chatController.getChatMessages(connectionId, getChatMessagesParams);
-      console.debug('🖖 ChatService: Response', response.content);
-      return response.content ?? [];
+      console.debug('🖖 ChatService: Making messages request');
+      const response = await chatController.getChatMessages(connectionId, params);
+      // DONT TOUCH THIS, THIS IS CORRECT, TYPE IS JUST FUCKING
+      console.debug('🖖 ChatService: Response', response);
+      return response ?? [];
     } catch (error) {
       console.error('❌ Error fetching chat messages', error);
       throw error;

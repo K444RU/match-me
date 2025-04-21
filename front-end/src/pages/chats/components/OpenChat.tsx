@@ -1,8 +1,8 @@
-import { ChatMessageResponseDTO, MessagesSendRequestDTO } from '@/api/types';
+import { ChatMessageResponseDTO, GetChatMessagesParams, MessagesSendRequestDTO } from '@/api/types';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth } from '@/features/authentication';
 import { chatService, CommunicationContext, useWebSocket } from '@/features/chat';
-import { useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import NoChat from './NoChat';
 import OpenChatInput from './OpenChatInput';
@@ -12,6 +12,8 @@ export default function OpenChat() {
   const { user } = useAuth();
   const [chatMessages, setChatMessages] = useState<ChatMessageResponseDTO[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Get WebSocket context for sending messages via WebSocket
   const { connected, sendMessage: sendWebSocketMessage, typingUsers } = useWebSocket();
@@ -22,56 +24,132 @@ export default function OpenChat() {
   const connectionId = openChat?.connectionId;
   const updateAllChats = communicationContext.updateAllChats;
   const allChats = communicationContext.allChats;
+  const { hasMoreMessages, updateHasMoreMessages } = communicationContext;
 
   const isTyping = openChat ? typingUsers[openChat.connectedUserId] : false;
 
-  useEffect(() => {
+  const fetchInitialMessages = useCallback(async (connectionId: number) => {
+    if (!user) return;
+
+    setLoading(true);
     setChatMessages([]);
+    setIsLoadingMore(false);
 
-    const fetchMessages = async () => {
-      if (!connectionId || !user) return;
+    if (allChats[connectionId] && allChats[connectionId].length > 0) {
+      setChatMessages(allChats[connectionId]);
+      setLoading(false);
+    } else {
+      try {
+        const getChatMessagesParams: GetChatMessagesParams = {
+          pageable: {
+            page: 0,
+            size: 10,
+          },
+        };
 
-      setLoading(true);
+        const pagedMessagesResponse = await chatService.getChatMessages(connectionId, getChatMessagesParams);
+        const messagesResponse = pagedMessagesResponse.content;
 
-      // check if chat is in context already
-      if (allChats[connectionId]) {
-        setChatMessages(allChats[connectionId]);
+        if (!messagesResponse || messagesResponse.length === 0) {
+          setChatMessages([]);
+          if (updateHasMoreMessages && connectionId) {
+            updateHasMoreMessages(connectionId, false);
+          }
+          return;
+        }
+
+        const sortedMessages = messagesResponse.reverse();
+        setChatMessages(sortedMessages);
+
+        if (messagesResponse.length < 10 || pagedMessagesResponse.last) {
+          if (updateHasMoreMessages && connectionId) {
+            updateHasMoreMessages(connectionId, false);
+          }
+        }
+
+        if (updateAllChats) {
+          updateAllChats(connectionId, sortedMessages, true);
+        }
+      } catch (error) {
+        console.error('Error fetching initial messages: ', error);
+        if (updateHasMoreMessages && connectionId) {
+          updateHasMoreMessages(connectionId, false);
+        }
+      } finally {
         setLoading(false);
-      } else {
-        try {
-          const messagesResponse = await chatService.getChatMessages(connectionId);
+      }
+    }
+  }, [user, allChats, updateAllChats, updateHasMoreMessages]);
 
-          if (!messagesResponse) {
-            setChatMessages([]);
-            return;
-          }
+  const loadOlderMessages = useCallback(async () => {
+    if (!connectionId || !user || isLoadingMore || hasMoreMessages[connectionId] || chatMessages.length === 0) return;
 
-          const sortedMessages = messagesResponse.reverse();
-          setChatMessages(sortedMessages);
+    setIsLoadingMore(true);
+    try {
 
-          if (updateAllChats) {
-            updateAllChats(connectionId, sortedMessages, true);
-          }
-        } catch (error) {
-          console.error('Error fetching messages:', error);
-        } finally {
-          setLoading(false);
+      const getChatMessagesParams: GetChatMessagesParams = {
+        pageable: {
+          page: Math.floor(chatMessages.length / 10),
+          size: 10,
+        },
+      };
+      
+      //parameters: connectionId, beforeMessageId or timestamp, limit, hasOlderMessages
+      const pagedOlderMessagesResponse = await chatService.getChatMessages(connectionId, getChatMessagesParams);
+      const olderMessagesResponse = pagedOlderMessagesResponse.content;
+
+      if (!olderMessagesResponse || olderMessagesResponse.length === 0) {
+        if (updateHasMoreMessages && connectionId) {
+          updateHasMoreMessages(connectionId, false);
+        }
+        return;
+      }
+
+      const sortedMessages = olderMessagesResponse.reverse();
+      const completeMessages = [...sortedMessages, ...chatMessages];
+
+
+      setChatMessages(completeMessages);
+      
+
+      if (olderMessagesResponse.length < 10 || pagedOlderMessagesResponse.last) {
+        if (updateHasMoreMessages && connectionId) {
+          updateHasMoreMessages(connectionId, false);
         }
       }
-    };
 
-    fetchMessages();
-  }, [connectionId, user, updateAllChats, allChats]);
+      if (updateAllChats) {
+        updateAllChats(connectionId, completeMessages, true);
+      }
+    } catch (error) {
+      console.error('Error fetching older messages:', error);
+      if (updateHasMoreMessages && connectionId) {
+        updateHasMoreMessages(connectionId, false);
+      }
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [connectionId, user, isLoadingMore, hasMoreMessages, chatMessages, updateAllChats, updateHasMoreMessages]);
+
+  useEffect(() => {
+    if (connectionId) {
+      fetchInitialMessages(connectionId);
+    } else {
+      setChatMessages([]);
+      setLoading(false);
+      setIsLoadingMore(false);
+    }
+    
+  }, [connectionId]);
 
   useEffect(() => {
     if (connectionId && allChats[connectionId]) {
       setChatMessages(allChats[connectionId]);
     }
-  }, [allChats, connectionId]);
+  }, [allChats, connectionId])
 
   // Early return if no context, user or open chat
-  if (!communicationContext) return null;
-  if (!user) return null;
+  if (!communicationContext || !user) return null;
 
   const onSendMessage = async (message: string) => {
     if (!message || !user || !openChat) return;
@@ -99,6 +177,8 @@ export default function OpenChat() {
       communicationContext.updateAllChats(openChat.connectionId, [optimisticMessage]);
     }
 
+    setChatMessages(prevMessages => [...prevMessages, optimisticMessage]);
+
     try {
       // Only use WebSocket if already connected
       if (connected) {
@@ -118,11 +198,20 @@ export default function OpenChat() {
   };
 
   return (
-    <div className="relative flex size-full">
-      <SidebarTrigger className="absolute left-1 top-1 z-10" />
+    <div className="relative flex h-full w-full">
+      <SidebarTrigger className="absolute left-1 top-1 z-10 lg:hidden" />
       {openChat ? (
-        <div className="bg-background/40 flex flex-1 flex-col gap-4 p-4 sm:px-6 md:px-8 overflow-hidden">
-          <OpenChatMessages loading={loading} chatMessages={chatMessages} user={user} />
+        <div className="flex w-full flex-col bg-background-400 px-4 sm:px-6 md:px-8">
+          <OpenChatMessages 
+            loading={loading} 
+            chatMessages={chatMessages} 
+            user={user} 
+            loadOlderMessages={loadOlderMessages}
+            hasMoreMessages={openChat.connectionId ? hasMoreMessages[openChat.connectionId] ?? true : false}
+            isLoadingMore={isLoadingMore}
+            scrollContainerRef={scrollContainerRef}
+            connectionId={openChat.connectionId}
+          />
           <OpenChatInput
             onSendMessage={onSendMessage}
             isTyping={isTyping}
@@ -130,7 +219,7 @@ export default function OpenChat() {
           />
         </div>
       ) : (
-        <NoChat />
+        <NoChat className="pl-16 lg:pl-4" />
       )}
     </div>
   );

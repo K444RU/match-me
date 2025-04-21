@@ -11,8 +11,10 @@ export interface CommunicationContextType {
   chatPreviews: ChatPreviewResponseDTO[];
   openChat: ChatPreviewResponseDTO | null;
   allChats: Record<number, ChatMessageResponseDTO[]>;
+  hasMoreMessages: Record<number, boolean>;
   sendMarkRead: (connectionId: number) => void;
   updateAllChats: (connectionId: number, messages: ChatMessageResponseDTO[], replace?: boolean) => void;
+  updateHasMoreMessages: (connectionId: number, hasMore: boolean) => void;
   refreshChats: () => void;
   setOpenChat: (chat: ChatPreviewResponseDTO | null) => void;
   sendMessage: (message: MessagesSendRequestDTO) => Promise<void>;
@@ -35,6 +37,7 @@ const defaultContext: CommunicationContextType = {
   chatPreviews: [],
   openChat: null,
   allChats: {},
+  hasMoreMessages: {},
   refreshChats: () => {
     console.warn('CommunicationContext not initialized');
   },
@@ -54,6 +57,9 @@ const defaultContext: CommunicationContextType = {
     console.warn('CommunicationContext not initialized');
   },
   updateMessageStatus: () => {
+    console.warn('CommunicationContext not initialized');
+  },
+  updateHasMoreMessages: () => {
     console.warn('CommunicationContext not initialized');
   },
   connectionUpdates: [],

@@ -14,9 +14,11 @@ interface GlobalCommunicationProviderProps {
 
 export const GlobalCommunicationProvider = ({ children }: GlobalCommunicationProviderProps) => {
   const { user } = useAuth();
+
   const [chatDisplays, setChatDisplays] = useState<ChatPreviewResponseDTO[]>([]);
   const [openChat, setOpenChat] = useState<ChatPreviewResponseDTO | null>(null);
   const [allChats, setAllChats] = useState<Record<number, ChatMessageResponseDTO[]>>({});
+  const [hasMoreMessages, setHasMoreMessages] = useState<Record<number, boolean>>({});
 
   const refreshChats = useCallback(async () => {
     if (!user) return;
@@ -35,9 +37,11 @@ export const GlobalCommunicationProvider = ({ children }: GlobalCommunicationPro
       chatDisplays={chatDisplays}
       allChats={allChats}
       openChat={openChat}
+      hasMoreMessages={hasMoreMessages}
       setChatDisplays={setChatDisplays}
       setOpenChat={setOpenChat}
       setAllChats={setAllChats}
+      setHasMoreMessages={setHasMoreMessages}
     >
       {children}
     </GlobalCommunicationProviderInner>
@@ -45,14 +49,16 @@ export const GlobalCommunicationProvider = ({ children }: GlobalCommunicationPro
 };
 
 interface GlobalCommunicationProviderInnerProps {
-  refreshChats: () => void;
-  chatDisplays: ChatPreviewResponseDTO[];
-  allChats: Record<number, ChatMessageResponseDTO[]>;
-  openChat: ChatPreviewResponseDTO | null;
-  setChatDisplays: React.Dispatch<React.SetStateAction<ChatPreviewResponseDTO[]>>;
-  setOpenChat: React.Dispatch<React.SetStateAction<ChatPreviewResponseDTO | null>>;
-  setAllChats: React.Dispatch<React.SetStateAction<Record<number, ChatMessageResponseDTO[]>>>;
-  children: React.ReactNode;
+    refreshChats: () => void;
+    chatDisplays: ChatPreviewResponseDTO[];
+    allChats: Record<number, ChatMessageResponseDTO[]>;
+    openChat: ChatPreviewResponseDTO | null;
+    hasMoreMessages: Record<number, boolean>;
+    setChatDisplays: React.Dispatch<React.SetStateAction<ChatPreviewResponseDTO[]>>;
+    setOpenChat: React.Dispatch<React.SetStateAction<ChatPreviewResponseDTO | null>>;
+    setAllChats: React.Dispatch<React.SetStateAction<Record<number, ChatMessageResponseDTO[]>>>;
+    setHasMoreMessages: React.Dispatch<React.SetStateAction<Record<number, boolean>>>;
+    children: React.ReactNode;
 }
 
 const GlobalCommunicationProviderInner = ({
@@ -60,9 +66,11 @@ const GlobalCommunicationProviderInner = ({
   chatDisplays,
   allChats,
   openChat,
+  hasMoreMessages,
   setChatDisplays,
   setOpenChat,
   setAllChats,
+  setHasMoreMessages,
   children,
 }: GlobalCommunicationProviderInnerProps) => {
   // Destructure all needed values from useWebSocket
@@ -275,6 +283,16 @@ const GlobalCommunicationProviderInner = ({
     clearMessageQueue();
   }, [messageQueue, setAllChats, clearMessageQueue, openChat, sendMarkRead]);
 
+    const updateHasMoreMessages = useCallback(
+      (connectionId: number, hasMore: boolean) => {
+        setHasMoreMessages((prev) => ({
+          ...prev,
+          [connectionId]: hasMore,
+        }));
+      },
+      [setHasMoreMessages]
+    )
+
   // Process status updates
   useEffect(() => {
     if (!statusUpdateQueue || statusUpdateQueue.length === 0) return;
@@ -406,6 +424,7 @@ const GlobalCommunicationProviderInner = ({
       chatPreviews: chatDisplays,
       openChat,
       allChats,
+      hasMoreMessages,
       refreshChats,
       setOpenChat,
       sendMessage,
@@ -413,6 +432,7 @@ const GlobalCommunicationProviderInner = ({
       sendMarkRead,
       updateAllChats,
       updateMessageStatus,
+      updateHasMoreMessages,
       connectionUpdates: wsConnectionUpdates,
       sendConnectionRequest,
       acceptConnectionRequest,
@@ -423,6 +443,7 @@ const GlobalCommunicationProviderInner = ({
       chatDisplays,
       openChat,
       allChats,
+      hasMoreMessages,
       refreshChats,
       setOpenChat,
       sendMessage,
@@ -430,6 +451,7 @@ const GlobalCommunicationProviderInner = ({
       sendMarkRead,
       updateAllChats,
       updateMessageStatus,
+      updateHasMoreMessages,
       wsConnectionUpdates,
       sendConnectionRequest,
       acceptConnectionRequest,
