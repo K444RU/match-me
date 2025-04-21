@@ -1,7 +1,9 @@
 package com.matchme.srv.dto.request;
 
 import com.matchme.srv.constraints.BirthDate;
+import com.matchme.srv.model.user.profile.UserGenderEnum;
 import com.matchme.srv.validation.annotations.NotBlankIfPresent;
+import com.matchme.srv.validation.annotations.ValidGender;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
@@ -52,8 +54,8 @@ public class SettingsRequestDTO {
 
   // User Attributes
   @NotNull(message = "Self gender must be specified")
-  @Min(value = 1, message = "Invalid gender value")
-  private Long gender_self;
+  @ValidGender(message = "Invalid gender value")
+  private UserGenderEnum gender_self;
 
   @NotNull(message = "Birth date must be specified")
   @BirthDate(message = "Birth date must be greater than or equal to 18 years old")
@@ -70,8 +72,8 @@ public class SettingsRequestDTO {
 
   // User Preferences
   @NotNull(message = "Preferred gender must be specified")
-  @Min(value = 1, message = "Invalid gender value")
-  private Long gender_other;
+  @ValidGender(message = "Invalid gender value")
+  private UserGenderEnum gender_other;
 
   @NotNull(message = "Minimum age must be specified")
   @Min(value = 18, message = "Minimum age must be at least 18")

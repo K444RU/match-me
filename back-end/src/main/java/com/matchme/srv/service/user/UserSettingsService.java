@@ -20,7 +20,6 @@ import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
 import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
 import com.matchme.srv.repository.UserRepository;
 import com.matchme.srv.service.HobbyService;
-import com.matchme.srv.service.type.UserGenderTypeService;
 import com.matchme.srv.service.user.validation.UserValidationService;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -33,16 +32,13 @@ import lombok.extern.slf4j.Slf4j;
 public class UserSettingsService {
 
     private final UserRepository userRepository;
-
     private final AttributesMapper attributesMapper;
     private final PreferencesMapper preferencesMapper;
-
     private final HobbyService hobbyService;
-    private final UserGenderTypeService userGenderTypeService;
     private final UserValidationService userValidationService;
-
+   
     private static final String USER_NOT_FOUND_MESSAGE = "User not found!";
-
+   
     public void updateAccountSettings(Long userId, AccountSettingsRequestDTO settings) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_MESSAGE));
@@ -77,8 +73,10 @@ public class UserSettingsService {
             profile.setHobbies(new HashSet<>());
         }
 
-        // TODO: Add logging
+        log.info("Updating profile settings for user ID: {}", userId);
+
         userRepository.save(user);
+        log.info("Successfully updated profile settings for user ID: {}", userId);
     }
 
     public void updateAttributesSettings(Long userId, AttributesSettingsRequestDTO settings) {
@@ -89,14 +87,15 @@ public class UserSettingsService {
         UserAttributes attributes = profile.getAttributes();
 
         attributesMapper.toEntity(attributes, settings);
-        attributes.setGender(userGenderTypeService.getById(settings.getGender_self()));
+        attributes.setGender(settings.getGender_self());
         attributes.setLocation(List.of(settings.getLongitude(), settings.getLatitude()));
         attributes.setBirthdate(settings.getBirth_date());
 
         profile.setCity(settings.getCity());
 
-        // TODO: Add logging
+        log.info("Updating attributes settings for user ID: {}", userId);
         userRepository.save(user);
+        log.info("Successfully updated attributes settings for user ID: {}", userId);
     }
 
     public void updatePreferencesSettings(Long userId, PreferencesSettingsRequestDTO settings) {
@@ -107,14 +106,14 @@ public class UserSettingsService {
         UserPreferences preferences = profile.getPreferences();
 
         preferencesMapper.toEntity(preferences, settings);
-        preferences.setGender(userGenderTypeService.getById(settings.getGender_other()));
+        preferences.setGender(settings.getGender_other());
         preferences.setAgeMin(settings.getAge_min());
         preferences.setAgeMax(settings.getAge_max());
         preferences.setDistance(settings.getDistance());
         preferences.setProbabilityTolerance(settings.getProbability_tolerance());
 
-        // TODO: Add logging
+        log.info("Updating preferences settings for user ID: {}", userId);
         userRepository.save(user);
-    }
-
+        log.info("Successfully updated preferences settings for user ID: {}", userId);
+       }
 }

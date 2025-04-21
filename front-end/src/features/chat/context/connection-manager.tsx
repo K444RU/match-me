@@ -1,12 +1,13 @@
 import { ChatMessageResponseDTO } from '@/api/types';
 import { User } from '@/features/authentication/';
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useStompClient } from 'react-stomp-hooks';
 import useChatPreviewHandler from '../hooks/useChatPreviewHandler';
 import useMessageHandler from '../hooks/useMessageHandler';
 import useOnlineIndicator from '../hooks/useOnlineIndicator';
 import useSubscriptionManager from '../hooks/useSubscriptionManager';
 import useTypingIndicator from '../hooks/useTypingIndicator';
+import { MessageStatusUpdateDTO } from '../types/MessageStatusUpdateDTO';
 import useConnectionRequestManager from '../hooks/useConnectionRequestManager';
 import { WebSocketContext } from './websocket-context';
 
@@ -17,10 +18,18 @@ interface WebSocketConnectionManagerProps {
 
 export default function WebSocketConnectionManager({ children, user }: WebSocketConnectionManagerProps) {
   const stompClient = useStompClient();
-  const currentUser = user;
+  const stompClientRef = useRef(stompClient);
 
+  useEffect(() => {
+    if (stompClient !== stompClientRef.current) {
+      stompClientRef.current = stompClient;
+    }
+  }, [stompClient]);
+
+  const currentUser = user;
   const [isConnected, setIsConnected] = useState(false);
   const [messageQueue, setMessageQueue] = useState<ChatMessageResponseDTO[]>([]);
+  const [statusUpdateQueue, setStatusUpdateQueue] = useState<MessageStatusUpdateDTO[]>([]);
 
   // Connection management
   const {
@@ -32,7 +41,7 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
   } = useConnectionRequestManager({ userId: currentUser.id, stompClient });
 
   useEffect(() => {
-    const currentConnected = !!stompClient?.connected;
+    const currentConnected = !!stompClientRef.current?.connected;
 
     if (currentConnected === isConnected) return;
 
@@ -53,24 +62,31 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
   }, [stompClient?.connected, isConnected]);
 
   const handleNewMessage = useCallback((message: ChatMessageResponseDTO) => {
-    console.log('🔄 ConnectionManager: Adding message to queue:', message);
     setMessageQueue((prevQueue) => [...prevQueue, message]);
   }, []);
 
+  const handleNewMessageStatusUpdate = useCallback((statusUpdate: MessageStatusUpdateDTO) => {
+    setStatusUpdateQueue((prevQueue) => [...prevQueue, statusUpdate]);
+  }, []);
+
   const clearMessageQueue = useCallback(() => {
-    console.log('🧹 ConnectionManager: Clearing message queue');
     setMessageQueue([]); // Reset the queue to an empty array
   }, []);
 
+  const clearStatusUpdateQueue = useCallback(() => {
+    setStatusUpdateQueue([]);
+  }, []);
+
   // Create stable handlers first
-  const { handleMessage, sendMessage, sendMarkRead } = useMessageHandler({
-    stompClient,
+  const { handleMessage, handleMessageStatusUpdate, sendMessage, sendMarkRead } = useMessageHandler({
+    stompClientRef,
     currentUser,
     onMessageReceived: handleNewMessage,
+    onMessageStatusUpdateReceived: handleNewMessageStatusUpdate,
   });
 
   const { typingUsers, handleTypingIndicator, sendTypingIndicator } = useTypingIndicator({
-    stompClient,
+    stompClientRef,
     currentUser,
   });
 
@@ -80,8 +96,10 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
   // Subscription management
   const { reconnect } = useSubscriptionManager({
     userId: currentUser?.id,
-    stompClient,
+    stompClientRef,
+    stompClientConnected: !!stompClientRef.current?.connected,
     handleMessage,
+    handleMessageStatusUpdate,
     handleTypingIndicator,
     handleChatPreviews,
     handleOnlineIndicator,
@@ -105,6 +123,8 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
       disconnectConnection,
       messageQueue,
       clearMessageQueue,
+      statusUpdateQueue,
+      clearStatusUpdateQueue,
     }),
     [
       isConnected,
@@ -122,6 +142,8 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
       disconnectConnection,
       messageQueue,
       clearMessageQueue,
+      statusUpdateQueue,
+      clearStatusUpdateQueue,
     ]
   );
 

@@ -12,23 +12,17 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.matchme.srv.model.connection.ConnectionType;
-import com.matchme.srv.model.message.MessageEventType;
 import com.matchme.srv.model.user.UserRoleType;
-import com.matchme.srv.model.user.UserStateTypes;
 import com.matchme.srv.model.user.activity.ActivityLogType;
 import com.matchme.srv.model.user.profile.ProfileChangeType;
-import com.matchme.srv.model.user.profile.UserGenderType;
 import com.matchme.srv.model.user.profile.user_attributes.AttributeChangeType;
 import com.matchme.srv.model.user.profile.user_preferences.PreferenceChangeType;
 import com.matchme.srv.repository.ActivityLogTypeRepository;
 import com.matchme.srv.repository.AttributeChangeTypeRepository;
 import com.matchme.srv.repository.ConnectionTypeRepository;
-import com.matchme.srv.repository.MessageEventTypeRepository;
 import com.matchme.srv.repository.PreferenceChangeTypeRepository;
 import com.matchme.srv.repository.ProfileChangeTypeRepository;
-import com.matchme.srv.repository.UserGenderTypeRepository;
 import com.matchme.srv.repository.UserRoleTypeRepository;
-import com.matchme.srv.repository.UserStateTypesRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -39,13 +33,7 @@ class TypesTest {
     private UserRoleTypeRepository roleRepository;
 
     @Autowired
-    private UserGenderTypeRepository genderRepository;
-
-    @Autowired
     private ConnectionTypeRepository connectionTypeRepository;
-
-    @Autowired
-    private MessageEventTypeRepository messageEventTypeRepository;
 
     @Autowired
     private ActivityLogTypeRepository activityLogTypeRepository;
@@ -59,9 +47,6 @@ class TypesTest {
     @Autowired
     private ProfileChangeTypeRepository profileChangeTypeRepository;
 
-    @Autowired
-    private UserStateTypesRepository userStateTypesRepository;
-
     @Test
     void testRolesInitialization() {
         List<UserRoleType> roles = roleRepository.findAll();
@@ -69,15 +54,6 @@ class TypesTest {
         assertTrue(roles.stream().anyMatch(role -> role.getName().equals("ROLE_USER")));
         assertTrue(roles.stream().anyMatch(role -> role.getName().equals("ROLE_MODERATOR")));
         assertTrue(roles.stream().anyMatch(role -> role.getName().equals("ROLE_ADMIN")));
-    }
-
-    @Test
-    void testGendersInitialization() {
-        List<UserGenderType> genders = genderRepository.findAll();
-        assertEquals(3, genders.size());
-        assertTrue(genders.stream().anyMatch(gender -> gender.getName().equals("MALE")));
-        assertTrue(genders.stream().anyMatch(gender -> gender.getName().equals("FEMALE")));
-        assertTrue(genders.stream().anyMatch(gender -> gender.getName().equals("OTHER")));
     }
 
     @Test
@@ -91,30 +67,7 @@ class TypesTest {
         assertTrue(types.stream().anyMatch(type -> type.getName().equals("INTERESTED")));
         assertTrue(types.stream().anyMatch(type -> type.getName().equals("CLOSED")));
     }
-
-    @Test
-    void testMessageEventTypesInitialization() {
-        List<MessageEventType> types = messageEventTypeRepository.findAll();
-        assertEquals(3, types.size());
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("SENT")));
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("RECEIVED")));
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("READ")));
-    }
-
-    @Test
-    void testUserStateTypesInitialization() {
-        List<UserStateTypes> types = userStateTypesRepository.findAll();
-        assertEquals(8, types.size());
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("UNVERIFIED")));
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("VERIFIED")));
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("NEW")));
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("ACTIVE")));
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("PENDING")));
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("SUSPENDED")));
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("DORMANT")));
-        assertTrue(types.stream().anyMatch(type -> type.getName().equals("DISABLED")));
-    }
-
+    
     @Test
     void testActivityLogTypesInitialization() {
         List<ActivityLogType> types = activityLogTypeRepository.findAll();

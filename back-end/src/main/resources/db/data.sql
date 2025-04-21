@@ -3,11 +3,6 @@ INSERT INTO user_role_types (id, name) VALUES (1, 'ROLE_USER') ON CONFLICT (id) 
 INSERT INTO user_role_types (id, name) VALUES (2, 'ROLE_MODERATOR') ON CONFLICT (id) DO NOTHING;
 INSERT INTO user_role_types (id, name) VALUES (3, 'ROLE_ADMIN') ON CONFLICT (id) DO NOTHING;
 
--- Insert genders
-INSERT INTO user_gender_types (id, name) VALUES (1, 'MALE') ON CONFLICT (id) DO NOTHING;
-INSERT INTO user_gender_types (id, name) VALUES (2, 'FEMALE') ON CONFLICT (id) DO NOTHING;
-INSERT INTO user_gender_types (id, name) VALUES (3, 'OTHER') ON CONFLICT (id) DO NOTHING;
-
 -- Insert connection types
 INSERT INTO connection_types (id, name) VALUES (1, 'SEEN') ON CONFLICT (id) DO NOTHING;
 INSERT INTO connection_types (id, name) VALUES (2, 'OPENED_PROFILE') ON CONFLICT (id) DO NOTHING;
@@ -15,11 +10,6 @@ INSERT INTO connection_types (id, name) VALUES (3, 'JUST_FRIENDS') ON CONFLICT (
 INSERT INTO connection_types (id, name) VALUES (4, 'MAYBE_MORE') ON CONFLICT (id) DO NOTHING;
 INSERT INTO connection_types (id, name) VALUES (5, 'BLOCKED') ON CONFLICT (id) DO NOTHING;
 INSERT INTO connection_types (id, name) VALUES (6, 'PENDING') ON CONFLICT (id) DO NOTHING;
-
--- Insert message event types
-INSERT INTO message_event_types (id, name) VALUES (1, 'SENT') ON CONFLICT (id) DO NOTHING;
-INSERT INTO message_event_types (id, name) VALUES (2, 'RECEIVED') ON CONFLICT (id) DO NOTHING;
-INSERT INTO message_event_types (id, name) VALUES (3, 'READ') ON CONFLICT (id) DO NOTHING;
 
 -- Insert activity log types
 INSERT INTO activity_log_types (id, name) VALUES (1, 'CREATED') ON CONFLICT (id) DO NOTHING;
@@ -47,16 +37,6 @@ INSERT INTO profile_change_types (id, name) VALUES (2, 'AGE') ON CONFLICT (id) D
 INSERT INTO profile_change_types (id, name) VALUES (3, 'BIO') ON CONFLICT (id) DO NOTHING;
 INSERT INTO profile_change_types (id, name) VALUES (4, 'PHOTO') ON CONFLICT (id) DO NOTHING;
 INSERT INTO profile_change_types (id, name) VALUES (5, 'INTERESTS') ON CONFLICT (id) DO NOTHING;
-
--- Insert user state types
-INSERT INTO user_state_types (id, name) VALUES (1, 'UNVERIFIED') ON CONFLICT (id) DO NOTHING;
-INSERT INTO user_state_types (id, name) VALUES (2, 'VERIFIED') ON CONFLICT (id) DO NOTHING;
-INSERT INTO user_state_types (id, name) VALUES (3, 'NEW') ON CONFLICT (id) DO NOTHING;
-INSERT INTO user_state_types (id, name) VALUES (4, 'ACTIVE') ON CONFLICT (id) DO NOTHING;
-INSERT INTO user_state_types (id, name) VALUES (5, 'PENDING') ON CONFLICT (id) DO NOTHING;
-INSERT INTO user_state_types (id, name) VALUES (6, 'SUSPENDED') ON CONFLICT (id) DO NOTHING;
-INSERT INTO user_state_types (id, name) VALUES (7, 'DORMANT') ON CONFLICT (id) DO NOTHING;
-INSERT INTO user_state_types (id, name) VALUES (8, 'DISABLED') ON CONFLICT (id) DO NOTHING;
 
 -- Insert hobby categories
 INSERT INTO hobby (id, name, category, sub_category) VALUES (1, '3D printing', 'General', 'Indoors') ON CONFLICT (id) DO NOTHING;
@@ -558,13 +538,13 @@ INSERT INTO hobby (id, name, category, sub_category) VALUES (494, 'Whale watchin
 -- ----------------------------------------------------------------------
 
 -- Insert sample users into the "users" table.
-INSERT INTO users (id, email, number, user_state_type_id) 
+INSERT INTO users (id, email, number, state) 
 VALUES 
-  (1, 'test1@example.com', '111-111-1111', 4),
-  (2, 'test2@example.com', '222-222-2222', 4),
-  (3, 'test3@example.com', '333-333-3333', 4),
-  (4, 'test4@example.com', '444-444-4444', 4),
-  (5, 'test5@example.com', '555-555-5555', 4)
+  (1, 'john.doe@example.com', '+37253414494', 'ACTIVE'),
+  (2, 'jane.smith@example.com', '+37255433546', 'ACTIVE'),
+  (3, 'alice.johnson@example.com', '+37255554445', 'ACTIVE'),
+  (4, 'toomas.saar@example.com', '+37255554444', 'ACTIVE'),
+  (5, 'madis.paidest@example.com', '+37255554443', 'ACTIVE')
 ON CONFLICT (id) DO NOTHING;
 
 -- Update the users_id_seq sequence, because we don't use JPA, JPA doesn't know where the sequence is
@@ -586,32 +566,32 @@ VALUES
   (1, 'John', 'Doe', 'johnny', 'Tallinn'),
   (2, 'Jane', 'Smith', 'jane', 'Tartu'),
   (3, 'Alice', 'Johnson', 'alice', 'Pärnu'),
-  (4, 'Test', 'Match', 'testmatch', 'Paide'),
+  (4, 'Toomas', 'Saar', 'toomas', 'Paide'),
   (5, 'Madis', 'Paidest', 'madis', 'Tallinn')
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Insert sample user attributes into the "user_attributes" table.
 -- NOTE: "gender_id" values reference user_gender_types (1 = MALE, 2 = FEMALE)
 --       and location is stored as an array literal (PostgreSQL syntax).
-INSERT INTO user_attributes (user_id, gender_id, birthdate, location) 
+INSERT INTO user_attributes (user_id, gender, birthdate, location) 
 VALUES 
-  (1, 1, '1990-01-01', '{58.3859,24.5002}'),
-  (2, 1, '1992-05-10', '{58.3859,24.5002}'),
-  (3, 2, '1988-11-20', '{58.3859,24.5002}'),
-  (4, 2, '1990-01-01', '{58.3859,24.5002}'),
-  (5, 1, '1990-01-01', '{58.3859,24.5002}')
+  (1, 'MALE', '1990-01-01', '{58.3859,24.5002}'),
+  (2, 'MALE', '1992-05-10', '{58.3859,24.5002}'),
+  (3, 'FEMALE', '1988-11-20', '{58.3859,24.5002}'),
+  (4, 'MALE', '1990-01-01', '{58.3859,24.5002}'),
+  (5, 'FEMALE', '1990-01-01', '{58.3859,24.5002}')
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Insert sample user preferences into the "user_preferences" table.
 -- Here we assume the gender preference (stored as gender_id) indicates the
 -- preferred gender for matching (e.g. John (id 1) prefers females which is id 2).
-INSERT INTO user_preferences (user_id, gender_id, age_min, age_max, distance, probability_tolerance)
+INSERT INTO user_preferences (user_id, gender, age_min, age_max, distance, probability_tolerance)
 VALUES 
-  (1, 2, 18, 100, 30, 0.5),  -- John prefers females
-  (2, 2, 18, 100, 30, 0.5),  -- Jane prefers males
-  (3, 1, 18, 100, 30, 0.5),   -- Alice prefers males
-  (4, 1, 18, 100, 30, 0.5),
-  (5, 2, 18, 100, 30, 0.5)
+  (1, 'FEMALE', 18, 100, 50, 0.5),  -- John prefers females
+  (2, 'MALE', 18, 100, 50, 0.5),  -- Jane prefers males
+  (3, 'MALE', 18, 100, 50, 0.5),   -- Alice prefers males
+  (4, 'FEMALE', 18, 100, 50, 0.5),
+  (5, 'MALE', 18, 100, 50, 0.5)
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Insert sample user scores into the "user_scores" table.
@@ -636,8 +616,8 @@ ON CONFLICT (user_profile_id, hobby_id) DO NOTHING;
 
 INSERT INTO dating_pool (
     profile_id, 
-    my_gender_id, 
-    looking_for_gender_id, 
+    my_gender, 
+    looking_for_gender, 
     my_age, 
     age_min, 
     age_max, 
@@ -645,8 +625,8 @@ INSERT INTO dating_pool (
     actual_score
 ) VALUES (
     1, 
-    1,  -- Male
-    2,  -- Looking for Female
+    'MALE',  -- Male
+    'FEMALE',  -- Looking for Female
     34, -- 1990-01-01 = 34 years old
     18, -- 18 years old age min
     100, -- 100 age max
@@ -654,8 +634,8 @@ INSERT INTO dating_pool (
     1000
 ), (
     2, 
-    1,  -- Male
-    2,  -- Looking for Female
+    'MALE',  -- Male
+    'FEMALE',  -- Looking for Female
     32, -- 1992-05-10 = 32 years old
     18, -- 18 years old age min
     100, -- 100 age max
@@ -663,8 +643,8 @@ INSERT INTO dating_pool (
     1000
 ), (
     3, 
-    2,  -- Female
-    1,  -- Looking for Male
+    'FEMALE',  -- Female
+    'MALE',  -- Looking for Male
     36, -- 1988-11-20 = 36 years old
     18, -- 18 years old age min
     100, -- 100 age max
@@ -672,8 +652,8 @@ INSERT INTO dating_pool (
     1000
 ), (
     4, 
-    2,  -- Female
-    1,  -- Looking for Male
+    'FEMALE',  -- Female
+    'MALE',  -- Looking for Male
     34, -- 1990-01-01 = 34 years old
     18, -- 18 years old age min
     100, -- 100 age max
@@ -681,8 +661,8 @@ INSERT INTO dating_pool (
     1000
 ), (
     5, 
-    1,  -- Male
-    2,  -- Looking for Female
+    'MALE',  -- Male
+    'FEMALE',  -- Looking for Female
     34, -- 1990-01-01 = 34 years old
     18, -- 18 years old age min
     100, -- 100 age max
@@ -762,46 +742,46 @@ SELECT setval('user_messages_id_seq', (SELECT MAX(id) FROM user_messages));
 
 -- Insert message events to track sent, received, and read status
 -- SENT events for all messages
-INSERT INTO message_events (message_id, message_event_type_id, timestamp)
+INSERT INTO message_events (message_id, message_event_type, timestamp)
 VALUES
-  (1, 1, NOW() - INTERVAL '2 days'),
-  (2, 1, NOW() - INTERVAL '2 days'),
-  (3, 1, NOW() - INTERVAL '1 day'),
-  (4, 1, NOW() - INTERVAL '3 days'),
-  (5, 1, NOW() - INTERVAL '3 days'),
-  (6, 1, NOW() - INTERVAL '2 days'),
-  (7, 1, NOW() - INTERVAL '1 day'),
-  (8, 1, NOW() - INTERVAL '1 day'),
-  (9, 1, NOW() - INTERVAL '4 days'),
-  (10, 1, NOW() - INTERVAL '4 days'),
-  (11, 1, NOW() - INTERVAL '3 days');
+  (1, 'SENT', NOW() - INTERVAL '2 days'),
+  (2, 'SENT', NOW() - INTERVAL '2 days'),
+  (3, 'SENT', NOW() - INTERVAL '1 day'),
+  (4, 'SENT', NOW() - INTERVAL '3 days'),
+  (5, 'SENT', NOW() - INTERVAL '3 days'),
+  (6, 'SENT', NOW() - INTERVAL '2 days'),
+  (7, 'SENT', NOW() - INTERVAL '1 day'),
+  (8, 'SENT', NOW() - INTERVAL '1 day'),
+  (9, 'SENT', NOW() - INTERVAL '4 days'),
+  (10, 'SENT', NOW() - INTERVAL '4 days'),
+  (11, 'SENT', NOW() - INTERVAL '3 days');
 
 -- RECEIVED events for all messages
-INSERT INTO message_events (message_id, message_event_type_id, timestamp)
+INSERT INTO message_events (message_id, message_event_type, timestamp)
 VALUES
-  (1, 2, NOW() - INTERVAL '2 days' + INTERVAL '1 minute'),
-  (2, 2, NOW() - INTERVAL '2 days' + INTERVAL '1 minute'),
-  (3, 2, NOW() - INTERVAL '1 day' + INTERVAL '1 minute'),
-  (4, 2, NOW() - INTERVAL '3 days' + INTERVAL '1 minute'),
-  (5, 2, NOW() - INTERVAL '3 days' + INTERVAL '1 minute'),
-  (6, 2, NOW() - INTERVAL '2 days' + INTERVAL '1 minute'),
-  (7, 2, NOW() - INTERVAL '1 day' + INTERVAL '1 minute'),
-  (8, 2, NOW() - INTERVAL '1 day' + INTERVAL '1 minute'),
-  (9, 2, NOW() - INTERVAL '4 days' + INTERVAL '1 minute'),
-  (10, 2, NOW() - INTERVAL '4 days' + INTERVAL '1 minute'),
-  (11, 2, NOW() - INTERVAL '3 days' + INTERVAL '1 minute');
+  (1, 'RECEIVED', NOW() - INTERVAL '2 days' + INTERVAL '1 minute'),
+  (2, 'RECEIVED', NOW() - INTERVAL '2 days' + INTERVAL '1 minute'),
+  (3, 'RECEIVED', NOW() - INTERVAL '1 day' + INTERVAL '1 minute'),
+  (4, 'RECEIVED', NOW() - INTERVAL '3 days' + INTERVAL '1 minute'),
+  (5, 'RECEIVED', NOW() - INTERVAL '3 days' + INTERVAL '1 minute'),
+  (6, 'RECEIVED', NOW() - INTERVAL '2 days' + INTERVAL '1 minute'),
+  (7, 'RECEIVED', NOW() - INTERVAL '1 day' + INTERVAL '1 minute'),
+  (8, 'RECEIVED', NOW() - INTERVAL '1 day' + INTERVAL '1 minute'),
+  (9, 'RECEIVED', NOW() - INTERVAL '4 days' + INTERVAL '1 minute'),
+  (10, 'RECEIVED', NOW() - INTERVAL '4 days' + INTERVAL '1 minute'),
+  (11, 'RECEIVED', NOW() - INTERVAL '3 days' + INTERVAL '1 minute');
 
 -- READ events (for messages that have been read)
-INSERT INTO message_events (message_id, message_event_type_id, timestamp)
+INSERT INTO message_events (message_id, message_event_type, timestamp)
 VALUES
-  (1, 3, NOW() - INTERVAL '2 days' + INTERVAL '5 minutes'),
-  (2, 3, NOW() - INTERVAL '2 days' + INTERVAL '5 minutes'),
-  (3, 3, NOW() - INTERVAL '1 day' + INTERVAL '5 minutes'),
-  (4, 3, NOW() - INTERVAL '3 days' + INTERVAL '5 minutes'),
-  (5, 3, NOW() - INTERVAL '3 days' + INTERVAL '5 minutes'),
-  (6, 3, NOW() - INTERVAL '2 days' + INTERVAL '5 minutes'),
-  (7, 3, NOW() - INTERVAL '1 day' + INTERVAL '5 minutes'),
-  (8, 3, NOW() - INTERVAL '1 day' + INTERVAL '5 minutes'),
-  (9, 3, NOW() - INTERVAL '4 days' + INTERVAL '5 minutes'),
-  (10, 3, NOW() - INTERVAL '4 days' + INTERVAL '5 minutes');
+  (1, 'READ', NOW() - INTERVAL '2 days' + INTERVAL '5 minutes'),
+  (2, 'READ', NOW() - INTERVAL '2 days' + INTERVAL '5 minutes'),
+  (3, 'READ', NOW() - INTERVAL '1 day' + INTERVAL '5 minutes'),
+  (4, 'READ', NOW() - INTERVAL '3 days' + INTERVAL '5 minutes'),
+  (5, 'READ', NOW() - INTERVAL '3 days' + INTERVAL '5 minutes'),
+  (6, 'READ', NOW() - INTERVAL '2 days' + INTERVAL '5 minutes'),
+  (7, 'READ', NOW() - INTERVAL '1 day' + INTERVAL '5 minutes'),
+  (8, 'READ', NOW() - INTERVAL '1 day' + INTERVAL '5 minutes'),
+  (9, 'READ', NOW() - INTERVAL '4 days' + INTERVAL '5 minutes'),
+  (10, 'READ', NOW() - INTERVAL '4 days' + INTERVAL '5 minutes');
 -- Note: Message 11 doesn't have a READ event, so it will appear as unread

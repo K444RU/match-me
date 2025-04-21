@@ -17,7 +17,7 @@ public interface AttributesMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "userProfile", ignore = true)
     @Mapping(target = "attributeChangeLog", ignore = true)
-    @Mapping(target = "gender", ignore = true)
+    @Mapping(source = "gender_self", target = "gender")
     @Mapping(source = "birth_date", target = "birthdate")
     @Mapping(target = "location", ignore = true)
     UserAttributes toEntity(@MappingTarget UserAttributes entity, UserParametersRequestDTO parameters);
@@ -26,7 +26,7 @@ public interface AttributesMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "userProfile", ignore = true)
     @Mapping(target = "attributeChangeLog", ignore = true)
-    @Mapping(target = "gender", ignore = true)
+    @Mapping(source = "gender_self", target = "gender")
     @Mapping(source = "birth_date", target = "birthdate")
     @Mapping(target = "location", ignore = true)
     UserAttributes toEntity(@MappingTarget UserAttributes entity, AttributesSettingsRequestDTO parameters);

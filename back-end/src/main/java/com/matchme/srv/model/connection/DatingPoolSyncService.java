@@ -1,37 +1,31 @@
 package com.matchme.srv.model.connection;
 
-import java.time.LocalDate;
-import java.time.Period;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-
 import com.matchme.srv.exception.ResourceNotFoundException;
 import com.matchme.srv.model.user.profile.Hobby;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
 import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
 import com.matchme.srv.model.user.profile.user_score.UserScore;
-import com.matchme.srv.repository.MatchingRepository;
-import com.matchme.srv.repository.UserAttributesRepository;
-import com.matchme.srv.repository.UserPreferencesRepository;
-import com.matchme.srv.repository.UserProfileRepository;
-import com.matchme.srv.repository.UserScoreRepository;
+import com.matchme.srv.repository.*;
 import com.matchme.srv.service.GeohashService;
-
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 /**
- * Service responsible for synchronizing UserProfile, UserAttributes,
- * UserPreferences and UserScore data with the dating pool system.
- * This service maintains the dating pool entries by updating user attributes,
- * preferences,
- * and matching criteria in a consolidated format optimized for the matching
- * process.
+ * Service responsible for synchronizing user profile data with the dating pool system.
+ * This service ensures that the {@link DatingPool} entry for a user reflects the latest
+ * information from their {@link UserProfile}, {@link UserAttributes}, {@link UserPreferences},
+ * and {@link UserScore}. The synchronization is triggered by changes to these entities
+ * and is essential for maintaining accurate matching recommendations.
  */
 @Service
 @RequiredArgsConstructor
@@ -47,109 +41,105 @@ public class DatingPoolSyncService {
 
     /**
      * Synchronizes a user's dating pool entry with their current profile data.
+     * <p>
+     * This method performs the following steps:
+     * 1. Retrieves the user's {@link UserAttributes}, {@link UserPreferences}, and {@link UserProfile}.
+     * 2. Checks if all required fields are present in these entities. If any required data is missing,
+     *    the synchronization is skipped, and a debug log is recorded.
+     * 3. Fetches or creates a {@link DatingPool} entry for the user.
+     * 4. Updates the {@link DatingPool} entry with the latest user data, including gender, age,
+     *    location (as a geohash), hobby IDs, and matching preferences.
+     * 5. Saves the updated {@link DatingPool} entry to the repository.
+     * <p>
+     * The synchronization is skipped if any of the following conditions are met:
+     * - {@link UserAttributes} is missing or lacks required fields (gender, birthdate, location).
+     * - {@link UserPreferences} is missing or lacks required fields (gender, ageMin, ageMax, distance).
+     * - {@link UserProfile} is missing.
+     * <p>
+     * If the {@link UserScore} is missing when creating a new {@link DatingPool} entry,
+     * a {@link ResourceNotFoundException} is thrown.
      *
      * @param profileId The unique identifier of the user profile to synchronize
-     * @throws ResourceNotFoundException if any required user data entities cannot
-     *                                   be found
+     * @throws ResourceNotFoundException if the {@link UserScore} cannot be found when creating a new {@link DatingPool} entry
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void synchronizeDatingPool(Long profileId) {
-
-        UserAttributes attributes = userAttributesRepository.findById(profileId)
-                .orElseThrow(() -> new ResourceNotFoundException("userAttributes for " + profileId.toString()));
-
-        if (attributes.getGender() == null || attributes.getBirthdate() == null || attributes.getLocation().isEmpty()) {
-            log.debug("Missing required fields in userAttributes {}, skipping sync", profileId);
+        Optional<UserAttributes> attributesOpt = userAttributesRepository.findById(profileId);
+        if (attributesOpt.isEmpty() || !isAttributesComplete(attributesOpt.get())) {
+            log.debug("UserAttributes not found for profile ID: {}, skipping sync", profileId);
             return;
         }
+        UserAttributes attributes = attributesOpt.get();
 
-        UserPreferences preferences = userPreferencesRepository.findById(profileId)
-                .orElseThrow(() -> new ResourceNotFoundException("userPreferences for " + profileId.toString()));
-
-        if (preferences.getGender() == null || preferences.getAgeMin() == null || preferences.getAgeMax() == null
-                || preferences.getDistance() == null) {
-            log.debug("Missing required fields in userPreferences {}, skipping sync", profileId);
+        Optional<UserPreferences> preferencesOpt = userPreferencesRepository.findById(profileId);
+        if (preferencesOpt.isEmpty() || !isPreferencesComplete(preferencesOpt.get())) {
+            log.debug("UserPreferences not found for profile ID: {}, skipping sync", profileId);
             return;
         }
+        UserPreferences preferences = preferencesOpt.get();
 
-        UserProfile userProfile = userProfileRepository.findById(profileId)
-                .orElseThrow(() -> new ResourceNotFoundException("userProfile for " + profileId.toString()));
+        Optional<UserProfile> userProfileOpt = userProfileRepository.findById(profileId);
+        if (userProfileOpt.isEmpty()) {
+            log.debug("UserProfile not found for profile ID: {}, skipping sync", profileId);
+            return;
+        }
+        UserProfile userProfile = userProfileOpt.get();
 
         DatingPool entry = matchingRepository.findById(profileId)
-                .orElseGet(() -> {
-                    UserScore userScore = userScoreRepository.findById(profileId)
-                            .orElseThrow(() -> new ResourceNotFoundException("userScore for " + profileId.toString()));
+                .orElseGet(() -> createNewDatingPoolEntry(profileId));
 
-                    DatingPool newEntry = new DatingPool();
-                    newEntry.setProfileId(profileId);
-                    newEntry.setActualScore(userScore.getCurrentScore());
-                    return newEntry;
-                });
-
-        // Batch updates
         updateDatingPoolEntry(entry, attributes, preferences, userProfile);
         matchingRepository.save(entry);
         log.debug("DatingPool synchronized for profile ID: {}", profileId);
     }
 
     /**
-     * Synchronizes user preferences with their dating pool entry.
-     * This method only updates preference-related fields if a dating pool entry
-     * exists.
+     * Creates a new {@link DatingPool} entry for a user.
+     * <p>
+     * This method is called when no existing {@link DatingPool} entry is found for the user.
+     * It retrieves the user's {@link UserScore} and initializes a new {@link DatingPool} entry
+     * with the profile ID and the current score.
      *
      * @param profileId The unique identifier of the user profile
+     * @return A new {@link DatingPool} entry initialized with the user's profile ID and score
+     * @throws ResourceNotFoundException if the {@link UserScore} cannot be found
      */
-    @Transactional
-    public void synchronizeUserPreferences(Long profileId) {
-        DatingPool entry = matchingRepository.findById(profileId).orElse(null);
-        if (entry == null) {
-            return;
-        }
-
-        UserPreferences preferences = userPreferencesRepository.findById(profileId)
-                .orElseThrow(() -> new ResourceNotFoundException("userPreferences for " + profileId.toString()));
-
-        if (preferences.getGender() == null || preferences.getAgeMin() == null || preferences.getAgeMax() == null
-                || preferences.getDistance() == null) {
-            log.debug("Missing required fields in userPreferences {}, skipping sync", profileId);
-            return;
-        }
-
-        entry.setLookingForGender(preferences.getGender().getId());
-        entry.setAgeMin(preferences.getAgeMin());
-        entry.setAgeMax(preferences.getAgeMax());
-
-        entry.setSuitableGeoHashes(
-                geohashService.findGeohashesWithinRadius(entry.getMyLocation(), preferences.getDistance()));
-
-        matchingRepository.save(entry);
-        log.debug("DatingPool UserPreferences synchronized for profile ID: {}", profileId);
+    private DatingPool createNewDatingPoolEntry(Long profileId) {
+        UserScore userScore = userScoreRepository.findById(profileId)
+                .orElseThrow(() -> new ResourceNotFoundException("UserScore for profile ID: " + profileId));
+        DatingPool newEntry = new DatingPool();
+        newEntry.setProfileId(profileId);
+        newEntry.setActualScore(userScore.getCurrentScore());
+        return newEntry;
     }
 
     /**
-     * Synchronizes only the user's score in the dating pool.
-     * This is optimized for frequent score updates.
+     * Checks if the {@link UserAttributes} entity contains all required fields for synchronization.
      *
-     * @param profileId The unique identifier of the user profile
-     * @throws ResourceNotFoundException if the user score or dating pool entry
-     *                                   cannot be found
+     * @param attributes The {@link UserAttributes} entity to check
+     * @return {@code true} if gender, birthdate, and location are present; {@code false} otherwise
      */
-    @Transactional
-    public void synchronizeUserScore(Long profileId) {
-        UserScore userScore = userScoreRepository.findById(profileId)
-                .orElseThrow(() -> new ResourceNotFoundException("userScore for " + profileId.toString()));
+    private boolean isAttributesComplete(UserAttributes attributes) {
+        return attributes.getGender() != null &&
+                attributes.getBirthdate() != null &&
+                !attributes.getLocation().isEmpty();
+    }
 
-        DatingPool entry = matchingRepository.findById(profileId)
-                .orElseThrow(() -> new ResourceNotFoundException("DatingPool entry for " + profileId));
-
-        entry.setActualScore(userScore.getCurrentScore());
-        matchingRepository.save(entry);
-        log.debug("DatingPool score synchronized for profile ID: {}", profileId);
+    /**
+     * Checks if the {@link UserPreferences} entity contains all required fields for synchronization.
+     *
+     * @param preferences The {@link UserPreferences} entity to check
+     * @return {@code true} if gender, ageMin, ageMax, and distance are present; {@code false} otherwise
+     */
+    private boolean isPreferencesComplete(UserPreferences preferences) {
+        return preferences.getGender() != null &&
+                preferences.getAgeMin() != null &&
+                preferences.getAgeMax() != null &&
+                preferences.getDistance() != null;
     }
 
     /**
      * Updates a dating pool entry with the latest user data.
-     * This helper method consolidates all update operations for better readability
      *
      * @param entry       The dating pool entry to update
      * @param attributes  The user's attributes
@@ -157,10 +147,9 @@ public class DatingPoolSyncService {
      * @param userProfile The user's profile
      */
     private void updateDatingPoolEntry(DatingPool entry, UserAttributes attributes,
-            UserPreferences preferences, UserProfile userProfile) {
-
-        entry.setMyGender(attributes.getGender().getId());
-        entry.setLookingForGender(preferences.getGender().getId());
+                                       UserPreferences preferences, UserProfile userProfile) {
+        entry.setMyGender(attributes.getGender());
+        entry.setLookingForGender(preferences.getGender());
 
         entry.setMyAge(getAgeFromBirthDate(attributes.getBirthdate()));
         entry.setAgeMin(preferences.getAgeMin());
@@ -175,7 +164,7 @@ public class DatingPoolSyncService {
     }
 
     /**
-     * Calculates the current age of a user based on their birth date.
+     * Calculates the current age of a user based on their birthdate.
      *
      * @param birthdate The user's date of birth
      * @return The calculated age in years
@@ -192,11 +181,9 @@ public class DatingPoolSyncService {
      */
     private Set<Long> getHobbyIdsFromHobbies(Set<Hobby> hobbies) {
         Set<Long> hobbyIds = new HashSet<>();
-
         for (Hobby hobby : hobbies) {
             hobbyIds.add(hobby.getId());
         }
-
         return hobbyIds;
     }
 }

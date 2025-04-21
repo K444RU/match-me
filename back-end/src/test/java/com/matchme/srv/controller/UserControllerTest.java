@@ -6,6 +6,7 @@ import com.matchme.srv.dto.request.UserParametersRequestDTO;
 import com.matchme.srv.dto.request.settings.*;
 import com.matchme.srv.dto.response.BiographicalResponseDTO;
 import com.matchme.srv.dto.response.CurrentUserResponseDTO;
+import com.matchme.srv.dto.response.HobbyResponseDTO;
 import com.matchme.srv.dto.response.ProfileResponseDTO;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.security.services.UserDetailsImpl;
@@ -39,7 +40,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+import static org.hamcrest.Matchers.hasSize;
 @ExtendWith(MockitoExtension.class)
 class UserControllerTest {
 
@@ -185,9 +186,14 @@ class UserControllerTest {
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpectAll(
                 status().isOk(),
-                jsonPath("$.first_name", is(DEFAULT_FIRST_NAME)),
-                jsonPath("$.last_name", is(DEFAULT_LAST_NAME)),
-                jsonPath("$.city", is(DEFAULT_CITY)));
+                jsonPath("$.firstName", is(DEFAULT_FIRST_NAME)),
+                jsonPath("$.lastName", is(DEFAULT_LAST_NAME)),
+                jsonPath("$.city", is(DEFAULT_CITY)),
+                jsonPath("$.hobbies", hasSize(DEFAULT_HOBBY_IDS.size())),
+                jsonPath("$.hobbies[0].id", is(DEFAULT_HOBBY_RESPONSE_DTOS.toArray(new HobbyResponseDTO[0])[0].getId().intValue())),
+                jsonPath("$.hobbies[0].name", is(DEFAULT_HOBBY_RESPONSE_DTOS.toArray(new HobbyResponseDTO[0])[0].getName())),
+                jsonPath("$.hobbies[1].id", is(DEFAULT_HOBBY_RESPONSE_DTOS.toArray(new HobbyResponseDTO[0])[1].getId().intValue())),
+                jsonPath("$.hobbies[1].name", is(DEFAULT_HOBBY_RESPONSE_DTOS.toArray(new HobbyResponseDTO[0])[1].getName())));
       }
 
       @Test
@@ -235,9 +241,14 @@ class UserControllerTest {
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpectAll(
                 status().isOk(),
-                jsonPath("$.first_name", is(DEFAULT_TARGET_FIRST_NAME)),
-                jsonPath("$.last_name", is(DEFAULT_TARGET_LAST_NAME)),
-                jsonPath("$.city", is(DEFAULT_TARGET_CITY)));
+                jsonPath("$.firstName", is(DEFAULT_TARGET_FIRST_NAME)),
+                jsonPath("$.lastName", is(DEFAULT_TARGET_LAST_NAME)),
+                jsonPath("$.city", is(DEFAULT_TARGET_CITY)),
+                jsonPath("$.hobbies", hasSize(DEFAULT_TARGET_HOBBY_IDS.size())),
+                jsonPath("$.hobbies[0].id", is(DEFAULT_TARGET_HOBBY_RESPONSE_DTOS.toArray(new HobbyResponseDTO[0])[0].getId().intValue())),
+                jsonPath("$.hobbies[0].name", is(DEFAULT_TARGET_HOBBY_RESPONSE_DTOS.toArray(new HobbyResponseDTO[0])[0].getName())),
+                jsonPath("$.hobbies[1].id", is(DEFAULT_TARGET_HOBBY_RESPONSE_DTOS.toArray(new HobbyResponseDTO[0])[1].getId().intValue())),
+                jsonPath("$.hobbies[1].name", is(DEFAULT_TARGET_HOBBY_RESPONSE_DTOS.toArray(new HobbyResponseDTO[0])[1].getName())));
       }
     }
 
@@ -263,10 +274,8 @@ class UserControllerTest {
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpectAll(
                 status().isOk(),
-                jsonPath("$.gender_self.id", is(DEFAULT_GENDER_SELF_ID.intValue())),
-                jsonPath("$.gender_self.name", is(DEFAULT_GENDER_SELF_NAME)),
-                jsonPath("$.gender_other.id", is(DEFAULT_GENDER_OTHER_ID.intValue())),
-                jsonPath("$.gender_other.name", is(DEFAULT_GENDER_OTHER_NAME)),
+                jsonPath("$.gender_self", is(DEFAULT_GENDER_SELF.toString())),
+                jsonPath("$.gender_other", is(DEFAULT_GENDER_OTHER.toString())),
                 jsonPath("$.age_self", is(DEFAULT_AGE_SELF)),
                 jsonPath("$.age_max", is(DEFAULT_AGE_MAX)),
                 jsonPath("$.age_min", is(DEFAULT_AGE_MIN)),
@@ -322,10 +331,8 @@ class UserControllerTest {
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpectAll(
                 status().isOk(),
-                jsonPath("$.gender_self.id", is(DEFAULT_TARGET_GENDER_SELF_ID.intValue())),
-                jsonPath("$.gender_self.name", is(DEFAULT_TARGET_GENDER_SELF_NAME)),
-                jsonPath("$.gender_other.id", is(DEFAULT_TARGET_GENDER_OTHER_ID.intValue())),
-                jsonPath("$.gender_other.name", is(DEFAULT_TARGET_GENDER_OTHER_NAME)),
+                jsonPath("$.gender_self", is(DEFAULT_TARGET_GENDER_SELF.toString())),
+                jsonPath("$.gender_other", is(DEFAULT_TARGET_GENDER_OTHER.toString())),
                 jsonPath("$.age_self", is(DEFAULT_TARGET_AGE_SELF)),
                 jsonPath("$.age_max", is(DEFAULT_TARGET_AGE_MAX)),
                 jsonPath("$.age_min", is(DEFAULT_TARGET_AGE_MIN)),

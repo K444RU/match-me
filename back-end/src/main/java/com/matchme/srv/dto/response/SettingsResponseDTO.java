@@ -1,6 +1,7 @@
 package com.matchme.srv.dto.response;
 
 import java.util.Set;
+import com.matchme.srv.model.user.profile.UserGenderEnum;
 import lombok.Builder;
 
 @Builder
@@ -12,12 +13,12 @@ public record SettingsResponseDTO(
     String lastName,
     String alias,
     Set<Long> hobbies,
-    Long genderSelf,
+    UserGenderEnum genderSelf,
     String birthDate,
     String city,
     Double longitude,
     Double latitude,
-    Long genderOther,
+    UserGenderEnum genderOther,
     Integer ageMin,
     Integer ageMax,
     Integer distance,

@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { STORAGE_KEYS } from '@/lib/constants/storageKeys';
 
 const axiosInstance = axios.create({
   baseURL: 'http://localhost:8000/',
@@ -27,7 +28,7 @@ const flattenParams = (obj: any, prefix = ''): Record<string, any> => {
 // Add request interceptor to include auth token in all requests
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
     if (token) {
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;

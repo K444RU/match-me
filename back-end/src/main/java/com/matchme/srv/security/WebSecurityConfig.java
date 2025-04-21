@@ -1,6 +1,7 @@
 package com.matchme.srv.security;
 
 import com.matchme.srv.security.jwt.AuthEntryPointJwt;
+import com.matchme.srv.repository.UserRepository;
 import com.matchme.srv.security.jwt.AuthTokenFilter;
 import com.matchme.srv.security.jwt.JwtUtils;
 import com.matchme.srv.security.services.UserDetailsServiceImpl;
@@ -30,12 +31,13 @@ public class WebSecurityConfig {
     final UserDetailsServiceImpl userDetailsService;
     private final JwtUtils jwtUtils;
     private final AuthEntryPointJwt unauthorizedHandler;
-
+    private final UserRepository userRepository;
+   
     // This bean is used to filter requests and extract JWT tokens from the request headers.
     // It filters for JWT tokens in the Authorization header.
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
-        return new AuthTokenFilter(jwtUtils, userDetailsService);
+    	return new AuthTokenFilter(jwtUtils, userDetailsService, userRepository);
     }
 
     // This bean is used to authenticate users using the user details service and password encoder.
@@ -117,13 +119,14 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/user/complete-registration").permitAll()
                         .requestMatchers("/api/test/all").permitAll()
-                        .requestMatchers("/api/genders").permitAll().requestMatchers("/ws/**")
-                        .permitAll().requestMatchers("/ws").permitAll()
+                        .requestMatchers("/api/genders").authenticated()
+                        .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/ws").permitAll()
                         .requestMatchers("/v3/api-docs/").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers("/swagger-ui.html").permitAll()
-                        .requestMatchers("/swagger-ui/**").permitAll().anyRequest()
-                        .authenticated());
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .anyRequest().authenticated());
 
         http.authenticationProvider(authenticationProvider());
 

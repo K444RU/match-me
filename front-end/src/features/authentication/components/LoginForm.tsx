@@ -1,119 +1,122 @@
-import { getMeController } from '@/api/me-controller';
-import type { CurrentUserResponseDTO } from '@/api/types';
 import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { useAuth } from '@/features/authentication';
 import MotionSpinner from '@animations/MotionSpinner';
-import axios from 'axios';
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import InputField from '../../../components/ui/forms/InputField';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import FormResponse from './FormResponse';
 
 const testUsers = [
-  { email: 'test1@example.com', password: '123456' },
-  { email: 'test2@example.com', password: '123456' },
-  { email: 'test3@example.com', password: '123456' },
-  { email: 'test4@example.com', password: '123456' },
-  { email: 'test5@example.com', password: '123456' },
+  { email: 'john.doe@example.com', password: '123456' },
+  { email: 'jane.smith@example.com', password: '123456' },
+  { email: 'alice.johnson@example.com', password: '123456' },
+  { email: 'toomas.saar@example.com', password: '123456' },
+  { email: 'madis.paidest@example.com', password: '123456' },
+  { email: 'invalid@example.com', password: '123456' },
 ];
 
-export default function LoginForm() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { login } = useAuth();
-  const { getCurrentUser } = getMeController();
-  const from = location.state?.from?.pathname || '/chats';
+const loginSchema = z.object({
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+  password: z.string().min(6, { message: 'Password must contain at least 6 characters.' }),
+});
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+type LoginFormData = z.infer<typeof loginSchema>;
+
+export default function LoginForm() {
+  const { login, isLoading } = useAuth();
 
   const [resTitle, setResTitle] = useState('');
   const [resSubtitle, setResSubtitle] = useState('');
 
+  const form = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
+
   const handleTestUser = (email: string, password: string) => {
-    setEmail(email);
-    setPassword(password);
+    form.setValue('email', email);
+    form.setValue('password', password);
+    setResTitle('');
+    setResSubtitle('');
   };
 
-  const submitForm = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const onSubmit = async (values: LoginFormData) => {
+    setResTitle('');
+    setResSubtitle('');
 
-    try {
-      const response = await login({ email, password });
+    const result = await login(values);
 
-      if (response.token) {
-        localStorage.setItem('authToken', response.token);
-
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-          setResTitle('Token Error');
-          setResSubtitle('Authentication token was not stored correctly.');
-          return;
-        }
-
-        const currentUserResponse = await getCurrentUser();
-
-        const currentUser = currentUserResponse;
-        const requiredFields: (keyof CurrentUserResponseDTO)[] = ['firstName', 'lastName', 'alias', 'email'];
-        const isProfileIncomplete = requiredFields.some((field) => !currentUser[field]);
-
-        navigate(isProfileIncomplete ? '/profile-completion' : from === '/logout' ? '/chats' : from, { replace: true });
-      }
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
-        if (err.response?.status === 401) {
-          setResTitle('Invalid Credentials');
-          setResSubtitle('Please check your email and password');
-        } else {
-          setResTitle('Login Failed');
-          setResSubtitle('An unexpected error occurred. Please try again.');
-        }
+    if (result.success && result.user) {
+      console.debug(`LoginForm: Login successful via context result.`);
+    } else {
+      console.warn(`LoginForm: Login failed. Reason: ${result.error?.title} - ${result.error?.subtitle}`);
+      if (result.error) {
+        setResTitle(result.error.title);
+        setResSubtitle(result.error.subtitle);
       } else {
         setResTitle('Login Failed');
-        setResSubtitle('An unexpected error occurred. Please try again.');
+        setResSubtitle('An unexpected error occurred.');
       }
-    } finally {
-      setLoading(false);
+      form.setValue('password', '');
     }
+    console.debug('LoginForm: submitForm finished processing result.');
   };
 
   return (
-    <form onSubmit={submitForm} className="flex flex-col items-center gap-2">
-      {resTitle && resSubtitle && <FormResponse title={resTitle} subtitle={resSubtitle} />}
-      <InputField type="email" name="contact_email" placeholder="Email" value={email} onChange={setEmail} required />
-      <InputField
-        type="password"
-        name="password"
-        placeholder="Password"
-        value={password}
-        onChange={setPassword}
-        required
-      />
-      <Button
-        className="flex w-full items-center justify-center gap-2 self-start rounded-md bg-primary px-5 py-2 font-semibold tracking-wide text-text transition-colors hover:bg-primary-200 hover:text-text"
-        type="submit"
-        aria-label="Submit form."
-      >
-        <span>Login</span>
-        {loading && <MotionSpinner />}
-      </Button>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col items-center gap-2">
+        {resTitle && resSubtitle && <FormResponse title={resTitle} subtitle={resSubtitle} />}
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem className="w-full">
+              <FormControl>
+                <Input type="email" placeholder="Email" autoComplete="email" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem className="w-full">
+              <FormControl>
+                <Input type="password" placeholder="Password" autoComplete="current-password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button
+          disabled={isLoading}
+          className="flex w-full items-center justify-center gap-2 font-semibold tracking-wide"
+          type="submit"
+          aria-label="Submit form."
+        >
+          <span>Login</span>
+          {isLoading && <MotionSpinner />}
+        </Button>
 
-      <div className="mt-4 flex w-full flex-col gap-2">
-        <div className="grid grid-cols-2 gap-2">
-          {testUsers.map((user) => (
-            <Button
-              type="button"
-              className="rounded bg-gray-200 px-3 py-1 text-sm"
-              onClick={() => handleTestUser(user.email, user.password)}
-              key={user.email}
-            >
-              {user.email}
-            </Button>
-          ))}
+        <div className="mt-4 flex w-full flex-col gap-2">
+          <div className="grid grid-cols-2 gap-2">
+            {testUsers.map((user) => (
+              <Button
+                type="button"
+                className="rounded-sm px-3 py-1 text-sm"
+                variant="secondary"
+                onClick={() => handleTestUser(user.email, user.password)}
+                key={user.email}
+                disabled={isLoading}
+              >
+                {user.email.split('@')[0]}
+              </Button>
+            ))}
+          </div>
         </div>
-      </div>
-    </form>
+      </form>
+    </Form>
   );
 }

@@ -1,145 +1,189 @@
+import { UserGenderEnum } from '@/api/types';
 import MotionSpinner from '@/components/animations/MotionSpinner';
+import GenderSelect from '@/components/forms/GenderSelect';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import MultiHandleSlider from '@/components/ui/forms/MultiRangeSlider';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
-import { GenderContext } from '@/features/gender';
+import { DualRangeSlider } from '@/components/ui/dual-range-slider';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Slider } from '@/components/ui/slider';
 import { userService } from '@/features/user';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useContext, useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import OneHandleSlider from '../../../components/ui/forms/OneHandleSlider';
+import { z } from 'zod';
 import { SettingsContext } from '../SettingsContext';
 
-const UserPreferencesCard = () => {
+const preferencesSchema = z.object({
+  genderOther: z.nativeEnum(UserGenderEnum, { required_error: 'Preferred gender is required.' }),
+  distance: z.number().min(50).max(300),
+  ageRange: z
+    .array(z.number())
+    .length(2, 'Age range must have two values.')
+    .refine((data) => data[0] >= 18 && data[1] <= 120 && data[0] <= data[1], {
+      message: 'Invalid age range (must be 18-120).',
+    }),
+  probabilityTolerance: z.number().min(0.1).max(1.0),
+});
+
+type PreferencesFormData = z.infer<typeof preferencesSchema>;
+
+export default function UserPreferencesCard() {
   const settingsContext = useContext(SettingsContext);
-  const genders = useContext(GenderContext);
-  const [gender, setGender] = useState<number | null>(null);
-  const [distance, setDistance] = useState<number | null>(null);
-  const [ageMin, setAgeMin] = useState<number | null>(null);
-  const [ageMax, setAgeMax] = useState<number | null>(null);
-  const [probabilityTolerance, setProbabilityTolerance] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const form = useForm<PreferencesFormData>({
+    resolver: zodResolver(preferencesSchema),
+    defaultValues: {
+      genderOther: undefined,
+      distance: 50,
+      ageRange: [18, 120],
+      probabilityTolerance: 0.5,
+    },
+  });
+
   useEffect(() => {
-    if (!settingsContext?.settings) return;
+    if (settingsContext?.settings) {
+      form.reset({
+        genderOther:
+          typeof settingsContext.settings.genderOther === 'string' ? settingsContext.settings.genderOther : undefined,
+        distance: settingsContext.settings.distance ?? 50,
+        ageRange: [settingsContext.settings.ageMin ?? 18, settingsContext.settings.ageMax ?? 120],
+        probabilityTolerance: settingsContext.settings.probabilityTolerance ?? 0.5,
+      });
+    } else {
+      form.reset({
+        genderOther: undefined,
+        distance: 50,
+        ageRange: [18, 120],
+        probabilityTolerance: 0.5,
+      });
+    }
+  }, [settingsContext?.settings, form.reset]);
 
-    setGender(settingsContext.settings.genderOther ?? null);
-    setDistance(settingsContext.settings.distance ?? null);
-    setAgeMin(settingsContext.settings.ageMin ?? null);
-    setProbabilityTolerance(settingsContext.settings.probabilityTolerance ?? null);
-    setAgeMax(settingsContext.settings.ageMax ?? null);
-  }, [settingsContext?.settings]);
+  const watchedAgeRange = form.watch('ageRange');
+  const watchedDistance = form.watch('distance');
+  const watchedTolerance = form.watch('probabilityTolerance');
 
-  const handleUpdate = async () => {
+  if (!settingsContext || !settingsContext.settings) {
+    return (
+      <Card className="no-scrollbar flex h-[475px] w-full items-center justify-center">
+        <MotionSpinner />
+      </Card>
+    );
+  }
+
+  const onSubmit = async (values: PreferencesFormData) => {
     if (!settingsContext?.settings) return;
 
     setLoading(true);
     try {
-      if (!gender || !distance || !ageMin || !ageMax || !probabilityTolerance) return;
       await userService.updatePreferencesSettings({
-        gender_other: gender,
-        distance,
-        age_min: ageMin,
-        age_max: ageMax,
-        probability_tolerance: probabilityTolerance,
+        gender_other: values.genderOther,
+        distance: values.distance,
+        age_min: values.ageRange[0],
+        age_max: values.ageRange[1],
+        probability_tolerance: values.probabilityTolerance,
       });
       await settingsContext.refreshSettings();
       toast.success('Preferences updated successfully');
     } catch (error) {
       toast.error('Failed to update preferences');
-      console.error('Error updating preferences:', error);
+      console.error('Error updating preferences:', error, form.formState.errors);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Card className="h-[475px] w-full border-none shadow-none">
+    <Card className="h-[475px] w-full">
       <CardHeader>
         <CardTitle>Preferences</CardTitle>
         <CardDescription>These settings determine how we find matches for you.</CardDescription>
       </CardHeader>
-      <CardContent>
-        <form>
-          <div className="grid w-full items-center gap-4">
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="ageRange">Age range</Label>
-              <MultiHandleSlider
-                min={18}
-                max={120}
-                minValue={ageMin}
-                maxValue={ageMax}
-                onInput={({ minValue, maxValue }) => {
-                  setAgeMin(minValue);
-                  setAgeMax(maxValue);
-                }}
-                showInputField={false}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <CardContent>
+            <div className="grid w-full items-center gap-4">
+              <FormField
+                control={form.control}
+                name="ageRange"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Age range | {watchedAgeRange[0]} - {watchedAgeRange[1]}
+                    </FormLabel>
+                    <FormControl>
+                      <DualRangeSlider min={18} max={120} step={1} value={field.value} onValueChange={field.onChange} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="distance">Distance</Label>
-              <OneHandleSlider
+              <FormField
+                control={form.control}
                 name="distance"
-                min={50}
-                max={300}
-                value={distance}
-                step={10}
-                onChange={setDistance}
-                showInputField={false}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel htmlFor="distance">Distance | {watchedDistance} km</FormLabel>
+                    <FormControl>
+                      <Slider
+                        id="distance"
+                        min={50}
+                        max={300}
+                        step={10}
+                        defaultValue={[50]}
+                        value={[field.value]}
+                        onValueChange={(value) => field.onChange(value[0])}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="probabilityTolerance">Probability Tolerance</Label>
-              <OneHandleSlider
+              <FormField
+                control={form.control}
                 name="probabilityTolerance"
-                min={0.1}
-                max={1.0}
-                value={probabilityTolerance}
-                step={0.1}
-                onChange={setProbabilityTolerance}
-                showInputField={false}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel htmlFor="probabilityTolerance">
+                      Probability Tolerance | {watchedTolerance.toFixed(1)}
+                    </FormLabel>
+                    <FormControl>
+                      <Slider
+                        id="probabilityTolerance"
+                        min={0.1}
+                        max={1.0}
+                        step={0.1}
+                        value={[field.value]}
+                        onValueChange={(value) => field.onChange(value[0])}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <GenderSelect
+                control={form.control}
+                name="genderOther"
+                label="Gender"
+                description="What gender do you prefer?"
               />
             </div>
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="otherGender">Gender</Label>
-              {gender !== null && genders !== null ? (
+          </CardContent>
+          <CardFooter className="flex justify-end">
+            <Button type="submit" disabled={loading}>
+              {loading ? (
                 <>
-                  <Select value={gender?.toString()} onValueChange={(value) => setGender(Number(value))}>
-                    <SelectTrigger id="otherGender">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent position="popper">
-                      {genders &&
-                        genders.map((gender) => (
-                          <SelectItem key={gender.id} value={gender.id.toString()}>
-                            {gender.name}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
+                  Updating <MotionSpinner />
                 </>
               ) : (
-                <Skeleton className="h-[40px] w-full rounded-md border border-[#e5e7eb]" />
+                'Update'
               )}
-            </div>
-          </div>
+            </Button>
+          </CardFooter>
         </form>
-      </CardContent>
-      <CardFooter className="flex justify-end">
-        <Button onClick={handleUpdate} disabled={loading}>
-          {loading ? (
-            <>
-              Updating <MotionSpinner />
-            </>
-          ) : (
-            'Update'
-          )}
-        </Button>
-      </CardFooter>
+      </Form>
     </Card>
   );
-};
-
-export default UserPreferencesCard;
+}

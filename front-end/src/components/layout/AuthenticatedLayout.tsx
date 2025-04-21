@@ -11,14 +11,12 @@ export default function AuthenticatedLayout() {
   if (!user) return;
 
   return (
-      <WebSocketProvider wsUrl={WS_URL}>
-        <GlobalCommunicationProvider>
-            <SidebarProvider>
-                <div className="flex h-screen w-screen overflow-hidden">
-                    <Outlet />
-                </div>
-            </SidebarProvider>
-        </GlobalCommunicationProvider>
-      </WebSocketProvider>
+    <WebSocketProvider wsUrl={WS_URL}>
+      <GlobalCommunicationProvider>
+        <div className="flex size-full overflow-hidden">
+          <Outlet />
+        </div>
+      </GlobalCommunicationProvider>
+    </WebSocketProvider>
   );
 }

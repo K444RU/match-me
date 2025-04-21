@@ -2,7 +2,7 @@ package com.matchme.srv.mapper.user;
 
 import com.matchme.srv.dto.response.BiographicalResponseDTO;
 import com.matchme.srv.dto.response.CurrentUserResponseDTO;
-import com.matchme.srv.dto.response.GenderTypeDTO;
+import com.matchme.srv.dto.response.HobbyResponseDTO;
 import com.matchme.srv.dto.response.ProfileResponseDTO;
 import com.matchme.srv.dto.response.SettingsResponseDTO;
 import com.matchme.srv.dto.response.UserParametersResponseDTO;
@@ -38,6 +38,7 @@ public class UserDTOMapper {
                 .profilePicture(base64Picture)
                 .role(user.getRoles())
                 .profileLink("/api/users/" + user.getId() + "/profile")
+                .state(user.getState())
                 .build();
     }
 
@@ -70,14 +71,8 @@ public class UserDTOMapper {
 
     public BiographicalResponseDTO tobBiographicalResponseDTO(UserProfile profile) {
         return BiographicalResponseDTO.builder()
-                .gender_self(
-                        new GenderTypeDTO(
-                                profile.getAttributes().getGender().getId(),
-                                profile.getAttributes().getGender().getName()))
-                .gender_other(
-                        new GenderTypeDTO(
-                                profile.getPreferences().getGender().getId(),
-                                profile.getPreferences().getGender().getName()))
+                .gender_self(profile.getAttributes().getGender())
+                .gender_other(profile.getPreferences().getGender())
                 .hobbies(profile.getHobbies().stream().map(Hobby::getId).collect(Collectors.toSet()))
                 .age_self(
                         Period.between(profile.getAttributes().getBirthdate(), LocalDate.now()).getYears())
@@ -90,9 +85,10 @@ public class UserDTOMapper {
 
     public ProfileResponseDTO toProfileResponseDTO(UserProfile profile) {
         return ProfileResponseDTO.builder()
-                .first_name(profile.getFirst_name())
-                .last_name(profile.getLast_name())
+                .firstName(profile.getFirst_name())
+                .lastName(profile.getLast_name())
                 .city(profile.getCity())
+                .hobbies(profile.getHobbies().stream().map(hobby -> HobbyResponseDTO.builder().id(hobby.getId()).name(hobby.getName()).build()).collect(Collectors.toSet()))
                 .build();
     }
 }

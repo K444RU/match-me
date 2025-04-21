@@ -1,8 +1,9 @@
 import { ChatMessageResponseDTO, GetChatMessagesParams, MessagesSendRequestDTO } from '@/api/types';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth } from '@/features/authentication';
-import { CommunicationContext, chatService, useWebSocket } from '@/features/chat';
+import { chatService, CommunicationContext, useWebSocket } from '@/features/chat';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import NoChat from './NoChat';
 import OpenChatInput from './OpenChatInput';
 import OpenChatMessages from './OpenChatMessages';
@@ -166,6 +167,10 @@ export default function OpenChat() {
       messageId: -(chatMessages.length + 1),
       senderAlias: user.alias || '',
       senderId: user.id || 0,
+      event: {
+        type: 'SENT',
+        timestamp: new Date().toISOString(),
+      },
     };
 
     if (communicationContext?.updateAllChats) {
@@ -177,7 +182,6 @@ export default function OpenChat() {
     try {
       // Only use WebSocket if already connected
       if (connected) {
-        console.log('🚀 Sending message via WebSocket');
         try {
           await sendWebSocketMessage(messageDTO);
         } catch (wsError) {
@@ -189,7 +193,7 @@ export default function OpenChat() {
       }
     } catch (error) {
       console.error('Error sending message:', error);
-      // Show error to user
+      toast.error('Failed to send message.');
     }
   };
 

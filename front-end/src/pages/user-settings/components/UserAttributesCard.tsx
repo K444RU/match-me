@@ -1,66 +1,93 @@
+import { UserGenderEnum } from '@/api/types';
 import MotionSpinner from '@/components/animations/MotionSpinner';
+import GenderSelect from '@/components/forms/GenderSelect';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import DatePicker from '@/components/ui/forms/DatePicker';
-import InputField from '@/components/ui/forms/InputField';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
-import { GenderContext } from '@/features/gender';
+import { Input } from '@/components/ui/input';
 import { userService } from '@/features/user';
 import { useDebounce } from '@/lib/hooks/use-debounce';
-import { CitySuggestions } from '@/pages/profile-completion/components/CitySuggestions';
+import CitySuggestions from '@/pages/profile-completion/components/CitySuggestions';
 import { City } from '@/pages/profile-completion/types/types';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useContext, useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { z } from 'zod';
 import { SettingsContext } from '../SettingsContext';
 
-const UserAttributesCard = () => {
-  const genders = useContext(GenderContext);
+const attributesSchema = z.object({
+  birthDate: z.date({ required_error: 'Birth date is required.' }),
+  city: z.string().min(1, { message: 'City is required.' }),
+  latitude: z.number({ required_error: 'Latitude is required.' }),
+  longitude: z.number({ required_error: 'Longitude is required.' }),
+  genderSelf: z.nativeEnum(UserGenderEnum, { required_error: 'Gender is required.' }),
+});
+
+type AttributesFormData = z.infer<typeof attributesSchema>;
+
+export default function UserAttributesCard() {
   const settingsContext = useContext(SettingsContext);
-  const [city, setCity] = useState<string>();
-  const [longitude, setLongitude] = useState<number | null>(null);
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [gender, setGender] = useState<number | null>(null);
-  const [birthDate, setBirthDate] = useState<Date | undefined>(undefined);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const debouncedCitySearchValue = useDebounce(city as string, 1000);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!settingsContext?.settings) return;
+  const form = useForm<AttributesFormData>({
+    resolver: zodResolver(attributesSchema),
+    defaultValues: {
+      birthDate: undefined,
+      city: '',
+      latitude: undefined,
+      longitude: undefined,
+      genderSelf: undefined,
+    },
+  });
 
-    setCity(settingsContext.settings.city ?? '');
-    setLongitude(settingsContext.settings.longitude ?? null);
-    setLatitude(settingsContext.settings.latitude ?? null);
-    setGender(settingsContext.settings.genderSelf ?? null);
-    setBirthDate(settingsContext.settings.birthDate ? new Date(settingsContext.settings.birthDate) : undefined);
-  }, [settingsContext?.settings]);
+  const cityValue = form.watch('city');
+  const debouncedCitySearchValue = useDebounce(cityValue, 1000);
+
+  useEffect(() => {
+    if (settingsContext?.settings) {
+      form.reset({
+        city: settingsContext.settings.city ?? '',
+        latitude: typeof settingsContext.settings.latitude === 'number' ? settingsContext.settings.latitude : undefined,
+        longitude:
+          typeof settingsContext.settings.longitude === 'number' ? settingsContext.settings.longitude : undefined,
+        genderSelf:
+          typeof settingsContext.settings.genderSelf === 'string' ? settingsContext.settings.genderSelf : undefined,
+        birthDate: settingsContext.settings.birthDate ? new Date(settingsContext.settings.birthDate) : undefined,
+      });
+    } else {
+      // Reset to default values if settings are not available
+      form.reset({
+        birthDate: undefined,
+        city: '',
+        latitude: undefined,
+        longitude: undefined,
+        genderSelf: undefined,
+      });
+    }
+  }, [settingsContext?.settings, form.reset]);
 
   const handleCitySelect = async (city: City) => {
     setShowSuggestions(false);
-    setCity(city.name);
-    setLongitude(city.longitude);
-    setLatitude(city.latitude);
+    form.setValue('city', city.name, { shouldValidate: true });
+    form.setValue('longitude', city.longitude, { shouldValidate: true });
+    form.setValue('latitude', city.latitude, { shouldValidate: true });
+    form.trigger(['city', 'latitude', 'longitude']);
   };
 
-  const handleCityInputChange = (value: string) => {
-    setCity(value);
-    setShowSuggestions(true);
-  };
-
-  const handleUpdate = async () => {
+  const onSubmit = async (values: AttributesFormData) => {
     if (!settingsContext?.settings) return;
 
     setLoading(true);
     try {
-      if (!city || !latitude || !longitude || !birthDate || !gender) return;
       await userService.updateAttributesSettings({
-        city,
-        longitude,
-        latitude,
-        birth_date: birthDate.toISOString().split('T')[0],
-        gender_self: gender,
+        city: values.city,
+        longitude: values.longitude,
+        latitude: values.latitude,
+        birth_date: values.birthDate.toISOString().split('T')[0],
+        gender_self: values.genderSelf,
       });
       await settingsContext.refreshSettings();
       toast.success('Attributes updated successfully');
@@ -72,92 +99,87 @@ const UserAttributesCard = () => {
     }
   };
 
+  if (!settingsContext || !settingsContext.settings) {
+    return (
+      <Card className="no-scrollbar flex h-[475px] w-full items-center justify-center">
+        <MotionSpinner />
+      </Card>
+    );
+  }
+
   return (
-    <Card className="h-[475px] w-full border-none shadow-none">
+    <Card className="min-h-[475px] w-full">
       <CardHeader>
         <CardTitle>Attributes</CardTitle>
         <CardDescription>Tell us about yourself</CardDescription>
       </CardHeader>
-      <CardContent>
-        <form>
-          <div className="grid w-full items-center gap-4">
-            <div className="relative flex flex-col space-y-1.5">
-              <Label htmlFor="name">Birth Date</Label>
-              {birthDate !== undefined ? (
-                <DatePicker
-                  selectedDate={birthDate}
-                  onDateChange={(dateString: string) => setBirthDate(new Date(dateString))}
-                />
-              ) : (
-                <Skeleton className="w=full h-[40px] bg-primary" />
-              )}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <CardContent>
+            <div className="grid w-full items-center gap-4">
+              <FormField
+                control={form.control}
+                name="birthDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Birth Date</FormLabel>
+                    <FormControl>
+                      <DatePicker selectedDate={field.value} onDateChange={field.onChange} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem className="relative">
+                    <FormLabel htmlFor="city">City</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="text"
+                        placeholder="Enter your city"
+                        className=""
+                        onFocus={() => setShowSuggestions(true)}
+                        onBlur={() => {
+                          setTimeout(() => {
+                            setShowSuggestions(false);
+                          }, 500);
+                        }}
+                      />
+                    </FormControl>
+                    <FormDescription>This will be used to find matches near you.</FormDescription>
+                    <FormMessage />
+                    <div className={`absolute top-[calc(100%-1.5rem)] z-10 w-full ${!showSuggestions ? `hidden` : ``}`}>
+                      <CitySuggestions
+                        searchTerm={debouncedCitySearchValue}
+                        onCitySelect={handleCitySelect}
+                        visible={showSuggestions}
+                      />
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              <GenderSelect control={form.control} name="genderSelf" description="What gender are you?" />
             </div>
-            <div className="relative flex flex-col space-y-1.5">
-              <Label htmlFor="city">City</Label>
-              {city !== undefined && city !== null ? (
-                <InputField
-                  type="text"
-                  name="city"
-                  placeholder="Enter your city"
-                  value={city}
-                  onChange={handleCityInputChange}
-                  onFocus={() => setShowSuggestions(true)}
-                  onBlur={() => {
-                    setTimeout(() => {
-                      setShowSuggestions(false);
-                    }, 500);
-                  }}
-                />
+          </CardContent>
+          <CardFooter className="flex justify-end">
+            <Button type="submit" disabled={loading}>
+              {loading ? (
+                <>
+                  Updating <MotionSpinner />
+                </>
               ) : (
-                <Skeleton className="h-[40px] w-full" />
+                'Update'
               )}
-              <div className={`absolute top-full z-10 w-full ${!showSuggestions ? `hidden` : ``}`}>
-                <CitySuggestions
-                  searchTerm={debouncedCitySearchValue}
-                  onCitySelect={handleCitySelect}
-                  visible={showSuggestions}
-                />
-              </div>
-            </div>
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="selfGender">Gender</Label>
-              {gender !== null && genders !== null ? (
-                <Select value={gender?.toString()} onValueChange={(value) => setGender(Number(value))}>
-                  <SelectTrigger id="selfGender">
-                    <SelectValue placeholder="Select a gender..." />
-                  </SelectTrigger>
-                  <SelectContent position="popper">
-                    {genders &&
-                      genders.map((gender) => (
-                        <SelectItem
-                          key={gender.id} // Add key prop
-                          value={gender.id.toString()}
-                        >
-                          {gender.name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Skeleton className="h-[40px] w-full rounded-md border border-[#e5e7eb]" />
-              )}
-            </div>
-          </div>
+            </Button>
+          </CardFooter>
         </form>
-      </CardContent>
-      <CardFooter className="flex justify-end">
-        <Button onClick={handleUpdate} disabled={loading}>
-          {loading ? (
-            <>
-              Updating <MotionSpinner />
-            </>
-          ) : (
-            'Update'
-          )}
-        </Button>
-      </CardFooter>
+      </Form>
     </Card>
   );
-};
-
-export default UserAttributesCard;
+}

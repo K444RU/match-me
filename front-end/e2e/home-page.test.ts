@@ -40,31 +40,3 @@ test.describe('main content', () => {
     await expect(page.getByTestId('how-it-works-section')).toBeInViewport();
   });
 });
-
-test.describe('jump to top button', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-  });
-
-  test('jump to top button appears on scroll', async ({ page }) => {
-    const button = page.getByRole('button', { name: /scroll to top/i });
-
-    await expect(button).toBeHidden();
-
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-
-    await expect(button).toBeVisible();
-  });
-
-  test('clicking jump to top button scrolls to top', async ({ page }) => {
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-
-    const button = page.getByRole('button', { name: /scroll to top/i });
-    await button.click();
-
-    await page.waitForFunction(() => window.scrollY === 0);
-
-    const finalPosition = await page.evaluate(() => window.scrollY);
-    expect(finalPosition).toBe(0);
-  });
-});

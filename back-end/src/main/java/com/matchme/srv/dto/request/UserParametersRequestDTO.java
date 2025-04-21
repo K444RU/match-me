@@ -3,8 +3,12 @@ package com.matchme.srv.dto.request;
 import java.time.LocalDate;
 import java.util.Set;
 import com.matchme.srv.constraints.BirthDate;
+import com.matchme.srv.model.user.profile.UserGenderEnum;
 import com.matchme.srv.validation.annotations.NotBlankIfPresent;
+import com.matchme.srv.validation.annotations.ValidGender;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -35,8 +39,8 @@ public record UserParametersRequestDTO(
   Set<Long> hobbies,
 
   @NotNull(message = "Self gender must be specified")
-  @Min(value = 1, message = "Invalid gender value")
-  Long gender_self,
+  @ValidGender(message = "Invalid gender value")
+  UserGenderEnum gender_self,
 
   @NotNull(message = "Birth date must be specified")
   @BirthDate(message = "Birth date must be greater than or equal to 18 years old")
@@ -56,8 +60,8 @@ public record UserParametersRequestDTO(
   Double latitude,
 
   @NotNull(message = "Preferred gender must be specified")
-  @Min(value = 1, message = "Invalid gender value")
-  Long gender_other,
+  @ValidGender(message = "Invalid gender value")
+  UserGenderEnum gender_other,
 
   @NotNull(message = "Minimum age must be specified")
   @Min(value = 18, message = "Minimum age must be at least 18")
@@ -75,7 +79,7 @@ public record UserParametersRequestDTO(
   Integer distance,
 
   @NotNull(message = "Probability tolerance must be specified")
-  @Min(value = 0, message = "Probability tolerance must be greater than or equal to 0")
-  @Max(value = 1, message = "Probability tolerance must be less than or equal to 1")
+  @DecimalMin(value = "0.1", message = "Probability tolerance must be greater than or equal to 0.1")
+  @DecimalMax(value = "1.0", message = "Probability tolerance must be less than or equal to 1.0")
   Double probability_tolerance
 ) {}

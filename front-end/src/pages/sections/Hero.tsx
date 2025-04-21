@@ -1,20 +1,21 @@
+import { Button } from '@/components/ui/button';
 import { Login } from '@/features/authentication';
 import { useAuth } from '@/features/authentication';
 import { Link } from 'react-router-dom';
 
-const Hero = ({ onLearnMore }: { onLearnMore: () => void }) => {
+export default function Hero({ onLearnMore }: { onLearnMore: () => void }) {
     const { user } = useAuth();
     return (
-        <section className="h-screen bg-background">
+        <section className="h-[calc(100vh-80px)]">
             <div className="max-w-8xl mx-auto flex h-full flex-col items-center justify-center gap-4 px-4 py-16 text-center sm:px-6 lg:px-8">
-                <h1 className="font-extrabold text-text sm:text-5xl lg:text-8xl">
+                <h1 className="font-extrabold text-3xl sm:text-4xl lg:text-8xl tracking-tight ">
                     The{' '}
-                    <span className="text-accent-500 underline">
+                    <span className="text-accent underline">
                         data-driven
                     </span>{' '}
                     solution to endless swiping
                 </h1>
-                <p className="max-w-7xl text-4xl font-light tracking-tight text-text">
+                <p className="max-w-2xl text-lg font-light leading-8">
                     Get connections with people that actually match your
                     interests. One flat rate for everyone - no premium tiers, no
                     pay-to-date schemes.
@@ -24,21 +25,20 @@ const Hero = ({ onLearnMore }: { onLearnMore: () => void }) => {
                         <Login />
                     ) : (
                         <Link to="/chats">
-                            <button className="rounded-md border-2 border-primary bg-primary px-5 py-2 font-semibold tracking-wide text-background transition-colors duration-300 hover:bg-transparent hover:text-primary">
+                            <Button className="font-semibold tracking-wide">
                                 Go to Chats
-                            </button>
+                            </Button>
                         </Link>
                     )}
-                    <button
+                    <Button
                         onClick={onLearnMore}
-                        className="rounded-md border-2 border-primary-200 bg-primary-200 px-5 py-2 font-semibold tracking-wide text-text transition-colors duration-300 hover:border-primary-400 hover:bg-primary-400 hover:text-text"
+                        variant="secondary"
+                        className="font-semibold tracking-wide"
                     >
                         Learn more
-                    </button>
+                    </Button>
                 </div>
             </div>
         </section>
     );
 };
-
-export default Hero;

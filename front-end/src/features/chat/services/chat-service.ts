@@ -11,9 +11,7 @@ const chatController = getChatController();
 export const chatService = {
   getChatPreviews: async (): Promise<ChatPreviewResponseDTO[]> => {
     try {
-      console.debug('🖖 ChatService: Making chat previews request');
       const response = await chatController.getChatPreviews();
-      // DONT TOUCH THIS, THIS IS CORRECT, TYPE IS JUST FUCKING
       console.debug('🖖 ChatService: Response', response);
       return response;
     } catch (error) {
@@ -37,7 +35,6 @@ export const chatService = {
 
   sendMessage: async (content: string, connectionId: number): Promise<void> => {
     try {
-      console.debug('🖖 ChatService: Sending message');
       const messageDto: MessagesSendRequestDTO = {
         content,
         connectionId,
@@ -45,7 +42,7 @@ export const chatService = {
 
       await chatController.sendChatMessage(connectionId, messageDto);
 
-      console.debug('🖖 ChatService: Message sent successfully');
+      console.debug('🖖 ChatService: Message sent successfully', messageDto);
     } catch (error) {
       console.error('❌ Error sending message:', error);
       throw error;

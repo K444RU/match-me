@@ -2,6 +2,8 @@ package com.matchme.srv.dto.response;
 
 import java.util.Set;
 
+import com.matchme.srv.model.user.profile.UserGenderEnum;
+
 public record UserParametersResponseDTO(
         String email,
         String password,
@@ -10,12 +12,12 @@ public record UserParametersResponseDTO(
         String last_name,
         String alias,
         Set<Long> hobbies,
-        Long gender_self,
+        UserGenderEnum gender_self,
         String birth_date,
         String city,
         Double longitude,
         Double latitude,
-        Long gender_other,
+        UserGenderEnum gender_other,
         Integer age_min,
         Integer age_max,
         Integer distance,

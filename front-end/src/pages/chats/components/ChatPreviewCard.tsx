@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useWebSocket } from '@/features/chat';
 import { cn } from '@/lib/utils';
 import {format, fromUnixTime, isValid} from 'date-fns';
+import UserAvatar from './UserAvatar';
 
 interface ChatPreviewCardProps {
   chat: ChatPreviewResponseDTO;
@@ -69,21 +70,16 @@ export default function ChatPreviewCard({ chat, isSelected = false }: ChatPrevie
 
   if (!chat) return null;
 
+  const loverName = chat.connectedUserFirstName || chat.connectedUserAlias;
+
   const formattedTime = formatTimestampSafely(chat.lastMessageTimestamp);
 
   return (
     <>
-      <div className={cn('flex h-16 w-full items-center text-text', isSelected && 'rounded-md bg-primary-100')}>
-        <div className="m-2 flex size-16 items-center justify-center">
+      <div className={cn('flex h-16 w-full items-center', isSelected && 'rounded-md bg-primary/40')}>
+        <div className="m-2 mr-0 flex size-16 items-center justify-center">
           <div className="relative flex size-12 items-center justify-center">
-            <Avatar>
-              <AvatarImage
-                src={chat.connectedUserProfilePicture}
-                alt={`${chat.connectedUserAlias} Avatar`}
-                className="size-12 rounded-full object-cover"
-              />
-              <AvatarFallback>{chat.connectedUserAlias[0].toUpperCase()}</AvatarFallback>
-            </Avatar>
+            <UserAvatar name={loverName} profileSrc={chat.connectedUserProfilePicture} />
             {isOnline ? (
               <span className="absolute bottom-0.5 right-0.5 size-4 rounded-full border-2 border-white bg-green-500"></span>
             ) : (

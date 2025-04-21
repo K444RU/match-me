@@ -42,7 +42,7 @@ export default function ConnectionRequestHandler() {
     (async () => {
       try {
         const data = await getConnections(user.token);
-        console.log('Connections data:', data);
+
         const pending = data.pendingIncoming || [];
         setPendingIncomingIds(pending);
 
@@ -114,7 +114,7 @@ export default function ConnectionRequestHandler() {
                 </button>
                 <button
                   onClick={() => handleReject(request.connectionId)}
-                  className="text-sm text-red-600 hover:underline"
+                  className="text-sm text-destructive hover:underline"
                 >
                   Reject
                 </button>

@@ -28,24 +28,18 @@ export default function AppSidebar({ onChatSelect }: { onChatSelect: (chat: Chat
 
   const { chatPreviews, sendMarkRead } = useCommunication();
 
-  console.log('AppSidebar - chatPreviews from CHAT context:', chatPreviews);
-
   return (
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
-              <SidebarMenuButton
-                size="lg"
-                className={cn(
-                  'justify-between group-data-[collapsible=icon]:hidden',
-                  'data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
-                )}
-              >
-                <span>Blind</span>
-                <ChevronDown className="ml-auto size-4" />
-              </SidebarMenuButton>
+              <div>
+                <SidebarMenuButton size="lg" className={cn('justify-between group-data-[collapsible=icon]:hidden')}>
+                  <span>Blind</span>
+                  <ChevronDown className="ml-auto size-4" />
+                </SidebarMenuButton>
+              </div>
             </DropdownMenuTrigger>
             <BlindMenu
               setIsConnectionsModalOpen={setIsConnectionsModalOpen}

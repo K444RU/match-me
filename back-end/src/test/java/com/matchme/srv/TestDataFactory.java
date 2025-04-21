@@ -9,15 +9,18 @@ import com.matchme.srv.dto.request.settings.PreferencesSettingsRequestDTO;
 import com.matchme.srv.dto.request.settings.ProfileSettingsRequestDTO;
 import com.matchme.srv.dto.response.*;
 import com.matchme.srv.model.connection.ConnectionProvider;
+import com.matchme.srv.model.message.MessageEventTypeEnum;
+import com.matchme.srv.model.message.UserMessage;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.UserRoleType;
 import com.matchme.srv.model.user.profile.Hobby;
-import com.matchme.srv.model.user.profile.UserGenderType;
+import com.matchme.srv.model.user.profile.UserGenderEnum;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
 import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
 import com.matchme.srv.security.services.UserDetailsImpl;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,11 +50,13 @@ public class TestDataFactory {
     public static final int DEFAULT_AGE_MAX = 35;
     public static final int DEFAULT_DISTANCE = 50;
     public static final double DEFAULT_PROBABILITY_TOLERANCE = 1.0;
-    public static final Long DEFAULT_GENDER_SELF_ID = 1L;
-    public static final String DEFAULT_GENDER_SELF_NAME = "MALE";
-    public static final Long DEFAULT_GENDER_OTHER_ID = 2L;
-    public static final String DEFAULT_GENDER_OTHER_NAME = "FEMALE";
+    public static final UserGenderEnum DEFAULT_GENDER_SELF = UserGenderEnum.MALE;
+    public static final UserGenderEnum DEFAULT_GENDER_OTHER = UserGenderEnum.FEMALE;
     public static final Set<Long> DEFAULT_HOBBY_IDS = Set.of(1L, 2L);
+    public static final Set<HobbyResponseDTO> DEFAULT_HOBBY_RESPONSE_DTOS = Set.of(
+        HobbyResponseDTO.builder().id(1L).name("3D printing").build(),
+        HobbyResponseDTO.builder().id(2L).name("Acrobatics").build()
+    );
     public static final String DEFAULT_BIRTH_DATE = "1995-01-01";
     public static final Double DEFAULT_LONGITUDE = 25.5412;
     public static final Double DEFAULT_LATITUDE = 58.8879;
@@ -69,10 +74,8 @@ public class TestDataFactory {
     public static final int DEFAULT_UPDATE_AGE_MAX = 34;
     public static final int DEFAULT_UPDATE_DISTANCE = 52;
     public static final double DEFAULT_UPDATE_PROBABILITY_TOLERANCE = 0.9;
-    public static final Long DEFAULT_UPDATE_GENDER_SELF_ID = 2L;
-    public static final String DEFAULT_UPDATE_GENDER_SELF_NAME = "FEMALE";
-    public static final Long DEFAULT_UPDATE_GENDER_OTHER_ID = 1L;
-    public static final String DEFAULT_UPDATE_GENDER_OTHER_NAME = "MALE";
+    public static final UserGenderEnum DEFAULT_UPDATE_GENDER_SELF = UserGenderEnum.FEMALE;
+    public static final UserGenderEnum DEFAULT_UPDATE_GENDER_OTHER = UserGenderEnum.MALE;
     public static final Set<Long> DEFAULT_UPDATE_HOBBY_IDS = Set.of(5L, 6L);
     public static final String DEFAULT_UPDATE_BIRTH_DATE = "1996-03-02";
     public static final Double DEFAULT_UPDATE_LONGITUDE = 26.5412;
@@ -87,16 +90,19 @@ public class TestDataFactory {
     public static final String DEFAULT_TARGET_ALIAS = "janedoom";
     public static final String DEFAULT_TARGET_CITY = "Tartu";
     public static final String DEFAULT_TARGET_PROFILE_PICTURE = "data:image/png;base64,dummy2";
-    public static final Long DEFAULT_TARGET_GENDER_SELF_ID = 2L;
-    public static final String DEFAULT_TARGET_GENDER_SELF_NAME = "FEMALE";
-    public static final Long DEFAULT_TARGET_GENDER_OTHER_ID = 1L;
-    public static final String DEFAULT_TARGET_GENDER_OTHER_NAME = "MALE";
+    public static final UserGenderEnum DEFAULT_TARGET_GENDER_SELF = UserGenderEnum.FEMALE;
+    public static final UserGenderEnum DEFAULT_TARGET_GENDER_OTHER = UserGenderEnum.MALE;
     public static final Set<Long> DEFAULT_TARGET_HOBBY_IDS = Set.of(3L, 4L);
+    public static final Set<HobbyResponseDTO> DEFAULT_TARGET_HOBBY_RESPONSE_DTOS = Set.of(
+        HobbyResponseDTO.builder().id(3L).name("3D printing").build(),
+        HobbyResponseDTO.builder().id(4L).name("Acrobatics").build()
+    );
     public static final int DEFAULT_TARGET_AGE_SELF = 25;
     public static final int DEFAULT_TARGET_AGE_MIN = 20;
     public static final int DEFAULT_TARGET_AGE_MAX = 30;
     public static final int DEFAULT_TARGET_DISTANCE = 10;
     public static final double DEFAULT_TARGET_PROBABILITY_TOLERANCE = 0.5;
+    public static final String DEFAULT_MESSAGE_CONTENT = "Hello, this is a test message.";
 
     // Invalid
     public static final Long INVALID_USER_ID = 999L;
@@ -149,24 +155,26 @@ public class TestDataFactory {
 
     public static ProfileResponseDTO createProfileResponse() {
         return ProfileResponseDTO.builder()
-                .first_name(DEFAULT_FIRST_NAME)
-                .last_name(DEFAULT_LAST_NAME)
+                .firstName(DEFAULT_FIRST_NAME)
+                .lastName(DEFAULT_LAST_NAME)
                 .city(DEFAULT_CITY)
+                .hobbies(DEFAULT_HOBBY_RESPONSE_DTOS)
                 .build();
     }
 
     public static ProfileResponseDTO createTargetProfileResponse() {
         return ProfileResponseDTO.builder()
-                .first_name(DEFAULT_TARGET_FIRST_NAME)
-                .last_name(DEFAULT_TARGET_LAST_NAME)
+                .firstName(DEFAULT_TARGET_FIRST_NAME)
+                .lastName(DEFAULT_TARGET_LAST_NAME)
                 .city(DEFAULT_TARGET_CITY)
+                .hobbies(DEFAULT_TARGET_HOBBY_RESPONSE_DTOS)
                 .build();
     }
 
     public static BiographicalResponseDTO createBiographicalResponse() {
         return BiographicalResponseDTO.builder()
-                .gender_self(createGenderTypeDTO(DEFAULT_GENDER_SELF_ID))
-                .gender_other(createGenderTypeDTO(DEFAULT_GENDER_OTHER_ID))
+                .gender_self(DEFAULT_GENDER_SELF)
+                .gender_other(DEFAULT_GENDER_OTHER)
                 .hobbies(DEFAULT_HOBBY_IDS)
                 .age_self(DEFAULT_AGE_SELF)
                 .age_min(DEFAULT_AGE_MIN)
@@ -178,8 +186,8 @@ public class TestDataFactory {
 
     public static BiographicalResponseDTO createTargetBiographicalResponse() {
         return BiographicalResponseDTO.builder()
-                .gender_self(createGenderTypeDTO(DEFAULT_TARGET_GENDER_SELF_ID))
-                .gender_other(createGenderTypeDTO(DEFAULT_TARGET_GENDER_OTHER_ID))
+                .gender_self(DEFAULT_TARGET_GENDER_SELF)
+                .gender_other(DEFAULT_TARGET_GENDER_OTHER)
                 .hobbies(DEFAULT_TARGET_HOBBY_IDS)
                 .age_self(DEFAULT_TARGET_AGE_SELF)
                 .age_min(DEFAULT_TARGET_AGE_MIN)
@@ -195,7 +203,7 @@ public class TestDataFactory {
         prefs.setAgeMax(DEFAULT_AGE_MAX);
         prefs.setDistance(DEFAULT_DISTANCE);
         prefs.setProbabilityTolerance(DEFAULT_PROBABILITY_TOLERANCE);
-        prefs.setGender(createUserGender(DEFAULT_GENDER_OTHER_ID));
+        prefs.setGender(DEFAULT_GENDER_OTHER);
         return prefs;
     }
 
@@ -203,16 +211,8 @@ public class TestDataFactory {
         UserAttributes attrs = new UserAttributes();
         attrs.setBirthdate(LocalDate.now().minusYears(DEFAULT_AGE_SELF));
         attrs.setLocation(Arrays.asList(58.8879, 25.5412));
-        attrs.setGender(createUserGender(DEFAULT_GENDER_SELF_ID));
+        attrs.setGender(DEFAULT_GENDER_SELF);
         return attrs;
-    }
-
-    public static UserGenderType createUserGender(Long id) {
-        return UserGenderType.builder().id(id).name(id == 1L ? "MALE" : "FEMALE").build();
-    }
-
-    public static GenderTypeDTO createGenderTypeDTO(Long id) {
-        return new GenderTypeDTO(id, id == 1L ? "MALE" : "FEMALE");
     }
 
     public static UserRoleType createUserRole() {
@@ -274,22 +274,14 @@ public class TestDataFactory {
 
     public static BiographicalResponseDTO.BiographicalResponseDTOBuilder biographicalResponseBuilder() {
         return BiographicalResponseDTO.builder()
-                .gender_self(createGenderTypeDTO(DEFAULT_GENDER_SELF_ID))
-                .gender_other(createGenderTypeDTO(DEFAULT_GENDER_OTHER_ID))
+                .gender_self(DEFAULT_GENDER_SELF)
+                .gender_other(DEFAULT_GENDER_OTHER)
                 .hobbies(DEFAULT_HOBBY_IDS)
                 .age_self(DEFAULT_AGE_SELF)
                 .age_min(DEFAULT_AGE_MIN)
                 .age_max(DEFAULT_AGE_MAX)
                 .distance(DEFAULT_DISTANCE)
                 .probability_tolerance(DEFAULT_PROBABILITY_TOLERANCE);
-    }
-
-    public static UserGenderType createDefaultUserGender() {
-        return createUserGender(DEFAULT_GENDER_SELF_ID);
-    }
-
-    public static GenderTypeDTO createDefaultGenderTypeDTO() {
-        return createGenderTypeDTO(DEFAULT_GENDER_SELF_ID);
     }
 
     public static SettingsResponseDTO createSettingsResponse() {
@@ -300,12 +292,12 @@ public class TestDataFactory {
                 .lastName(DEFAULT_LAST_NAME)
                 .alias(DEFAULT_ALIAS)
                 .hobbies(DEFAULT_HOBBY_IDS)
-                .genderSelf(DEFAULT_GENDER_SELF_ID)
+                .genderSelf(DEFAULT_GENDER_SELF)
                 .birthDate(DEFAULT_BIRTH_DATE)
                 .city(DEFAULT_CITY)
                 .longitude(DEFAULT_LONGITUDE)
                 .latitude(DEFAULT_LATITUDE)
-                .genderOther(DEFAULT_GENDER_OTHER_ID)
+                .genderOther(DEFAULT_GENDER_OTHER)
                 .ageMin(DEFAULT_AGE_MIN)
                 .ageMax(DEFAULT_AGE_MAX)
                 .distance(DEFAULT_DISTANCE)
@@ -321,12 +313,12 @@ public class TestDataFactory {
                 .lastName(DEFAULT_LAST_NAME)
                 .alias(DEFAULT_ALIAS)
                 .hobbies(DEFAULT_HOBBY_IDS)
-                .genderSelf(DEFAULT_GENDER_SELF_ID)
+                .genderSelf(DEFAULT_GENDER_SELF)
                 .birthDate(DEFAULT_BIRTH_DATE)
                 .city(DEFAULT_CITY)
                 .longitude(DEFAULT_LONGITUDE)
                 .latitude(DEFAULT_LATITUDE)
-                .genderOther(DEFAULT_GENDER_OTHER_ID)
+                .genderOther(DEFAULT_GENDER_OTHER)
                 .ageMin(DEFAULT_AGE_MIN)
                 .ageMax(DEFAULT_AGE_MAX)
                 .distance(DEFAULT_DISTANCE)
@@ -339,12 +331,12 @@ public class TestDataFactory {
                 .last_name(DEFAULT_LAST_NAME)
                 .alias(DEFAULT_ALIAS)
                 .hobbies(DEFAULT_HOBBY_IDS)
-                .gender_other(DEFAULT_GENDER_OTHER_ID)
+                .gender_other(DEFAULT_GENDER_OTHER)
                 .age_min(DEFAULT_AGE_MIN)
                 .age_max(DEFAULT_AGE_MAX)
                 .distance(DEFAULT_DISTANCE)
                 .probability_tolerance(DEFAULT_PROBABILITY_TOLERANCE)
-                .gender_self(DEFAULT_GENDER_SELF_ID)
+                .gender_self(DEFAULT_GENDER_SELF)
                 .birth_date(LocalDate.parse(DEFAULT_BIRTH_DATE))
                 .city(DEFAULT_CITY)
                 .longitude(DEFAULT_LONGITUDE)
@@ -370,7 +362,7 @@ public class TestDataFactory {
 
     public static AttributesSettingsRequestDTO createValidAttributesSettings() {
         return AttributesSettingsRequestDTO.builder()
-                .gender_self(DEFAULT_UPDATE_GENDER_SELF_ID)
+                .gender_self(DEFAULT_UPDATE_GENDER_SELF)
                 .birth_date(LocalDate.parse(DEFAULT_UPDATE_BIRTH_DATE))
                 .city(DEFAULT_UPDATE_CITY)
                 .longitude(DEFAULT_UPDATE_LONGITUDE)
@@ -380,7 +372,7 @@ public class TestDataFactory {
 
     public static PreferencesSettingsRequestDTO createValidPreferencesSettings() {
         return PreferencesSettingsRequestDTO.builder()
-                .gender_other(DEFAULT_UPDATE_GENDER_OTHER_ID)
+                .gender_other(DEFAULT_UPDATE_GENDER_OTHER)
                 .age_min(DEFAULT_UPDATE_AGE_MIN)
                 .age_max(DEFAULT_UPDATE_AGE_MAX)
                 .distance(DEFAULT_UPDATE_DISTANCE)
@@ -398,6 +390,21 @@ public class TestDataFactory {
                 List.of(pendingIncoming),
                 List.of(pendingOutgoing)
         );
+    }
+
+    public static UserMessage createUserMessage(Long id) {
+        return UserMessage.builder()
+                .id(id)
+                .content(DEFAULT_MESSAGE_CONTENT)
+                .createdAt(Instant.now())
+                .build();
+    }
+
+    public static MessageEventDTO createMessageEvent(MessageEventTypeEnum eventType) {
+        return MessageEventDTO.builder()
+                .type(eventType)
+                .timestamp(Instant.now())
+                .build();
     }
 
     /**
