@@ -2,9 +2,11 @@ package com.matchme.srv.controller;
 
 import com.matchme.srv.dto.response.ConnectionsDTO;
 import com.matchme.srv.exception.GlobalExceptionHandler;
+import com.matchme.srv.exception.ResourceNotFoundException;
 import com.matchme.srv.model.connection.Connection;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.service.ConnectionService;
+import com.matchme.srv.service.MatchingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -29,6 +31,9 @@ public class ConnectionControllerTest {
     private ConnectionService connectionService;
 
     @Mock
+    private MatchingService matchingService;
+
+    @Mock
     private SecurityUtils securityUtils;
 
     @Mock
@@ -45,6 +50,41 @@ public class ConnectionControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(connectionController)
                 .setControllerAdvice(globalExceptionHandler)
                 .build();
+    }
+
+    @Test
+    void dismissRecommendations_success() throws Exception {
+        Long dismissedUserId = DEFAULT_TARGET_USER_ID;
+
+        when(securityUtils.getCurrentUserId(authentication)).thenReturn(DEFAULT_USER_ID);
+
+        doNothing().when(matchingService).dismissedRecommendation(DEFAULT_USER_ID, dismissedUserId);
+
+        mockMvc.perform(post("/connections/recommendations/" + dismissedUserId + "/dismiss")
+                        .principal(authentication))
+                .andExpect(status().isOk());
+
+        verify(securityUtils).getCurrentUserId(authentication);
+        verify(matchingService).dismissedRecommendation(DEFAULT_USER_ID, dismissedUserId);
+        verifyNoMoreInteractions(matchingService);
+        verifyNoInteractions(connectionService);
+    }
+
+    @Test
+    void dismissRecommendations_whenServiceThrowsNotFound_shouldReturnNotFound() throws Exception {
+        Long nonExistentDismissedUserId = INVALID_USER_ID;
+
+        when(securityUtils.getCurrentUserId(authentication)).thenReturn(DEFAULT_USER_ID);
+
+        doThrow(new ResourceNotFoundException("User Profile not found with id " + nonExistentDismissedUserId))
+                .when(matchingService).dismissedRecommendation(DEFAULT_USER_ID, nonExistentDismissedUserId);
+
+        mockMvc.perform(post("/connections/recommendations/" + nonExistentDismissedUserId + "/dismiss")
+                        .principal(authentication))
+                .andExpect(status().isNotFound());
+
+        verify(securityUtils).getCurrentUserId(authentication);
+        verify(matchingService).dismissedRecommendation(DEFAULT_USER_ID, nonExistentDismissedUserId);
     }
 
     @Test

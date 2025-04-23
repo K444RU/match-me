@@ -1,7 +1,6 @@
 import { useAuth } from '@/features/authentication';
 import { GlobalCommunicationProvider, WebSocketProvider } from '@/features/chat/';
 import { Outlet } from 'react-router-dom';
-import { SidebarProvider } from '../ui/sidebar';
 
 const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws';
 

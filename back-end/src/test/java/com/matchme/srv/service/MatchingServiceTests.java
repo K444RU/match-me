@@ -1,31 +1,26 @@
 package com.matchme.srv.service;
 
-import java.util.Collections;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anySet;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.*;
-
+import com.matchme.srv.exception.ResourceNotFoundException;
+import com.matchme.srv.model.connection.DatingPool;
+import com.matchme.srv.model.connection.DismissedRecommendation;
+import com.matchme.srv.model.user.profile.UserGenderEnum;
+import com.matchme.srv.model.user.profile.UserProfile;
+import com.matchme.srv.repository.DismissRecommendationRepository;
+import com.matchme.srv.repository.MatchingRepository;
+import com.matchme.srv.repository.UserProfileRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.matchme.srv.exception.PotentialMatchesNotFoundException;
-import com.matchme.srv.exception.ResourceNotFoundException;
-import com.matchme.srv.model.connection.DatingPool;
-import com.matchme.srv.model.user.profile.UserGenderEnum;
-import com.matchme.srv.repository.MatchingRepository;
-import com.matchme.srv.repository.UserProfileRepository;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MatchingServiceTests {
@@ -36,17 +31,136 @@ class MatchingServiceTests {
   @Mock
   private UserProfileRepository userProfileRepository;
 
+  @Mock
+  private DismissRecommendationRepository dismissRecommendationRepository;
+
   @InjectMocks
   private MatchingService matchingService;
 
   private static final Long TEST_USER_ID = 1L;
+  private static final Long OTHER_USER_ID = 2L;
 
   private DatingPool testUserPool;
+  private UserProfile testUserProfile;
+  private UserProfile otherUserProfile;
 
   @BeforeEach
   void setUp() {
+    testUserProfile = UserProfile.builder().id(TEST_USER_ID).first_name("Test").last_name("User").build();
+    otherUserProfile = UserProfile.builder().id(OTHER_USER_ID).first_name("Other").last_name("User").build();
+
     // Create test dating pool entry
     testUserPool = createTestDatingPool(TEST_USER_ID);
+  }
+
+  @Test
+  void getPossibleMatches_ShouldFilterDismissedUsers() {
+    // Arrange
+    Long dismissedUserId = 3L;
+    Long regularMatchUserId = 4L;
+
+    // Setup the user pool for the requesting user
+    when(matchingRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserPool));
+
+    // Mock the repository to return a list of dismissed IDs including dismissedUserId
+    when(dismissRecommendationRepository.findDismissedRecommendationIdByProfileId(TEST_USER_ID))
+            .thenReturn(Collections.singletonList(dismissedUserId));
+
+    // Create potential matches including the one to be dismissed
+    DatingPool dismissedMatchPool = createTestDatingPool(dismissedUserId);
+    dismissedMatchPool.setMyGender(UserGenderEnum.FEMALE);
+    dismissedMatchPool.setLookingForGender(UserGenderEnum.MALE);
+    dismissedMatchPool.setActualScore(1550); // Ensure valid probability
+
+    DatingPool regularMatchPool = createTestDatingPool(regularMatchUserId);
+    regularMatchPool.setMyGender(UserGenderEnum.FEMALE);
+    regularMatchPool.setLookingForGender(UserGenderEnum.MALE);
+    regularMatchPool.setActualScore(1600); // Ensure valid probability
+
+    List<DatingPool> potentialMatchesFromRepo = Arrays.asList(dismissedMatchPool, regularMatchPool);
+    when(matchingRepository.findUsersThatMatchParameters(
+            eq(UserGenderEnum.FEMALE), eq(UserGenderEnum.MALE), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
+            .thenReturn(potentialMatchesFromRepo);
+
+    // Act
+    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID);
+
+    // Assert
+    assertNotNull(result);
+    assertEquals(1, result.size(), "Should only contain one match after filtering");
+    assertTrue(result.containsKey(regularMatchUserId), "Should contain the non-dismissed user");
+    assertFalse(result.containsKey(dismissedUserId), "Should NOT contain the dismissed user");
+
+    // Verify repository calls
+    verify(matchingRepository).findById(TEST_USER_ID);
+    verify(dismissRecommendationRepository).findDismissedRecommendationIdByProfileId(TEST_USER_ID);
+    verify(matchingRepository).findUsersThatMatchParameters(any(), any(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt());
+  }
+
+  @Test
+  void dismissedRecommendation_ShouldSaveDismissal() {
+    // Arrange
+    when(userProfileRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserProfile));
+    when(userProfileRepository.findById(OTHER_USER_ID)).thenReturn(Optional.of(otherUserProfile));
+
+    // Use ArgumentCaptor to capture the object passed to save
+    ArgumentCaptor<DismissedRecommendation> dismissalCaptor = ArgumentCaptor.forClass(DismissedRecommendation.class);
+
+    // Mock the save method (optional, but good practice to ensure it returns the saved object)
+    when(dismissRecommendationRepository.save(any(DismissedRecommendation.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+    // Act
+    matchingService.dismissedRecommendation(TEST_USER_ID, OTHER_USER_ID);
+
+    // Assert & Verify
+    // Verify save was called once
+    verify(dismissRecommendationRepository).save(dismissalCaptor.capture());
+
+    // Check the captured dismissal object
+    DismissedRecommendation savedDismissal = dismissalCaptor.getValue();
+    assertNotNull(savedDismissal);
+    assertEquals(testUserProfile, savedDismissal.getUserProfile());
+    assertEquals(otherUserProfile, savedDismissal.getDismissedUserProfile());
+
+    // Verify user profiles were fetched
+    verify(userProfileRepository).findById(TEST_USER_ID);
+    verify(userProfileRepository).findById(OTHER_USER_ID);
+  }
+
+  @Test
+  void dismissedRecommendation_ShouldThrowResourceNotFound_WhenDismissingUserNotFound() {
+    // Arrange
+    when(userProfileRepository.findById(TEST_USER_ID)).thenReturn(Optional.empty());
+    // No need to mock the other user or save in this case
+
+    // Act & Assert
+    ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+      matchingService.dismissedRecommendation(TEST_USER_ID, OTHER_USER_ID);
+    });
+
+    assertTrue(exception.getMessage().contains(TEST_USER_ID.toString()));
+    verify(userProfileRepository).findById(TEST_USER_ID);
+    // Ensure findById for the other user and save are NOT called
+    verify(userProfileRepository, times(0)).findById(OTHER_USER_ID);
+    verify(dismissRecommendationRepository, never()).save(any());
+  }
+
+
+  @Test
+  void dismissedRecommendation_ShouldThrowResourceNotFound_WhenDismissedUserNotFound() {
+    // Arrange
+    when(userProfileRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserProfile));
+    when(userProfileRepository.findById(OTHER_USER_ID)).thenReturn(Optional.empty());
+
+    // Act & Assert
+    ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+      matchingService.dismissedRecommendation(TEST_USER_ID, OTHER_USER_ID);
+    });
+
+    assertTrue(exception.getMessage().contains(OTHER_USER_ID.toString()));
+    verify(userProfileRepository).findById(TEST_USER_ID);
+    verify(userProfileRepository).findById(OTHER_USER_ID);
+    verify(dismissRecommendationRepository, never()).save(any());
   }
 
   @Test

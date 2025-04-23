@@ -1,5 +1,4 @@
 import type { ChatPreviewResponseDTO } from '@/api/types';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useWebSocket } from '@/features/chat';
 import { cn } from '@/lib/utils';
 import {format, fromUnixTime, isValid} from 'date-fns';

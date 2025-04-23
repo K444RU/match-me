@@ -1,4 +1,3 @@
-// src/pages/chats/components/SettingsDialog.tsx
 import {
     Dialog,
     DialogContent,
