@@ -315,4 +315,16 @@ public class MatchingService {
     dismissedRecommendation.setDismissedUserProfile(dismissedUserProfile);
     dismissRecommendationRepository.save(dismissedRecommendation);
   }
+
+  /**
+   * Helper method for AccessValidationService that checks
+   * if a specific target user is currently among the calculated top potential matches for the current user.
+   *
+   * @param currentUserId The ID of the user whose current recommendations should be checked.
+   * @param targetUserId The ID of the user to check for presence in the recommendations.
+   */
+  public boolean isRecommended(Long currentUserId, Long targetUserId) {
+    Map<Long, Double> possibleMatches = getPossibleMatches(currentUserId);
+    return possibleMatches.containsKey(targetUserId);
+  }
 }

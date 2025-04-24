@@ -86,6 +86,7 @@ public interface ConnectionRepository extends JpaRepository<Connection, Long> {
     List<Connection> findConnectionsByUserIdWithMessages(@Param("userId") Long userId);
 
     // Placeholder for recommendations (to be implemented later)
+
     default boolean isInRecommendations(Long currentUserId, Long targetUserId) {
         // TODO: Integrate with RecommendationService once implemented
         return false; // Stub for now
