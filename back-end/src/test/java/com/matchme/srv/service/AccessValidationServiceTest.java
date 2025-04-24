@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static com.matchme.srv.TestDataFactory.*;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -25,13 +26,6 @@ class AccessValidationServiceTest {
     @InjectMocks
     private AccessValidationService accessValidationService;
 
-    private static final Long USER_ID_1 = 1L;
-    private static final Long USER_ID_2 = 2L;
-    private static final Long USER_ID_3 = 3L;
-    private static final Long USER_ID_4 = 4L;
-    private static final Long USER_ID_5 = 5L;
-    private static final Long USER_ID_6 = 6L;
-
     @BeforeEach
     void setUp() {
         reset(connectionRepository);
@@ -39,52 +33,52 @@ class AccessValidationServiceTest {
 
     @Test
     void ownerHasAccess() {
-        assertDoesNotThrow(() -> accessValidationService.validateUserAccess(USER_ID_1, USER_ID_1));
+        assertDoesNotThrow(() -> accessValidationService.validateUserAccess(TEST_USER_ID_OWNER, TEST_USER_ID_OWNER));
     }
 
     @Test
     void pendingRequestFromRequesterHasAccess() {
-        when(connectionRepository.existsConnectionBetween(USER_ID_1, USER_ID_3)).thenReturn(false);
-        when(connectionRepository.hasPendingConnectionRequest(USER_ID_1, USER_ID_3)).thenReturn(true);
-        assertDoesNotThrow(() -> accessValidationService.validateUserAccess(USER_ID_1, USER_ID_3));
-        verify(connectionRepository).hasPendingConnectionRequest(USER_ID_1, USER_ID_3);
+        when(connectionRepository.existsConnectionBetween(TEST_USER_ID_OWNER, TEST_USER_ID_PENDING_REQUESTER)).thenReturn(false);
+        when(connectionRepository.hasPendingConnectionRequest(TEST_USER_ID_OWNER, TEST_USER_ID_PENDING_REQUESTER)).thenReturn(true);
+        assertDoesNotThrow(() -> accessValidationService.validateUserAccess(TEST_USER_ID_OWNER, TEST_USER_ID_PENDING_REQUESTER));
+        verify(connectionRepository).hasPendingConnectionRequest(TEST_USER_ID_OWNER, TEST_USER_ID_PENDING_REQUESTER);
     }
 
     @Test
     void pendingRequestToTargetHasAccess() {
-        when(connectionRepository.existsConnectionBetween(USER_ID_1, USER_ID_4)).thenReturn(false);
-        when(connectionRepository.hasPendingConnectionRequest(USER_ID_1, USER_ID_4)).thenReturn(false);
-        when(connectionRepository.hasPendingConnectionRequest(USER_ID_4, USER_ID_1)).thenReturn(true);
-        assertDoesNotThrow(() -> accessValidationService.validateUserAccess(USER_ID_1, USER_ID_4));
-        verify(connectionRepository).hasPendingConnectionRequest(USER_ID_4, USER_ID_1);
+        when(connectionRepository.existsConnectionBetween(TEST_USER_ID_OWNER, TEST_USER_ID_PENDING_TARGET)).thenReturn(false);
+        when(connectionRepository.hasPendingConnectionRequest(TEST_USER_ID_OWNER, TEST_USER_ID_PENDING_TARGET)).thenReturn(false);
+        when(connectionRepository.hasPendingConnectionRequest(TEST_USER_ID_PENDING_TARGET, TEST_USER_ID_OWNER)).thenReturn(true);
+        assertDoesNotThrow(() -> accessValidationService.validateUserAccess(TEST_USER_ID_OWNER, TEST_USER_ID_PENDING_TARGET));
+        verify(connectionRepository).hasPendingConnectionRequest(TEST_USER_ID_PENDING_TARGET, TEST_USER_ID_OWNER);
     }
 
     @Test
     void connectedUsersHaveAccess() {
-        when(connectionRepository.existsConnectionBetween(USER_ID_1, USER_ID_2)).thenReturn(true);
-        assertDoesNotThrow(() -> accessValidationService.validateUserAccess(USER_ID_1, USER_ID_2));
-        verify(connectionRepository).existsConnectionBetween(USER_ID_1, USER_ID_2);
+        when(connectionRepository.existsConnectionBetween(TEST_USER_ID_OWNER, TEST_USER_ID_CONNECTED)).thenReturn(true);
+        assertDoesNotThrow(() -> accessValidationService.validateUserAccess(TEST_USER_ID_OWNER, TEST_USER_ID_CONNECTED));
+        verify(connectionRepository).existsConnectionBetween(TEST_USER_ID_OWNER, TEST_USER_ID_CONNECTED);
         verify(connectionRepository, never()).hasPendingConnectionRequest(anyLong(), anyLong());
         verifyNoInteractions(matchingService);
     }
 
     @Test
     void nonConnectedUserDenied() {
-        when(connectionRepository.existsConnectionBetween(USER_ID_1, USER_ID_5)).thenReturn(false);
-        when(connectionRepository.hasPendingConnectionRequest(USER_ID_1, USER_ID_5)).thenReturn(false);
-        when(connectionRepository.hasPendingConnectionRequest(USER_ID_5, USER_ID_1)).thenReturn(false);
-        when(matchingService.isRecommended(USER_ID_1, USER_ID_5)).thenReturn(false);
+        when(connectionRepository.existsConnectionBetween(TEST_USER_ID_OWNER, TEST_USER_ID_NON_CONNECTED)).thenReturn(false);
+        when(connectionRepository.hasPendingConnectionRequest(TEST_USER_ID_OWNER, TEST_USER_ID_NON_CONNECTED)).thenReturn(false);
+        when(connectionRepository.hasPendingConnectionRequest(TEST_USER_ID_NON_CONNECTED, TEST_USER_ID_OWNER)).thenReturn(false);
+        when(matchingService.isRecommended(TEST_USER_ID_OWNER, TEST_USER_ID_NON_CONNECTED)).thenReturn(false);
         assertThrows(EntityNotFoundException.class,
-                () -> accessValidationService.validateUserAccess(USER_ID_1, USER_ID_5));
+                () -> accessValidationService.validateUserAccess(TEST_USER_ID_OWNER, TEST_USER_ID_NON_CONNECTED));
     }
 
     @Test
     void recommendationHasAccess() {
-        when(connectionRepository.existsConnectionBetween(USER_ID_1, USER_ID_6)).thenReturn(false);
-        when(connectionRepository.hasPendingConnectionRequest(USER_ID_1, USER_ID_6)).thenReturn(false);
-        when(connectionRepository.hasPendingConnectionRequest(USER_ID_6, USER_ID_1)).thenReturn(false);
-        when(matchingService.isRecommended(USER_ID_1, USER_ID_6)).thenReturn(true);
-        assertDoesNotThrow(() -> accessValidationService.validateUserAccess(USER_ID_1, USER_ID_6));
-        verify(matchingService).isRecommended(USER_ID_1, USER_ID_6);
+        when(connectionRepository.existsConnectionBetween(TEST_USER_ID_OWNER, TEST_USER_ID_RECOMMENDED)).thenReturn(false);
+        when(connectionRepository.hasPendingConnectionRequest(TEST_USER_ID_OWNER, TEST_USER_ID_RECOMMENDED)).thenReturn(false);
+        when(connectionRepository.hasPendingConnectionRequest(TEST_USER_ID_RECOMMENDED, TEST_USER_ID_OWNER)).thenReturn(false);
+        when(matchingService.isRecommended(TEST_USER_ID_OWNER, TEST_USER_ID_RECOMMENDED)).thenReturn(true);
+        assertDoesNotThrow(() -> accessValidationService.validateUserAccess(TEST_USER_ID_OWNER, TEST_USER_ID_RECOMMENDED));
+        verify(matchingService).isRecommended(TEST_USER_ID_OWNER, TEST_USER_ID_RECOMMENDED);
     }
 }

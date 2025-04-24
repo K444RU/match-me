@@ -32,6 +32,14 @@ import org.springframework.security.core.Authentication;
 
 public class TestDataFactory {
 
+    // User IDs for testing access validation
+    public static final Long TEST_USER_ID_OWNER = 1L;
+    public static final Long TEST_USER_ID_CONNECTED = 2L;
+    public static final Long TEST_USER_ID_PENDING_REQUESTER = 3L;
+    public static final Long TEST_USER_ID_PENDING_TARGET = 4L;
+    public static final Long TEST_USER_ID_NON_CONNECTED = 5L;
+    // Recommendation
+    public static final Long TEST_USER_ID_RECOMMENDED = 6L;
     // Initial Connection data
     public static final Long DEFAULT_CONNECTION_ID = 1L;
     public static final Long DEFAULT_UNAUTHORIZED_USER_ID = 3L;

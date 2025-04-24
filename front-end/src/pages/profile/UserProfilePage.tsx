@@ -65,7 +65,6 @@ export default function UserProfilePage() {
 
   return (
     <div className="relative flex flex-1 flex-col overflow-auto">
-      {/* Cover image section */}
       <div className="bg-background w-full h-48 relative">
         <div className="relative h-48 w-full bg-accent/20">
           {isOwner && (
@@ -76,9 +75,7 @@ export default function UserProfilePage() {
         </div>
       </div>
 
-      {/* Main content container with proper spacing */}
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 pb-16 md:flex-row md:gap-6 md:px-4 lg:px-8">
-        {/* Left Column: User profile card */}
         <div className="relative -mt-16 flex flex-col items-center md:w-1/2">
           <Card className="w-full">
             <CardContent className="p-6 text-center">
@@ -97,7 +94,6 @@ export default function UserProfilePage() {
           </Card>
         </div>
 
-        {/* Right Column: User information */}
         <div className="mt-6 flex-1 space-y-6 md:mt-0">
           <Card>
             <CardHeader>
@@ -125,7 +121,6 @@ export default function UserProfilePage() {
         </div>
       </div>
 
-      {/* Back Button - positioned relative to the main content */}
       <div className="absolute top-4 left-4 z-10">
         <Button variant="default" onClick={() => navigate(-1)} className="gap-2">
           <ArrowLeftIcon className="size-4" /> Back

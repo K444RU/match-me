@@ -65,7 +65,7 @@ export default function ActiveConnections({ onNavigate }: ActiveConnectionsProps
           if (isMounted) setUserData({});
         }
       } catch (error) {
-        console.error('[ActiveConnections] Failed to fetch initial connections or user data:', error);
+        console.error('Failed to fetch initial connections or user data:', error);
         if (isMounted) {
           setActiveConnections([]);
           setUserData({});
@@ -101,7 +101,7 @@ export default function ActiveConnections({ onNavigate }: ActiveConnectionsProps
                       setUserData(prevData => ({ ...prevData, [String(newUser.id)]: newUser }));
                     }
                   })
-                  .catch(err => console.error(`[ActiveConnections] Failed to fetch user data for accepted connection ${connectionId}`, err));
+                  .catch(err => console.error(`Failed to fetch user data for accepted connection ${connectionId}`, err));
               return [...prev, connection];
             }
             return prev;
