@@ -1,13 +1,13 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/features/authentication';
+import {Button} from '@/components/ui/button';
+import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
+import {useAuth} from '@/features/authentication';
 import PageNotFound from '@/pages/404Page.tsx';
-import { ArrowLeftIcon, CameraIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import {ArrowLeftIcon, CameraIcon} from 'lucide-react';
+import {useEffect, useState} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
 import UserAvatar from '../chats/components/UserAvatar';
-import { meService } from '@/features/user/services/me-service';
-import { HobbyResponseDTO, ProfileResponseDTO } from '@/api/types';
+import {HobbyResponseDTO, ProfileResponseDTO, UserProfile} from '@/api/types';
+import axios from "axios";
 
 export default function UserProfilePage() {
   const { user } = useAuth();
@@ -26,8 +26,11 @@ export default function UserProfilePage() {
     const fetchUserData = async () => {
       try {
         setLoading(true);
-        const response = await meService.getUserProfile();
-        setUserData(response);
+        const endpoint = id ? `/api/users/${id}` : '/api/me';
+        const response = await axios.get<UserProfile>(endpoint, {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
+        setUserData(response.data);
         setIsOwner(!id || id === (user.id ?? '').toString());
       } catch (err: unknown) {
         const errorObj = err as { response?: { status: number } };

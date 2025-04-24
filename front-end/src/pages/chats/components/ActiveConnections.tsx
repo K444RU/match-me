@@ -1,17 +1,23 @@
-import {CurrentUserResponseDTO} from '@/api/types';
-import {useAuth} from '@features/authentication';
-import {getConnections, useCommunication} from '@features/chat';
-import {userService} from '@features/user';
-import {useEffect, useRef, useState, useCallback} from 'react';
+import { CurrentUserResponseDTO } from '@/api/types';
+import { useAuth } from '@features/authentication';
+import { getConnections, useCommunication } from '@features/chat';
+import { userService } from '@features/user';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Link } from "react-router-dom";
+import UserAvatar from "@/pages/chats/components/UserAvatar.tsx";
 
 interface ConnectionProvider {
   connectionId: number;
   userId: number;
 }
 
-export default function ActiveConnections() {
+interface ActiveConnectionsProps {
+  onNavigate?: () => void;
+}
+
+export default function ActiveConnections({ onNavigate }: ActiveConnectionsProps) {
   const { user } = useAuth();
   const { connectionUpdates, disconnectConnection } = useCommunication();
   const [activeConnections, setActiveConnections] = useState<ConnectionProvider[]>([]);
@@ -118,46 +124,85 @@ export default function ActiveConnections() {
     disconnectConnection(connectionId);
   }, [disconnectConnection]);
 
+  const handleLinkClick = () => {
+    if (onNavigate) {
+      onNavigate();
+    }
+  };
+
   return (
-      <div className="space-y-2 p-2 border rounded-md shadow-xs bg-card">
+      <div className="space-y-4 max-w-[425px]">
         <h3 className="text-sm font-semibold text-card-foreground">Active Connections</h3>
         {activeConnections.length === 0 ? (
-            <p className="text-sm text-muted-foreground px-1 py-2">No active connections.</p>
+            <div className="flex h-full items-center justify-center">
+              <p className="text-sm text-muted-foreground">No active connections.</p>
+            </div>
         ) : (
-            <ul className="space-y-1">
-              {activeConnections.map((connection) => {
-                const connectedUser = userData[String(connection.userId)];
-                const displayName = connectedUser?.alias
-                    ? `${connectedUser.firstName || ''} ${connectedUser.lastName || ''} (${connectedUser.alias})`.trim()
-                    : connectedUser?.firstName || connectedUser?.lastName
-                        ? `${connectedUser.firstName || ''} ${connectedUser.lastName || ''}`.trim()
-                        : `User ${connection.userId}`;
+            activeConnections.map((connection) => {
+              const connectedUser = userData[String(connection.userId)];
+              const isLoading = !connectedUser;
+              const firstName = connectedUser?.firstName ?? '';
+              const lastName = connectedUser?.lastName ?? '';
+              const alias = connectedUser?.alias;
+              const profilePicture = connectedUser?.profilePicture;
+              const nameString = `${firstName} ${lastName}`.trim();
+              const displayName = isLoading
+                  ? `Loading user ${connection.userId}...`
+                  : alias
+                      ? `${nameString} (${alias})`
+                      : nameString || `User ${connection.userId}`;
+              const avatarName = isLoading ? '?' : nameString || `User ${connection.userId}`;
 
-                return (
-                    <li key={connection.connectionId} className="flex items-center justify-between p-1 rounded-md">
-                <span className="text-sm text-foreground truncate pr-2" title={displayName}>
-                  {displayName}
-                </span>
-                      <Button
-                          onClick={() => setDisconnectingConnection({ connectionId: connection.connectionId, displayName })}
-                          className="text-xs"
-                          size="sm"
-                          aria-label={`Disconnect from ${displayName}`}
-                          variant="destructive"
+              return (
+                  <div
+                      key={connection.connectionId}
+                      className="flex justify-between rounded-md p-2 duration-100 hover:bg-accent group"
+                  >
+                    <div className="flex items-center gap-2 overflow-hidden mr-2 flex-grow">
+                      <Link
+                          to={`/${connection.userId}/profile`}
+                          onClick={handleLinkClick}
+                          aria-label={`View profile of ${displayName}`}
+                          className={isLoading ? 'pointer-events-none' : ''}
                       >
-                        Disconnect
-                      </Button>
-                    </li>
-                );
-              })}
-            </ul>
+                        <UserAvatar
+                            name={avatarName}
+                            profileSrc={profilePicture}
+                            avatarClassName="size-8 flex-shrink-0"
+                        />
+                      </Link>
+                      <Link
+                          to={`/${connection.userId}/profile`}
+                          onClick={handleLinkClick}
+                          aria-label={`View profile of ${displayName}`}
+                          className={`text-sm text-foreground truncate ${
+                              isLoading ? 'pointer-events-none italic text-muted-foreground' : ''
+                          }`}
+                          title={displayName}
+                      >
+                        {displayName}
+                      </Link>
+                    </div>
+                    <Button
+                        onClick={() =>
+                            setDisconnectingConnection({ connectionId: connection.connectionId, displayName })
+                        }
+                        variant="destructive"
+                        aria-label={`Disconnect from ${displayName}`}
+                    >
+                      Disconnect
+                    </Button>
+                  </div>
+              );
+            })
         )}
         <Dialog open={!!disconnectingConnection} onOpenChange={(open) => !open && setDisconnectingConnection(null)}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Confirm Disconnection</DialogTitle>
               <DialogDescription>
-                Are you sure you want to disconnect from {disconnectingConnection?.displayName}?<br />This action will also remove the connection for {disconnectingConnection?.displayName}.
+                Are you sure you want to disconnect from {disconnectingConnection?.displayName}?<br />
+                This action will also remove the connection for {disconnectingConnection?.displayName}.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
