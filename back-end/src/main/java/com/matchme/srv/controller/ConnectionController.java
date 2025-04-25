@@ -1,16 +1,15 @@
 package com.matchme.srv.controller;
 
 import com.matchme.srv.dto.response.ConnectionsDTO;
-import com.matchme.srv.service.ConnectionService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import com.matchme.srv.dto.response.MatchingRecommendationsDTO;
 import com.matchme.srv.security.jwt.SecurityUtils;
+import com.matchme.srv.service.ConnectionService;
 import com.matchme.srv.service.MatchingService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -22,14 +21,19 @@ public class ConnectionController {
     private final MatchingService matchingService;
     private final SecurityUtils securityUtils;
 
-  @GetMapping("/recommendations")
-  public ResponseEntity<MatchingRecommendationsDTO> getMatchingRecommendations(Authentication authentication) {
+    @GetMapping("/recommendations")
+    public ResponseEntity<MatchingRecommendationsDTO> getMatchingRecommendations(Authentication authentication) {
+        Long currentUserId = securityUtils.getCurrentUserId(authentication);
+        MatchingRecommendationsDTO response = matchingService.getRecommendations(currentUserId);
+        return ResponseEntity.ok(response);
+    }
 
-    Long currentUserId = securityUtils.getCurrentUserId(authentication);
-
-    MatchingRecommendationsDTO response = matchingService.getRecommendations(currentUserId);
-    return ResponseEntity.ok(response);
-  }
+    @PostMapping("/recommendations/{dismissedUserProfileId}/dismiss")
+    public ResponseEntity<Void> dismissRecommendations(@PathVariable Long dismissedUserProfileId, Authentication authentication) {
+        Long currentUserId = securityUtils.getCurrentUserId(authentication);
+        matchingService.dismissedRecommendation(currentUserId, dismissedUserProfileId);
+        return ResponseEntity.ok().build();
+    }
 
     @GetMapping("")
     public ResponseEntity<ConnectionsDTO> getConnections(Authentication authentication) {

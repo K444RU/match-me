@@ -67,7 +67,7 @@ export default function ActiveConnections() {
       }
     };
 
-    fetchInitialData();
+    void fetchInitialData();
 
     return () => {
       isMounted = false;

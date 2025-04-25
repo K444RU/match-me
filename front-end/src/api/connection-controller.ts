@@ -12,6 +12,12 @@ export const getConnectionController = () => {
   const sendConnectionRequest = (userId: number) => {
     return customInstance<void>({ url: `http://localhost:8000/connections/requests/${userId}`, method: 'POST' });
   };
+  const dismissRecommendations = (dismissedUserProfileId: number) => {
+    return customInstance<void>({
+      url: `http://localhost:8000/connections/recommendations/${dismissedUserProfileId}/dismiss`,
+      method: 'POST',
+    });
+  };
   const rejectConnectionRequest = (requestId: number) => {
     return customInstance<void>({
       url: `http://localhost:8000/connections/requests/${requestId}/reject`,
@@ -38,6 +44,7 @@ export const getConnectionController = () => {
   };
   return {
     sendConnectionRequest,
+    dismissRecommendations,
     rejectConnectionRequest,
     acceptConnectionRequest,
     getConnections,
@@ -47,6 +54,9 @@ export const getConnectionController = () => {
 };
 export type SendConnectionRequestResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getConnectionController>['sendConnectionRequest']>>
+>;
+export type DismissRecommendationsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getConnectionController>['dismissRecommendations']>>
 >;
 export type RejectConnectionRequestResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getConnectionController>['rejectConnectionRequest']>>

@@ -7,9 +7,11 @@ import com.matchme.srv.exception.PotentialMatchesNotFoundException;
 import com.matchme.srv.exception.ResourceNotFoundException;
 import com.matchme.srv.model.connection.ConnectionProvider;
 import com.matchme.srv.model.connection.DatingPool;
+import com.matchme.srv.model.connection.DismissedRecommendation;
 import com.matchme.srv.model.user.profile.Hobby;
 import com.matchme.srv.model.user.profile.UserProfile;
 import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
+import com.matchme.srv.repository.DismissRecommendationRepository;
 import com.matchme.srv.repository.MatchingRepository;
 import com.matchme.srv.repository.UserProfileRepository;
 import com.matchme.srv.util.LocationUtils;
@@ -52,6 +54,7 @@ public class MatchingService {
   private final MatchingRepository matchingRepository;
   private final UserProfileRepository userProfileRepository;
   private final ConnectionService connectionService;
+  private final DismissRecommendationRepository dismissRecommendationRepository;
 
   /**
    * Retrieves and constructs detailed recommendation profiles for potential matches.
@@ -223,10 +226,12 @@ public class MatchingService {
   }
 
   /**
-   * Retrieves potential matches for a user based on their preferences and attributes.
-   * @param profileId User ID to find matches for
-   * @return Map of user IDs to match probability scores, sorted by probability
-   * @throws ResourceNotFoundException if the user is not found
+   * Retrieves potential matches for a user based on their preferences and attributes,
+   * filtering out any users previously dismissed by the requesting user.
+   *
+   * @param profileId User ID (corresponding to UserProfile ID) to find matches for.
+   * @return Map of user IDs to match probability scores for valid, non-dismissed matches, sorted by probability descending, limited to DEFAULT_MAX_RESULTS.
+   * @throws ResourceNotFoundException if the user's DatingPool entry is not found.
    */
   public Map<Long, Double> getPossibleMatches(Long profileId) {
     DatingPool entry = matchingRepository.findById(profileId)
@@ -246,18 +251,21 @@ public class MatchingService {
       return new LinkedHashMap<>();
     }
 
+    List<Long> dismissedUserIds = dismissRecommendationRepository.findDismissedRecommendationIdByProfileId(profileId);
+
     return possibleMatches.stream()
-        .map(pool -> Map.entry(pool.getProfileId(),
-            calculateProbability(entry.getActualScore(), entry.getHobbyIds(), pool)))
-        .filter(pair -> pair.getValue() > MINIMUM_PROBABILITY)
-        .filter(pair -> pair.getValue() < MAXIMUM_PROBABILITY)
-        .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-        .limit(DEFAULT_MAX_RESULTS)
-        .collect(Collectors.toMap(
-            Map.Entry::getKey,
-            Map.Entry::getValue,
-            (e1, e2) -> e1,
-            LinkedHashMap::new));
+            .filter(pool -> !dismissedUserIds.contains(pool.getProfileId()))
+            .map(pool -> Map.entry(pool.getProfileId(),
+                    calculateProbability(entry.getActualScore(), entry.getHobbyIds(), pool)))
+            .filter(pair -> pair.getValue() > MINIMUM_PROBABILITY)
+            .filter(pair -> pair.getValue() < MAXIMUM_PROBABILITY)
+            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+            .limit(DEFAULT_MAX_RESULTS)
+            .collect(Collectors.toMap(
+                    Map.Entry::getKey,
+                    Map.Entry::getValue,
+                    (e1, e2) -> e1,
+                    LinkedHashMap::new));
   }
 
   /**
@@ -285,5 +293,26 @@ public class MatchingService {
     }
 
     return probability;
+  }
+
+  /**
+   * Records that a user has dismissed another user's profile as a potential match recommendation.
+   * Once dismissed, the dismissed user should not appear in future recommendations for the initiating user.
+   *
+   * @param userProfileId The ID of the user profile initiating the dismissal.
+   * @param dismissedRecommendationId The ID of the user profile being dismissed.
+   * @throws ResourceNotFoundException if either the initiating user's profile or
+   * the dismissed user's profile cannot be found by their respective IDs.
+   */
+  public void dismissedRecommendation(Long userProfileId, Long dismissedRecommendationId) {
+    UserProfile userProfile = userProfileRepository.findById(userProfileId)
+            .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + userProfileId));
+    UserProfile dismissedUserProfile = userProfileRepository.findById(dismissedRecommendationId)
+            .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + dismissedRecommendationId));
+
+    DismissedRecommendation dismissedRecommendation = new DismissedRecommendation();
+    dismissedRecommendation.setUserProfile(userProfile);
+    dismissedRecommendation.setDismissedUserProfile(dismissedUserProfile);
+    dismissRecommendationRepository.save(dismissedRecommendation);
   }
 }

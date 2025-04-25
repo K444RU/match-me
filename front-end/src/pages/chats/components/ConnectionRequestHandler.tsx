@@ -73,7 +73,7 @@ export default function ConnectionRequestHandler() {
           }
           return [...prev, update.connection];
         });
-        fetchUserData(update.connection.userId);
+        void fetchUserData(update.connection.userId);
       } else if (['REQUEST_ACCEPTED', 'REQUEST_REJECTED'].includes(update.action)) {
         setPendingIncomingIds((prev) =>
             prev.filter((req) => req.connectionId !== update.connection.connectionId)

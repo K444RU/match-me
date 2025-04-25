@@ -14,6 +14,15 @@ export const connectionService = {
       throw error;
     }
   },
+
+  dismissRecommendations: async (userId: number): Promise<void> => {
+    try {
+      await connectionController.dismissRecommendations(userId);
+    } catch (error) {
+      console.error('Error dismissing recommendation', error);
+      throw error;
+    }
+  },
 };
 
 /**
