@@ -75,19 +75,4 @@ public interface ConnectionRepository extends JpaRepository<Connection, Long> {
             WHERE cs.requesterId = :requesterId AND cs.targetId = :targetId AND cs.status = 'PENDING'
             """)
     boolean hasPendingConnectionRequest(@Param("requesterId") Long requesterId, @Param("targetId") Long targetId);
-
-    @Query("""
-            SELECT DISTINCT c
-            FROM Connection c
-            LEFT JOIN FETCH c.userMessages m
-            JOIN c.users u
-            WHERE u.id = :userId
-            """)
-    List<Connection> findConnectionsByUserIdWithMessages(@Param("userId") Long userId);
-
-    // Placeholder for recommendations (to be implemented later)
-    default boolean isInRecommendations(Long currentUserId, Long targetUserId) {
-        // TODO: Integrate with RecommendationService once implemented
-        return false; // Stub for now
-    }
 }

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AccessValidationService {
     private final ConnectionRepository connectionRepository;
+    private final MatchingService matchingService;
 
     /**
      * Validates if currentUserId has access to view targetUserId's profile.
@@ -16,7 +17,7 @@ public class AccessValidationService {
      * - currentUserId is the owner (same as targetUserId).
      * - Users are connected (ACCEPTED connection exists).
      * - There’s an outstanding (PENDING) connection request between them.
-     * - targetUserId is in currentUserId’s recommendations (stub for now).
+     * - targetUserId is in currentUserId’s recommendations.
      *
      * @param currentUserId The ID of the requesting user
      * @param targetUserId  The ID of the user whose profile is being accessed
@@ -33,8 +34,8 @@ public class AccessValidationService {
                 connectionRepository.hasPendingConnectionRequest(targetUserId, currentUserId)) {
             return; // Pending request (either direction) grants access
         }
-        if (connectionRepository.isInRecommendations(currentUserId, targetUserId)) {
-            return; //TODO: NB!!Recommendation grants access (stub temporary solution for now)
+        if (matchingService.isRecommended(currentUserId, targetUserId)) {
+            return; // Recommendation grants access
         }
         throw new EntityNotFoundException("User not found or no access rights.");
     }

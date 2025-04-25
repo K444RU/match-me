@@ -3,10 +3,11 @@ import MotionSpinner from '@/components/animations/MotionSpinner';
 import { Button } from '@/components/ui/button';
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from '@/components/ui/dialog';
 import { connectionService, useCommunication } from '@/features/chat';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, X } from 'lucide-react';
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import UserAvatar from './UserAvatar';
+import {Link} from "react-router-dom";
 
 type ConnectionState = Record<string, 'idle' | 'loading' | 'sent'>;
 
@@ -85,10 +86,14 @@ export default function RecommendationsDialog({
                     <div className="space-y-4">
                         {recommendations?.recommendations && recommendations.recommendations.length > 0 ? (
                             recommendations.recommendations.map((r) => (
-                                <div key={r.userId} className="flex justify-between rounded-md p-2 duration-100 hover:bg-text-100">
-                                    <div className="flex items-center gap-2">
+                                <div key={r.userId} className="flex justify-between rounded-md p-2 duration-100 hover:bg-accent group">
+                                    <div className="flex items-center gap-2 overflow-hidden mr-2 flex-grow">
+                                        <Link to={`/${r.userId}/profile`} onClick={() => setIsOpen(false)}>
                                         <UserAvatar name={`${r.firstName} ${r.lastName}`} />
-                                        <span>{`${r.firstName} ${r.lastName}`}</span>
+                                        </Link>
+                                        <Link to={`/${r.userId}/profile`} onClick={() => setIsOpen(false)}>
+                                            <span>{`${r.firstName} ${r.lastName}`}</span>
+                                        </Link>
                                     </div>
                                     <Button
                                         onClick={() => handleSendConnectionRequest(r.userId)}
@@ -111,7 +116,7 @@ export default function RecommendationsDialog({
                                         variant="destructive"
                                         className="ml-2"
                                     >
-                                        Dismiss
+                                        Dismiss <X className="h-4 w-4 text-muted-foreground hover:text-foreground"/>
                                     </Button>
                                 </div>
                             ))

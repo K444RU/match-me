@@ -16,6 +16,10 @@ const ConnectionsDialog = ({
     setIsOpen: Dispatch<SetStateAction<boolean>>;
     isOpen: boolean;
 }) => {
+    const handleNavigate = () => {
+        setIsOpen(false);
+    };
+
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogContent className="sm:max-w-[425px]">
@@ -26,8 +30,8 @@ const ConnectionsDialog = ({
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
-                    <ConnectionRequestHandler />
-                    <ActiveConnections />
+                    <ConnectionRequestHandler onNavigate={handleNavigate} />
+                    <ActiveConnections onNavigate={handleNavigate} />
                 </div>
             </DialogContent>
         </Dialog>

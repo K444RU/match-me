@@ -1,16 +1,15 @@
-import { getConnectionController } from '@/api/connection-controller';
-import type { MatchingRecommendationsDTO } from '@/api/types';
+import {getConnectionController} from '@/api/connection-controller';
+import type {MatchingRecommendationsDTO} from '@/api/types';
 
 const connectionController = getConnectionController();
 
 export const connectionService = {
   getRecommendations: async (): Promise<MatchingRecommendationsDTO> => {
     try {
-      console.debug('🖖 ConnectionService: Making request');
-      const response = await connectionController.getMatchingRecommendations();
-      return response;
+      console.debug('ConnectionService: Making request');
+      return await connectionController.getMatchingRecommendations();
     } catch (error) {
-      console.error('❌ Error fetching connections', error);
+      console.error('Error fetching connections', error);
       throw error;
     }
   },
@@ -28,7 +27,7 @@ export const connectionService = {
 /**
  * Fetch all connections for the authenticated user.
  * @param token - The user's authentication token.
- * @returns Promise resolving to the connections data.
+ * @returns Promise resolving to the connections' data.
  */
 export const getConnections = async (token: string) => {
   const response = await fetch('http://localhost:8000/connections', {
