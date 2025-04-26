@@ -31,6 +31,11 @@ export interface UserParametersRequestDTO {
    * @maxItems 5
    */
   hobbies?: number[];
+  /**
+   * @minLength 0
+   * @maxLength 2000
+   */
+  aboutMe?: string;
   gender_self: UserGenderEnum;
   birth_date: string;
   /**

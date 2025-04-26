@@ -5,6 +5,7 @@
  * kood/Jõhvi match-me task API
  * OpenAPI spec version: v0.0.1
  */
+import type { HobbyResponseDTO } from './hobbyResponseDTO';
 import type { UserRoleType } from './userRoleType';
 import type { UserState } from './userState';
 
@@ -14,6 +15,8 @@ export interface CurrentUserResponseDTO {
   firstName: string;
   lastName: string;
   alias?: string;
+  aboutMe?: string;
+  hobbies?: HobbyResponseDTO[];
   profilePicture?: string;
   role?: UserRoleType[];
   profileLink?: string;

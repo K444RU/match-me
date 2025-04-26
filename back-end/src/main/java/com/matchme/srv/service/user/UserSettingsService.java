@@ -63,6 +63,7 @@ public class UserSettingsService {
         profile.setFirst_name(settings.getFirst_name());
         profile.setLast_name(settings.getLast_name());
         profile.setAlias(settings.getAlias());
+        profile.setAboutMe(settings.getAboutMe());
         if (settings.getHobbies() != null && !settings.getHobbies().isEmpty()) {
             Set<Hobby> foundHobbies = settings.getHobbies().stream()
                     .map(hobbyService::getById)

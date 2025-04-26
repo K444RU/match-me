@@ -24,27 +24,21 @@ import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
 import com.matchme.srv.model.user.profile.user_score.UserScore;
 import com.matchme.srv.repository.UserRepository;
 import com.matchme.srv.service.HobbyService;
-import com.matchme.srv.service.type.ActivityLogTypeService;
-import com.matchme.srv.service.type.AttributeChangeTypeService;
-import com.matchme.srv.service.type.PreferenceChangeTypeService;
-import com.matchme.srv.service.type.ProfileChangeTypeService;
-import com.matchme.srv.service.type.UserRoleTypeService;
+import com.matchme.srv.service.type.*;
 import com.matchme.srv.service.user.validation.UserValidationService;
-
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
@@ -196,6 +190,7 @@ public class UserCreationService {
         profile.setLast_name(parameters.last_name());
         profile.setAlias(parameters.alias());
         profile.setCity(parameters.city());
+        profile.setAboutMe(parameters.aboutMe());
 
         if (parameters.hobbies() != null && !parameters.hobbies().isEmpty()) {
             Set<Hobby> foundHobbies = parameters.hobbies().stream().map(hobbyService::getById)

@@ -11,6 +11,7 @@ export interface UnifiedFormData {
   firstName: string;
   lastName: string;
   alias: string | "";
+  aboutMe?: string;
   hobbies?: number[] | null;
   genderSelf: UserGenderEnum;
   dateOfBirth: string;

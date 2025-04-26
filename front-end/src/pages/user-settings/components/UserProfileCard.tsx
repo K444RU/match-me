@@ -15,11 +15,13 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { SettingsContext } from '../SettingsContext';
+import {Textarea} from "@ui/forms/textarea.tsx";
 
 const profileSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters.').max(50),
   lastName: z.string().min(2, 'Last name must be at least 2 characters.').max(50),
   alias: z.string().min(2, 'Alias must be at least 2 characters.').max(30).optional(),
+  aboutMe: z.string().max(2000, 'About me must be less than 2000 characters.').optional().or(z.literal('')),
   hobbies: z
     .array(
       z.object({
@@ -57,6 +59,7 @@ export default function UserProfileCard() {
         firstName: settingsContext.settings.firstName ?? '',
         lastName: settingsContext.settings.lastName ?? '',
         alias: settingsContext.settings.alias ?? '',
+        aboutMe: settingsContext.settings.aboutMe ?? '',
         hobbies: hobbiesById(settingsContext.settings.hobbies || []),
       });
     } else {
@@ -64,6 +67,7 @@ export default function UserProfileCard() {
         firstName: '',
         lastName: '',
         alias: '',
+        aboutMe: '',
         hobbies: [],
       });
     }
@@ -86,6 +90,7 @@ export default function UserProfileCard() {
         first_name: values.firstName,
         last_name: values.lastName,
         alias: values.alias,
+        aboutMe: values.aboutMe,
         hobbies: values.hobbies?.map((hobby) => parseInt(hobby.value, 10)) || [],
       });
       await settingsContext.refreshSettings();
@@ -169,6 +174,26 @@ export default function UserProfileCard() {
                   </FormItem>
                 )}
               />
+                <FormField
+                    control={form.control}
+                    name="aboutMe"
+                    render={({field}) => (
+                        <FormItem>
+                            <FormLabel htmlFor="aboutMe">About Me</FormLabel>
+                            <FormControl>
+                                <Textarea
+                                    id="aboutMe"
+                                    placeholder="Tell us something about yourself..."
+                                    className="min-h-[100px] resize-y"
+                                    maxLength={2000}
+                                    {...field}
+                                />
+                            </FormControl>
+                            <FormDescription>A brief description about you (max 2000 characters).</FormDescription>
+                            <FormMessage/>
+                        </FormItem>
+                    )}
+                />
               <FormField
                 control={form.control}
                 name="hobbies"

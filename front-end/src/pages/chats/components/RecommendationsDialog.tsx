@@ -89,7 +89,9 @@ export default function RecommendationsDialog({
                                 <div key={r.userId} className="flex justify-between rounded-md p-2 duration-100 hover:bg-accent group">
                                     <div className="flex items-center gap-2 overflow-hidden mr-2 flex-grow">
                                         <Link to={`/${r.userId}/profile`} onClick={() => setIsOpen(false)}>
-                                        <UserAvatar name={`${r.firstName} ${r.lastName}`} />
+                                        <UserAvatar
+                                            name={`${r.firstName} ${r.lastName}`}
+                                            profileSrc={r.profilePicture}/>
                                         </Link>
                                         <Link to={`/${r.userId}/profile`} onClick={() => setIsOpen(false)}>
                                             <span>{`${r.firstName} ${r.lastName}`}</span>

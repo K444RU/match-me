@@ -81,7 +81,7 @@ export default function UserProfilePage() {
             <CardContent className="p-6 text-center">
               <UserAvatar
                 name={user.firstName}
-                profileSrc={user.profilePicture}
+                profileSrc={userData.profilePicture}
                 avatarClassName="mx-auto mb-4 size-36 border-4 border-background ring-2 ring-primary"
                 fallbackClassName="text-2xl font-semibold"
               />
@@ -100,7 +100,9 @@ export default function UserProfilePage() {
               <CardTitle>About Me</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="leading-relaxed">{"About me should be here"}</p>
+              <p className="leading-relaxed text-sm text-muted-foreground whitespace-pre-wrap">
+                {userData.aboutMe || (isOwner ? 'You haven\'t added anything here yet.' : 'No information provided.')}
+              </p>
             </CardContent>
           </Card>
 

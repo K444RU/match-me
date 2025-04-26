@@ -11,6 +11,7 @@ public record UserParametersResponseDTO(
         String first_name,
         String last_name,
         String alias,
+        String aboutMe,
         Set<Long> hobbies,
         UserGenderEnum gender_self,
         String birth_date,

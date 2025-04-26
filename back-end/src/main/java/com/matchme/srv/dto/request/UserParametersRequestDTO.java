@@ -38,6 +38,9 @@ public record UserParametersRequestDTO(
   @Size(max = 5, message = "Maximum 5 hobbies allowed")
   Set<Long> hobbies,
 
+  @Size(max = 2000, message = "About me should be less than 2000 characters")
+  String aboutMe,
+
   @NotNull(message = "Self gender must be specified")
   @ValidGender(message = "Invalid gender value")
   UserGenderEnum gender_self,

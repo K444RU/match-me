@@ -17,6 +17,7 @@ public interface UserParametersMapper {
   @Mapping(source = "user.profile.first_name", target = "first_name")
   @Mapping(source = "user.profile.last_name", target = "last_name")
   @Mapping(source = "user.profile.alias", target = "alias")
+  @Mapping(source = "user.profile.aboutMe", target = "aboutMe")
   @Mapping(target = "hobbies", expression = "java(user.getProfile().getHobbies().stream().map(hobby -> hobby.getId()).collect(java.util.stream.Collectors.toSet()))")
   @Mapping(source = "user.profile.city", target = "city")
   @Mapping(source = "userAttributes.gender", target = "gender_self")
