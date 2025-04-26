@@ -22,5 +22,6 @@ export interface UserProfile {
   alias?: string;
   city?: string;
   profilePicture?: string;
+  aboutMe?: string;
   hobbies?: Hobby[];
 }

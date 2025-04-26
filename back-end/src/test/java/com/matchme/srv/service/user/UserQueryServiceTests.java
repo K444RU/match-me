@@ -16,6 +16,8 @@ import com.matchme.srv.model.user.User;
 import com.matchme.srv.model.user.UserAuth;
 import com.matchme.srv.model.user.profile.UserGenderEnum;
 import com.matchme.srv.model.user.profile.UserProfile;
+import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
+import com.matchme.srv.model.user.profile.user_preferences.UserPreferences;
 import com.matchme.srv.repository.UserRepository;
 import com.matchme.srv.service.AccessValidationService;
 import com.matchme.srv.mapper.user.UserDTOMapper;
@@ -50,12 +52,12 @@ class UserQueryServiceTests {
 
   private User user;
   private User user2;
-  private User user3;
-  private User user4;
   private UserProfile profile;
   private UserProfile profile2;
   private UserAuth userAuth;
   private UserAuth userAuth2;
+  private UserAttributes attributes;
+  private UserPreferences preferences;
   private UserParametersResponseDTO userParametersDTO;
   private CurrentUserResponseDTO currentUserDTO;
   private ProfileResponseDTO profileDTO;
@@ -66,52 +68,60 @@ class UserQueryServiceTests {
   void setUp() {
     user = new User();
     user.setId(VALID_USER_ID);
-
-    user2 = new User();
-    user2.setId(TARGET_USER_ID);
-    profile2 = new UserProfile();
-    user2.setProfile(profile2);
-    userAuth2 = new UserAuth();
-    user2.setUserAuth(userAuth2);
+    user.setEmail("owner@example.com");
 
     profile = new UserProfile();
+    attributes = new UserAttributes();
+    preferences = new UserPreferences();
+    profile.setAttributes(attributes);
+    profile.setPreferences(preferences);
     user.setProfile(profile);
+
     userAuth = new UserAuth();
     user.setUserAuth(userAuth);
 
-    user3 = new User();
-    user3.setId(VALID_USER_ID);
-    user3.setEmail("emailowner@example.com");
+    user2 = new User();
+    user2.setId(TARGET_USER_ID);
+    user2.setEmail("target@example.com");
 
-    user4 = new User();
-    user4.setId(TARGET_USER_ID);
-    user4.setEmail("target@example.com");
+    profile2 = new UserProfile();
+    UserAttributes attributes2 = new UserAttributes();
+    UserPreferences preferences2 = new UserPreferences();
+    profile2.setAttributes(attributes2);
+    profile2.setPreferences(preferences2);
+    user2.setProfile(profile2);
+
+    userAuth2 = new UserAuth();
+    user2.setUserAuth(userAuth2);
 
     userParametersDTO =
-        new UserParametersResponseDTO(
-            "test@example.com", // email
-            "password", // password
-            "123456789", // number
-            "John", // first_name
-            "Doe", // last_name
-            "JohnDoe", // alias
-            Set.of(1L), // hobbies
-            UserGenderEnum.MALE, // gender_self
-            "1990-01-01", // birth_date
-            "New York", // city
-            1.0, // longitude
-            1.0, // latitude
-            UserGenderEnum.FEMALE, // gender_other
-            18, // age_min
-            99, // age_max
-            100, // distance
-            0.5, // probability_tolerance
-            null
+            new UserParametersResponseDTO(
+                    "test@example.com", // email
+                    "password", // password
+                    "123456789", // number
+                    "John", // first_name
+                    "Doe", // last_name
+                    "JohnDoe", // alias
+                    "This is the about me section.", // aboutMe
+                    Set.of(1L), // hobbies
+                    UserGenderEnum.MALE, // gender_self
+                    "1990-01-01", // birth_date
+                    // LocalDate.of(1990, 1, 1)
+                    "New York", // city
+                    1.0, // longitude
+                    1.0, // latitude
+                    UserGenderEnum.FEMALE, // gender_other
+                    18, // age_min
+                    99, // age_max
+                    100, // distance
+                    0.5, // probability_tolerance
+                    null // profilePicture
             );
-    currentUserDTO = CurrentUserResponseDTO.builder().build();
-    profileDTO = ProfileResponseDTO.builder().build();
-    biographicalDTO = BiographicalResponseDTO.builder().build();
-    settingsDTO = SettingsResponseDTO.builder().build();
+
+    currentUserDTO = CurrentUserResponseDTO.builder().id(TARGET_USER_ID).firstName("Target").build(); // Add some data
+    profileDTO = ProfileResponseDTO.builder().firstName("Target").city("Target City").aboutMe("Target About").build(); // Add data
+    biographicalDTO = BiographicalResponseDTO.builder().age_self(30).distance(50).build(); // Add data
+    settingsDTO = SettingsResponseDTO.builder().email("test@example.com").city("New York").build(); // Add data
   }
 
   @Nested

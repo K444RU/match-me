@@ -76,6 +76,9 @@ public class UserProfile {
 
   private byte[] profilePicture;
 
+  @Column(name = "about_me", length = 2000)
+  private String aboutMe;
+
   /**
    * Set of hobbies associated with the user.
    * Used for interest-based matching and profile display.

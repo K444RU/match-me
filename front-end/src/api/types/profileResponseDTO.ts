@@ -12,4 +12,6 @@ export interface ProfileResponseDTO {
   lastName?: string;
   city?: string;
   hobbies?: HobbyResponseDTO[];
+  aboutMe?: string;
+  profilePicture?: string;
 }

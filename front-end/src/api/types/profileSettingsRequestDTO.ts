@@ -26,6 +26,11 @@ export interface ProfileSettingsRequestDTO {
    */
   alias?: string;
   /**
+   * @minLength 0
+   * @maxLength 2000
+   */
+  aboutMe?: string;
+  /**
    * @minItems 0
    * @maxItems 5
    */

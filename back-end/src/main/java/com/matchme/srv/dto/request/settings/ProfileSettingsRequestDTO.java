@@ -33,6 +33,9 @@ public class ProfileSettingsRequestDTO {
     @Pattern(regexp = "^[a-zA-Z0-9\\s-_]+$", message = "Alias can only contain letters, numbers, spaces, hyphens and underscores")
     private String alias;
 
+    @Size(max = 2000, message = "About should be less than 2000 characters")
+    String aboutMe;
+
     @Size(max = 5, message = "Maximum 5 hobbies allowed")
     private Set<Long> hobbies;
 }
