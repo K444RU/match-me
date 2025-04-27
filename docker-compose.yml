@@ -19,7 +19,6 @@ services:
     env_file:
       - .env
     environment:
-      # Example: override or pass environment variables to Spring Boot
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/match
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
@@ -42,11 +41,13 @@ services:
         VITE_GEOAPI_BASE_URL: ${VITE_GEOAPI_BASE_URL}
         VITE_GEOAPI_KEY: ${VITE_GEOAPI_KEY}
         VITE_MAX_AVATAR_SIZE_MB: ${VITE_MAX_AVATAR_SIZE_MB}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+        VITE_WS_URL: ${VITE_WS_URL}
     container_name: matchme-frontend
     env_file:
       - .env
-    ports:
-      - "3000:80"
+    volumes:
+      - frontend_dist:/usr/share/nginx/html # Mount built assets into the volume
     depends_on:
       - backend
     networks:
@@ -58,14 +59,19 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     container_name: matchme-proxy
+    volumes:
+      - frontend_dist:/usr/share/nginx/html:ro # Mount built assets read-only
     ports:
-      - "80:80"     # External port to access everything
+      - "80:80"
     depends_on:
       - backend
       - frontend
     networks:
       - backend-network
       - frontend-network
+
+volumes:
+  frontend_dist:
 
 networks:
   frontend-network:
