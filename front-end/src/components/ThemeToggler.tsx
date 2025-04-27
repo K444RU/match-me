@@ -30,7 +30,7 @@ export default function ThemeToggler() {
       size="icon"
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
       title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
-      className='focus-visible:ring-ring bg-card text-primary-foreground shadow-xs ring-offset-background focus-visible:outline-hidden inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-md px-4 py-2 text-sm font-semibold tracking-wide transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-card'
+      className='focus-visible:ring-ring bg-card text-primary-foreground shadow-xs ring-offset-background focus-visible:outline-hidden inline-flex cursor-pointer h-10 items-center justify-center gap-2 whitespace-nowrap rounded-md px-4 py-2 text-sm font-semibold tracking-wide transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-card'
     >
       {theme === 'dark' ? <Sun /> : <Moon />}
       <span className="sr-only">Toggle theme</span>
