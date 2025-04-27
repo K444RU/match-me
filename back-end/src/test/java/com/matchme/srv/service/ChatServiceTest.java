@@ -13,7 +13,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import com.matchme.srv.TestDataFactory;
 import com.matchme.srv.dto.response.ChatMessageResponseDTO;
 import com.matchme.srv.dto.response.ChatPreviewResponseDTO;
 import com.matchme.srv.dto.response.MessageStatusUpdateDTO;

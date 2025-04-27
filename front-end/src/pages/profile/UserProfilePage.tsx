@@ -98,7 +98,7 @@ export default function UserProfilePage() {
               <h1 className="text-2xl font-semibold">
                 {userData.firstName} {userData.lastName}
               </h1>
-              {user.alias && <p className="text-sm text-muted-foreground">@{user.alias}</p>}
+              {userData.alias && <p className="text-sm text-muted-foreground">@{userData.alias}</p>}
               {isOwner && user.email && <p className="mt-2 text-sm text-muted-foreground">{user.email}</p>}
             </CardContent>
           </Card>
