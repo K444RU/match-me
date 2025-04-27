@@ -1,30 +1,29 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
-# 1. Accept the arguments
+# Declare build arguments received from docker-compose
 ARG VITE_GEOAPI_BASE_URL
 ARG VITE_GEOAPI_KEY
 ARG VITE_MAX_AVATAR_SIZE_MB
+ARG VITE_API_BASE_URL
+ARG VITE_WS_URL
 
-# 2. Assign them to environment variables inside the build container
+# Set them as environment variables for the build process
+# Otherwise, Vite can't access them, they are undefined and
+# bing bang bosh you debug for 12 hours why websocket is not fucking working
 ENV VITE_GEOAPI_BASE_URL=$VITE_GEOAPI_BASE_URL
 ENV VITE_GEOAPI_KEY=$VITE_GEOAPI_KEY
 ENV VITE_MAX_AVATAR_SIZE_MB=$VITE_MAX_AVATAR_SIZE_MB
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_WS_URL=$VITE_WS_URL
 
-# Install pnpm
 RUN npm install -g pnpm
-
-# Then do install
-COPY package*.json ./
+COPY package*.json .
 RUN pnpm install
-
 COPY . .
-
-# 3. Vite sees them at build time (due to the ENV lines)
 RUN pnpm build
 
 # Production stage
-FROM nginx:alpine
+FROM alpine:3.20 AS final
 COPY --from=build /app/dist /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+WORKDIR /usr/share/nginx/html

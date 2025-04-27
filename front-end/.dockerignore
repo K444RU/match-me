@@ -1,0 +1,14 @@
+.husky
+.vscode
+dist
+node_modules
+playwright-report
+test-results
+
+.env
+.env.example
+
+.prettierrc
+.prettierignore
+
+CHANGELOG.md
