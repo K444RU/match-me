@@ -2,7 +2,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { STORAGE_KEYS } from '@/lib/constants/storageKeys';
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8000/',
+  baseURL: process.env.VITE_API_BASE_URL,
 });
 
 // Helper function to flatten nested objects for query parameters
