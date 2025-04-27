@@ -1,11 +1,10 @@
 import { expect, test } from '@playwright/test';
 import { getRandomValues } from 'utils/utils';
 
-const RECOMMENDATIONS_API_URL = 'http://localhost:8000/connections/recommendations';
-const AUTH_TOKEN_STORAGE_KEY = 'blind-auth-token';
-
 test.describe('Recommendations', () => {
   const testUser = getRandomValues();
+  const RECOMMENDATIONS_API_URL = 'http://localhost:8000/connections/recommendations';
+  const AUTH_TOKEN_STORAGE_KEY = 'blind-auth-token';
 
   test('user is not shown any recommendations until they have completed their profile', async ({ page }) => {
     await page.goto('http://localhost:3000/');
@@ -45,5 +44,5 @@ test.describe('Recommendations', () => {
     });
 
     expect(response.status).toBe(404);
-});
+  });
 });
