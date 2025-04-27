@@ -3,6 +3,7 @@ import {
   AttributesSettingsRequestDTO, CurrentUserResponseDTO,
   PreferencesSettingsRequestDTO,
   ProfilePictureSettingsRequestDTO,
+  ProfileResponseDTO,
   ProfileSettingsRequestDTO,
   UserParametersRequestDTO,
 } from '@/api/types';
@@ -81,6 +82,17 @@ export const userService = {
     try {
       console.debug('👤 UserService: Making getUser request');
       const response = await userController.getUser(userId);
+      return response;
+    } catch (error) {
+      console.error('👤 UserService: Request failed');
+      throw error;
+    }
+  },
+
+  getUserProfile: async (userId: number): Promise<ProfileResponseDTO> => {
+    try {
+      console.debug('👤 UserService: Making getUserProfile request');
+      const response = await userController.getProfile(userId);
       return response;
     } catch (error) {
       console.error('👤 UserService: Request failed');
