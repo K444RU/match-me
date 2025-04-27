@@ -15,6 +15,8 @@ public record CurrentUserResponseDTO(
         @NotNull String firstName,
         @NotNull String lastName,
         String alias,
+        String aboutMe,
+        Set<HobbyResponseDTO> hobbies,
         String profilePicture,
         Set<UserRoleType> role,
         String profileLink,

@@ -16,6 +16,7 @@ import { Select, SelectValue, SelectTrigger, SelectContent, SelectItem } from '@
 import { Button } from '@/components/ui/button';
 import useBrowserLocation from "@/pages/profile-completion/hooks/useBrowserLocation.ts";
 import { genders } from '@/assets/genders';
+import { Textarea } from '@/components/ui/textarea';
 
 interface AttributesProps {
   onNext: () => void;
@@ -31,6 +32,7 @@ export default function Attributes({ onNext, formData, onChange }: AttributesPro
   const [firstName, setFirstName] = useState(formData.firstName || '');
   const [lastName, setLastName] = useState(formData.lastName || '');
   const [alias, setAlias] = useState(formData.alias || '');
+  const [aboutMe, setAboutMe] = useState(formData.aboutMe || '');
   const [hobbies, setHobbies] = useState<Option[] | []>(hobbiesById(formData.hobbies || []));
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
 
@@ -68,6 +70,7 @@ export default function Attributes({ onNext, formData, onChange }: AttributesPro
     onChange('firstName', firstName);
     onChange('lastName', lastName);
     onChange('alias', alias);
+    onChange('aboutMe', aboutMe);
     onChange(
       'hobbies',
       hobbies.map((hobby) => parseInt(hobby.value))
@@ -132,6 +135,18 @@ export default function Attributes({ onNext, formData, onChange }: AttributesPro
               value={alias}
               onChange={(e) => setAlias(e.target.value)}
             />
+          </div>
+
+          {/* About Me */}
+          <div className="w-full space-y-2">
+              <Label htmlFor="aboutMe">About Me (Optional)</Label>
+              <Textarea
+                  name="aboutMe"
+                  placeholder="Tell us a little about yourself"
+                  value={aboutMe}
+                  onChange={(e) => setAboutMe(e.target.value)}
+                  rows={4}
+              />
           </div>
 
           {/* Hobbies */}

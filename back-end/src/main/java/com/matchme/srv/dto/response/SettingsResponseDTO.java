@@ -12,6 +12,7 @@ public record SettingsResponseDTO(
     String firstName,
     String lastName,
     String alias,
+    String aboutMe,
     Set<Long> hobbies,
     UserGenderEnum genderSelf,
     String birthDate,

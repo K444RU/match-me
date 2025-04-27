@@ -8,10 +8,10 @@
 import type { Sortnull } from './sortnull';
 
 export interface Pageablenull {
-  offset?: number;
-  sort?: Sortnull;
   paged?: boolean;
   pageNumber?: number;
   pageSize?: number;
   unpaged?: boolean;
+  offset?: number;
+  sort?: Sortnull;
 }

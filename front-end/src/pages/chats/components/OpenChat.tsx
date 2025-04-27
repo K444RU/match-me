@@ -211,6 +211,7 @@ export default function OpenChat() {
             isLoadingMore={isLoadingMore}
             scrollContainerRef={scrollContainerRef}
             connectionId={openChat.connectionId}
+            recipientAvatar={openChat.connectedUserProfilePicture}
           />
           <OpenChatInput
             onSendMessage={onSendMessage}

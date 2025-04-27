@@ -13,6 +13,7 @@ const PayloadFormData = (formData: UnifiedFormData): UserParametersRequestDTO =>
   first_name: formData.firstName,
   last_name: formData.lastName,
   alias: formData.alias,
+  aboutMe: formData.aboutMe,
   hobbies: formData.hobbies || [],
   gender_self: formData.genderSelf,
   birth_date: formData.dateOfBirth,

@@ -7,7 +7,7 @@
  */
 
 export interface Sortnull {
-  empty?: boolean;
-  unsorted?: boolean;
   sorted?: boolean;
+  unsorted?: boolean;
+  empty?: boolean;
 }

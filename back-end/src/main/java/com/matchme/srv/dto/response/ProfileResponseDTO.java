@@ -12,4 +12,6 @@ public class ProfileResponseDTO {
   private String lastName;
   private String city;
   private Set<HobbyResponseDTO> hobbies;
+  private String aboutMe;
+  private String profilePicture;
 }

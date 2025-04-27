@@ -13,6 +13,7 @@ export interface SettingsResponseDTO {
   firstName?: string;
   lastName?: string;
   alias?: string;
+  aboutMe?: string;
   hobbies?: number[];
   genderSelf?: UserGenderEnum;
   birthDate?: string;

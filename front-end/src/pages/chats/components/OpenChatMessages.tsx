@@ -14,6 +14,7 @@ interface OpenChatMessagesProps {
   isLoadingMore: boolean;
   scrollContainerRef: RefObject<HTMLDivElement>;
   connectionId: number | undefined;
+  recipientAvatar: string | undefined;
 }
 
 export default function OpenChatMessages({ 
@@ -24,7 +25,9 @@ export default function OpenChatMessages({
   hasMoreMessages, 
   isLoadingMore, 
   scrollContainerRef,
-  connectionId }: OpenChatMessagesProps) {
+  connectionId,
+  recipientAvatar
+}: OpenChatMessagesProps) {
   const messageEndRef = useRef<HTMLDivElement>(null);
   const shouldScrollToBottomRef = useRef(true);
   const prevScrollHeightRef = useRef<number | null>(null);
@@ -126,7 +129,7 @@ export default function OpenChatMessages({
         // Determine if this is the last message in the array
         const isLastMessage = index === chatMessages.length - 1;
 
-        return <Message key={key} message={msg} isOwn={isOwn} isLastMessage={isLastMessage} />;
+        return <Message key={key} message={msg} isOwn={isOwn} isLastMessage={isLastMessage} recipientAvatar={recipientAvatar} />;
       })}
       <div ref={messageEndRef} />
     </div>

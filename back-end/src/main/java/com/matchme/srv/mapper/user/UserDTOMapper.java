@@ -13,8 +13,11 @@ import com.matchme.srv.model.user.profile.UserProfile;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.matchme.srv.util.ImageUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -23,10 +26,13 @@ import org.springframework.stereotype.Component;
 public class UserDTOMapper {
     public CurrentUserResponseDTO toCurrentUserResponseDTO(User user, boolean isOwner) {
         UserProfile profile = user.getProfile();
+        String base64Picture = ImageUtils.toBase64Image(profile != null ? profile.getProfilePicture() : null);;
 
-        String base64Picture = null;
-        if (profile != null && profile.getProfilePicture() != null && profile.getProfilePicture().length > 0) {
-            base64Picture = "data:image/png;base64," + Base64.getEncoder().encodeToString(profile.getProfilePicture());
+        Set<HobbyResponseDTO> hobbyDTOs = Collections.emptySet();
+        if (profile != null && profile.getHobbies() != null) {
+            hobbyDTOs = profile.getHobbies().stream()
+                    .map(hobby -> HobbyResponseDTO.builder().id(hobby.getId()).name(hobby.getName()).build())
+                    .collect(Collectors.toSet());
         }
 
         return CurrentUserResponseDTO.builder()
@@ -35,6 +41,8 @@ public class UserDTOMapper {
                 .firstName(profile != null ? profile.getFirst_name() : null)
                 .lastName(profile != null ? profile.getLast_name() : null)
                 .alias(profile != null ? profile.getAlias() : null)
+                .aboutMe(profile != null ? profile.getAboutMe() : null)
+                .hobbies(hobbyDTOs.isEmpty() ? null : hobbyDTOs)
                 .profilePicture(base64Picture)
                 .role(user.getRoles())
                 .profileLink("/api/users/" + user.getId() + "/profile")
@@ -43,10 +51,7 @@ public class UserDTOMapper {
     }
 
     public SettingsResponseDTO toSettingsResponseDTO(UserParametersResponseDTO parameters) {
-        String base64Picture = null;
-        if (parameters.profilePicture() != null && parameters.profilePicture().length > 0) {
-            base64Picture = "data:image/png;base64," + Base64.getEncoder().encodeToString(parameters.profilePicture());
-        }
+        String base64Picture = ImageUtils.toBase64Image(parameters.profilePicture());
 
         return SettingsResponseDTO.builder()
                 .email(parameters.email())
@@ -54,6 +59,7 @@ public class UserDTOMapper {
                 .firstName(parameters.first_name())
                 .lastName(parameters.last_name())
                 .alias(parameters.alias())
+                .aboutMe(parameters.aboutMe())
                 .hobbies(parameters.hobbies())
                 .genderSelf(parameters.gender_self())
                 .birthDate(parameters.birth_date())
@@ -84,11 +90,15 @@ public class UserDTOMapper {
     }
 
     public ProfileResponseDTO toProfileResponseDTO(UserProfile profile) {
+        String base64Picture = ImageUtils.toBase64Image(profile.getProfilePicture());
+
         return ProfileResponseDTO.builder()
                 .firstName(profile.getFirst_name())
                 .lastName(profile.getLast_name())
                 .city(profile.getCity())
                 .hobbies(profile.getHobbies().stream().map(hobby -> HobbyResponseDTO.builder().id(hobby.getId()).name(hobby.getName()).build()).collect(Collectors.toSet()))
+                .aboutMe(profile.getAboutMe())
+                .profilePicture(base64Picture)
                 .build();
     }
 }
