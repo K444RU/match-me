@@ -34,7 +34,7 @@ public class ProfileSettingsRequestDTO {
     private String alias;
 
     @Size(max = 2000, message = "About should be less than 2000 characters")
-    String aboutMe;
+    private String aboutMe;
 
     @Size(max = 5, message = "Maximum 5 hobbies allowed")
     private Set<Long> hobbies;
