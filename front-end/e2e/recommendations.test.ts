@@ -4,7 +4,6 @@ import { getRandomValues } from 'utils/utils';
 test.describe('Recommendations', () => {
   const testUser = getRandomValues();
   const RECOMMENDATIONS_API_URL = 'http://localhost:8000/connections/recommendations';
-  const AUTH_TOKEN_STORAGE_KEY = 'blind-auth-token';
 
   test('user is not shown any recommendations until they have completed their profile', async ({ page }) => {
     await page.goto('http://localhost:3000/');
@@ -21,6 +20,9 @@ test.describe('Recommendations', () => {
 
     await page.goto('http://localhost:3000/login');
 
+    // wAIT FOR Backend to create user
+    await page.waitForTimeout(1000);
+
     // login
     await page.getByRole('textbox', { name: 'Email' }).click();
     await page.getByRole('textbox', { name: 'Email' }).fill(testUser.email);
@@ -34,7 +36,7 @@ test.describe('Recommendations', () => {
     // should be the same
     await expect(page).toHaveURL('http://localhost:3000/profile-completion');
 
-    const authToken = await page.evaluate(() => localStorage.getItem(AUTH_TOKEN_STORAGE_KEY));
+    const authToken = await page.evaluate(() => localStorage.getItem('blind-auth-token'));
     expect(authToken).toBeTruthy();
 
     const response = await fetch(RECOMMENDATIONS_API_URL, {

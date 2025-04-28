@@ -38,6 +38,8 @@ test.describe('Full User Registration Flow', () => {
 
     await page.getByRole('link', { name: 'Log in' }).click();
 
+    await page.waitForTimeout(2000);
+
     // login
     await page.getByRole('textbox', { name: 'Email' }).click();
     await page.getByRole('textbox', { name: 'Email' }).fill(testUser.email);
