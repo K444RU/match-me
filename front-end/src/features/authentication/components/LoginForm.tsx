@@ -9,6 +9,9 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import FormResponse from './FormResponse';
 
+// Only show test users in development environment
+const isDev = import.meta.env.MODE === 'development';
+
 const testUsers = [
   { email: 'john.doe@example.com', password: '123456' },
   { email: 'jane.smith@example.com', password: '123456' },
@@ -100,22 +103,25 @@ export default function LoginForm() {
           {isLoading && <MotionSpinner />}
         </Button>
 
-        <div className="mt-4 flex w-full flex-col gap-2">
-          <div className="grid grid-cols-2 gap-2">
-            {testUsers.map((user) => (
-              <Button
-                type="button"
-                className="rounded-sm px-3 py-1 text-sm"
-                variant="secondary"
-                onClick={() => handleTestUser(user.email, user.password)}
-                key={user.email}
-                disabled={isLoading}
-              >
-                {user.email.split('@')[0]}
-              </Button>
-            ))}
+        {/* Only show test users in development environment */}
+        {isDev && (
+          <div className="mt-4 flex w-full flex-col gap-2">
+            <div className="grid grid-cols-2 gap-2">
+              {testUsers.map((user) => (
+                <Button
+                  type="button"
+                  className="rounded-sm px-3 py-1 text-sm"
+                  variant="secondary"
+                  onClick={() => handleTestUser(user.email, user.password)}
+                  key={user.email}
+                  disabled={isLoading}
+                >
+                  {user.email.split('@')[0]}
+                </Button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </form>
     </Form>
   );
