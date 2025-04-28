@@ -6,9 +6,10 @@ interface MessageBoxProps {
   message: ChatMessageResponseDTO;
   isOwn?: boolean;
   isLastMessage: boolean;
+  recipientAvatar: string | undefined;
 }
 
-export default function Message({ message, isOwn = true, isLastMessage }: MessageBoxProps) {
+export default function Message({ message, isOwn = true, isLastMessage, recipientAvatar }: MessageBoxProps) {
   return (
     <div className={`flex w-full ${isOwn ? 'justify-end' : ''}`}>
       <div className={`mt-2 flex max-w-[50%] flex-col ${isOwn ? ' pl-4' : 'pr-4'}`}>
@@ -27,7 +28,7 @@ export default function Message({ message, isOwn = true, isLastMessage }: Messag
           <div className={`size-fit rounded-md p-2 px-4 ${isOwn ? 'bg-secondary' : 'bg-foreground/20'}`}>
             {message.content}
           </div>
-          {isLastMessage && <MessageStatus eventType={message.event.type} isOwn={isOwn} />}
+          {isLastMessage && <MessageStatus eventType={message.event.type} isOwn={isOwn} recipientAvatar={recipientAvatar} />}
         </div>
       </div>
     </div>

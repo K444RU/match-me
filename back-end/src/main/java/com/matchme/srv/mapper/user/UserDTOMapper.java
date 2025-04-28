@@ -12,7 +12,6 @@ import com.matchme.srv.model.user.profile.UserProfile;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -26,7 +25,7 @@ import org.springframework.stereotype.Component;
 public class UserDTOMapper {
     public CurrentUserResponseDTO toCurrentUserResponseDTO(User user, boolean isOwner) {
         UserProfile profile = user.getProfile();
-        String base64Picture = ImageUtils.toBase64Image(profile != null ? profile.getProfilePicture() : null);;
+        String base64Picture = ImageUtils.toBase64Image(profile != null ? profile.getProfilePicture() : null);
 
         Set<HobbyResponseDTO> hobbyDTOs = Collections.emptySet();
         if (profile != null && profile.getHobbies() != null) {
@@ -96,6 +95,7 @@ public class UserDTOMapper {
                 .firstName(profile.getFirst_name())
                 .lastName(profile.getLast_name())
                 .city(profile.getCity())
+                .alias(profile.getAlias())
                 .hobbies(profile.getHobbies().stream().map(hobby -> HobbyResponseDTO.builder().id(hobby.getId()).name(hobby.getName()).build()).collect(Collectors.toSet()))
                 .aboutMe(profile.getAboutMe())
                 .profilePicture(base64Picture)

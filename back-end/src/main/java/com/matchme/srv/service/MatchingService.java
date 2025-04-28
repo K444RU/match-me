@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Service responsible for finding and ranking potential matches for users.
@@ -39,10 +40,13 @@ public class MatchingService {
 
   /**
    * Matching algorithm constants:
-   * - MINIMUM_PROBABILITY: Minimum probability threshold for considering a match (below this are filtered out)
+   * - MINIMUM_PROBABILITY: Minimum probability threshold for considering a match
+   * (below this are filtered out)
    * - MAXIMUM_PROBABILITY: Maximum probability threshold to prevent overmatching
-   * - DEFAULT_MAX_RESULTS: Maximum number of matches to return in a single request
-   * - SCALING_FACTOR: Affects how much ELO score differences impact match probability
+   * - DEFAULT_MAX_RESULTS: Maximum number of matches to return in a single
+   * request
+   * - SCALING_FACTOR: Affects how much ELO score differences impact match
+   * probability
    * - USER_PROFILE_NOT_FOUND_MESSAGE: Error message for missing user profiles
    */
   private static final double MINIMUM_PROBABILITY = 0.3;
@@ -57,33 +61,37 @@ public class MatchingService {
   private final DismissRecommendationRepository dismissRecommendationRepository;
 
   /**
-   * Retrieves and constructs detailed recommendation profiles for potential matches.
-   * This method combines the matching algorithm results with user profiles to create a set of 10 recommendations.
+   * Retrieves and constructs detailed recommendation profiles for potential
+   * matches.
+   * This method combines the matching algorithm results with user profiles to
+   * create a set of 10 recommendations.
    * The process involves:
    * 1. Retrieving the requesting user's profile and location
    * 2. Getting potential matches using the matching algorithm
    * 3. Enriching each match with detailed profile information.
+   * 
    * @param userId The ID of the user requesting recommendations
    * @return MatchingRecommendationsDTO containing a list of recommended users
-   * @throws ResourceNotFoundException if user profiles are not found
+   * @throws ResourceNotFoundException         if user profiles are not found
    * @throws PotentialMatchesNotFoundException if no potential matches are found
    */
   public MatchingRecommendationsDTO getRecommendations(Long userId) {
     try {
       UserProfile myProfile = userProfileRepository.findById(userId)
-              .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + userId));
+          .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + userId));
 
       Long profileId = myProfile.getId();
       List<Double> myLocation = myProfile.getAttributes().getLocation();
-      Map<Long, Double> possibleMatches = getPossibleMatches(profileId);
       ConnectionsDTO connections = connectionService.getConnections(profileId);
+      Map<Long, Double> possibleMatches = getPossibleMatches(profileId, connections);
 
       Map<Long, String> connectionStatus = new HashMap<>();
       Map<Long, Long> connectionIds = new HashMap<>();
       populateConnectionMaps(connections, connectionStatus, connectionIds);
 
       MatchingRecommendationsDTO response = new MatchingRecommendationsDTO();
-      List<RecommendedUserDTO> recommendations = buildRecommendations(possibleMatches, myLocation, connectionStatus, connectionIds);
+      List<RecommendedUserDTO> recommendations = buildRecommendations(possibleMatches, myLocation, connectionStatus,
+          connectionIds);
       response.setRecommendations(recommendations);
       return response;
     } catch (PotentialMatchesNotFoundException e) {
@@ -93,12 +101,15 @@ public class MatchingService {
   }
 
   /**
-   * Helper method for getRecommendations that populates connection status and ID maps from ConnectionsDTO.
-   * @param connections DTO containing connection information
+   * Helper method for getRecommendations that populates connection status and ID
+   * maps from ConnectionsDTO.
+   * 
+   * @param connections      DTO containing connection information
    * @param connectionStatus Map to store user ID to connection status
-   * @param connectionIds Map to store user ID to connection ID
+   * @param connectionIds    Map to store user ID to connection ID
    */
-  private void populateConnectionMaps(ConnectionsDTO connections, Map<Long, String> connectionStatus, Map<Long, Long> connectionIds) {
+  private void populateConnectionMaps(ConnectionsDTO connections, Map<Long, String> connectionStatus,
+      Map<Long, Long> connectionIds) {
     for (ConnectionProvider cp : connections.getActive()) {
       connectionStatus.put(cp.getUserId(), "ACCEPTED");
       connectionIds.put(cp.getUserId(), cp.getConnectionId());
@@ -114,19 +125,22 @@ public class MatchingService {
   }
 
   /**
-   * Helper method for getRecommendations that builds list of RecommendedUserDTOs from match data.
-   * @param possibleMatches Map of user IDs to match probabilities
-   * @param myLocation User's location for distance calculation
+   * Helper method for getRecommendations that builds list of RecommendedUserDTOs
+   * from match data.
+   * 
+   * @param possibleMatches  Map of user IDs to match probabilities
+   * @param myLocation       User's location for distance calculation
    * @param connectionStatus Map of user IDs to connection status
-   * @param connectionIds Map of user IDs to connection IDs
+   * @param connectionIds    Map of user IDs to connection IDs
    * @return List of populated RecommendedUserDTOs
    */
-  private List<RecommendedUserDTO> buildRecommendations(Map<Long, Double> possibleMatches, List<Double> myLocation, Map<Long, String> connectionStatus, Map<Long, Long> connectionIds) {
+  private List<RecommendedUserDTO> buildRecommendations(Map<Long, Double> possibleMatches, List<Double> myLocation,
+      Map<Long, String> connectionStatus, Map<Long, Long> connectionIds) {
     List<RecommendedUserDTO> recommendations = new ArrayList<>();
 
     List<UserProfile> profiles = userProfileRepository.findAllById(possibleMatches.keySet());
     Map<Long, UserProfile> profileMap = profiles.stream()
-            .collect(Collectors.toMap(UserProfile::getId, p -> p));
+        .collect(Collectors.toMap(UserProfile::getId, p -> p));
 
     for (Map.Entry<Long, Double> match : possibleMatches.entrySet()) {
       Long matchUserId = match.getKey();
@@ -146,13 +160,16 @@ public class MatchingService {
   }
 
   /**
-   * Helper method for getRecommendations that sets connection status and ID on the RecommendedUserDTO.
-   * @param dto RecommendedUserDTO to update
-   * @param matchUserId ID of the matched user
+   * Helper method for getRecommendations that sets connection status and ID on
+   * the RecommendedUserDTO.
+   * 
+   * @param dto              RecommendedUserDTO to update
+   * @param matchUserId      ID of the matched user
    * @param connectionStatus Map of user IDs to connection status
-   * @param connectionIds Map of user IDs to connection IDs
+   * @param connectionIds    Map of user IDs to connection IDs
    */
-  private void setConnectionInfo(RecommendedUserDTO dto, Long matchUserId, Map<Long, String> connectionStatus, Map<Long, Long> connectionIds) {
+  private void setConnectionInfo(RecommendedUserDTO dto, Long matchUserId, Map<Long, String> connectionStatus,
+      Map<Long, Long> connectionIds) {
     String status = connectionStatus.getOrDefault(matchUserId, "NONE");
     dto.setConnectionStatus(status);
     if (!"NONE".equals(status)) {
@@ -161,8 +178,10 @@ public class MatchingService {
   }
 
   /**
-   * Helper method for getRecommendations that creates a RecommendedUserDTO from profile data and match score.
-   * @param profile UserProfile of the matched user
+   * Helper method for getRecommendations that creates a RecommendedUserDTO from
+   * profile data and match score.
+   * 
+   * @param profile    UserProfile of the matched user
    * @param matchScore Probability score of the match
    * @param myLocation User's location for distance calculation
    * @return Populated RecommendedUserDTO
@@ -193,8 +212,10 @@ public class MatchingService {
   }
 
   /**
-   * Calculates the distance between two geographic coordinates using the Haversine formula.
-   * @param myLocation User's coordinates [latitude, longitude]
+   * Calculates the distance between two geographic coordinates using the
+   * Haversine formula.
+   * 
+   * @param myLocation    User's coordinates [latitude, longitude]
    * @param matchLocation Match's coordinates [latitude, longitude]
    * @return Distance in kilometers, rounded to nearest integer
    */
@@ -218,6 +239,7 @@ public class MatchingService {
 
   /**
    * Calculates the current age of a user based on their birthdate.
+   * 
    * @param birthdate User's date of birth
    * @return Calculated age in years
    */
@@ -226,56 +248,73 @@ public class MatchingService {
   }
 
   /**
-   * Retrieves potential matches for a user based on their preferences and attributes,
+   * Retrieves potential matches for a user based on their preferences and
+   * attributes,
    * filtering out any users previously dismissed by the requesting user.
    *
-   * @param profileId User ID (corresponding to UserProfile ID) to find matches for.
-   * @return Map of user IDs to match probability scores for valid, non-dismissed matches, sorted by probability descending, limited to DEFAULT_MAX_RESULTS.
-   * @throws ResourceNotFoundException if the user's DatingPool entry is not found.
+   * @param profileId User ID (corresponding to UserProfile ID) to find matches
+   *                  for.
+   * @return Map of user IDs to match probability scores for valid, non-dismissed
+   *         matches, sorted by probability descending, limited to
+   *         DEFAULT_MAX_RESULTS.
+   * @throws ResourceNotFoundException if the user's DatingPool entry is not
+   *                                   found.
    */
-  public Map<Long, Double> getPossibleMatches(Long profileId) {
+  public Map<Long, Double> getPossibleMatches(Long profileId, ConnectionsDTO connections) {
     DatingPool entry = matchingRepository.findById(profileId)
         .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + profileId));
 
     List<DatingPool> possibleMatches = matchingRepository.findUsersThatMatchParameters(
-            entry.getLookingForGender(),
-            entry.getMyGender(),
-            entry.getMyAge(),
-            entry.getAgeMin(),
-            entry.getAgeMax(),
-            entry.getSuitableGeoHashes(),
-            entry.getMyLocation(),
-            3);
+        entry.getLookingForGender(),
+        entry.getMyGender(),
+        entry.getMyAge(),
+        entry.getAgeMin(),
+        entry.getAgeMax(),
+        entry.getSuitableGeoHashes(),
+        entry.getMyLocation(),
+        3);
 
     if (possibleMatches.isEmpty()) {
       return new LinkedHashMap<>();
     }
 
     List<Long> dismissedUserIds = dismissRecommendationRepository.findDismissedRecommendationIdByProfileId(profileId);
+    List<Long> alreadyInteractedUserIds = extractUserIdsFromConnectionsDTO(connections);
 
     return possibleMatches.stream()
-            .filter(pool -> !dismissedUserIds.contains(pool.getProfileId()))
-            .map(pool -> Map.entry(pool.getProfileId(),
-                    calculateProbability(entry.getActualScore(), entry.getHobbyIds(), pool)))
-            .filter(pair -> pair.getValue() > MINIMUM_PROBABILITY)
-            .filter(pair -> pair.getValue() < MAXIMUM_PROBABILITY)
-            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-            .limit(DEFAULT_MAX_RESULTS)
-            .collect(Collectors.toMap(
-                    Map.Entry::getKey,
-                    Map.Entry::getValue,
-                    (e1, e2) -> e1,
-                    LinkedHashMap::new));
+        .filter(pool -> !dismissedUserIds.contains(pool.getProfileId()))
+        .filter(pool -> !alreadyInteractedUserIds.contains(pool.getProfileId()))
+        .map(pool -> Map.entry(pool.getProfileId(),
+            calculateProbability(entry.getActualScore(), entry.getHobbyIds(), pool)))
+        .filter(pair -> pair.getValue() > MINIMUM_PROBABILITY)
+        .filter(pair -> pair.getValue() < MAXIMUM_PROBABILITY)
+        .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+        .limit(DEFAULT_MAX_RESULTS)
+        .collect(Collectors.toMap(
+            Map.Entry::getKey,
+            Map.Entry::getValue,
+            (e1, e2) -> e1,
+            LinkedHashMap::new));
+  }
+
+  private List<Long> extractUserIdsFromConnectionsDTO(ConnectionsDTO connections) {
+    return Stream
+        .of(connections.getActive(), connections.getPendingIncoming(), connections.getPendingOutgoing())
+        .flatMap(List::stream)
+        .map(ConnectionProvider::getUserId)
+        .collect(Collectors.toList());
   }
 
   /**
-   * Calculates the match probability between two users based on their ELO scores and mutual interests.
+   * Calculates the match probability between two users based on their ELO scores
+   * and mutual interests.
    * The calculation combines:
    * - Base probability using ELO formula: P(A) = 1 / (1 + 10^((RB - RA)/1071))
    * - Hobby similarity bonus using logarithmic scaling
+   * 
    * @param userScore User's ELO score
-   * @param hobbies User's hobby IDs
-   * @param entry Dating pool entry of potential match
+   * @param hobbies   User's hobby IDs
+   * @param entry     Dating pool entry of potential match
    * @return Match probability between 0.0 and 1.0
    */
   private Double calculateProbability(Integer userScore, Set<Long> hobbies, DatingPool entry) {
@@ -296,19 +335,23 @@ public class MatchingService {
   }
 
   /**
-   * Records that a user has dismissed another user's profile as a potential match recommendation.
-   * Once dismissed, the dismissed user should not appear in future recommendations for the initiating user.
+   * Records that a user has dismissed another user's profile as a potential match
+   * recommendation.
+   * Once dismissed, the dismissed user should not appear in future
+   * recommendations for the initiating user.
    *
-   * @param userProfileId The ID of the user profile initiating the dismissal.
+   * @param userProfileId             The ID of the user profile initiating the
+   *                                  dismissal.
    * @param dismissedRecommendationId The ID of the user profile being dismissed.
    * @throws ResourceNotFoundException if either the initiating user's profile or
-   * the dismissed user's profile cannot be found by their respective IDs.
+   *                                   the dismissed user's profile cannot be
+   *                                   found by their respective IDs.
    */
   public void dismissedRecommendation(Long userProfileId, Long dismissedRecommendationId) {
     UserProfile userProfile = userProfileRepository.findById(userProfileId)
-            .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + userProfileId));
+        .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + userProfileId));
     UserProfile dismissedUserProfile = userProfileRepository.findById(dismissedRecommendationId)
-            .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + dismissedRecommendationId));
+        .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + dismissedRecommendationId));
 
     DismissedRecommendation dismissedRecommendation = new DismissedRecommendation();
     dismissedRecommendation.setUserProfile(userProfile);
@@ -318,13 +361,16 @@ public class MatchingService {
 
   /**
    * Helper method for AccessValidationService that checks
-   * if a specific target user is currently among the calculated top potential matches for the current user.
+   * if a specific target user is currently among the calculated top potential
+   * matches for the current user.
    *
-   * @param currentUserId The ID of the user whose current recommendations should be checked.
-   * @param targetUserId The ID of the user to check for presence in the recommendations.
+   * @param currentUserId The ID of the user whose current recommendations should
+   *                      be checked.
+   * @param targetUserId  The ID of the user to check for presence in the
+   *                      recommendations.
    */
   public boolean isRecommended(Long currentUserId, Long targetUserId) {
-    Map<Long, Double> possibleMatches = getPossibleMatches(currentUserId);
+    Map<Long, Double> possibleMatches = getPossibleMatches(currentUserId, null);
     return possibleMatches.containsKey(targetUserId);
   }
 }

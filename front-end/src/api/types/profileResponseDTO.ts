@@ -10,6 +10,7 @@ import type { HobbyResponseDTO } from './hobbyResponseDTO';
 export interface ProfileResponseDTO {
   firstName?: string;
   lastName?: string;
+  alias?: string;
   city?: string;
   hobbies?: HobbyResponseDTO[];
   aboutMe?: string;

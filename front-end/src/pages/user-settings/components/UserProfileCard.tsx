@@ -15,7 +15,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { SettingsContext } from '../SettingsContext';
-import {Textarea} from "@ui/forms/textarea.tsx";
+import { Textarea } from '@/components/ui/textarea';
 
 const profileSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters.').max(50),

@@ -5,9 +5,9 @@ import PageNotFound from '@/pages/404Page.tsx';
 import {ArrowLeftIcon, CameraIcon} from 'lucide-react';
 import {useEffect, useState} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
+import { meService, userService } from '@/features/user';
 import UserAvatar from '../chats/components/UserAvatar';
-import {HobbyResponseDTO, ProfileResponseDTO, UserProfile} from '@/api/types';
-import axios from "axios";
+import {HobbyResponseDTO, ProfileResponseDTO} from '@/api/types';
 
 export default function UserProfilePage() {
   const { user } = useAuth();
@@ -26,11 +26,21 @@ export default function UserProfilePage() {
     const fetchUserData = async () => {
       try {
         setLoading(true);
-        const endpoint = id ? `/api/users/${id}` : '/api/me';
-        const response = await axios.get<UserProfile>(endpoint, {
-          headers: { Authorization: `Bearer ${user.token}` },
-        });
-        setUserData(response.data);
+
+        let response: ProfileResponseDTO;
+
+        if (id) {
+          const targetId = parseInt(id, 10);
+          if (isNaN(targetId)) {
+            setNotFound(true);
+            return;
+          }
+          response = await userService.getUserProfile(targetId);
+        } else {
+          response = await meService.getUserProfile();
+        }
+
+        setUserData(response);
         setIsOwner(!id || id === (user.id ?? '').toString());
       } catch (err: unknown) {
         const errorObj = err as { response?: { status: number } };
@@ -88,7 +98,7 @@ export default function UserProfilePage() {
               <h1 className="text-2xl font-semibold">
                 {userData.firstName} {userData.lastName}
               </h1>
-              {user.alias && <p className="text-sm text-muted-foreground">@{user.alias}</p>}
+              {userData.alias && <p className="text-sm text-muted-foreground">@{userData.alias}</p>}
               {isOwner && user.email && <p className="mt-2 text-sm text-muted-foreground">{user.email}</p>}
             </CardContent>
           </Card>

@@ -1,5 +1,6 @@
 package com.matchme.srv.service;
 
+import com.matchme.srv.dto.response.ConnectionsDTO;
 import com.matchme.srv.exception.ResourceNotFoundException;
 import com.matchme.srv.model.connection.DatingPool;
 import com.matchme.srv.model.connection.DismissedRecommendation;
@@ -40,6 +41,11 @@ class MatchingServiceTests {
   private static final Long TEST_USER_ID = 1L;
   private static final Long OTHER_USER_ID = 2L;
 
+  private static final ConnectionsDTO EMPTY_CONNECTIONS = new ConnectionsDTO(
+      Collections.emptyList(),
+      Collections.emptyList(),
+      Collections.emptyList());
+
   private DatingPool testUserPool;
   private UserProfile testUserProfile;
   private UserProfile otherUserProfile;
@@ -62,9 +68,10 @@ class MatchingServiceTests {
     // Setup the user pool for the requesting user
     when(matchingRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(testUserPool));
 
-    // Mock the repository to return a list of dismissed IDs including dismissedUserId
+    // Mock the repository to return a list of dismissed IDs including
+    // dismissedUserId
     when(dismissRecommendationRepository.findDismissedRecommendationIdByProfileId(TEST_USER_ID))
-            .thenReturn(Collections.singletonList(dismissedUserId));
+        .thenReturn(Collections.singletonList(dismissedUserId));
 
     // Create potential matches including the one to be dismissed
     DatingPool dismissedMatchPool = createTestDatingPool(dismissedUserId);
@@ -79,11 +86,12 @@ class MatchingServiceTests {
 
     List<DatingPool> potentialMatchesFromRepo = Arrays.asList(dismissedMatchPool, regularMatchPool);
     when(matchingRepository.findUsersThatMatchParameters(
-            eq(UserGenderEnum.FEMALE), eq(UserGenderEnum.MALE), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
-            .thenReturn(potentialMatchesFromRepo);
+        eq(UserGenderEnum.FEMALE), eq(UserGenderEnum.MALE), anyInt(), anyInt(), anyInt(), anySet(), anyString(),
+        anyInt()))
+        .thenReturn(potentialMatchesFromRepo);
 
     // Act
-    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID);
+    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID, EMPTY_CONNECTIONS);
 
     // Assert
     assertNotNull(result);
@@ -94,7 +102,8 @@ class MatchingServiceTests {
     // Verify repository calls
     verify(matchingRepository).findById(TEST_USER_ID);
     verify(dismissRecommendationRepository).findDismissedRecommendationIdByProfileId(TEST_USER_ID);
-    verify(matchingRepository).findUsersThatMatchParameters(any(), any(), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt());
+    verify(matchingRepository).findUsersThatMatchParameters(any(), any(), anyInt(), anyInt(), anyInt(), anySet(),
+        anyString(), anyInt());
   }
 
   @Test
@@ -106,8 +115,10 @@ class MatchingServiceTests {
     // Use ArgumentCaptor to capture the object passed to save
     ArgumentCaptor<DismissedRecommendation> dismissalCaptor = ArgumentCaptor.forClass(DismissedRecommendation.class);
 
-    // Mock the save method (optional, but good practice to ensure it returns the saved object)
-    when(dismissRecommendationRepository.save(any(DismissedRecommendation.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    // Mock the save method (optional, but good practice to ensure it returns the
+    // saved object)
+    when(dismissRecommendationRepository.save(any(DismissedRecommendation.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
 
     // Act
     matchingService.dismissedRecommendation(TEST_USER_ID, OTHER_USER_ID);
@@ -145,7 +156,6 @@ class MatchingServiceTests {
     verify(dismissRecommendationRepository, never()).save(any());
   }
 
-
   @Test
   void dismissedRecommendation_ShouldThrowResourceNotFound_WhenDismissedUserNotFound() {
     // Arrange
@@ -170,7 +180,7 @@ class MatchingServiceTests {
 
     // Act & Assert
     Exception exception = assertThrows(ResourceNotFoundException.class, () -> {
-      matchingService.getPossibleMatches(TEST_USER_ID);
+      matchingService.getPossibleMatches(TEST_USER_ID, EMPTY_CONNECTIONS);
     });
 
     // Verify the exception message contains the user ID
@@ -270,11 +280,12 @@ class MatchingServiceTests {
     List<DatingPool> potentialMatches = Collections.singletonList(matchWithoutMutualHobbies);
 
     when(matchingRepository.findUsersThatMatchParameters(
-        eq(UserGenderEnum.FEMALE), eq(UserGenderEnum.MALE), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
+        eq(UserGenderEnum.FEMALE), eq(UserGenderEnum.MALE), anyInt(), anyInt(), anyInt(), anySet(), anyString(),
+        anyInt()))
         .thenReturn(potentialMatches);
 
     // Act
-    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID);
+    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID, EMPTY_CONNECTIONS);
 
     // Assert
     assertNotNull(result, "Result should not be null");
@@ -329,11 +340,12 @@ class MatchingServiceTests {
     List<DatingPool> potentialMatches = Collections.singletonList(matchWithMutualHobbies);
 
     when(matchingRepository.findUsersThatMatchParameters(
-        eq(UserGenderEnum.FEMALE), eq(UserGenderEnum.MALE), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
+        eq(UserGenderEnum.FEMALE), eq(UserGenderEnum.MALE), anyInt(), anyInt(), anyInt(), anySet(), anyString(),
+        anyInt()))
         .thenReturn(potentialMatches);
 
     // Act
-    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID);
+    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID, EMPTY_CONNECTIONS);
 
     // Assert
     assertNotNull(result, "Result should not be null");
@@ -418,11 +430,12 @@ class MatchingServiceTests {
         acceptableProbabilityMatch);
 
     when(matchingRepository.findUsersThatMatchParameters(
-        eq(UserGenderEnum.FEMALE), eq(UserGenderEnum.MALE), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
+        eq(UserGenderEnum.FEMALE), eq(UserGenderEnum.MALE), anyInt(), anyInt(), anyInt(), anySet(), anyString(),
+        anyInt()))
         .thenReturn(allMatches);
 
     // Act
-    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID);
+    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID, EMPTY_CONNECTIONS);
 
     // Assert
     assertNotNull(result, "Result should not be null");
@@ -483,11 +496,12 @@ class MatchingServiceTests {
     }
 
     when(matchingRepository.findUsersThatMatchParameters(
-        eq(UserGenderEnum.FEMALE), eq(UserGenderEnum.MALE), anyInt(), anyInt(), anyInt(), anySet(), anyString(), anyInt()))
+        eq(UserGenderEnum.FEMALE), eq(UserGenderEnum.MALE), anyInt(), anyInt(), anyInt(), anySet(), anyString(),
+        anyInt()))
         .thenReturn(manyMatches);
 
     // Act
-    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID);
+    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID, EMPTY_CONNECTIONS);
 
     // Assert
     assertNotNull(result, "Result should not be null");

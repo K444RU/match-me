@@ -10,6 +10,7 @@ import lombok.Data;
 public class ProfileResponseDTO {
   private String firstName;
   private String lastName;
+  private String alias;
   private String city;
   private Set<HobbyResponseDTO> hobbies;
   private String aboutMe;

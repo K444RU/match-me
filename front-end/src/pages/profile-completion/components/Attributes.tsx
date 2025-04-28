@@ -16,7 +16,7 @@ import { Select, SelectValue, SelectTrigger, SelectContent, SelectItem } from '@
 import { Button } from '@/components/ui/button';
 import useBrowserLocation from "@/pages/profile-completion/hooks/useBrowserLocation.ts";
 import { genders } from '@/assets/genders';
-import {Textarea} from "@ui/forms/textarea.tsx";
+import { Textarea } from '@/components/ui/textarea';
 
 interface AttributesProps {
   onNext: () => void;
