@@ -100,7 +100,7 @@ jobs:
       - name: Start backend server
         working-directory: ./back-end
         run: |
-          nohup java -jar target/*.jar > backend.log 2>&1 &
+          nohup java -Dspring.profiles.active=dev -jar target/*.jar > backend.log 2>&1 &
           echo $! > backend.pid
           # Wait for backend to start
           echo "Waiting for backend to start..."
