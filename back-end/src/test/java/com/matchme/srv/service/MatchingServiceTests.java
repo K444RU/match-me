@@ -1,5 +1,6 @@
 package com.matchme.srv.service;
 
+import com.matchme.srv.dto.response.ConnectionsDTO;
 import com.matchme.srv.exception.ResourceNotFoundException;
 import com.matchme.srv.model.connection.DatingPool;
 import com.matchme.srv.model.connection.DismissedRecommendation;
@@ -39,6 +40,11 @@ class MatchingServiceTests {
 
   private static final Long TEST_USER_ID = 1L;
   private static final Long OTHER_USER_ID = 2L;
+
+  private static final ConnectionsDTO EMPTY_CONNECTIONS = new ConnectionsDTO(
+      Collections.emptyList(),
+      Collections.emptyList(),
+      Collections.emptyList());
 
   private DatingPool testUserPool;
   private UserProfile testUserProfile;
@@ -85,7 +91,7 @@ class MatchingServiceTests {
         .thenReturn(potentialMatchesFromRepo);
 
     // Act
-    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID, null);
+    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID, EMPTY_CONNECTIONS);
 
     // Assert
     assertNotNull(result);
@@ -174,7 +180,7 @@ class MatchingServiceTests {
 
     // Act & Assert
     Exception exception = assertThrows(ResourceNotFoundException.class, () -> {
-      matchingService.getPossibleMatches(TEST_USER_ID, null);
+      matchingService.getPossibleMatches(TEST_USER_ID, EMPTY_CONNECTIONS);
     });
 
     // Verify the exception message contains the user ID
@@ -279,7 +285,7 @@ class MatchingServiceTests {
         .thenReturn(potentialMatches);
 
     // Act
-    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID, null);
+    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID, EMPTY_CONNECTIONS);
 
     // Assert
     assertNotNull(result, "Result should not be null");
@@ -339,7 +345,7 @@ class MatchingServiceTests {
         .thenReturn(potentialMatches);
 
     // Act
-    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID, null);
+    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID, EMPTY_CONNECTIONS);
 
     // Assert
     assertNotNull(result, "Result should not be null");
@@ -429,7 +435,7 @@ class MatchingServiceTests {
         .thenReturn(allMatches);
 
     // Act
-    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID, null);
+    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID, EMPTY_CONNECTIONS);
 
     // Assert
     assertNotNull(result, "Result should not be null");
@@ -495,7 +501,7 @@ class MatchingServiceTests {
         .thenReturn(manyMatches);
 
     // Act
-    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID, null);
+    Map<Long, Double> result = matchingService.getPossibleMatches(TEST_USER_ID, EMPTY_CONNECTIONS);
 
     // Assert
     assertNotNull(result, "Result should not be null");
