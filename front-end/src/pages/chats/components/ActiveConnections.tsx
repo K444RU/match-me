@@ -1,4 +1,4 @@
-import { CurrentUserResponseDTO } from '@/api/types';
+import {ConnectionProvider, CurrentUserResponseDTO} from '@/api/types';
 import { useAuth } from '@features/authentication';
 import { getConnections, useCommunication } from '@features/chat';
 import { userService } from '@features/user';
@@ -7,11 +7,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Link } from "react-router-dom";
 import UserAvatar from "@/pages/chats/components/UserAvatar.tsx";
-
-interface ConnectionProvider {
-  connectionId: number;
-  userId: number;
-}
 
 interface ActiveConnectionsProps {
   onNavigate?: () => void;

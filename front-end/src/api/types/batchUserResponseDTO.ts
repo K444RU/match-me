@@ -5,7 +5,8 @@
  * kood/Jõhvi match-me task API
  * OpenAPI spec version: v0.0.1
  */
+import type { RecommendedUserDTO } from './recommendedUserDTO';
 
-export interface MatchingRecommendationsDTO {
-  recommendations?: number[];
+export interface BatchUserResponseDTO {
+  users?: RecommendedUserDTO[];
 }

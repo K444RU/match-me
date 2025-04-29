@@ -2,6 +2,7 @@ package com.matchme.srv.controller;
 
 import com.matchme.srv.dto.request.UserParametersRequestDTO;
 import com.matchme.srv.dto.request.settings.*;
+import com.matchme.srv.dto.response.BatchUserResponseDTO;
 import com.matchme.srv.dto.response.BiographicalResponseDTO;
 import com.matchme.srv.dto.response.CurrentUserResponseDTO;
 import com.matchme.srv.dto.response.ProfileResponseDTO;
@@ -15,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -154,4 +157,10 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/batch")
+    public ResponseEntity<BatchUserResponseDTO> getUsersBatch(@RequestBody List<Long> userIds, Authentication authentication) {
+        Long currentUserId = securityUtils.getCurrentUserId(authentication);
+        BatchUserResponseDTO response  = queryService.getUsersBatch(currentUserId, userIds);
+        return ResponseEntity.ok(response);
+    }
 }

@@ -2,24 +2,18 @@ package com.matchme.srv.service;
 
 import com.matchme.srv.dto.response.ConnectionsDTO;
 import com.matchme.srv.dto.response.MatchingRecommendationsDTO;
-import com.matchme.srv.dto.response.MatchingRecommendationsDTO.RecommendedUserDTO;
 import com.matchme.srv.exception.PotentialMatchesNotFoundException;
 import com.matchme.srv.exception.ResourceNotFoundException;
 import com.matchme.srv.model.connection.ConnectionProvider;
 import com.matchme.srv.model.connection.DatingPool;
 import com.matchme.srv.model.connection.DismissedRecommendation;
-import com.matchme.srv.model.user.profile.Hobby;
 import com.matchme.srv.model.user.profile.UserProfile;
-import com.matchme.srv.model.user.profile.user_attributes.UserAttributes;
 import com.matchme.srv.repository.DismissRecommendationRepository;
 import com.matchme.srv.repository.MatchingRepository;
 import com.matchme.srv.repository.UserProfileRepository;
-import com.matchme.srv.util.LocationUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.Period;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -78,173 +72,19 @@ public class MatchingService {
   public MatchingRecommendationsDTO getRecommendations(Long userId) {
     try {
       UserProfile myProfile = userProfileRepository.findById(userId)
-          .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + userId));
+              .orElseThrow(() -> new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + userId));
 
       Long profileId = myProfile.getId();
-      List<Double> myLocation = myProfile.getAttributes().getLocation();
       ConnectionsDTO connections = connectionService.getConnections(profileId);
       Map<Long, Double> possibleMatches = getPossibleMatches(profileId, connections);
 
-      Map<Long, String> connectionStatus = new HashMap<>();
-      Map<Long, Long> connectionIds = new HashMap<>();
-      populateConnectionMaps(connections, connectionStatus, connectionIds);
-
       MatchingRecommendationsDTO response = new MatchingRecommendationsDTO();
-      List<RecommendedUserDTO> recommendations = buildRecommendations(possibleMatches, myLocation, connectionStatus,
-          connectionIds);
-      response.setRecommendations(recommendations);
+      response.setRecommendations(new ArrayList<>(possibleMatches.keySet()));
       return response;
     } catch (PotentialMatchesNotFoundException e) {
       throw new PotentialMatchesNotFoundException(
-          "No recommendations available for user " + userId + ": " + e.getMessage());
+              "No recommendations available for user " + userId + ": " + e.getMessage());
     }
-  }
-
-  /**
-   * Helper method for getRecommendations that populates connection status and ID
-   * maps from ConnectionsDTO.
-   * 
-   * @param connections      DTO containing connection information
-   * @param connectionStatus Map to store user ID to connection status
-   * @param connectionIds    Map to store user ID to connection ID
-   */
-  private void populateConnectionMaps(ConnectionsDTO connections, Map<Long, String> connectionStatus,
-      Map<Long, Long> connectionIds) {
-    for (ConnectionProvider cp : connections.getActive()) {
-      connectionStatus.put(cp.getUserId(), "ACCEPTED");
-      connectionIds.put(cp.getUserId(), cp.getConnectionId());
-    }
-    for (ConnectionProvider cp : connections.getPendingOutgoing()) {
-      connectionStatus.put(cp.getUserId(), "PENDING_SENT");
-      connectionIds.put(cp.getUserId(), cp.getConnectionId());
-    }
-    for (ConnectionProvider cp : connections.getPendingIncoming()) {
-      connectionStatus.put(cp.getUserId(), "PENDING_RECEIVED");
-      connectionIds.put(cp.getUserId(), cp.getConnectionId());
-    }
-  }
-
-  /**
-   * Helper method for getRecommendations that builds list of RecommendedUserDTOs
-   * from match data.
-   * 
-   * @param possibleMatches  Map of user IDs to match probabilities
-   * @param myLocation       User's location for distance calculation
-   * @param connectionStatus Map of user IDs to connection status
-   * @param connectionIds    Map of user IDs to connection IDs
-   * @return List of populated RecommendedUserDTOs
-   */
-  private List<RecommendedUserDTO> buildRecommendations(Map<Long, Double> possibleMatches, List<Double> myLocation,
-      Map<Long, String> connectionStatus, Map<Long, Long> connectionIds) {
-    List<RecommendedUserDTO> recommendations = new ArrayList<>();
-
-    List<UserProfile> profiles = userProfileRepository.findAllById(possibleMatches.keySet());
-    Map<Long, UserProfile> profileMap = profiles.stream()
-        .collect(Collectors.toMap(UserProfile::getId, p -> p));
-
-    for (Map.Entry<Long, Double> match : possibleMatches.entrySet()) {
-      Long matchUserId = match.getKey();
-      Double matchScore = match.getValue();
-
-      UserProfile profile = profileMap.get(matchUserId);
-      if (profile == null) {
-        throw new ResourceNotFoundException(USER_PROFILE_NOT_FOUND_MESSAGE + matchUserId);
-      }
-
-      RecommendedUserDTO dto = createRecommendedUserDTO(profile, matchScore, myLocation);
-      setConnectionInfo(dto, matchUserId, connectionStatus, connectionIds);
-      recommendations.add(dto);
-    }
-
-    return recommendations;
-  }
-
-  /**
-   * Helper method for getRecommendations that sets connection status and ID on
-   * the RecommendedUserDTO.
-   * 
-   * @param dto              RecommendedUserDTO to update
-   * @param matchUserId      ID of the matched user
-   * @param connectionStatus Map of user IDs to connection status
-   * @param connectionIds    Map of user IDs to connection IDs
-   */
-  private void setConnectionInfo(RecommendedUserDTO dto, Long matchUserId, Map<Long, String> connectionStatus,
-      Map<Long, Long> connectionIds) {
-    String status = connectionStatus.getOrDefault(matchUserId, "NONE");
-    dto.setConnectionStatus(status);
-    if (!"NONE".equals(status)) {
-      dto.setConnectionId(connectionIds.get(matchUserId));
-    }
-  }
-
-  /**
-   * Helper method for getRecommendations that creates a RecommendedUserDTO from
-   * profile data and match score.
-   * 
-   * @param profile    UserProfile of the matched user
-   * @param matchScore Probability score of the match
-   * @param myLocation User's location for distance calculation
-   * @return Populated RecommendedUserDTO
-   */
-  private RecommendedUserDTO createRecommendedUserDTO(UserProfile profile, Double matchScore, List<Double> myLocation) {
-    String base64Picture = null;
-    if (profile.getProfilePicture() != null && profile.getProfilePicture().length > 0) {
-      base64Picture = "data:image/png;base64," + Base64.getEncoder().encodeToString(profile.getProfilePicture());
-    }
-
-    UserAttributes attributes = profile.getAttributes();
-    if (attributes == null) {
-      throw new ResourceNotFoundException("User attributes not found for profile ID: " + profile.getId());
-    }
-
-    RecommendedUserDTO dto = new RecommendedUserDTO();
-    dto.setUserId(profile.getId());
-    dto.setFirstName(profile.getFirst_name());
-    dto.setLastName(profile.getLast_name());
-    dto.setProfilePicture(base64Picture);
-    dto.setHobbies(convertHobbiesToStrings(profile.getHobbies()));
-    dto.setAge(getAgeFromBirthDate(attributes.getBirthdate()));
-    dto.setGender(attributes.getGender().toString());
-    dto.setDistance(calculateDistance(myLocation, attributes.getLocation()));
-    dto.setProbability(matchScore);
-
-    return dto;
-  }
-
-  /**
-   * Calculates the distance between two geographic coordinates using the
-   * Haversine formula.
-   * 
-   * @param myLocation    User's coordinates [latitude, longitude]
-   * @param matchLocation Match's coordinates [latitude, longitude]
-   * @return Distance in kilometers, rounded to nearest integer
-   */
-  private Integer calculateDistance(List<Double> myLocation, List<Double> matchLocation) {
-    if (myLocation.size() < 2 || matchLocation.size() < 2) {
-      throw new IllegalArgumentException("Location lists must contain at least latitude and longitude");
-    }
-    double lat1 = myLocation.get(0);
-    double lon1 = myLocation.get(1);
-    double lat2 = matchLocation.get(0);
-    double lon2 = matchLocation.get(1);
-    double distance = LocationUtils.calculateDistance(lat1, lon1, lat2, lon2);
-    return (int) Math.round(distance);
-  }
-
-  private Set<String> convertHobbiesToStrings(Set<Hobby> hobbies) {
-    return hobbies.stream()
-        .map(Hobby::getName)
-        .collect(Collectors.toSet());
-  }
-
-  /**
-   * Calculates the current age of a user based on their birthdate.
-   * 
-   * @param birthdate User's date of birth
-   * @return Calculated age in years
-   */
-  private Integer getAgeFromBirthDate(LocalDate birthdate) {
-    return Period.between(birthdate, LocalDate.now()).getYears();
   }
 
   /**
@@ -298,11 +138,14 @@ public class MatchingService {
   }
 
   private List<Long> extractUserIdsFromConnectionsDTO(ConnectionsDTO connections) {
+    if (connections == null) {
+      return Collections.emptyList();
+    }
     return Stream
-        .of(connections.getActive(), connections.getPendingIncoming(), connections.getPendingOutgoing())
-        .flatMap(List::stream)
-        .map(ConnectionProvider::getUserId)
-        .collect(Collectors.toList());
+            .of(connections.getActive(), connections.getPendingIncoming(), connections.getPendingOutgoing())
+            .flatMap(List::stream)
+            .map(ConnectionProvider::getUserId)
+            .collect(Collectors.toList());
   }
 
   /**
