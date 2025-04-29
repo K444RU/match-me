@@ -2,7 +2,11 @@ import { motion } from 'motion/react';
 import { forwardRef } from 'react';
 import { ImSpinner8 } from 'react-icons/im';
 
-const MotionSpinner = forwardRef((_props, _ref) => {
+interface MotionSpinnerProps {
+  size?: number;
+}
+
+const MotionSpinner = forwardRef<HTMLDivElement, MotionSpinnerProps>(({ size = 16 }, _ref) => {
   return (
     <motion.div
       animate={{
@@ -14,7 +18,7 @@ const MotionSpinner = forwardRef((_props, _ref) => {
         ease: 'linear',
       }}
     >
-      <ImSpinner8 />
+      <ImSpinner8 size={size} />
     </motion.div>
   );
 });
