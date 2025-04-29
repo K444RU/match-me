@@ -22,6 +22,7 @@ export interface AuthContextType {
   login: (credentials: LoginRequestDTO) => Promise<LoginResult>;
   logout: () => void;
   fetchCurrentUser: () => Promise<void>;
+  error: AppError | null;
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -30,4 +31,5 @@ export const AuthContext = createContext<AuthContextType>({
   login: async () => await Promise.resolve({ success: false, error: { title: 'Not Initialized', subtitle: 'AuthContext not initialized' } }),
 	logout: () => {},
   fetchCurrentUser: async () => await Promise.reject(new Error('AuthContext not initialized')),
+  error: null,
 });

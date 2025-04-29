@@ -12,6 +12,7 @@ interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
 	const [isLoading, setIsLoading] = useState(true);
 	const [user, setUser] = useState<User | null>(null);
+	const [error, setError] = useState<AppError | null>(null);
 
 	// Helper function to fetch user, update state, and handle token storage
 	const updateUserFromToken = useCallback(async (token: string | null): Promise<User | null> => {
@@ -28,6 +29,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 			localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
 			console.debug('AuthProvider (updateUserFromToken): Token stored, fetching user...');
 			const currentUser = await meService.getCurrentUser();
+			setError(null);
 			const userData: User = { ...currentUser, token };
 			setUser(userData);
 			console.debug('AuthProvider (updateUserFromToken): User fetch success:', currentUser.state);
@@ -64,6 +66,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
 	const login = async (credentials: LoginRequestDTO): Promise<LoginResult> => {
 		setIsLoading(true);
+		setError(null);
 		console.debug('AuthProvider (Login): Attempting login...');
 		try {
 			const response = await authService.login(credentials);
@@ -77,18 +80,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 				} else {
 					console.warn('⚠️ AuthProvider (Login): Token received, but user fetch failed.');
 					setIsLoading(false);
+					const fetchError: AppError = { title: 'Login Issue', subtitle: 'Could not retrieve user details after login.' };
+					setError(fetchError);
 					return {
 						success: false,
-						error: { title: 'Login Issue', subtitle: 'Could not retrieve user details after login.' },
+						error: fetchError,
 					};
 				}
 			} else {
 				console.warn('⚠️ AuthProvider (Login): No token in response from authService.login');
 				await updateUserFromToken(null);
 				setIsLoading(false);
+				const tokenError: AppError = { title: 'Login Issue', subtitle: 'Login did not return a valid token.' };
+				setError(tokenError);
 				return {
 					success: false,
-					error: { title: 'Login Issue', subtitle: 'Login did not return a valid token.' },
+					error: tokenError,
 				};
 			}
 		} catch (error) {
@@ -109,6 +116,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 			}
 
 			const resultError: AppError = { title: errorTitle, subtitle: errorSubtitle, status };
+			setError(resultError);
 			setIsLoading(false); // Set loading false on error path
 			return { success: false, error: resultError };
 		}
@@ -117,6 +125,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 	// Updated logout function
 	const logout = useCallback(() => {
 		console.debug('AuthProvider (Logout): Logging out.');
+		setError(null);
 		updateUserFromToken(null); // Use helper to clear state and token
 	}, [updateUserFromToken]);
 
@@ -135,5 +144,5 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 		console.debug('AuthProvider (fetchCurrentUser): Loading finished.');
 	}, [updateUserFromToken]);
 
-	return <AuthContext.Provider value={{ user, isLoading, login, logout, fetchCurrentUser }}>{children}</AuthContext.Provider>;
+	return <AuthContext.Provider value={{ user, isLoading, login, logout, fetchCurrentUser, error }}>{children}</AuthContext.Provider>;
 };

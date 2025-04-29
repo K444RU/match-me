@@ -6,16 +6,12 @@ export type ProtectedRouteProps = { children?: ReactElement } & {
   redirectPath?: string;
 };
 
-export default function ProtectedRoute({
-  isAllowed,
-  children,
-  redirectPath = '/',
-}: ProtectedRouteProps) {
+export default function ProtectedRoute({ isAllowed, children, redirectPath = '/' }: ProtectedRouteProps) {
   const location = useLocation();
 
   if (!isAllowed) {
     return <Navigate to={redirectPath} state={{ from: location }} replace />;
   }
-  
+
   return children ?? <Outlet />;
-};
+}

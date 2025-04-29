@@ -1,6 +1,8 @@
 import { UserState } from '@/api/types';
+import MotionSpinner from '@/components/animations/MotionSpinner';
 import { useAuth } from '@/features/authentication';
 import { ReactElement } from 'react';
+import { Outlet } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 
 export type AuthenticationGuardProps = {
@@ -21,9 +23,20 @@ export default function AuthenticationGuard({
   allowedStates,
   ...props
 }: AuthenticationGuardProps) {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   let isAllowed = false;
   let finalRedirectPath = redirectPath;
+
+  if (isLoading) {
+    if (guardType === 'unauthenticated' && window.location.pathname.includes('/login')) {
+      return props.children ?? <Outlet />;
+    }
+    return (
+      <div className="flex h-[calc(100vh-80px)] w-screen items-center justify-center">
+        <MotionSpinner size={32} />
+      </div>
+    );
+  }
 
   if (guardType === 'unauthenticated') {
     isAllowed = !user;

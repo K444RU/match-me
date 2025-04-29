@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/features/authentication';
 import MotionSpinner from '@animations/MotionSpinner';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import FormResponse from './FormResponse';
@@ -29,37 +28,23 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
-  const { login, isLoading } = useAuth();
-
-  const [resTitle, setResTitle] = useState('');
-  const [resSubtitle, setResSubtitle] = useState('');
+  const { login, isLoading, error } = useAuth();
 
   const form = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
 
   const handleTestUser = (email: string, password: string) => {
     form.setValue('email', email);
     form.setValue('password', password);
-    setResTitle('');
-    setResSubtitle('');
+    form.clearErrors();
   };
 
   const onSubmit = async (values: LoginFormData) => {
-    setResTitle('');
-    setResSubtitle('');
-
     const result = await login(values);
 
     if (result.success && result.user) {
       console.debug(`LoginForm: Login successful via context result.`);
     } else {
       console.warn(`LoginForm: Login failed. Reason: ${result.error?.title} - ${result.error?.subtitle}`);
-      if (result.error) {
-        setResTitle(result.error.title);
-        setResSubtitle(result.error.subtitle);
-      } else {
-        setResTitle('Login Failed');
-        setResSubtitle('An unexpected error occurred.');
-      }
       form.setValue('password', '');
     }
     console.debug('LoginForm: submitForm finished processing result.');
@@ -68,7 +53,8 @@ export default function LoginForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col items-center gap-2">
-        {resTitle && resSubtitle && <FormResponse title={resTitle} subtitle={resSubtitle} />}
+        {/* Display error from context if it exists */}
+        {error && <FormResponse title={error.title} subtitle={error.subtitle} />}
         <FormField
           control={form.control}
           name="email"
