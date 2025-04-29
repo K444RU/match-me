@@ -2,6 +2,14 @@
 
 A modern matching platform for connecting people.
 
+## Preview
+
+![Preview](./preview.gif)
+
+## Notes
+
+❗ when running dev mode (not dockerized), it will generate 100 users from [backend](./back-end/src/main/java/com/matchme/srv/util/TestUserGenerator.java)
+
 ## Technologies Used
 
 - **Frontend**: React, TypeScript, Vite
