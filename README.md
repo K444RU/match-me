@@ -2,19 +2,39 @@
 
 A modern matching platform for connecting people.
 
-## Features
+## Technologies Used
 
-- 🚀 Spring Boot backend with OpenAPI documentation
-- ⚛️ React frontend with Tailwind CSS
-- 🔐 JWT authentication system
-- 💬 Real-time chat functionality
+- **Frontend**: React, TypeScript, Vite
+- **Backend**: Java, Spring Boot
+- **Database**: PostgreSQL
+- **Communication**: WebSockets
+- **Containerization**: Docker
 
-## Getting Started
+## Running Locally (Without Docker)
 
-### Prerequisites
+1. Create a `.env` file from `.env.example` with your configuration (in `front-end/` dir)
+2. Make sure Postgres is running locally with proper credentials
+3. Start the backend:
+   ```
+   cd back-end
+   mvn spring-boot:run -Dspring-boot.run.profiles=dev
+   ```
+4. Start the frontend:
+   ```
+   cd front-end
+   pnpm dev
+   ```
+5. Access the application at `http://localhost:3000`
 
-- Docker
+## Running with Docker
 
-### Installation
-
-1. Run docker
+1. Create a `.env` file from `.env.example` with your configuration (in root dir)
+2. Start the application:
+   ```
+   make prod
+   ```
+3. To stop the application:
+   ```
+   make prod-down
+   ```
+4. Access the application at `http://localhost/`
