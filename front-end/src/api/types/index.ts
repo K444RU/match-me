@@ -10,6 +10,7 @@ export * from './accountSettingsRequestDTO';
 export * from './activityLog';
 export * from './activityLogType';
 export * from './attributesSettingsRequestDTO';
+export * from './batchUserResponseDTO';
 export * from './biographicalResponseDTO';
 export * from './chatMessageResponseDTO';
 export * from './chatPreviewResponseDTO';

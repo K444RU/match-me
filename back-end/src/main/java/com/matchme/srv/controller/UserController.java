@@ -158,7 +158,7 @@ public class UserController {
     }
 
     @PostMapping("/batch")
-    public ResponseEntity<BatchUserResponseDTO> batchUpdateProfilePicture(@RequestBody List<Long> userIds, Authentication authentication) {
+    public ResponseEntity<BatchUserResponseDTO> getUsersBatch(@RequestBody List<Long> userIds, Authentication authentication) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
         BatchUserResponseDTO response  = queryService.getUsersBatch(currentUserId, userIds);
         return ResponseEntity.ok(response);

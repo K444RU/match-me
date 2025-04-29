@@ -10,15 +10,15 @@ import type { Pageablenull } from './pageablenull';
 import type { Sortnull } from './sortnull';
 
 export interface PageChatMessageResponseDTO {
-  totalElements?: number;
   totalPages?: number;
-  pageable?: Pageablenull;
+  totalElements?: number;
   first?: boolean;
   last?: boolean;
   size?: number;
   content?: ChatMessageResponseDTO[];
   number?: number;
   sort?: Sortnull;
+  pageable?: Pageablenull;
   numberOfElements?: number;
   empty?: boolean;
 }

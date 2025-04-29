@@ -9,6 +9,7 @@ import { customInstance } from '../lib/custom-axios-instance';
 import type {
   AccountSettingsRequestDTO,
   AttributesSettingsRequestDTO,
+  BatchUserResponseDTO,
   BiographicalResponseDTO,
   CurrentUserResponseDTO,
   PreferencesSettingsRequestDTO,
@@ -60,6 +61,14 @@ export const getUserController = () => {
       data: profilePictureSettingsRequestDTO,
     });
   };
+  const batchUpdateProfilePicture = (batchUpdateProfilePictureBody: number[]) => {
+    return customInstance<BatchUserResponseDTO>({
+      url: `http://localhost:8000/api/users/batch`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: batchUpdateProfilePictureBody,
+    });
+  };
   const verifyAccount = (userId: number, params: VerifyAccountParams) => {
     return customInstance<void>({ url: `http://localhost:8000/api/users/verify/${userId}`, method: 'PATCH', params });
   };
@@ -95,6 +104,7 @@ export const getUserController = () => {
     updateAttributes,
     updateAccount,
     uploadProfilePicture,
+    batchUpdateProfilePicture,
     verifyAccount,
     setParameters,
     getUser,
@@ -116,6 +126,9 @@ export type UpdateAccountResult = NonNullable<
 >;
 export type UploadProfilePictureResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getUserController>['uploadProfilePicture']>>
+>;
+export type BatchUpdateProfilePictureResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getUserController>['batchUpdateProfilePicture']>>
 >;
 export type VerifyAccountResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getUserController>['verifyAccount']>>
