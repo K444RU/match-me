@@ -78,7 +78,7 @@ export default function UnifiedForm() {
   };
 
   return (
-    <FormLayout title={step === 0 ? 'Personal Information' : 'Preferences'} className="pb-20">
+    <FormLayout title={step === 0 ? 'Personal Information' : 'Preferences'}>
       {step === 0 && (
         <Attributes onNext={handleNextStep} onChange={handleChange} formData={formData} />
       )}

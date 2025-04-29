@@ -17,12 +17,51 @@ import { Button } from '@/components/ui/button';
 import useBrowserLocation from "@/pages/profile-completion/hooks/useBrowserLocation.ts";
 import { genders } from '@/assets/genders';
 import { Textarea } from '@/components/ui/textarea';
+import { z } from 'zod';
+import { UserGenderEnum } from '@/api/types';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 
 interface AttributesProps {
   onNext: () => void;
   formData: UnifiedFormData;
   onChange: (name: keyof UnifiedFormData, value: UnifiedFormData[keyof UnifiedFormData]) => void;
 }
+
+const attributesSchema = z.object({
+  firstName: z.string()
+    .min(2, { message: 'First name must be at least 2 characters' })
+    .max(50, { message: 'First name must be less than 50 characters' })
+    .regex(/^[a-zA-Z\s-']+$/, { message: "First name can only contain letters, spaces, hyphens and apostrophes" }),
+  lastName: z.string()
+    .min(2, { message: 'Last name must be at least 2 characters' })
+    .max(50, { message: 'Last name must be less than 50 characters' })
+    .regex(/^[a-zA-Z\s-']+$/, { message: "Last name can only contain letters, spaces, hyphens and apostrophes" }),
+  alias: z.string()
+    .min(2, { message: 'Alias must be at least 2 characters' })
+    .max(30, { message: 'Alias must be less than 30 characters' })
+    .regex(/^[a-zA-Z0-9\s-_]+$/, { message: "Alias can only contain letters, numbers, spaces, hyphens and underscores" }),
+  aboutMe: z.string()
+    .max(2000, { message: 'About me must be less than 2000 characters' })
+    .optional(),
+  hobbies: z.array(z.object({ value: z.string(), label: z.string() }))
+    .max(5, { message: 'Maximum 5 hobbies allowed' })
+    .optional(),
+  genderSelf: z.nativeEnum(UserGenderEnum, { required_error: 'Gender is required.' }),
+  dateOfBirth: z.string().refine((dateString) => {
+    const date = new Date(dateString);
+    const eighteenYearsAgo = new Date();
+    eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
+    return date <= eighteenYearsAgo && date < new Date();
+  }, { message: 'You must be at least 18 years old' }),
+  city: z.object({
+    name: z.string().min(2, { message: 'City name must be at least 2 characters' }).max(100, { message: 'City name must be less than 100 characters' }),
+    latitude: z.number().min(-90).max(90),
+    longitude: z.number().min(-180).max(180),
+  }, { errorMap: () => ({ message: 'Please select a valid city' }) })
+});
+
+type AttributesFormData = z.infer<typeof attributesSchema>;
 
 export default function Attributes({ onNext, formData, onChange }: AttributesProps) {
   const [loading, setLoading] = useState(false);
@@ -38,6 +77,25 @@ export default function Attributes({ onNext, formData, onChange }: AttributesPro
 
   const {location: browserLocation, error: locationError } = useBrowserLocation();
   const debouncedCitySearchValue = useDebounce(citySearchValue, 400);
+
+  const form = useForm<AttributesFormData>({
+    resolver: zodResolver(attributesSchema),
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      alias: '',
+      aboutMe: '',
+      hobbies: [],
+      genderSelf: undefined,
+      dateOfBirth: '',
+      city: {
+        name: '',
+        latitude: 0,
+        longitude: 0,
+      },
+    },
+  });
+  
 
   useEffect(()=> {
     if(browserLocation && !formData.city) {
@@ -80,152 +138,148 @@ export default function Attributes({ onNext, formData, onChange }: AttributesPro
   };
 
   return (
-      <form onSubmit={(e) => e.preventDefault()} className="flex flex-col items-center gap-2">
+      <form onSubmit={(e) => e.preventDefault()} className="flex flex-col items-center gap-2 h-[500px]">
           {error && <div className="text-sm text-red-500">{error}</div>}
 
-          {/* Names */}
-          <div className="flex gap-2">
-            <div className="flex flex-col">
-              <Label className="mb-1 text-sm font-medium" htmlFor="city">
-                First name
-              </Label>
-              <Input
-                type="text"
-                name="firstName"
-                placeholder="Michael"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-col">
-              <Label className="mb-1 text-sm font-medium" htmlFor="city">
-                Last name
-              </Label>
-              <Input
-                type="text"
-                name="lastName"
-                placeholder="Doorstep"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* Profile Picture */}
-          <div className="w-full space-y-2">
-            <Label className="mb-1 text-sm font-medium">Profile Picture (Optional)</Label>
-            <ProfilePictureUploader
-                currentImage={uploadedImage}
-                onUploadSuccess={(base64Image) => {
-                  setUploadedImage(base64Image);
-                  console.debug('Upload was successful!');
-                }}
-            />
-          </div>
-
-          {/* Alias */}
-          <div className="w-full space-y-2">
-            <Label htmlFor="alias">
-              Alias
-            </Label>
-            <Input
-              type="text"
-              name="alias"
-              placeholder="Shotgunner404"
-              value={alias}
-              onChange={(e) => setAlias(e.target.value)}
-            />
-          </div>
-
-          {/* About Me */}
-          <div className="w-full space-y-2">
-              <Label htmlFor="aboutMe">About Me (Optional)</Label>
-              <Textarea
-                  name="aboutMe"
-                  placeholder="Tell us a little about yourself"
-                  value={aboutMe}
-                  onChange={(e) => setAboutMe(e.target.value)}
-                  rows={4}
-              />
-          </div>
-
-          {/* Hobbies */}
-          <div className="w-full space-y-2">
-            <Label htmlFor="hobbies">Hobbies</Label>
-            <MultipleSelector
-              value={hobbies}
-              onChange={setHobbies}
-              placeholder="Select your hobbies..."
-              defaultOptions={HOBBIES}
-              groupBy="category"
-              hideClearAllButton={true}
-              maxSelected={5}
-              hidePlaceholderWhenSelected={true}
-            />
-          </div>
-          {/* Gender Dropdown */}
-          <div className="w-full space-y-2">
-            <Label htmlFor="gender">
-              Gender
-            </Label>
-            <Select
-              name="gender"
-              defaultValue={formData.genderSelf || ''}
-              onValueChange={(value) => onChange('genderSelf', value)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select Gender" />
-              </SelectTrigger>
-              <SelectContent>
-              {genders.map((gender) => (
-                <SelectItem key={gender.value} value={gender.value.toString()}>
-                  {gender.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          </div>
-
-          {/* Birth Date Picker */}
-          <div className="w-full space-y-2">
-            <Label>
-              Date of Birth
-            </Label>
-            <DatePicker
-              selectedDate={formData.dateOfBirth ? new Date(formData.dateOfBirth) : undefined}
-              onDateChange={(date) => onChange('dateOfBirth', date.toISOString())}
-            />
-          </div>
-
-          {/* City Input */}
-          <div className="w-full space-y-2">
-            <Label>
-              City
-            </Label>
-            <Input
-              type="text"
-              name="city"
-              placeholder="Enter your city"
-              value={citySearchValue}
-              onChange={(e) => handleCityInputChange(e.target.value)}
-              onFocus={() => setShowSuggestions(true)}
-              onBlur={() => {
-                setTimeout(() => {
-                  setShowSuggestions(false);
-                }, 500);
-              }}
-            />
-            {loading && (
-              <div className="absolute inset-x-0 top-full mt-2 flex justify-center">
-                <MotionSpinner />
+          <div className='flex flex-col items-center gap-2 overflow-y-auto pr-2'>
+            {/* Names */}
+            <div className="flex gap-2">
+              <div className="flex flex-col">
+                <Label className="mb-1 text-sm font-medium" htmlFor="city">
+                  First name
+                </Label>
+                <Input
+                  type="text"
+                  name="firstName"
+                  placeholder="Michael"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                />
               </div>
-            )}
-            <div className={`absolute z-10 ${!showSuggestions ? `hidden` : ``}`}>
-              <CitySuggestions
-                searchTerm={debouncedCitySearchValue}
-                onCitySelect={handleCitySelect}
-                visible={showSuggestions}
+              <div className="flex flex-col">
+                <Label className="mb-1 text-sm font-medium" htmlFor="city">
+                  Last name
+                </Label>
+                <Input
+                  type="text"
+                  name="lastName"
+                  placeholder="Doorstep"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                />
+              </div>
+            </div>
+            {/* Profile Picture */}
+            <div className="w-full space-y-2">
+              <Label className="mb-1 text-sm font-medium">Profile Picture (Optional)</Label>
+              <ProfilePictureUploader
+                  currentImage={uploadedImage}
+                  onUploadSuccess={(base64Image) => {
+                    setUploadedImage(base64Image);
+                    console.debug('Upload was successful!');
+                  }}
               />
+            </div>
+            {/* Alias */}
+            <div className="w-full space-y-2">
+              <Label htmlFor="alias">
+                Alias
+              </Label>
+              <Input
+                type="text"
+                name="alias"
+                placeholder="Shotgunner404"
+                value={alias}
+                onChange={(e) => setAlias(e.target.value)}
+              />
+            </div>
+            {/* About Me */}
+            <div className="w-full space-y-2">
+                <Label htmlFor="aboutMe">About Me (Optional)</Label>
+                <Textarea
+                    name="aboutMe"
+                    placeholder="Tell us a little about yourself"
+                    value={aboutMe}
+                    onChange={(e) => setAboutMe(e.target.value)}
+                    rows={4}
+                />
+            </div>
+            {/* Hobbies */}
+            <div className="w-full space-y-2">
+              <Label htmlFor="hobbies">Hobbies</Label>
+              <MultipleSelector
+                value={hobbies}
+                onChange={setHobbies}
+                placeholder="Select your hobbies..."
+                defaultOptions={HOBBIES}
+                groupBy="category"
+                hideClearAllButton={true}
+                maxSelected={5}
+                hidePlaceholderWhenSelected={true}
+              />
+            </div>
+            {/* Gender Dropdown */}
+            <div className="w-full space-y-2">
+              <Label htmlFor="gender">
+                Gender
+              </Label>
+              <Select
+                name="gender"
+                defaultValue={formData.genderSelf || ''}
+                onValueChange={(value) => onChange('genderSelf', value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select Gender" />
+                </SelectTrigger>
+                <SelectContent>
+                {genders.map((gender) => (
+                  <SelectItem key={gender.value} value={gender.value.toString()}>
+                    {gender.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            </div>
+            {/* Birth Date Picker */}
+            <div className="w-full space-y-2">
+              <Label>
+                Date of Birth
+              </Label>
+              <DatePicker
+                selectedDate={formData.dateOfBirth ? new Date(formData.dateOfBirth) : undefined}
+                onDateChange={(date) => onChange('dateOfBirth', date.toISOString())}
+              />
+            </div>
+            {/* City Input */}
+            <div className="w-full space-y-2">
+              <Label>
+                City
+              </Label>
+              <Input
+                type="text"
+                name="city"
+                placeholder="Enter your city"
+                value={citySearchValue}
+                onChange={(e) => handleCityInputChange(e.target.value)}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => {
+                  setTimeout(() => {
+                    setShowSuggestions(false);
+                  }, 500);
+                }}
+              />
+              {loading && (
+                <div className="absolute inset-x-0 top-full mt-2 flex justify-center">
+                  <MotionSpinner />
+                </div>
+              )}
+              <div className={`absolute z-10 ${!showSuggestions ? `hidden` : ``}`}>
+                <CitySuggestions
+                  searchTerm={debouncedCitySearchValue}
+                  onCitySelect={handleCitySelect}
+                  visible={showSuggestions}
+                />
+              </div>
             </div>
           </div>
 
