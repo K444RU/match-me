@@ -17,51 +17,12 @@ import { Button } from '@/components/ui/button';
 import useBrowserLocation from "@/pages/profile-completion/hooks/useBrowserLocation.ts";
 import { genders } from '@/assets/genders';
 import { Textarea } from '@/components/ui/textarea';
-import { z } from 'zod';
-import { UserGenderEnum } from '@/api/types';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
 
 interface AttributesProps {
   onNext: () => void;
   formData: UnifiedFormData;
   onChange: (name: keyof UnifiedFormData, value: UnifiedFormData[keyof UnifiedFormData]) => void;
 }
-
-const attributesSchema = z.object({
-  firstName: z.string()
-    .min(2, { message: 'First name must be at least 2 characters' })
-    .max(50, { message: 'First name must be less than 50 characters' })
-    .regex(/^[a-zA-Z\s-']+$/, { message: "First name can only contain letters, spaces, hyphens and apostrophes" }),
-  lastName: z.string()
-    .min(2, { message: 'Last name must be at least 2 characters' })
-    .max(50, { message: 'Last name must be less than 50 characters' })
-    .regex(/^[a-zA-Z\s-']+$/, { message: "Last name can only contain letters, spaces, hyphens and apostrophes" }),
-  alias: z.string()
-    .min(2, { message: 'Alias must be at least 2 characters' })
-    .max(30, { message: 'Alias must be less than 30 characters' })
-    .regex(/^[a-zA-Z0-9\s-_]+$/, { message: "Alias can only contain letters, numbers, spaces, hyphens and underscores" }),
-  aboutMe: z.string()
-    .max(2000, { message: 'About me must be less than 2000 characters' })
-    .optional(),
-  hobbies: z.array(z.object({ value: z.string(), label: z.string() }))
-    .max(5, { message: 'Maximum 5 hobbies allowed' })
-    .optional(),
-  genderSelf: z.nativeEnum(UserGenderEnum, { required_error: 'Gender is required.' }),
-  dateOfBirth: z.string().refine((dateString) => {
-    const date = new Date(dateString);
-    const eighteenYearsAgo = new Date();
-    eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
-    return date <= eighteenYearsAgo && date < new Date();
-  }, { message: 'You must be at least 18 years old' }),
-  city: z.object({
-    name: z.string().min(2, { message: 'City name must be at least 2 characters' }).max(100, { message: 'City name must be less than 100 characters' }),
-    latitude: z.number().min(-90).max(90),
-    longitude: z.number().min(-180).max(180),
-  }, { errorMap: () => ({ message: 'Please select a valid city' }) })
-});
-
-type AttributesFormData = z.infer<typeof attributesSchema>;
 
 export default function Attributes({ onNext, formData, onChange }: AttributesProps) {
   const [loading, setLoading] = useState(false);
@@ -77,25 +38,6 @@ export default function Attributes({ onNext, formData, onChange }: AttributesPro
 
   const {location: browserLocation, error: locationError } = useBrowserLocation();
   const debouncedCitySearchValue = useDebounce(citySearchValue, 400);
-
-  const form = useForm<AttributesFormData>({
-    resolver: zodResolver(attributesSchema),
-    defaultValues: {
-      firstName: '',
-      lastName: '',
-      alias: '',
-      aboutMe: '',
-      hobbies: [],
-      genderSelf: undefined,
-      dateOfBirth: '',
-      city: {
-        name: '',
-        latitude: 0,
-        longitude: 0,
-      },
-    },
-  });
-  
 
   useEffect(()=> {
     if(browserLocation && !formData.city) {
