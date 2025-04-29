@@ -4,7 +4,7 @@ import { DualRangeSlider } from '@/components/ui/dual-range-slider';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { FaArrowLeft, FaCheck } from 'react-icons/fa';
 import { UnifiedFormData } from '../types/types';
 import { genders } from '@/assets/genders';
@@ -17,13 +17,13 @@ interface PreferencesProps {
   onChange: (name: keyof UnifiedFormData, value: UnifiedFormData[keyof UnifiedFormData]) => void;
 }
 
-const Preferences: React.FC<PreferencesProps> = ({
+export default function Preferences({
   onPrevious,
   onNext,
   formData,
   loading,
   onChange,
-}) => {
+}: PreferencesProps) {
   const [error, setError] = useState<string | null>(null);
 
   const handleValidation = () => {
@@ -138,5 +138,3 @@ const Preferences: React.FC<PreferencesProps> = ({
     </form>
   );
 };
-
-export default Preferences;
