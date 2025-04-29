@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -39,6 +40,8 @@ class MeControllerTest {
   @Mock private Authentication authentication;
 
   @Mock private SecurityUtils securityUtils;
+
+  @Mock private UserController userController;
 
   @InjectMocks private MeController meController;
 
@@ -64,7 +67,8 @@ class MeControllerTest {
     setupAuthenticatedUser(authentication);
     CurrentUserResponseDTO response = createCurrentUserResponse();
 
-    when(queryService.getCurrentUserDTO(DEFAULT_USER_ID, DEFAULT_USER_ID)).thenReturn(response);
+    when(userController.getUser(DEFAULT_USER_ID, authentication))
+    .thenReturn(ResponseEntity.ok(response));
 
     mockMvc
         .perform(get("/api/me").principal(authentication).contentType(MediaType.APPLICATION_JSON))

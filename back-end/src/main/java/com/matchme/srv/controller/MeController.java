@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MeController {
 
     private final UserQueryService queryService;
+    private final UserController userController;
     private final SecurityUtils securityUtils;
 
     /**
@@ -30,8 +31,7 @@ public class MeController {
     @GetMapping("/me")
     public ResponseEntity<CurrentUserResponseDTO> getCurrentUser(Authentication authentication) {
         Long currentUserId = securityUtils.getCurrentUserId(authentication);
-        CurrentUserResponseDTO response = queryService.getCurrentUserDTO(currentUserId, currentUserId);
-        return ResponseEntity.ok(response);
+        return userController.getUser(currentUserId, authentication);
     }
 
     /**
