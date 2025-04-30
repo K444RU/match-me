@@ -124,6 +124,8 @@ public class WebSecurityConfig {
                         .requestMatchers("/ws").permitAll()
                         .requestMatchers("/v3/api-docs/").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/graphql").authenticated()
+                        .requestMatchers("/graphiql/**").permitAll()
                         .requestMatchers("/swagger-ui.html").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .anyRequest().authenticated());
