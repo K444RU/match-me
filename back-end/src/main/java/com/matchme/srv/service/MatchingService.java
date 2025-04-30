@@ -145,7 +145,7 @@ public class MatchingService {
             .of(connections.getActive(), connections.getPendingIncoming(), connections.getPendingOutgoing())
             .flatMap(List::stream)
             .map(ConnectionProvider::getUserId)
-            .collect(Collectors.toList());
+            .toList();
   }
 
   /**
