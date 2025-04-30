@@ -119,16 +119,4 @@ public class UserGraphqlController {
       return null;
     }
   }
-
-  /** Schema Mapping for the 'profile' field in User type. */
-  @SchemaMapping(typeName = "User", field = "profile")
-  public ProfileWrapper profile(User user) {
-    return new ProfileWrapper(user);
-  }
-
-  /** Schema Mapping for the 'bio' field in User type. */
-  @SchemaMapping(typeName = "User", field = "bio")
-  public BioWrapper bio(User user) {
-    return new BioWrapper(user);
-  }
 }
