@@ -1,0 +1,80 @@
+type Query {
+  user(id: ID!): User
+  bio(id: ID!): Bio
+  profile(id: ID!): Profile
+  me: User
+  myBio: Bio
+  myProfile: Profile
+  recommendations: [User]
+  connections: [User]
+}
+
+type User {
+  id: ID!
+  email: String
+  number: String
+  profile: Profile
+  bio: Bio
+}
+
+type Profile {
+  user: User!
+  firstName: String
+  lastName: String
+  alias: String
+  city: String
+  profilePicture: String
+  aboutMe: String
+  preferences: Preferences
+}
+
+type Preferences {
+  gender: UserGenderEnum
+  ageMin: Int
+  ageMax: Int
+  distance: Int
+}
+
+type Bio {
+  user: User!
+  gender: UserGenderEnum
+  birthdate: String
+  location: [Float]
+  hobbies: [Hobby]
+}
+
+type Hobby {
+  id: ID!
+  name: String
+}
+
+enum UserGenderEnum {
+  MALE
+  FEMALE
+  OTHER
+}
+
+type Mutation {
+  sendConnectionRequest(targetUserId: ID!): ConnectionUpdateEvent
+  acceptConnectionRequest(connectionId: ID!): ConnectionUpdateEvent
+  rejectConnectionRequest(connectionId: ID!): ConnectionUpdateEvent
+  disconnectConnection(connectionId: ID!): ConnectionUpdateEvent
+}
+
+type Subscription {
+  connectionUpdates: ConnectionUpdateEvent
+}
+
+type ConnectionUpdateEvent {
+  type: ConnectionUpdateType!
+  connectionId: ID!
+  otherUser: User
+}
+
+enum ConnectionUpdateType {
+  NEW_REQUEST
+  REQUEST_SENT
+  REQUEST_ACCEPTED
+  REQUEST_REJECTED
+  DISCONNECTED
+}
