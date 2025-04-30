@@ -219,7 +219,7 @@ public class ConnectionService {
   public Connection disconnect(Long connectionId, Long userId) {
     Connection connection = connectionRepository.findById(connectionId)
         .orElseThrow(() -> new EntityNotFoundException(CONNECTION_NOT_FOUND));
-    if (!connection.getUsers().stream().anyMatch(u -> u.getId().equals(userId))) {
+    if (connection.getUsers().stream().noneMatch(u -> u.getId().equals(userId))) {
       throw new IllegalStateException("You are not part of this connection");
     }
     ConnectionState currentState = getCurrentState(connection);
