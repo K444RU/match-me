@@ -9,6 +9,7 @@ import com.matchme.srv.service.ConnectionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.matchme.srv.model.connection.ConnectionUpdateType.*;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -25,12 +26,6 @@ public class ConnectionWebSocketController {
     private final SimpMessagingTemplate messagingTemplate;
 
     private static final String QUEUE_CONNECTION_UPDATES = "/queue/connectionUpdates";
-
-    private static final String NEW_REQUEST = "NEW_REQUEST";
-    private static final String REQUEST_SENT = "REQUEST_SENT";
-    private static final String REQUEST_ACCEPTED = "REQUEST_ACCEPTED";
-    private static final String REQUEST_REJECTED = "REQUEST_REJECTED";
-    private static final String DISCONNECTED = "DISCONNECTED";
 
     private static final String INVALID_CONNECTION = "INVALID_CONNECTION";
 

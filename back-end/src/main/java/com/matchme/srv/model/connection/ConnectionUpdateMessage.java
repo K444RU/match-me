@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ConnectionUpdateMessage {
-    private String action;
+    private ConnectionUpdateType action;
     private ConnectionProvider connection;
 }
