@@ -82,8 +82,7 @@ public class ConnectionService {
             pendingIncoming.add(connectionInformation);
           }
           break;
-        case REJECTED:
-        case DISCONNECTED:
+        case REJECTED, DISCONNECTED:
           break;
         default:
           break;
