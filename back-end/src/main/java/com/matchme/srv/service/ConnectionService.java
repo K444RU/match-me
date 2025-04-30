@@ -29,6 +29,8 @@ public class ConnectionService {
   private final UserRepository userRepository;
   private final UserScoreService userScoreService;
 
+  private static final String CONNECTION_NOT_FOUND = "Connection not found";
+
   /**
    * Gets all connections for a user, splitting them into active, pending
    * incoming, and pending outgoing lists.
@@ -152,7 +154,7 @@ public class ConnectionService {
   @Transactional
   public Connection acceptConnectionRequest(Long connectionId, Long acceptorId) {
     Connection connection = connectionRepository.findByIdWithUsers(connectionId)
-            .orElseThrow(() -> new EntityNotFoundException("Connection not found"));
+            .orElseThrow(() -> new EntityNotFoundException(CONNECTION_NOT_FOUND));
 
     ConnectionState currentState = getCurrentState(connection);
 
@@ -186,7 +188,7 @@ public class ConnectionService {
   @Transactional(readOnly = false)
   public Connection rejectConnectionRequest(Long connectionId, Long rejectorId) {
     Connection connection = connectionRepository.findByIdWithUsers(connectionId)
-        .orElseThrow(() -> new EntityNotFoundException("Connection not found"));
+        .orElseThrow(() -> new EntityNotFoundException(CONNECTION_NOT_FOUND));
     ConnectionState currentState = getCurrentState(connection);
 
     if (currentState == null || currentState.getStatus() != ConnectionStatus.PENDING) {
@@ -217,7 +219,7 @@ public class ConnectionService {
   @Transactional(readOnly = false)
   public Connection disconnect(Long connectionId, Long userId) {
     Connection connection = connectionRepository.findById(connectionId)
-        .orElseThrow(() -> new EntityNotFoundException("Connection not found"));
+        .orElseThrow(() -> new EntityNotFoundException(CONNECTION_NOT_FOUND));
     if (!connection.getUsers().stream().anyMatch(u -> u.getId().equals(userId))) {
       throw new IllegalStateException("You are not part of this connection");
     }
