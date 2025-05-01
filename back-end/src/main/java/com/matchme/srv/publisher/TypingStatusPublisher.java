@@ -26,7 +26,19 @@ public class TypingStatusPublisher {
   }
 
   public void publishStatus(Long targetUserId, TypingStatusEvent status) {
-    Sinks.EmitResult result = getSinkForUser(targetUserId).tryEmitNext(status);
+    Sinks.Many<TypingStatusEvent> sink = getSinkForUser(targetUserId);
+    int currentSubscribers = sink.currentSubscriberCount();
+
+    if (currentSubscribers == 0) {
+      log.debug(
+          "No active subscribers for user {} when trying to publish typing status for connection"
+              + " {}. Skipping emit.",
+          targetUserId,
+          status.getConnectionId());
+      return;
+    }
+
+    Sinks.EmitResult result = sink.tryEmitNext(status);
     if (result.isFailure()) {
       log.error(
           "Failed to publish typing status from {} to user {} for connection {}: {}",
@@ -41,5 +53,10 @@ public class TypingStatusPublisher {
           targetUserId,
           status.getConnectionId());
     }
+  }
+
+  public void resetSinkForUser(Long userId) {
+    sinks.put(userId, Sinks.many().multicast().onBackpressureBuffer());
+    log.debug("Reset sink for user {}", userId);
   }
 }

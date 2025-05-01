@@ -84,7 +84,7 @@ public class SubscriptionController {
   }
 
   @SubscriptionMapping
-  public Publisher<ChatMessageResponseDTO> messages(Authentication authentication, @Argument Long connectionId) {
+  public Publisher<ChatMessageResponseDTO> messages(Authentication authentication) {
     if (authentication == null) {
       log.warn("No authentication provided for messages subscription");
       return Flux.empty();
@@ -93,11 +93,13 @@ public class SubscriptionController {
     log.debug("Messages subscription received for user with name: {}", authentication.getName());
     Long currentUserId = securityUtils.getCurrentUserId(authentication);
     log.debug("Messages subscription received for user with id: {}", currentUserId);
-    return chatPublisher.getMessagePublisher(currentUserId, connectionId);
+
+    typingStatusPublisher.resetSinkForUser(currentUserId);
+    return chatPublisher.getMessagePublisher(currentUserId);
   }
 
   @SubscriptionMapping
-  public Publisher<MessageStatusUpdateDTO> messageStatus(Authentication authentication, @Argument Long connectionId) {
+  public Publisher<MessageStatusUpdateDTO> messageStatus(Authentication authentication) {
     if (authentication == null) {
       log.warn("No authentication provided for message status subscription");
       return Flux.empty();
@@ -106,6 +108,6 @@ public class SubscriptionController {
     log.debug("Message status subscription received for user with name: {}", authentication.getName());
     Long currentUserId = securityUtils.getCurrentUserId(authentication);
     log.debug("Message status subscription received for user with id: {}", currentUserId);
-    return chatPublisher.getMessageStatusPublisher(currentUserId, connectionId);
+    return chatPublisher.getMessageStatusPublisher(currentUserId);
   }
 }
