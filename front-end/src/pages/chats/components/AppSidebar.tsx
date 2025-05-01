@@ -18,7 +18,6 @@ import ChatPreviewCard from './ChatPreviewCard';
 import ConnectionsDialog from './ConnectionsDialog';
 import RecommendationsDialog from './RecommendationsDialog';
 import UserInfo from './UserInfo';
-import WebSocketStatus from './WebSocketStatus';
 
 export default function AppSidebar({ onChatSelect }: { onChatSelect: (chat: ChatPreviewResponseDTO) => void }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -76,7 +75,6 @@ export default function AppSidebar({ onChatSelect }: { onChatSelect: (chat: Chat
       </SidebarFooter>
       <ConnectionsDialog setIsOpen={setIsConnectionsModalOpen} isOpen={isConnectionsModalOpen} />
       <RecommendationsDialog setIsOpen={setIsRecommendationsModalOpen} isOpen={isRecommendationsModalOpen} />
-      <WebSocketStatus />
     </Sidebar>
   );
 }
