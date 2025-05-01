@@ -2,7 +2,6 @@ package com.matchme.srv.controller;
 
 import com.matchme.srv.dto.graphql.OnlineStatusEvent;
 import com.matchme.srv.dto.graphql.PongDTO;
-import com.matchme.srv.publisher.ChatPublisher;
 import com.matchme.srv.publisher.OnlineStatusPublisher;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.service.ChatService;
