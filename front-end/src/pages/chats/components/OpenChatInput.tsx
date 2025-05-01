@@ -11,7 +11,7 @@ interface OpenChatInputProps {
 
 export default function OpenChatInput({ onSendMessage, isTyping, recipientAlias }: OpenChatInputProps) {
   const [message, setMessage] = useState('');
-  const { connected, sendTypingIndicator } = useWebSocket();
+  const { sendTypingIndicator } = useWebSocket();
   const communicationContext = useContext(CommunicationContext);
   const openChat = communicationContext?.openChat || null;
 
@@ -21,7 +21,7 @@ export default function OpenChatInput({ onSendMessage, isTyping, recipientAlias 
     if (e.key === 'Enter') {
       onSendMessage(message);
       setMessage('');
-    } else if (connected && openChat && openChat.connectionId) {
+    } else if (openChat && openChat.connectionId) {
       // Send typing indicator when user is typing
       sendTypingIndicator(openChat.connectionId);
     }
@@ -30,8 +30,8 @@ export default function OpenChatInput({ onSendMessage, isTyping, recipientAlias 
   const handleMessageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMessage(e.target.value);
 
-    // Only send typing indicator if already connected
-    if (connected && openChat && openChat.connectionId) {
+    // Send typing indicator if we have a connection ID
+    if (openChat && openChat.connectionId) {
       sendTypingIndicator(openChat.connectionId);
     }
   };
@@ -47,9 +47,7 @@ export default function OpenChatInput({ onSendMessage, isTyping, recipientAlias 
           onChange={handleMessageChange}
           onKeyDown={handleKeyDown}
         />
-        <div className="h-4 animate-pulse text-xs">
-          {isTyping ? `${recipientAlias} is typing...` : ''}
-        </div>
+        <div className="h-4 animate-pulse text-xs">{isTyping ? `${recipientAlias} is typing...` : ''}</div>
       </div>
       <Button
         onClick={() => {
