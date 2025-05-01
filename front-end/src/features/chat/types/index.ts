@@ -1,3 +1,3 @@
-export * from './TypingStatusRequestDTO';
+export * from './TypingStatusEvent';
 export * from './OnlineStatusRequestDTO';
-export * from './ConnectionUpdateMessage';
+export * from './ConnectionUpdateEvent';
