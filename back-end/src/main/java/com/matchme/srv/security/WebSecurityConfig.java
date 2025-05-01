@@ -6,6 +6,9 @@ import com.matchme.srv.security.jwt.AuthTokenFilter;
 import com.matchme.srv.security.jwt.JwtUtils;
 import com.matchme.srv.security.services.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,6 +18,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -61,6 +65,12 @@ public class WebSecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public ReactiveUserDetailsService reactiveUserDetailsService() {
+        return username -> Mono.fromCallable(() -> userDetailsService.loadUserByUsername(username))
+                               .subscribeOn(Schedulers.boundedElastic());
     }
 
     /*
@@ -120,8 +130,6 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/user/complete-registration").permitAll()
                         .requestMatchers("/api/test/all").permitAll()
                         .requestMatchers("/api/genders").authenticated()
-                        .requestMatchers("/ws/**").permitAll()
-                        .requestMatchers("/ws").permitAll()
                         .requestMatchers("/v3/api-docs/").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers("/graphql").permitAll()
