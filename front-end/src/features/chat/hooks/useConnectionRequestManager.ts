@@ -1,81 +1,128 @@
+import { ConnectionUpdateEvent } from '@features/chat';
 import { useCallback, useState } from 'react';
-import { useSubscription } from 'react-stomp-hooks';
-import { Client } from 'react-stomp-hooks';
-import { ConnectionUpdateMessage } from "@features/chat/types";
+import { toast } from 'sonner';
+import {
+  ACCEPT_CONNECTION_REQUEST,
+  CONNECTION_UPDATES_SUBSCRIPTION,
+  DISCONNECT_CONNECTION,
+  REJECT_CONNECTION_REQUEST,
+  SEND_CONNECTION_REQUEST,
+} from '../graphql/connections.gql';
+import { useAppMutation } from './useAppMutation';
+import { useAppSubscription } from './useAppSubscription';
 
-interface UseConnectionRequestManagerProps {
-    userId: number | undefined;
-    stompClient: Client | undefined;
-}
+export default function useConnectionRequestManager() {
+  const [connectionUpdates, setConnectionUpdates] = useState<ConnectionUpdateEvent[]>([]);
 
-export default function useConnectionRequestManager({ userId, stompClient }: UseConnectionRequestManagerProps) {
-    const [connectionUpdates, setConnectionUpdates] = useState<ConnectionUpdateMessage[]>([]);
+  // Subscribe to connection updates
+  useAppSubscription<{ connectionUpdates: ConnectionUpdateEvent }>(CONNECTION_UPDATES_SUBSCRIPTION, {
+    onData: ({ data }) => {
+      try {
+        if (data.data?.connectionUpdates) {
+          const update = data.data.connectionUpdates;
+          update.connection.connectionId = Number(update.connection.connectionId);
+          update.connection.userId = Number(update.connection.userId);
+          setConnectionUpdates((prev) => [...prev, update]);
 
-    // Subscribe to connection updates
-    useSubscription(`/user/${userId}/queue/connectionUpdates`, (message) => {
-        try {
-            console.log(`[User ${userId}] Received RAW connection update:`, message.body);
-            const update = JSON.parse(message.body);
-            console.log(`[User ${userId}] Parsed connection update:`, update);
-            setConnectionUpdates((prev) => [...prev, update]);
-        } catch (e) {
-            console.error("Failed to parse connection update", e, message.body);
-        }
-    });
-
-    // Function to send a connection request
-    const sendConnectionRequest = useCallback((targetUserId: number) => {
-        if (stompClient?.connected) {
-            stompClient.publish({
-                destination: '/app/connection.sendRequest',
-                body: JSON.stringify(targetUserId),
-            });
+          // Use the correct properties from the ConnectionUpdateEvent structure
+          const userId = update.connection?.userId || 'Unknown';
+          toast.info(`Connection update: ${update.action} with user ${userId}`);
+        } else if (data.error) {
+          // This might catch specific errors within the data payload
+          console.error('[useConnReqMgr] Error received in data:', data.error);
+          toast.error(`Subscription data error: ${data.error.message}`);
         } else {
-            console.error('STOMP client not connected, cannot send connection request.');
+          console.warn(
+            '[useConnReqMgr] Received subscription data, but connectionUpdates field is missing or null:',
+            data
+          );
         }
-    }, [stompClient]);
+      } catch (e) {
+        console.error('[useConnReqMgr] Error in onData processing:', e);
+        toast.error('Error processing subscription update.');
+      }
+    },
+    onError: (error) => {
+      // ADD or ENHANCE onError specifically
+      console.error('[useConnReqMgr] onError callback triggered:', error);
+      toast.error(`Subscription Error: ${error.message}`);
+    },
+    shouldResubscribe: true,
+  });
 
-    // Function to accept a connection request
-    const acceptConnectionRequest = useCallback((connectionId: number) => {
-        if (stompClient?.connected) {
-            stompClient.publish({
-                destination: '/app/connection.acceptRequest',
-                body: JSON.stringify(connectionId),
-            });
-        } else {
-            console.error('STOMP client not connected, cannot accept connection request.');
-        }
-    }, [stompClient]);
+  // --- Mutations ---
+  const [sendRequestMutate, { loading: sending }] = useAppMutation(SEND_CONNECTION_REQUEST);
+  const [acceptRequestMutate, { loading: accepting }] = useAppMutation(ACCEPT_CONNECTION_REQUEST);
+  const [rejectRequestMutate, { loading: rejecting }] = useAppMutation(REJECT_CONNECTION_REQUEST);
+  const [disconnectMutate, { loading: disconnecting }] = useAppMutation(DISCONNECT_CONNECTION);
 
-    // Function to reject a connection request
-    const rejectConnectionRequest = useCallback((connectionId: number) => {
-        if (stompClient?.connected) {
-            stompClient.publish({
-                destination: '/app/connection.rejectRequest',
-                body: JSON.stringify(connectionId),
-            });
-        } else {
-            console.error('STOMP client not connected, cannot reject connection request.');
-        }
-    }, [stompClient]);
+  const sendConnectionRequest = useCallback(
+    async (targetUserId: string) => {
+      console.debug(`Sending connection request to ${targetUserId}`);
+      try {
+        const result = await sendRequestMutate({ variables: { targetUserId } });
+        console.debug('Send request result:', result);
+        toast.success(`Connection request sent to ${targetUserId}`);
+      } catch (err) {
+        console.error('Error sending connection request:', err);
+      }
+    },
+    [sendRequestMutate]
+  );
 
-    // Function to disconnect a connection
-    const disconnectConnection = useCallback((connectionId: number) => {
-        if (stompClient?.connected) {
-            stompClient.publish({
-                destination: '/app/connection.disconnect',
-                body: JSON.stringify(connectionId),
-            });
-        } else {
-            console.error('STOMP client not connected, cannot disconnect connection.');
-        }
-    }, [stompClient]);
+  const acceptConnectionRequest = useCallback(
+    async (connectionId: string) => {
+      console.log(`Accepting connection request: ${connectionId}`);
+      try {
+        const result = await acceptRequestMutate({ variables: { connectionId } });
+        console.log('Accept request result:', result);
+        // Both users involved should receive an update via the subscription
+        toast.success(`Connection request ${connectionId} accepted.`);
+      } catch (e) {
+        console.error('Failed to accept connection request:', e);
+      }
+    },
+    [acceptRequestMutate]
+  );
 
-    return {
-        connectionUpdates,
-        sendConnectionRequest,
-        acceptConnectionRequest,
-        rejectConnectionRequest,
-        disconnectConnection,
-    };
+  const rejectConnectionRequest = useCallback(
+    async (connectionId: string) => {
+      console.log(`Rejecting connection request: ${connectionId}`);
+      try {
+        const result = await rejectRequestMutate({ variables: { connectionId } });
+        console.log('Reject request result:', result);
+        // Both users involved should receive an update via the subscription
+        toast.info(`Connection request ${connectionId} rejected.`);
+      } catch (e) {
+        console.error('Failed to reject connection request:', e);
+      }
+    },
+    [rejectRequestMutate]
+  );
+
+  const disconnectConnection = useCallback(
+    async (connectionId: string) => {
+      console.log(`Disconnecting connection: ${connectionId}`);
+      try {
+        const result = await disconnectMutate({ variables: { connectionId } });
+        console.log('Disconnect result:', result);
+        // Both users involved should receive an update via the subscription
+        toast.info(`Connection ${connectionId} disconnected.`);
+      } catch (e) {
+        console.error('Failed to disconnect connection:', e);
+      }
+    },
+    [disconnectMutate]
+  );
+
+  const loading = sending || accepting || rejecting || disconnecting;
+
+  return {
+    connectionUpdates, // The state containing received updates
+    sendConnectionRequest,
+    acceptConnectionRequest,
+    rejectConnectionRequest,
+    disconnectConnection,
+    loading, // Combined loading state
+  };
 }

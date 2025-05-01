@@ -1,10 +1,7 @@
 package com.matchme.srv.publisher;
 
 import com.matchme.srv.dto.graphql.ConnectionUpdateEvent;
-import com.matchme.srv.dto.graphql.UserGraphqlDTO;
 import com.matchme.srv.model.connection.ConnectionUpdateMessage;
-import com.matchme.srv.model.user.User;
-import com.matchme.srv.service.user.UserQueryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,7 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class ConnectionPublisher {
 
-    private final UserQueryService userQueryService;
     private final Map<Long, Sinks.Many<ConnectionUpdateEvent>> sinks = new ConcurrentHashMap<>();
 
     public Flux<ConnectionUpdateEvent> getPublisher(Long userId) {
@@ -28,13 +24,9 @@ public class ConnectionPublisher {
 
     public void publishUpdate(Long userId, ConnectionUpdateMessage message) {
         try {
-            User otherUser = userQueryService.getUser(message.getConnection().getUserId());
-            UserGraphqlDTO userDTO = new UserGraphqlDTO(otherUser);
-            
             ConnectionUpdateEvent event = new ConnectionUpdateEvent(
                 message.getAction(),
-                message.getConnection().getConnectionId().toString(),
-                userDTO
+                message.getConnection()
             );
             
             getSinkForUser(userId).tryEmitNext(event);
@@ -46,5 +38,10 @@ public class ConnectionPublisher {
     private Sinks.Many<ConnectionUpdateEvent> getSinkForUser(Long userId) {
         return sinks.computeIfAbsent(userId, id -> 
             Sinks.many().multicast().onBackpressureBuffer());
+    }
+
+    public void resetSinkForUser(Long userId) {
+        sinks.put(userId, Sinks.many().multicast().onBackpressureBuffer());
+        log.debug("Reset sink for user {}", userId);
     }
 }

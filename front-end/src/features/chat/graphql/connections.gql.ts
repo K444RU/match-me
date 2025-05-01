@@ -41,8 +41,8 @@ export const REJECT_CONNECTION_REQUEST = gql`
 `;
 
 export const DISCONNECT_CONNECTION = gql`
-  mutation Disconnect($connectionId: ID!) {
-    disconnect(connectionId: $connectionId) {
+  mutation DisconnectConnection($connectionId: ID!) {
+    disconnectConnection(connectionId: $connectionId) {
       ...ConnectionUpdateEventFields
     }
   }

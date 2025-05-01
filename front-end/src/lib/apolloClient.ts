@@ -48,6 +48,7 @@ const link = wsLink
 
 interface ChatPreview {
   connectionId?: string;
+  __typename?: 'ChatPreview';
   [key: string]: any;
 }
 
@@ -64,7 +65,7 @@ const cache = new InMemoryCache({
               existing.forEach((preview) => {
                 const typedPreview = preview as ChatPreview;
                 if (typedPreview && typedPreview.connectionId) {
-                  existingMap.set(typedPreview.connectionId, typedPreview);
+                  existingMap.set(typedPreview.connectionId, { ...typedPreview, __typename: 'ChatPreview' });
                 }
               });
             } else if (existing && typeof existing === 'object') {
@@ -72,7 +73,7 @@ const cache = new InMemoryCache({
               Object.values(existing).forEach((preview) => {
                 const typedPreview = preview as ChatPreview;
                 if (typedPreview && typedPreview.connectionId) {
-                  existingMap.set(typedPreview.connectionId, typedPreview);
+                  existingMap.set(typedPreview.connectionId, { ...typedPreview, __typename: 'ChatPreview' });
                 }
               });
             }
@@ -82,7 +83,7 @@ const cache = new InMemoryCache({
               incoming.forEach((preview) => {
                 const typedPreview = preview as ChatPreview;
                 if (typedPreview && typedPreview.connectionId) {
-                  existingMap.set(typedPreview.connectionId, typedPreview);
+                  existingMap.set(typedPreview.connectionId, { ...typedPreview, __typename: 'ChatPreview' });
                 }
               });
             } else if (incoming && typeof incoming === 'object') {
@@ -90,13 +91,28 @@ const cache = new InMemoryCache({
               Object.values(incoming).forEach((preview) => {
                 const typedPreview = preview as ChatPreview;
                 if (typedPreview && typedPreview.connectionId) {
-                  existingMap.set(typedPreview.connectionId, typedPreview);
+                  existingMap.set(typedPreview.connectionId, { ...typedPreview, __typename: 'ChatPreview' });
                 }
               });
             }
 
             // Convert back to array
             return Array.from(existingMap.values());
+          },
+        },
+      },
+    },
+    ChatPreview: {
+      keyFields: ['connectionId'],
+      fields: {
+        lastMessageContent: {
+          merge(existing, incoming) {
+            return incoming === null ? null : (incoming ?? existing);
+          },
+        },
+        lastMessageTimestamp: {
+          merge(existing, incoming) {
+            return incoming === null ? null : (incoming ?? existing);
           },
         },
       },

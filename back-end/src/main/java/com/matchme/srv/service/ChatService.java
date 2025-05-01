@@ -94,6 +94,9 @@ public class ChatService {
             if (lastMessage != null) {
                 preview.setLastMessageContent(lastMessage.getContent());
                 preview.setLastMessageTimestamp(lastMessage.getCreatedAt());
+            } else {
+                preview.setLastMessageContent(null);
+                preview.setLastMessageTimestamp(null);
             }
 
             // Unread count (DB-level query)
@@ -389,8 +392,11 @@ public class ChatService {
         UserMessage lastMessage =
             userMessageRepository.findTopByConnectionIdOrderByCreatedAtDesc(connection.getId());
         if (lastMessage != null) {
-        preview.setLastMessageContent(lastMessage.getContent());
-        preview.setLastMessageTimestamp(lastMessage.getCreatedAt());
+            preview.setLastMessageContent(lastMessage.getContent());
+            preview.setLastMessageTimestamp(lastMessage.getCreatedAt());
+        } else {
+            preview.setLastMessageContent(null);
+            preview.setLastMessageTimestamp(null);
         }
 
         preview.setUnreadMessageCount(0);

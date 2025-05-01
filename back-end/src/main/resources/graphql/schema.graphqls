@@ -116,8 +116,8 @@ type ChatPreview {
   connectedUserFirstName: String!
   connectedUserLastName: String!
   connectedUserProfilePicture: String!
-  lastMessageContent: String!
-  lastMessageTimestamp: String!
+  lastMessageContent: String
+  lastMessageTimestamp: String
   unreadMessageCount: Int!
 }
 

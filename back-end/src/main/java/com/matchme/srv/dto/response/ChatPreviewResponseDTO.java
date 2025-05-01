@@ -17,8 +17,8 @@ public class ChatPreviewResponseDTO {
     @NotNull private String connectedUserFirstName;
     @NotNull private String connectedUserLastName;
     @NotNull private String connectedUserProfilePicture;
-    @NotNull private String lastMessageContent;
-    @NotNull private Instant lastMessageTimestamp;
+    private String lastMessageContent;
+    private Instant lastMessageTimestamp;
     @NotNull private int unreadMessageCount;
 }
 

@@ -98,20 +98,15 @@ public class ConnectionGraphqlController {
     }
   }
 
-  //   @MessageMapping("/connection.sendRequest")
   @MutationMapping
   public ConnectionUpdateEvent sendConnectionRequest(@Argument Long targetUserId, Authentication authentication) {
     log.info("Received connection request for user: " + targetUserId);
     Long senderId = securityUtils.getCurrentUserId(authentication);
     Long connectionId = connectionService.sendConnectionRequest(senderId, targetUserId);
 
-    User otherUser = userQueryService.getUser(targetUserId);
-    UserGraphqlDTO userDTO = new UserGraphqlDTO(otherUser);
-
     ConnectionUpdateEvent event = new ConnectionUpdateEvent(
         REQUEST_SENT,
-        connectionId.toString(),
-        userDTO
+        new ConnectionProvider(connectionId, senderId)
     );
 
     connectionPublisher.publishUpdate(
@@ -127,7 +122,6 @@ public class ConnectionGraphqlController {
     return event;
   }
 
-  // @MessageMapping("/connection.acceptRequest")
   @MutationMapping
   public ConnectionUpdateEvent acceptConnectionRequest(@Argument Long connectionId, Authentication authentication) {
     Long acceptorId = securityUtils.getCurrentUserId(authentication);
@@ -140,13 +134,9 @@ public class ConnectionGraphqlController {
             .findFirst()
             .orElseThrow(() -> new IllegalStateException(INVALID_CONNECTION));
 
-    User otherUser = userQueryService.getUser(otherUserId);
-    UserGraphqlDTO userDTO = new UserGraphqlDTO(otherUser);
-
     ConnectionUpdateEvent event = new ConnectionUpdateEvent(
         REQUEST_ACCEPTED,
-        connectionId.toString(),
-        userDTO
+        new ConnectionProvider(connectionId, otherUserId)
     );
 
     connectionPublisher.publishUpdate(
@@ -162,7 +152,6 @@ public class ConnectionGraphqlController {
     return event;
   }
 
-  // @MessageMapping("/connection.rejectRequest")
   @MutationMapping
   public ConnectionUpdateEvent rejectConnectionRequest(@Argument Long connectionId, Authentication authentication) {
     Long rejectorId = securityUtils.getCurrentUserId(authentication);
@@ -175,13 +164,9 @@ public class ConnectionGraphqlController {
             .findFirst()
             .orElseThrow(() -> new IllegalStateException(INVALID_CONNECTION));
 
-    User otherUser = userQueryService.getUser(otherUserId);
-    UserGraphqlDTO userDTO = new UserGraphqlDTO(otherUser);
-
     ConnectionUpdateEvent event = new ConnectionUpdateEvent(
         REQUEST_REJECTED,
-        connectionId.toString(),
-        userDTO
+        new ConnectionProvider(connectionId, otherUserId)
     );
 
     connectionPublisher.publishUpdate(
@@ -197,9 +182,8 @@ public class ConnectionGraphqlController {
     return event;
   }
 
-  // @MessageMapping("/connection.disconnect")
   @MutationMapping
-  public ConnectionUpdateEvent disconnect(@Argument Long connectionId, Authentication authentication) {
+  public ConnectionUpdateEvent disconnectConnection(@Argument Long connectionId, Authentication authentication) {
     Long userId = securityUtils.getCurrentUserId(authentication);
     Connection connection = connectionService.disconnect(connectionId, userId);
 
@@ -210,13 +194,9 @@ public class ConnectionGraphqlController {
             .findFirst()
             .orElseThrow(() -> new IllegalStateException(INVALID_CONNECTION));
 
-    User otherUser = userQueryService.getUser(otherUserId);
-    UserGraphqlDTO userDTO = new UserGraphqlDTO(otherUser);
-
     ConnectionUpdateEvent event = new ConnectionUpdateEvent(
         DISCONNECTED,
-        connectionId.toString(),
-        userDTO
+        new ConnectionProvider(connectionId, otherUserId)
     );
 
     connectionPublisher.publishUpdate(

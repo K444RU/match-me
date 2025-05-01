@@ -48,6 +48,9 @@ export const MARK_MESSAGES_READ = gql`
       connectionId
       connectedUserId
       connectedUserAlias
+      connectedUserFirstName
+      connectedUserLastName
+      connectedUserProfilePicture
       lastMessageContent
       lastMessageTimestamp
       unreadMessageCount

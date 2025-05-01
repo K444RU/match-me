@@ -2,6 +2,7 @@ import { gql } from '@apollo/client';
 
 const ChatPreviewFragment = gql`
   fragment ChatPreviewFields on ChatPreview {
+    __typename
     connectionId
     connectedUserId
     connectedUserAlias
