@@ -61,12 +61,12 @@ export const getUserController = () => {
       data: profilePictureSettingsRequestDTO,
     });
   };
-  const batchUpdateProfilePicture = (batchUpdateProfilePictureBody: number[]) => {
+  const getUsersBatch = (getUsersBatchBody: number[]) => {
     return customInstance<BatchUserResponseDTO>({
       url: `http://localhost:8000/api/users/batch`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      data: batchUpdateProfilePictureBody,
+      data: getUsersBatchBody,
     });
   };
   const verifyAccount = (userId: number, params: VerifyAccountParams) => {
@@ -104,7 +104,7 @@ export const getUserController = () => {
     updateAttributes,
     updateAccount,
     uploadProfilePicture,
-    batchUpdateProfilePicture,
+    getUsersBatch,
     verifyAccount,
     setParameters,
     getUser,
@@ -127,8 +127,8 @@ export type UpdateAccountResult = NonNullable<
 export type UploadProfilePictureResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getUserController>['uploadProfilePicture']>>
 >;
-export type BatchUpdateProfilePictureResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getUserController>['batchUpdateProfilePicture']>>
+export type GetUsersBatchResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getUserController>['getUsersBatch']>>
 >;
 export type VerifyAccountResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getUserController>['verifyAccount']>>

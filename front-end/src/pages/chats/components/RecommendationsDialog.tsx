@@ -17,7 +17,7 @@ type ConnectionState = Record<string, 'idle' | 'loading' | 'sent'>;
 
 const fetchUsersBatch = async (ids: number[]): Promise<RecommendedUserDTO[]> => {
     try {
-        const response = await getUserController().batchUpdateProfilePicture(ids);
+        const response = await getUserController().getUsersBatch(ids);
         return response.users || [];
     } catch (error) {
         console.error('Error fetching users batch:', error);
