@@ -19,14 +19,10 @@ public class TypingStatusPublisher {
     return sinks.computeIfAbsent(userId, id -> Sinks.many().multicast().onBackpressureBuffer());
   }
 
-  public Flux<TypingStatusEvent> getPublisher(Long userId, Long connectionId) {
-    // Filter typing status for the specific connection AND ensure it's not the user's own status
+  public Flux<TypingStatusEvent> getPublisher(Long userId) {
     return getSinkForUser(userId)
         .asFlux()
-        .filter(
-            status ->
-                status.getConnectionId().equals(connectionId)
-                    && !status.getSenderId().equals(userId));
+        .filter(status -> !status.getSenderId().equals(userId));
   }
 
   public void publishStatus(Long targetUserId, TypingStatusEvent status) {

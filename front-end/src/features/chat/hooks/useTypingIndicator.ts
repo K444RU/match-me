@@ -27,7 +27,6 @@ export default function useTypingIndicator({ currentUser }: UseTypingIndicatorPr
 
   // Setup subscription to typing status updates
   useAppSubscription(TYPING_STATUS_SUBSCRIPTION, {
-    variables: { connectionId: currentUser?.id },
     onData: ({ data }) => {
       try {
         if (!data?.data?.typingStatusUpdates) return;

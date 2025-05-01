@@ -15,8 +15,8 @@ export const SET_TYPING_STATUS = gql`
 `;
 
 export const TYPING_STATUS_SUBSCRIPTION = gql`
-  subscription OnTypingStatusUpdate($connectionId: ID!) {
-    typingStatusUpdates(connectionId: $connectionId) {
+  subscription OnTypingStatusUpdate {
+    typingStatusUpdates {
       ...TypingStatusFields
     }
   }

@@ -45,7 +45,7 @@ public class SubscriptionController {
   }
 
   @SubscriptionMapping
-  public Publisher<TypingStatusEvent> typingStatusUpdates(Authentication authentication, @Argument Long connectionId) {
+  public Publisher<TypingStatusEvent> typingStatusUpdates(Authentication authentication) {
     if (authentication == null) {
       log.warn("No authentication provided for typing status updates subscription");
       return Flux.empty();
@@ -54,7 +54,7 @@ public class SubscriptionController {
     log.debug("Typing status updates subscription received for user with name: {}", authentication.getName());
     Long currentUserId = securityUtils.getCurrentUserId(authentication);
     log.debug("Typing status updates subscription received for user with id: {}", currentUserId);
-    return typingStatusPublisher.getPublisher(currentUserId, connectionId);
+    return typingStatusPublisher.getPublisher(currentUserId);
   }
 
   @SubscriptionMapping
