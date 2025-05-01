@@ -116,7 +116,7 @@ export default function ActiveConnections({ onNavigate }: ActiveConnectionsProps
   }, [connectionUpdates]);
 
   const handleDisconnect = useCallback((connectionId: number) => {
-    disconnectConnection(connectionId);
+    disconnectConnection(String(connectionId));
   }, [disconnectConnection]);
 
   const handleLinkClick = () => {
