@@ -1,30 +1,35 @@
-import { useCallback, useState } from 'react';
-import { IMessage } from 'react-stomp-hooks';
-import { OnlineStatusRequestDTO } from '../types';
+import { User } from '@/features/authentication';
+import { useState } from 'react';
+import { ONLINE_STATUS_SUBSCRIPTION } from '../graphql/online.gql';
+import { useAppSubscription } from './useAppSubscription';
 
-export default function useOnlineIndicator() {
+interface UseOnlineIndicatorProps {
+  currentUser: User;
+}
+
+export default function useOnlineIndicator({ currentUser }: UseOnlineIndicatorProps) {
   const [onlineUsers, setOnlineUsers] = useState<Record<string, boolean>>({});
 
-  const handleOnlineIndicator = useCallback((message: IMessage) => {
-    try {
-      const parsedBody = JSON.parse(message.body);
+  // Setup subscription to online status updates
+  useAppSubscription(ONLINE_STATUS_SUBSCRIPTION, {
+    variables: { connectionId: currentUser?.id },
+    onData: ({ data }) => {
+      try {
+        const update = data?.data?.onlineStatusUpdates;
+        if (!update) {
+          console.warn('[useOnlineIndicator] Received null/undefined onlineStatusUpdates');
+          return;
+        }
 
-      if (Array.isArray(parsedBody)) {
-        const data = parsedBody as OnlineStatusRequestDTO[];
-        data.forEach((item) => {
-          const userId = String(item.userId);
-          setOnlineUsers((prev) => ({ ...prev, [userId]: item.isOnline }));
-        });
-      } else {
-        const data = parsedBody as OnlineStatusRequestDTO;
-        const userId = String(data.userId);
-        setOnlineUsers((prev) => ({ ...prev, [userId]: data.isOnline }));
+        const userId = String(update.userId);
+        const isOnline = update.isOnline;
+        setOnlineUsers((prev) => ({ ...prev, [userId]: isOnline }));
+      } catch (error) {
+        console.error('Error handling online status update:', error);
       }
-    } catch (error) {
-      // Update online status directly from backend
-      console.error('Error parsing online indicator:', error, message.body);
-    }
-  }, []);
+    },
+    skip: !currentUser?.id,
+  });
 
-  return { onlineUsers, handleOnlineIndicator };
+  return { onlineUsers };
 }

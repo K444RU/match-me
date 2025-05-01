@@ -1,8 +1,10 @@
 package com.matchme.srv.controller;
 
 import com.matchme.srv.dto.graphql.ConnectionUpdateEvent;
+import com.matchme.srv.dto.graphql.OnlineStatusEvent;
 import com.matchme.srv.dto.graphql.TypingStatusEvent;
 import com.matchme.srv.publisher.ConnectionPublisher;
+import com.matchme.srv.publisher.OnlineStatusPublisher;
 import com.matchme.srv.publisher.TypingStatusPublisher;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SubscriptionController {
   private final ConnectionPublisher connectionPublisher;
   private final TypingStatusPublisher typingStatusPublisher;
+  private final OnlineStatusPublisher onlineStatusPublisher;
   private final SecurityUtils securityUtils;
 
   @SubscriptionMapping
@@ -46,5 +49,18 @@ public class SubscriptionController {
     Long currentUserId = securityUtils.getCurrentUserId(authentication);
     log.debug("Typing status updates subscription received for user with id: {}", currentUserId);
     return typingStatusPublisher.getPublisher(currentUserId, connectionId);
+  }
+
+  @SubscriptionMapping
+  public Publisher<OnlineStatusEvent> onlineStatusUpdates(Authentication authentication, @Argument Long connectionId) {
+    if (authentication == null) {
+      log.warn("No authentication provided for online status updates subscription");
+      return Flux.empty();
+    }
+
+    log.debug("Online status updates subscription received for user with name: {}", authentication.getName());
+    Long currentUserId = securityUtils.getCurrentUserId(authentication);
+    log.debug("Online status updates subscription received for user with id: {}", currentUserId);
+    return onlineStatusPublisher.getPublisher(currentUserId, connectionId);
   }
 }

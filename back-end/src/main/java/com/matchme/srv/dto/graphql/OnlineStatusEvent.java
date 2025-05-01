@@ -1,4 +1,4 @@
-package com.matchme.srv.dto.request;
+package com.matchme.srv.dto.graphql;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -10,7 +10,7 @@ The server broadcasts it to the other participant.
 The receiving client updates the UI to show “User is online/offline”.
 */
 @Data
-public class OnlineStatusResponseDTO {
+public class OnlineStatusEvent {
     @NotNull
     private Long connectionId;
     @NotNull
