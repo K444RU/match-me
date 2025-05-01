@@ -1,10 +1,5 @@
 import { STORAGE_KEYS } from '@/lib/constants/storageKeys';
-import {
-  ApolloClient,
-  createHttpLink,
-  InMemoryCache,
-  split,
-} from '@apollo/client';
+import { ApolloClient, createHttpLink, InMemoryCache, split } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { getMainDefinition } from '@apollo/client/utilities';
@@ -51,9 +46,67 @@ const link = wsLink
     )
   : authLink.concat(httpLink);
 
+interface ChatPreview {
+  connectionId?: string;
+  [key: string]: any;
+}
+
+const cache = new InMemoryCache({
+  typePolicies: {
+    Subscription: {
+      fields: {
+        chatPreviews: {
+          // Properly merge chat previews by connectionId
+          merge(existing = [], incoming = []) {
+            // Create a map of existing previews by connectionId
+            const existingMap = new Map<string, ChatPreview>();
+            if (Array.isArray(existing)) {
+              existing.forEach((preview) => {
+                const typedPreview = preview as ChatPreview;
+                if (typedPreview && typedPreview.connectionId) {
+                  existingMap.set(typedPreview.connectionId, typedPreview);
+                }
+              });
+            } else if (existing && typeof existing === 'object') {
+              // Handle case where existing is an object with numeric keys
+              Object.values(existing).forEach((preview) => {
+                const typedPreview = preview as ChatPreview;
+                if (typedPreview && typedPreview.connectionId) {
+                  existingMap.set(typedPreview.connectionId, typedPreview);
+                }
+              });
+            }
+
+            // Update map with incoming previews
+            if (Array.isArray(incoming)) {
+              incoming.forEach((preview) => {
+                const typedPreview = preview as ChatPreview;
+                if (typedPreview && typedPreview.connectionId) {
+                  existingMap.set(typedPreview.connectionId, typedPreview);
+                }
+              });
+            } else if (incoming && typeof incoming === 'object') {
+              // Handle case where incoming is an object with numeric keys
+              Object.values(incoming).forEach((preview) => {
+                const typedPreview = preview as ChatPreview;
+                if (typedPreview && typedPreview.connectionId) {
+                  existingMap.set(typedPreview.connectionId, typedPreview);
+                }
+              });
+            }
+
+            // Convert back to array
+            return Array.from(existingMap.values());
+          },
+        },
+      },
+    },
+  },
+});
+
 const client = new ApolloClient({
   link: link,
-  cache: new InMemoryCache(),
+  cache: cache,
 });
 
 export default client;
