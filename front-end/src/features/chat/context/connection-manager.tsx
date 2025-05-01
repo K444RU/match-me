@@ -1,14 +1,12 @@
 import { ChatMessageResponseDTO } from '@/api/types';
 import { User } from '@/features/authentication/';
-import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useStompClient } from 'react-stomp-hooks';
+import { ReactNode, useCallback, useMemo, useState } from 'react';
 import useChatPreviewHandler from '../hooks/useChatPreviewHandler';
+import useConnectionRequestManager from '../hooks/useConnectionRequestManager';
 import useMessageHandler from '../hooks/useMessageHandler';
 import useOnlineIndicator from '../hooks/useOnlineIndicator';
-import useSubscriptionManager from '../hooks/useSubscriptionManager';
 import useTypingIndicator from '../hooks/useTypingIndicator';
 import { MessageStatusUpdateDTO } from '../types/MessageStatusUpdateDTO';
-import useConnectionRequestManager from '../hooks/useConnectionRequestManager';
 import { WebSocketContext } from './websocket-context';
 
 interface WebSocketConnectionManagerProps {
@@ -17,17 +15,7 @@ interface WebSocketConnectionManagerProps {
 }
 
 export default function WebSocketConnectionManager({ children, user }: WebSocketConnectionManagerProps) {
-  const stompClient = useStompClient();
-  const stompClientRef = useRef(stompClient);
-
-  useEffect(() => {
-    if (stompClient !== stompClientRef.current) {
-      stompClientRef.current = stompClient;
-    }
-  }, [stompClient]);
-
   const currentUser = user;
-  const [isConnected, setIsConnected] = useState(false);
   const [messageQueue, setMessageQueue] = useState<ChatMessageResponseDTO[]>([]);
   const [statusUpdateQueue, setStatusUpdateQueue] = useState<MessageStatusUpdateDTO[]>([]);
 
@@ -38,28 +26,7 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
     acceptConnectionRequest,
     rejectConnectionRequest,
     disconnectConnection,
-  } = useConnectionRequestManager({ userId: currentUser.id, stompClient });
-
-  useEffect(() => {
-    const currentConnected = !!stompClientRef.current?.connected;
-
-    if (currentConnected === isConnected) return;
-
-    let timeoutId: NodeJS.Timeout;
-
-    if (!currentConnected) {
-      setIsConnected(false);
-    } else {
-      // add a bit of throtelling to avoid flickering
-      timeoutId = setTimeout(() => {
-        setIsConnected(true);
-      }, 500);
-    }
-
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [stompClient?.connected, isConnected]);
+  } = useConnectionRequestManager();
 
   const handleNewMessage = useCallback((message: ChatMessageResponseDTO) => {
     setMessageQueue((prevQueue) => [...prevQueue, message]);
@@ -77,73 +44,63 @@ export default function WebSocketConnectionManager({ children, user }: WebSocket
     setStatusUpdateQueue([]);
   }, []);
 
-  // Create stable handlers first
-  const { handleMessage, handleMessageStatusUpdate, sendMessage, sendMarkRead } = useMessageHandler({
-    stompClientRef,
+  // Message handling
+  const { sendMessage, sendMarkRead } = useMessageHandler({
     currentUser,
     onMessageReceived: handleNewMessage,
     onMessageStatusUpdateReceived: handleNewMessageStatusUpdate,
   });
 
-  const { typingUsers, handleTypingIndicator, sendTypingIndicator } = useTypingIndicator({
-    stompClientRef,
+  // Typing indicator
+  const { typingUsers, sendTypingIndicator } = useTypingIndicator({
     currentUser,
   });
 
-  const { chatPreviews, handleChatPreviews } = useChatPreviewHandler();
-  const { onlineUsers, handleOnlineIndicator } = useOnlineIndicator();
+  // Chat previews
+  const { chatPreviews } = useChatPreviewHandler({
+    currentUser,
+  });
 
-  // Subscription management
-  const { reconnect } = useSubscriptionManager({
-    userId: currentUser?.id,
-    stompClientRef,
-    stompClientConnected: !!stompClientRef.current?.connected,
-    handleMessage,
-    handleMessageStatusUpdate,
-    handleTypingIndicator,
-    handleChatPreviews,
-    handleOnlineIndicator,
+  // Online status
+  const { onlineUsers } = useOnlineIndicator({
+    currentUser,
   });
 
   // Context value with stable identity
   const contextValue = useMemo(
     () => ({
-      connected: isConnected,
       sendMessage,
       sendTypingIndicator,
       sendMarkRead,
-      reconnect,
       typingUsers,
       onlineUsers,
       chatPreviews: chatPreviews || [],
       connectionUpdates,
+      messageQueue,
+      statusUpdateQueue,
+      clearMessageQueue,
+      clearStatusUpdateQueue,
       sendConnectionRequest,
       acceptConnectionRequest,
       rejectConnectionRequest,
       disconnectConnection,
-      messageQueue,
-      clearMessageQueue,
-      statusUpdateQueue,
-      clearStatusUpdateQueue,
     }),
     [
-      isConnected,
       sendMessage,
       sendTypingIndicator,
       sendMarkRead,
-      reconnect,
       typingUsers,
       onlineUsers,
       chatPreviews,
       connectionUpdates,
+      messageQueue,
+      statusUpdateQueue,
+      clearMessageQueue,
+      clearStatusUpdateQueue,
       sendConnectionRequest,
       acceptConnectionRequest,
       rejectConnectionRequest,
       disconnectConnection,
-      messageQueue,
-      clearMessageQueue,
-      statusUpdateQueue,
-      clearStatusUpdateQueue,
     ]
   );
 

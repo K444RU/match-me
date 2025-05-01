@@ -5,7 +5,7 @@ import {
   MessagesSendRequestDTO,
 } from '@/api/types';
 import { createContext, useContext } from 'react';
-import {ConnectionUpdateMessage} from "@features/chat/types";
+import { ConnectionUpdateEvent } from '@features/chat/types';
 
 export interface CommunicationContextType {
   chatPreviews: ChatPreviewResponseDTO[];
@@ -25,11 +25,13 @@ export interface CommunicationContextType {
     eventType: MessageEventTypeEnum,
     timestamp: string
   ) => void;
-  connectionUpdates: ConnectionUpdateMessage[];
-  sendConnectionRequest: (targetUserId: number) => void;
-  acceptConnectionRequest: (connectionId: number) => void;
-  rejectConnectionRequest: (connectionId: number) => void;
-  disconnectConnection: (connectionId: number) => void;
+  typingUsers: Record<number, boolean>;
+  onlineUsers: Record<number, boolean>;
+  connectionUpdates: ConnectionUpdateEvent[];
+  sendConnectionRequest: (targetUserId: string) => void;
+  acceptConnectionRequest: (connectionId: string) => void;
+  rejectConnectionRequest: (connectionId: string) => void;
+  disconnectConnection: (connectionId: string) => void;
 }
 
 // Default values for the context to avoid null checks
@@ -38,6 +40,8 @@ const defaultContext: CommunicationContextType = {
   openChat: null,
   allChats: {},
   hasMoreMessages: {},
+  typingUsers: {},
+  onlineUsers: {},
   refreshChats: () => {
     console.warn('CommunicationContext not initialized');
   },

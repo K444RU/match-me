@@ -49,16 +49,16 @@ export const GlobalCommunicationProvider = ({ children }: GlobalCommunicationPro
 };
 
 interface GlobalCommunicationProviderInnerProps {
-    refreshChats: () => void;
-    chatDisplays: ChatPreviewResponseDTO[];
-    allChats: Record<number, ChatMessageResponseDTO[]>;
-    openChat: ChatPreviewResponseDTO | null;
-    hasMoreMessages: Record<number, boolean>;
-    setChatDisplays: React.Dispatch<React.SetStateAction<ChatPreviewResponseDTO[]>>;
-    setOpenChat: React.Dispatch<React.SetStateAction<ChatPreviewResponseDTO | null>>;
-    setAllChats: React.Dispatch<React.SetStateAction<Record<number, ChatMessageResponseDTO[]>>>;
-    setHasMoreMessages: React.Dispatch<React.SetStateAction<Record<number, boolean>>>;
-    children: React.ReactNode;
+  refreshChats: () => void;
+  chatDisplays: ChatPreviewResponseDTO[];
+  allChats: Record<number, ChatMessageResponseDTO[]>;
+  openChat: ChatPreviewResponseDTO | null;
+  hasMoreMessages: Record<number, boolean>;
+  setChatDisplays: React.Dispatch<React.SetStateAction<ChatPreviewResponseDTO[]>>;
+  setOpenChat: React.Dispatch<React.SetStateAction<ChatPreviewResponseDTO | null>>;
+  setAllChats: React.Dispatch<React.SetStateAction<Record<number, ChatMessageResponseDTO[]>>>;
+  setHasMoreMessages: React.Dispatch<React.SetStateAction<Record<number, boolean>>>;
+  children: React.ReactNode;
 }
 
 const GlobalCommunicationProviderInner = ({
@@ -83,6 +83,8 @@ const GlobalCommunicationProviderInner = ({
     clearMessageQueue,
     statusUpdateQueue,
     clearStatusUpdateQueue,
+    typingUsers,
+    onlineUsers,
     connectionUpdates: wsConnectionUpdates,
     sendConnectionRequest,
     acceptConnectionRequest,
@@ -98,14 +100,14 @@ const GlobalCommunicationProviderInner = ({
     refreshChats();
   }, [refreshChats]);
 
-  // Merge websocket previews (common effect, using cleaner version without extra logs)
+  // Merge websocket previews (adapted to consume chatPreviews directly)
   useEffect(() => {
     if (!chatPreviews?.length) {
       return;
     }
 
     setChatDisplays((prevChats) => {
-      const chatMap = new Map(prevChats.map((chat) => [chat.connectionId, chat]));
+      const chatMap = new Map(prevChats.map((chat) => [Number(chat.connectionId), chat]));
       for (const preview of chatPreviews) {
         if (preview.connectionId <= 0) continue;
         chatMap.set(preview.connectionId, preview);
@@ -131,21 +133,17 @@ const GlobalCommunicationProviderInner = ({
       console.log(`[GlobalCommProvider] Processing ${newUpdates.length} new connection updates:`, newUpdates);
 
       newUpdates.forEach(update => {
-         // Basic validation for the update structure
-         if (!update || !update.action || !update.connection || typeof update.connection.userId !== 'number' || typeof update.connection.connectionId !== 'number') {
-          console.warn("[GlobalCommProvider] Received invalid update structure:", update);
+        // Basic validation for the update structure
+        if (!update || !update.action || !update.connection) {
+          console.warn('[GlobalCommProvider] Received invalid update structure:', update);
           return; // Skip processing this invalid update
         }
 
         const otherUserId = update.connection.userId;
         const connectionId = update.connection.connectionId;
 
-        console.log("[GlobalCommProvider] Processing update:", update.action, "for connection:", connectionId, "involving user:", otherUserId);
-
-
         switch (update.action) {
           case 'REQUEST_ACCEPTED':
-            console.log("[GlobalCommProvider] Accepted detected, refreshing chats & showing toast.");
             userService.getUser(otherUserId)
               .then(acceptedUser => {
                 const alias = acceptedUser?.alias || `User ${otherUserId}`;
@@ -159,23 +157,24 @@ const GlobalCommunicationProviderInner = ({
             break;
 
           case 'DISCONNECTED':
-            console.log("[GlobalCommProvider] Disconnected detected, filtering chatDisplay & showing toast for connection:", connectionId);
             // Fetch user info for the toast *before* potentially removing the chat
-             userService.getUser(otherUserId)
-               .then(disconnectedUser => {
-                 const alias = disconnectedUser?.alias || `User ${otherUserId}`;
-                 toast.error(`🔌 Disconnected from ${alias}.`);
-               })
-               .catch(err => {
-                 console.error(`Failed to fetch user ${otherUserId} for disconnect toast`, err);
-                 toast.error(`🔌 Disconnected.`);
-               });
+            userService.getUser(Number(otherUserId))
+              .then(disconnectedUser => {
+                const alias = disconnectedUser?.alias || `User ${otherUserId}`;
+                toast.error(`🔌 Disconnected from ${alias}.`);
+              })
+              .catch(err => {
+                console.error(`Failed to fetch user ${otherUserId} for disconnect toast`, err);
+                toast.error(`🔌 Disconnected.`);
+              });
             // Remove the disconnected chat from the display list
             setChatDisplays((prevChats) => prevChats.filter((chat) => chat.connectionId !== connectionId));
             // Optionally remove messages from allChats as well
-            setAllChats(prev => {
-              const newState = {...prev};
-              delete newState[connectionId];
+            setAllChats((prev) => {
+              const connectionIdNum = Number(connectionId);
+              if (isNaN(connectionIdNum) || !(connectionIdNum in prev)) return prev;
+              const newState = { ...prev };
+              delete newState[connectionIdNum];
               return newState;
             })
             // If the disconnected chat was open, close it
@@ -185,7 +184,7 @@ const GlobalCommunicationProviderInner = ({
             break;
 
           case 'NEW_REQUEST':
-             console.log("[GlobalCommProvider] New request detected, triggering toast.");
+            console.log("[GlobalCommProvider] New request detected, triggering toast.");
             // We might not need to fetch user details here, a generic notification might suffice
             toast.info(`📬 New connection request received! Check your connection requests.`);
             // Optionally trigger a refresh or update a badge elsewhere
@@ -193,7 +192,7 @@ const GlobalCommunicationProviderInner = ({
 
           case 'REQUEST_REJECTED':
             console.log("[GlobalCommProvider] Rejected detected, showing toast.");
-            userService.getUser(otherUserId)
+            userService.getUser(Number(otherUserId))
               .then(otherUser => {
                 const alias = otherUser?.alias || `User ${otherUserId}`;
                 toast.warning(`🙅 Your connection request involving ${alias} was rejected.`);
@@ -206,18 +205,18 @@ const GlobalCommunicationProviderInner = ({
             break;
 
           case 'REQUEST_SENT':
-             console.log("[GlobalCommProvider] Request Sent detected, showing confirmation toast.");
-             // Fetch user details for confirmation toast
-             userService.getUser(otherUserId)
+            console.log("[GlobalCommProvider] Request Sent detected, showing confirmation toast.");
+            // Fetch user details for confirmation toast
+            userService.getUser(Number(otherUserId))
               .then(targetUser => {
-                  const alias = targetUser?.alias || `User ${otherUserId}`;
-                  toast.success(`✅ Connection request sent to ${alias}.`);
+                const alias = targetUser?.alias || `User ${otherUserId}`;
+                toast.success(`✅ Connection request sent to ${alias}.`);
               })
               .catch(err => {
-                  console.error(`Failed to fetch user ${otherUserId} for sent toast`, err);
-                  toast.success('✅ Connection request sent.');
+                console.error(`Failed to fetch user ${otherUserId} for sent toast`, err);
+                toast.success('✅ Connection request sent.');
               });
-             break;
+            break;
 
 
           default:
@@ -401,14 +400,14 @@ const GlobalCommunicationProviderInner = ({
 
         // If the message was found and potentially updated, return the new state object
         if (messageFound) {
-             // Avoid creating new state if no message was actually updated
-            if (updatedMessages === connectionMessages) return prevAllChats;
+          // Avoid creating new state if no message was actually updated
+          if (updatedMessages === connectionMessages) return prevAllChats;
 
 
-            return {
+          return {
             ...prevAllChats,
             [connectionId]: updatedMessages,
-            };
+          };
         }
 
 
@@ -438,6 +437,8 @@ const GlobalCommunicationProviderInner = ({
       acceptConnectionRequest,
       rejectConnectionRequest,
       disconnectConnection,
+      typingUsers,
+      onlineUsers,
     }),
     [
       chatDisplays,
@@ -457,6 +458,8 @@ const GlobalCommunicationProviderInner = ({
       acceptConnectionRequest,
       rejectConnectionRequest,
       disconnectConnection,
+      typingUsers,
+      onlineUsers,
     ]
   );
 
