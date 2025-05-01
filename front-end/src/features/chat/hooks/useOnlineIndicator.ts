@@ -13,7 +13,7 @@ interface UseOnlineIndicatorProps {
 const PING_INTERVAL_MS = 5000;
 
 export default function useOnlineIndicator({ currentUser }: UseOnlineIndicatorProps) {
-  const [onlineUsers, setOnlineUsers] = useState<Record<string, boolean>>({});
+  const [onlineUsers, setOnlineUsers] = useState<Record<number, boolean>>({});
   const pingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const { refetch: pingServer } = useAppQuery(PING, {
@@ -30,7 +30,7 @@ export default function useOnlineIndicator({ currentUser }: UseOnlineIndicatorPr
       const newState = { ...prev };
       let changed = false;
       peerStatuses.forEach((status) => {
-        const peerUserId = String(status.userId);
+        const peerUserId = Number(status.userId);
         if (newState[peerUserId] !== status.isOnline) {
           newState[peerUserId] = status.isOnline;
           changed = true;
@@ -54,7 +54,7 @@ export default function useOnlineIndicator({ currentUser }: UseOnlineIndicatorPr
           return;
         }
 
-        const userId = String(update.userId);
+        const userId = Number(update.userId);
         const isOnline = update.isOnline;
         setOnlineUsers((prev) => {
           if (prev[userId] === isOnline) return prev;
