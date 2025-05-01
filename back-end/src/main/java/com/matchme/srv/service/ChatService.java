@@ -135,6 +135,8 @@ public class ChatService {
         String dataUrl = encodeImageToDataUrl(picBytes, "image/png");
         if (dataUrl != null) {
             preview.setConnectedUserProfilePicture(dataUrl);
+        } else {
+          preview.setConnectedUserProfilePicture("");
         }
     }
 
