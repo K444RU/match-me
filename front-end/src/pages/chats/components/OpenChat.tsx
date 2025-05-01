@@ -16,7 +16,7 @@ export default function OpenChat() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Get WebSocket context for sending messages via WebSocket
-  const { connected, sendMessage: sendWebSocketMessage, typingUsers } = useWebSocket();
+  const { sendMessage: sendWebSocketMessage, typingUsers } = useWebSocket();
 
   const communicationContext = useContext(CommunicationContext);
   const openChat = communicationContext?.openChat || null;
@@ -180,20 +180,17 @@ export default function OpenChat() {
     setChatMessages(prevMessages => [...prevMessages, optimisticMessage]);
 
     try {
-      // Only use WebSocket if already connected
-      if (connected) {
-        try {
-          await sendWebSocketMessage(messageDTO);
-        } catch (wsError) {
-          console.error('Failed to send via WebSocket:', wsError);
-        }
-      } else {
-        console.warn('⚠️ WebSocket not connected, message sent only via REST');
-        await chatService.sendMessage(messageDTO.content, messageDTO.connectionId);
-      }
+      await sendWebSocketMessage(messageDTO);
     } catch (error) {
       console.error('Error sending message:', error);
-      toast.error('Failed to send message.');
+      // Fall back to REST API if GraphQL mutation fails
+      try {
+        console.warn('⚠️ GraphQL mutation failed, falling back to REST API');
+        await chatService.sendMessage(messageDTO);
+      } catch (restError) {
+        console.error('REST fallback also failed:', restError);
+        toast.error('Failed to send message.');
+      }
     }
   };
 
