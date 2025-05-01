@@ -10,7 +10,7 @@ interface UseTypingIndicatorProps {
 }
 
 export default function useTypingIndicator({ currentUser }: UseTypingIndicatorProps) {
-  const [typingUsers, setTypingUsers] = useState<Record<string, boolean>>({});
+  const [typingUsers, setTypingUsers] = useState<Record<number, boolean>>({});
   const typingTimeoutsRef = useRef<Record<string, NodeJS.Timeout>>({});
   const lastTypedRef = useRef<Record<string, number>>({});
 
@@ -32,7 +32,7 @@ export default function useTypingIndicator({ currentUser }: UseTypingIndicatorPr
         if (!data?.data?.typingStatusUpdates) return;
 
         const typingData = data.data.typingStatusUpdates as TypingStatusEvent;
-        const senderId = String(typingData.senderId);
+        const senderId = Number(typingData.senderId);
 
         // Clear existing timeout
         if (typingTimeoutsRef.current[senderId]) {
