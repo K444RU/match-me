@@ -17,7 +17,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 	// Helper function to fetch user, update state, and handle token storage
 	const updateUserFromToken = useCallback(async (token: string | null): Promise<User | null> => {
 		if (!token) {
-			console.debug('AuthProvider (updateUserFromToken): No token provided, clearing user.');
 			localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
 			localStorage.removeItem(STORAGE_KEYS.PROFILE_DATA);
 			setUser(null);
@@ -27,12 +26,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 		try {
 			// Ensure token is stored before fetching user
 			localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
-			console.debug('AuthProvider (updateUserFromToken): Token stored, fetching user...');
 			const currentUser = await meService.getCurrentUser();
 			setError(null);
 			const userData: User = { ...currentUser, token };
 			setUser(userData);
-			console.debug('AuthProvider (updateUserFromToken): User fetch success:', currentUser.state);
 			return userData;
 		} catch (error) {
 			console.error('AuthProvider (updateUserFromToken): User fetch failed, clearing token.', error);
@@ -46,13 +43,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 	useEffect(() => {
 		let isMounted = true;
 		const initialLoad = async () => {
-			console.debug('AuthProvider (Init): Starting initial load...');
 			setIsLoading(true);
 			const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
 			await updateUserFromToken(token);
 			if (isMounted) {
 				setIsLoading(false);
-				console.debug('AuthProvider (Init): Loading finished.');
 			}
 		};
 
@@ -74,7 +69,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 				console.debug('AuthProvider (Login): Token received, updating user...');
 				const userData = await updateUserFromToken(response.token);
 				if (userData) {
-					console.debug('✔️ AuthProvider (Login): Login success, user set:', userData.state);
 					setIsLoading(false);
 					return { success: true, user: userData };
 				} else {
@@ -124,7 +118,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
 	// Updated logout function
 	const logout = useCallback(() => {
-		console.debug('AuthProvider (Logout): Logging out.');
 		setError(null);
 		updateUserFromToken(null); // Use helper to clear state and token
 	}, [updateUserFromToken]);
@@ -132,16 +125,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 	// Updated fetchCurrentUser function
 	const fetchCurrentUser = useCallback(async () => {
 		setIsLoading(true);
-		console.debug('AuthProvider (fetchCurrentUser): Manual fetch initiated...');
 		const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
 		if (!token) {
-			console.debug('AuthProvider (fetchCurrentUser): No token found.');
 			await updateUserFromToken(null); // Ensure state is cleared if token disappears
 		} else {
 			await updateUserFromToken(token);
 		}
 		setIsLoading(false);
-		console.debug('AuthProvider (fetchCurrentUser): Loading finished.');
 	}, [updateUserFromToken]);
 
 	return <AuthContext.Provider value={{ user, isLoading, login, logout, fetchCurrentUser, error }}>{children}</AuthContext.Provider>;
