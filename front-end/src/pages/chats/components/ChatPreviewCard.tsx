@@ -33,6 +33,18 @@ interface ChatPreviewCardProps {
 function formatTimestampSafely(timestampStr: string | null | undefined): string {
   const DEFAULT_TIME = '--:--';
 
+  // Handle ISO date strings first
+  if (typeof timestampStr === 'string' && timestampStr.includes('T')) {
+    try {
+      const date = new Date(timestampStr);
+      if (!isNaN(date.getTime())) {
+        return format(date, 'HH:mm');
+      }
+    } catch (e) {
+      console.error('Failed to parse ISO date string:', timestampStr);
+    }
+  }
+
   // Early return for falsy inputs (null, undefined, or empty string)
   if (!timestampStr) return DEFAULT_TIME;
 
