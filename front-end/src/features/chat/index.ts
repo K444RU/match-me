@@ -10,3 +10,5 @@ export {
 } from './services/connection-service';
 export { WebSocketProvider } from './context/websocket-provider';
 export { useWebSocket } from './context/websocket-context';
+export { ConnectionUpdateType } from './types/ConnectionUpdateType';
+export type { ConnectionUpdateEvent } from './types/ConnectionUpdateEvent';
