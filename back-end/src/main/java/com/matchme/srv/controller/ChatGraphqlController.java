@@ -56,10 +56,6 @@ public class ChatGraphqlController {
     List<ChatPreviewResponseDTO> senderPreviews = chatService.getChatPreviews(senderId);
     List<ChatPreviewResponseDTO> otherUserPreviews = chatService.getChatPreviews(otherUserId);
 
-    // Add online status to previews before publishing
-    senderPreviews.forEach(p -> p.setOnline(onlineStatusGraphqlController.isUserOnline(p.getConnectedUserId())));
-    otherUserPreviews.forEach(p -> p.setOnline(onlineStatusGraphqlController.isUserOnline(p.getConnectedUserId())));
-
     chatPublisher.publishPreviews(senderId, senderPreviews);
     chatPublisher.publishPreviews(otherUserId, otherUserPreviews);
 
@@ -86,8 +82,6 @@ public class ChatGraphqlController {
 
     try {
       ChatPreviewResponseDTO updatedPreview = chatService.markMessagesAsRead(connectionId, userId);
-
-      updatedPreview.setOnline(onlineStatusGraphqlController.isUserOnline(updatedPreview.getConnectedUserId()));
 
       chatPublisher.publishPreviews(userId, List.of(updatedPreview));
 

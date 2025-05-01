@@ -58,7 +58,7 @@ public class SubscriptionController {
   }
 
   @SubscriptionMapping
-  public Publisher<OnlineStatusEvent> onlineStatusUpdates(Authentication authentication, @Argument Long connectionId) {
+  public Publisher<OnlineStatusEvent> onlineStatusUpdates(Authentication authentication) {
     if (authentication == null) {
       log.warn("No authentication provided for online status updates subscription");
       return Flux.empty();
@@ -67,7 +67,7 @@ public class SubscriptionController {
     log.debug("Online status updates subscription received for user with name: {}", authentication.getName());
     Long currentUserId = securityUtils.getCurrentUserId(authentication);
     log.debug("Online status updates subscription received for user with id: {}", currentUserId);
-    return onlineStatusPublisher.getPublisher(currentUserId, connectionId);
+    return onlineStatusPublisher.getPublisher(currentUserId);
   }
 
   @SubscriptionMapping

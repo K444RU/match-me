@@ -19,15 +19,24 @@ public class OnlineStatusPublisher {
     return sinks.computeIfAbsent(userId, id -> Sinks.many().multicast().onBackpressureBuffer());
   }
 
-  public Flux<OnlineStatusEvent> getPublisher(Long userId, Long connectionId) {
-    // Filter online status updates for the specific connection
-    return getSinkForUser(userId)
-        .asFlux()
-        .filter(status -> status.getConnectionId().equals(connectionId));
+  public Flux<OnlineStatusEvent> getPublisher(Long userId) {
+    return getSinkForUser(userId).asFlux().filter(status -> !status.getUserId().equals(userId));
   }
 
   public void publishStatus(Long targetUserId, OnlineStatusEvent status) {
-    Sinks.EmitResult result = getSinkForUser(targetUserId).tryEmitNext(status);
+    Sinks.Many<OnlineStatusEvent> sink = getSinkForUser(targetUserId);
+    int currentSubscribers = sink.currentSubscriberCount();
+
+    if (currentSubscribers == 0) {
+      log.warn(
+          "No active subscribers for user {} when trying to publish online status for connection"
+              + " {}. Skipping emit.",
+          targetUserId,
+          status.getConnectionId());
+      return;
+    }
+
+    Sinks.EmitResult result = sink.tryEmitNext(status);
     if (result.isFailure()) {
       log.error(
           "Failed to publish online status ({}) for user {} to user {} for connection {}: {}",
