@@ -7,6 +7,7 @@ type Query {
   myProfile: Profile
   recommendations: [User]
   connections: [User]
+  ping: Pong
 }
 
 type User {
@@ -54,21 +55,14 @@ enum UserGenderEnum {
   OTHER
 }
 
-type Mutation {
-  sendConnectionRequest(targetUserId: ID!): ConnectionUpdateEvent
-  acceptConnectionRequest(connectionId: ID!): ConnectionUpdateEvent
-  rejectConnectionRequest(connectionId: ID!): ConnectionUpdateEvent
-  disconnectConnection(connectionId: ID!): ConnectionUpdateEvent
-}
-
-type Subscription {
-  connectionUpdates: ConnectionUpdateEvent
-}
-
 type ConnectionUpdateEvent {
-  type: ConnectionUpdateType!
+  action: ConnectionUpdateType!
+  connection: ConnectionProvider!
+}
+
+type ConnectionProvider {
   connectionId: ID!
-  otherUser: User
+  userId: ID!
 }
 
 enum ConnectionUpdateType {
@@ -77,4 +71,99 @@ enum ConnectionUpdateType {
   REQUEST_ACCEPTED
   REQUEST_REJECTED
   DISCONNECTED
+}
+
+input MessagesSendInput {
+  connectionId: ID!
+  content: String!
+}
+
+input MarkReadInput {
+  connectionId: ID!
+}
+
+input TypingStatusInput {
+  connectionId: ID!
+  senderId: ID!
+  isTyping: Boolean!
+}
+
+type MessageEvent {
+  type: MessageEventTypeEnum
+  timestamp: String
+}
+
+enum MessageEventTypeEnum {
+  SENT
+  RECEIVED
+  READ
+}
+
+type ChatMessage {
+  messageId: ID!
+  connectionId: ID!
+  senderId: ID!
+  senderAlias: String
+  content: String!
+  createdAt: String!
+  event: MessageEvent
+}
+
+type ChatPreview {
+  connectionId: ID!
+  connectedUserId: ID!
+  connectedUserAlias: String!
+  connectedUserFirstName: String!
+  connectedUserLastName: String!
+  connectedUserProfilePicture: String!
+  lastMessageContent: String!
+  lastMessageTimestamp: String!
+  unreadMessageCount: Int!
+}
+
+type TypingStatus {
+  connectionId: ID!
+  senderId: ID!
+  isTyping: Boolean!
+}
+
+type OnlineStatus {
+  connectionId: ID!
+  userId: ID!
+  isOnline: Boolean!
+}
+
+type Pong {
+  timestamp: String!
+  status: String!
+  userId: ID!
+  peerStatuses: [OnlineStatus]
+}
+
+type MessageStatusUpdate {
+  messageId: ID!
+  connectionId: ID!
+  type: MessageEventTypeEnum
+  timestamp: String
+}
+
+type Mutation {
+  sendConnectionRequest(targetUserId: ID!): ConnectionUpdateEvent
+  acceptConnectionRequest(connectionId: ID!): ConnectionUpdateEvent
+  rejectConnectionRequest(connectionId: ID!): ConnectionUpdateEvent
+  disconnectConnection(connectionId: ID!): ConnectionUpdateEvent
+
+  markMessagesAsRead(input: MarkReadInput!): ChatPreview
+  sendMessage(input: MessagesSendInput!): ChatMessage
+  typingStatus(input: TypingStatusInput!): Boolean
+}
+
+type Subscription {
+  connectionUpdates: ConnectionUpdateEvent
+  messages: ChatMessage
+  messageStatus: MessageStatusUpdate
+  chatPreviews: [ChatPreview]
+
+  typingStatusUpdates: TypingStatus
+  onlineStatusUpdates: OnlineStatus
 }
