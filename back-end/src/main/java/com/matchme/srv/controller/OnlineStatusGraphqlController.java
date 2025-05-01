@@ -191,7 +191,7 @@ public class OnlineStatusGraphqlController {
           onlineStatusesToSend.size());
     }
   
-    private boolean isUserOnline(Long userId) {
+    public boolean isUserOnline(Long userId) {
       return onlineUsers.contains(userId);
     }
 }

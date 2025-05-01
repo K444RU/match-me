@@ -11,6 +11,7 @@ import com.matchme.srv.model.message.MessageEvent;
 import com.matchme.srv.model.message.MessageEventTypeEnum;
 import com.matchme.srv.model.message.UserMessage;
 import com.matchme.srv.model.user.User;
+import com.matchme.srv.publisher.ChatPublisher;
 import com.matchme.srv.repository.ConnectionRepository;
 import com.matchme.srv.repository.MessageEventRepository;
 import com.matchme.srv.repository.UserMessageRepository;
@@ -20,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,11 +33,7 @@ public class ChatService {
     private final UserMessageRepository userMessageRepository;
     private final MessageEventRepository messageEventRepository;
     private final ConnectionService connectionService;
-    private final SimpMessagingTemplate messagingTemplate;
-
-    public static final String EVENT_TYPE_READ = "READ";
-    public static final String EVENT_TYPE_SEND = "SEND";
-    private static final String MESSAGE_STATUS_QUEUE = "/queue/messageStatus";
+    private final ChatPublisher chatPublisher;
 
     /**
      * Retrieves chat previews for the specified user.
@@ -267,13 +263,12 @@ public class ChatService {
 
         if (receivedTimestamp != null) {
             MessageStatusUpdateDTO statusUpdate = new MessageStatusUpdateDTO(
+                    savedMessage.getId(), connectionId, MessageEventTypeEnum.RECEIVED, receivedTimestamp);
+            chatPublisher.publishStatusUpdate(senderId, statusUpdate);
+            log.debug(
+                "Published RECEIVED status update via ChatPublisher for msg {} to sender {}",
                 savedMessage.getId(),
-                connectionId,
-                MessageEventTypeEnum.RECEIVED,
-                receivedTimestamp
-            );
-            messagingTemplate.convertAndSendToUser(senderId.toString(), MESSAGE_STATUS_QUEUE, statusUpdate);
-            log.debug("Sent RECEIVED status update for msg {} to sender {}", savedMessage.getId(), senderId);
+                senderId);
         }
 
         return new ChatMessageResponseDTO(
@@ -369,8 +364,11 @@ public class ChatService {
             Long senderId = otherParticipant.getId(); // The user who needs the notification
 
             if (!statusUpdates.isEmpty()) {
-                messagingTemplate.convertAndSendToUser(senderId.toString(), MESSAGE_STATUS_QUEUE, statusUpdates);
-                log.info("Sent {} READ status updates to sender {}", statusUpdates.size(), senderId);
+                log.info("Publishing {} READ status updates via ChatPublisher to sender {}", statusUpdates.size(), senderId);
+                for (MessageStatusUpdateDTO updateDTO : statusUpdates) {
+                    chatPublisher.publishStatusUpdate(senderId, updateDTO);
+                    log.trace("Published READ status update for msg {}", updateDTO.getMessageId());
+                }
             }
         }
         }
@@ -457,8 +455,22 @@ public class ChatService {
         }
 
         if (!newReceivedEvents.isEmpty()) {
-        messageEventRepository.saveAll(newReceivedEvents);
-        log.info("Marked {} messages as RECEIVED for user ID: {}", newReceivedEvents.size(), userId);
+          messageEventRepository.saveAll(newReceivedEvents);
+          log.info("Marked {} messages as RECEIVED for user ID: {}", newReceivedEvents.size(), userId);
+
+          if (!updatesToSend.isEmpty()) {
+            log.info("Publishing RECEIVED status updates via ChatPublisher for {} senders", updatesToSend.size());
+            updatesToSend.forEach(
+                (senderId, statusUpdateList) -> {
+                  log.debug(
+                      "Publishing {} RECEIVED updates to sender {}", statusUpdateList.size(), senderId);
+                  for (MessageStatusUpdateDTO updateDTO : statusUpdateList) {
+                    chatPublisher.publishStatusUpdate(senderId, updateDTO);
+                    log.trace("Published RECEIVED status update for msg {}", updateDTO.getMessageId());
+                  }
+                });
+          }
+
         } else {
         log.info("No messages needed marking as RECEIVED for user ID: {}", userId);
         }
