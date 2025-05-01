@@ -39,25 +39,31 @@ public class ChatPublisher {
         userId, id -> Sinks.many().multicast().onBackpressureBuffer());
   }
 
-  public Flux<ChatMessageResponseDTO> getMessagePublisher(Long userId, Long connectionId) {
-    // Filter the user's stream for the specific connection
-    return getMessageSinkForUser(userId)
-        .asFlux()
-        .filter(msg -> msg.getConnectionId().equals(connectionId));
+  public Flux<ChatMessageResponseDTO> getMessagePublisher(Long userId) {
+    return getMessageSinkForUser(userId).asFlux();
   }
 
   public Flux<List<ChatPreviewResponseDTO>> getPreviewPublisher(Long userId) {
     return getPreviewSinkForUser(userId).asFlux();
   }
 
-  public Flux<MessageStatusUpdateDTO> getMessageStatusPublisher(Long userId, Long connectionId) {
-    return getMessageStatusSinkForUser(userId)
-        .asFlux()
-        .filter(status -> status.getConnectionId().equals(connectionId));
+  public Flux<MessageStatusUpdateDTO> getMessageStatusPublisher(Long userId) {
+    return getMessageStatusSinkForUser(userId).asFlux();
   }
 
   public void publishMessage(Long targetUserId, ChatMessageResponseDTO message) {
-    Sinks.EmitResult result = getMessageSinkForUser(targetUserId).tryEmitNext(message);
+    Sinks.Many<ChatMessageResponseDTO> sink = getMessageSinkForUser(targetUserId);
+    int currentSubscribers = sink.currentSubscriberCount();
+
+    if (currentSubscribers == 0) {
+      log.debug(
+          "No active subscribers for user {} when trying to publish message {}. Skipping emit.",
+          targetUserId,
+          message.getMessageId());
+      return;
+    }
+
+    Sinks.EmitResult result = sink.tryEmitNext(message);
     if (result.isFailure()) {
       log.error(
           "Failed to publish message {} to user {}: {}",
@@ -70,7 +76,18 @@ public class ChatPublisher {
   }
 
   public void publishPreviews(Long targetUserId, List<ChatPreviewResponseDTO> previews) {
-    Sinks.EmitResult result = getPreviewSinkForUser(targetUserId).tryEmitNext(previews);
+    Sinks.Many<List<ChatPreviewResponseDTO>> sink = getPreviewSinkForUser(targetUserId);
+    int currentSubscribers = sink.currentSubscriberCount();
+
+    if (currentSubscribers == 0) {
+      log.debug(
+          "No active subscribers for user {} when trying to publish {} previews. Skipping emit.",
+          targetUserId,
+          previews.size());
+      return;
+    }
+
+    Sinks.EmitResult result = sink.tryEmitNext(previews);
     if (result.isFailure()) {
       log.error(
           "Failed to publish {} previews to user {}: {}", previews.size(), targetUserId, result);
@@ -80,7 +97,19 @@ public class ChatPublisher {
   }
 
   public void publishStatusUpdate(Long targetUserId, MessageStatusUpdateDTO statusUpdate) {
-    Sinks.EmitResult result = getMessageStatusSinkForUser(targetUserId).tryEmitNext(statusUpdate);
+    Sinks.Many<MessageStatusUpdateDTO> sink = getMessageStatusSinkForUser(targetUserId);
+    int currentSubscribers = sink.currentSubscriberCount();
+
+    if (currentSubscribers == 0) {
+      log.debug(
+          "No active subscribers for user {} when trying to publish status update for message {}."
+              + " Skipping emit.",
+          targetUserId,
+          statusUpdate.getMessageId());
+      return;
+    }
+
+    Sinks.EmitResult result = sink.tryEmitNext(statusUpdate);
     if (result.isFailure()) {
       log.error(
           "Failed to publish status update ({}) for message {} to user {} for connection {}: {}",
@@ -97,5 +126,27 @@ public class ChatPublisher {
           targetUserId,
           statusUpdate.getConnectionId());
     }
+  }
+
+  public void resetMessageSinkForUser(Long userId) {
+    messageSinks.put(userId, Sinks.many().multicast().onBackpressureBuffer());
+    log.debug("Reset message sink for user {}", userId);
+  }
+
+  public void resetPreviewSinkForUser(Long userId) {
+    previewSinks.put(userId, Sinks.many().multicast().onBackpressureBuffer());
+    log.debug("Reset preview sink for user {}", userId);
+  }
+
+  public void resetMessageStatusSinkForUser(Long userId) {
+    messageStatusSinks.put(userId, Sinks.many().multicast().onBackpressureBuffer());
+    log.debug("Reset message status sink for user {}", userId);
+  }
+
+  public void resetAllSinksForUser(Long userId) {
+    resetMessageSinkForUser(userId);
+    resetPreviewSinkForUser(userId);
+    resetMessageStatusSinkForUser(userId);
+    log.debug("Reset all sinks for user {}", userId);
   }
 }
