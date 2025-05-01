@@ -1,56 +1,68 @@
 import { ChatPreviewResponseDTO } from '@/api/types';
-import { useCallback, useState } from 'react';
-import { IMessage } from 'react-stomp-hooks';
+import { User } from '@/features/authentication';
+import { useState } from 'react';
+import { CHAT_PREVIEWS_SUBSCRIPTION } from '../graphql/previews.gql';
+import { useAppSubscription } from './useAppSubscription';
 
-export default function useChatPreviewHandler() {
+interface UseChatPreviewHandlerProps {
+  currentUser: User;
+}
+
+export default function useChatPreviewHandler({ currentUser }: UseChatPreviewHandlerProps) {
   const [chatPreviews, setChatPreviews] = useState<ChatPreviewResponseDTO[]>([]);
 
-  const handleChatPreviews = useCallback((message: IMessage) => {
-    try {
-      // Parse the message data
-      let data;
-      try {
-        data = JSON.parse(message.body);
-      } catch (error) {
-        console.error('Failed to parse chat preview JSON:', error);
-        return;
-      }
+  const handleChatPreviews = (previews: ChatPreviewResponseDTO[]) => {
+    previews.forEach((preview) => {
+      preview.connectionId = Number(preview.connectionId);
+      preview.connectedUserId = Number(preview.connectedUserId);
+    });
 
-      // Handle both array and single object formats
-      const newPreviews = Array.isArray(data) ? data : [data];
+    // APPEND OR UPDATE existing previews instead of replacing them
+    setChatPreviews((prevPreviews) => {
+      const previewMap = new Map(prevPreviews.map((preview) => [preview.connectionId, preview]));
 
-      // Skip empty arrays or invalid data
-      if (!newPreviews.length) {
-        return;
-      }
-
-      // Filter valid previews
-      const validPreviews = newPreviews.filter(
-        (preview) => preview && typeof preview === 'object' && preview.connectionId > 0
-      );
-
-      if (!validPreviews.length) {
-        return;
-      }
-
-      // APPEND OR UPDATE existing previews instead of replacing them
-      setChatPreviews((prevPreviews) => {
-        const previewMap = new Map(prevPreviews.map((preview) => [preview.connectionId, preview]));
-
-        // Update existing previews or add new ones
-        validPreviews.forEach((preview) => {
-          previewMap.set(preview.connectionId, preview);
-        });
-
-        // Convert back to array
-        const result = Array.from(previewMap.values());
-
-        return result;
+      // Update existing previews or add new ones
+      previews.forEach((preview: ChatPreviewResponseDTO) => {
+        previewMap.set(preview.connectionId, preview);
       });
-    } catch (error) {
-      console.error('Error handling chat preview:', error);
-    }
-  }, []);
+
+      // Convert back to array
+      const result = Array.from(previewMap.values());
+
+      return result;
+    });
+  };
+
+  // Subscribe to chat preview updates
+  useAppSubscription(CHAT_PREVIEWS_SUBSCRIPTION, {
+    skip: !currentUser?.id,
+    onData: ({ data }) => {
+      try {
+        if (!data?.data?.chatPreviews) return;
+
+        // Get the preview data from the subscription
+        const newPreviews = Array.isArray(data.data.chatPreviews) ? data.data.chatPreviews : [data.data.chatPreviews];
+
+        // Skip empty arrays or invalid data
+        if (!newPreviews.length) {
+          return;
+        }
+
+        // Filter valid previews
+        const validPreviews = newPreviews.filter(
+          (preview: ChatPreviewResponseDTO) => preview && typeof preview === 'object' && Number(preview.connectionId) > 0
+        );
+
+        if (!validPreviews.length) {
+          return;
+        }
+
+        handleChatPreviews(validPreviews);
+      } catch (error) {
+        console.error('Error handling chat preview:', error);
+      }
+    },
+  });
 
   return { chatPreviews, setChatPreviews, handleChatPreviews };
 }
