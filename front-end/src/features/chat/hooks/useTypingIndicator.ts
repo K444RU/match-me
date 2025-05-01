@@ -1,8 +1,7 @@
 import { User } from '@/features/authentication';
-import { OperationDefinitionNode } from 'graphql';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SET_TYPING_STATUS, TYPING_STATUS_SUBSCRIPTION } from '../graphql/typing.gql';
-import { TypingStatusRequestDTO } from '../types';
+import { TypingStatusEvent } from '../types/TypingStatusEvent';
 import { useAppMutation } from './useAppMutation';
 import { useAppSubscription } from './useAppSubscription';
 
@@ -33,7 +32,7 @@ export default function useTypingIndicator({ currentUser }: UseTypingIndicatorPr
       try {
         if (!data?.data?.typingStatusUpdates) return;
 
-        const typingData = data.data.typingStatusUpdates as TypingStatusRequestDTO;
+        const typingData = data.data.typingStatusUpdates as TypingStatusEvent;
         const senderId = String(typingData.senderId);
 
         // Clear existing timeout
