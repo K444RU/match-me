@@ -1,8 +1,9 @@
 import { useAuth } from '@/features/authentication';
-import { GlobalCommunicationProvider, WebSocketProvider } from '@/features/chat/';
+import { GlobalCommunicationProvider } from '@/features/chat/';
+import WebSocketConnectionManager from '@/features/chat/context/connection-manager';
+import client from '@/lib/apolloClient';
+import { ApolloProvider } from '@apollo/client';
 import { Outlet } from 'react-router-dom';
-
-const WS_URL = import.meta.env.VITE_WS_URL;
 
 export default function AuthenticatedLayout() {
   const { user } = useAuth();
@@ -10,12 +11,14 @@ export default function AuthenticatedLayout() {
   if (!user) return;
 
   return (
-    <WebSocketProvider wsUrl={WS_URL}>
-      <GlobalCommunicationProvider>
-        <div className="flex size-full overflow-hidden">
-          <Outlet />
-        </div>
-      </GlobalCommunicationProvider>
-    </WebSocketProvider>
+    <ApolloProvider client={client}>
+      <WebSocketConnectionManager user={user}>
+        <GlobalCommunicationProvider>
+          <div className="flex size-full overflow-hidden">
+            <Outlet />
+          </div>
+        </GlobalCommunicationProvider>
+      </WebSocketConnectionManager>
+    </ApolloProvider>
   );
 }
