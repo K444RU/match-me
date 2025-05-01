@@ -1,10 +1,13 @@
 package com.matchme.srv.controller;
 
 import com.matchme.srv.dto.graphql.ConnectionUpdateEvent;
+import com.matchme.srv.dto.graphql.TypingStatusEvent;
 import com.matchme.srv.publisher.ConnectionPublisher;
+import com.matchme.srv.publisher.TypingStatusPublisher;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.reactivestreams.Publisher;
+import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.SubscriptionMapping;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -16,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class SubscriptionController {
   private final ConnectionPublisher connectionPublisher;
+  private final TypingStatusPublisher typingStatusPublisher;
   private final SecurityUtils securityUtils;
 
   @SubscriptionMapping
@@ -29,5 +33,18 @@ public class SubscriptionController {
     Long currentUserId = securityUtils.getCurrentUserId(authentication);
     log.debug("Connection updates subscription received for user with id: {}", currentUserId);
     return connectionPublisher.getPublisher(currentUserId);
+  }
+
+  @SubscriptionMapping
+  public Publisher<TypingStatusEvent> typingStatusUpdates(Authentication authentication, @Argument Long connectionId) {
+    if (authentication == null) {
+      log.warn("No authentication provided for typing status updates subscription");
+      return Flux.empty();
+    }
+
+    log.debug("Typing status updates subscription received for user with name: {}", authentication.getName());
+    Long currentUserId = securityUtils.getCurrentUserId(authentication);
+    log.debug("Typing status updates subscription received for user with id: {}", currentUserId);
+    return typingStatusPublisher.getPublisher(currentUserId, connectionId);
   }
 }

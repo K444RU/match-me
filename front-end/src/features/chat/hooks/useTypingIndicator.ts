@@ -1,17 +1,22 @@
 import { User } from '@/features/authentication';
-import { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
-import { Client, IMessage } from 'react-stomp-hooks';
+import { OperationDefinitionNode } from 'graphql';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { SET_TYPING_STATUS, TYPING_STATUS_SUBSCRIPTION } from '../graphql/typing.gql';
 import { TypingStatusRequestDTO } from '../types';
+import { useAppMutation } from './useAppMutation';
+import { useAppSubscription } from './useAppSubscription';
 
 interface UseTypingIndicatorProps {
-  stompClientRef: MutableRefObject<Client | undefined>;
   currentUser: User;
 }
 
-export default function useTypingIndicator({ stompClientRef, currentUser }: UseTypingIndicatorProps) {
+export default function useTypingIndicator({ currentUser }: UseTypingIndicatorProps) {
   const [typingUsers, setTypingUsers] = useState<Record<string, boolean>>({});
   const typingTimeoutsRef = useRef<Record<string, NodeJS.Timeout>>({});
   const lastTypedRef = useRef<Record<string, number>>({});
+
+  // Initialize the mutation
+  const [setTypingStatus] = useAppMutation(SET_TYPING_STATUS);
 
   // Clear typing indicators after delay
   useEffect(() => {
@@ -21,41 +26,41 @@ export default function useTypingIndicator({ stompClientRef, currentUser }: UseT
     };
   }, []);
 
-  const handleTypingIndicator = useCallback((message: IMessage) => {
-    try {
-      const data = JSON.parse(message.body) as TypingStatusRequestDTO;
+  // Setup subscription to typing status updates
+  useAppSubscription(TYPING_STATUS_SUBSCRIPTION, {
+    variables: { connectionId: currentUser?.id },
+    onData: ({ data }) => {
+      try {
+        if (!data?.data?.typingStatusUpdates) return;
 
-      // Validate data
-      if (!data || typeof data !== 'object' || typeof data.isTyping !== 'boolean') {
-        console.warn('Invalid typing indicator format', message.body);
-        return;
+        const typingData = data.data.typingStatusUpdates as TypingStatusRequestDTO;
+        const senderId = String(typingData.senderId);
+
+        // Clear existing timeout
+        if (typingTimeoutsRef.current[senderId]) {
+          clearTimeout(typingTimeoutsRef.current[senderId]);
+        }
+
+        // Update typing status
+        setTypingUsers((prev) => ({ ...prev, [senderId]: typingData.isTyping }));
+
+        // Set timeout to clear typing status
+        if (typingData.isTyping) {
+          typingTimeoutsRef.current[senderId] = setTimeout(() => {
+            setTypingUsers((prev) => ({ ...prev, [senderId]: false }));
+            delete typingTimeoutsRef.current[senderId];
+          }, 5000); // Clear after 5 seconds
+        }
+      } catch (error) {
+        console.error('Error handling typing status update:', error);
       }
-
-      const senderId = String(data.senderId);
-
-      // Clear existing timeout
-      if (typingTimeoutsRef.current[senderId]) {
-        clearTimeout(typingTimeoutsRef.current[senderId]);
-      }
-
-      // Update typing status
-      setTypingUsers((prev) => ({ ...prev, [senderId]: data.isTyping }));
-
-      // Set timeout to clear typing status
-      if (data.isTyping) {
-        typingTimeoutsRef.current[senderId] = setTimeout(() => {
-          setTypingUsers((prev) => ({ ...prev, [senderId]: false }));
-          delete typingTimeoutsRef.current[senderId];
-        }, 5000); // Clear after 5 seconds
-      }
-    } catch (error) {
-      console.error('Error parsing typing indicator:', error, message.body);
-    }
-  }, []);
+    },
+    skip: !currentUser?.id,
+  });
 
   const sendTypingIndicator = useCallback(
     (connectionId: number) => {
-      if (!stompClientRef.current?.connected || !currentUser?.id) {
+      if (!currentUser?.id) {
         return;
       }
 
@@ -70,33 +75,29 @@ export default function useTypingIndicator({ stompClientRef, currentUser }: UseT
 
       lastTypedRef.current[connectionKey] = now;
 
-      // Parse connectionId
+      // Validate connectionId
       const connectionIdNum = Number(connectionId);
       if (isNaN(connectionIdNum)) {
         console.error('Invalid connectionId for typing indicator:', connectionId);
         return;
       }
 
-      const typingData = {
-        connectionId: connectionIdNum,
-        senderId: currentUser.id,
-        isTyping: true,
-      };
-
       try {
-        stompClientRef.current?.publish({
-          destination: '/app/chat.typing',
-          body: JSON.stringify(typingData),
-          headers: {
-            'content-type': 'application/json',
+        setTypingStatus({
+          variables: {
+            input: {
+              connectionId: String(connectionIdNum),
+              senderId: String(currentUser.id),
+              isTyping: true,
+            },
           },
         });
       } catch (error) {
         console.error('Error sending typing indicator:', error);
       }
     },
-    [stompClientRef, currentUser]
+    [currentUser, setTypingStatus]
   );
 
-  return { typingUsers, handleTypingIndicator, sendTypingIndicator };
+  return { typingUsers, sendTypingIndicator };
 }
