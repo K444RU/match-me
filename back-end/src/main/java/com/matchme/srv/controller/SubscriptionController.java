@@ -15,7 +15,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
-import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.SubscriptionMapping;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -41,6 +40,8 @@ public class SubscriptionController {
     log.debug("Connection updates subscription received for user with name: {}", authentication.getName());
     Long currentUserId = securityUtils.getCurrentUserId(authentication);
     log.debug("Connection updates subscription received for user with id: {}", currentUserId);
+    
+    connectionPublisher.resetSinkForUser(currentUserId);
     return connectionPublisher.getPublisher(currentUserId);
   }
 
@@ -54,6 +55,8 @@ public class SubscriptionController {
     log.debug("Typing status updates subscription received for user with name: {}", authentication.getName());
     Long currentUserId = securityUtils.getCurrentUserId(authentication);
     log.debug("Typing status updates subscription received for user with id: {}", currentUserId);
+    
+    typingStatusPublisher.resetSinkForUser(currentUserId);
     return typingStatusPublisher.getPublisher(currentUserId);
   }
 
@@ -67,6 +70,8 @@ public class SubscriptionController {
     log.debug("Online status updates subscription received for user with name: {}", authentication.getName());
     Long currentUserId = securityUtils.getCurrentUserId(authentication);
     log.debug("Online status updates subscription received for user with id: {}", currentUserId);
+    
+    onlineStatusPublisher.resetSinkForUser(currentUserId);
     return onlineStatusPublisher.getPublisher(currentUserId);
   }
 
@@ -80,6 +85,8 @@ public class SubscriptionController {
     log.debug("Previews subscription received for user with name: {}", authentication.getName());
     Long currentUserId = securityUtils.getCurrentUserId(authentication);
     log.debug("Previews subscription received for user with id: {}", currentUserId);
+    
+    chatPublisher.resetPreviewSinkForUser(currentUserId);
     return chatPublisher.getPreviewPublisher(currentUserId);
   }
 
@@ -94,7 +101,7 @@ public class SubscriptionController {
     Long currentUserId = securityUtils.getCurrentUserId(authentication);
     log.debug("Messages subscription received for user with id: {}", currentUserId);
 
-    typingStatusPublisher.resetSinkForUser(currentUserId);
+    chatPublisher.resetMessageSinkForUser(currentUserId);
     return chatPublisher.getMessagePublisher(currentUserId);
   }
 
@@ -108,6 +115,8 @@ public class SubscriptionController {
     log.debug("Message status subscription received for user with name: {}", authentication.getName());
     Long currentUserId = securityUtils.getCurrentUserId(authentication);
     log.debug("Message status subscription received for user with id: {}", currentUserId);
+    
+    chatPublisher.resetMessageStatusSinkForUser(currentUserId);
     return chatPublisher.getMessageStatusPublisher(currentUserId);
   }
 }

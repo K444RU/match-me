@@ -54,4 +54,9 @@ public class OnlineStatusPublisher {
           status.getConnectionId());
     }
   }
+
+  public void resetSinkForUser(Long userId) {
+    sinks.put(userId, Sinks.many().multicast().onBackpressureBuffer());
+    log.debug("Reset sink for user {}", userId);
+  }
 }
