@@ -1,5 +1,7 @@
 package com.matchme.srv.controller;
 
+import com.matchme.srv.dto.graphql.ChatMessageWrapper;
+import com.matchme.srv.dto.graphql.ChatPreviewWrapper;
 import com.matchme.srv.dto.request.MarkReadRequestDTO;
 import com.matchme.srv.dto.request.MessagesSendRequestDTO;
 import com.matchme.srv.dto.response.ChatMessageResponseDTO;
@@ -11,10 +13,15 @@ import com.matchme.srv.service.ChatService;
 import com.matchme.srv.service.user.UserQueryService;
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 
@@ -27,6 +34,56 @@ public class ChatGraphqlController {
   private final SecurityUtils securityUtils;
   private final ChatPublisher chatPublisher;
   private final OnlineStatusGraphqlController onlineStatusGraphqlController;
+
+  @QueryMapping
+  public List<ChatPreviewWrapper> chatPreviews(Authentication authentication) {
+    Long userId = securityUtils.getCurrentUserId(authentication);
+
+    log.info("GraphQL: Fetching chat previews for user ID: {}", userId);
+
+    List<ChatPreviewResponseDTO> previews = chatService.getChatPreviews(userId);
+    List<ChatPreviewWrapper> wrappers =
+        previews.stream().map(ChatPreviewWrapper::new).collect(Collectors.toList());
+
+    log.debug("GraphQL: Retrieved {} chat previews for user ID: {}", wrappers.size(), userId);
+
+    return wrappers;
+  }
+
+  @QueryMapping
+  public List<ChatMessageWrapper> chatMessages(
+      @Argument String connectionId,
+      @Argument String before,
+      @Argument Integer limit,
+      Authentication authentication) {
+
+    Long userId = securityUtils.getCurrentUserId(authentication);
+    Long connectionIdLong = Long.parseLong(connectionId);
+
+    log.info(
+        "GraphQL: Fetching chat messages for connection ID: {} by user ID: {}",
+        connectionIdLong,
+        userId);
+
+    // Default limit if not provided
+    int messageLimit = limit != null ? limit : 10;
+
+    Pageable pageable = PageRequest.of(0, messageLimit);
+
+    Page<ChatMessageResponseDTO> messagesPage =
+        chatService.getChatMessages(connectionIdLong, userId, pageable);
+    List<ChatMessageWrapper> messages =
+        messagesPage.getContent().stream()
+            .map(ChatMessageWrapper::new)
+            .collect(Collectors.toList());
+
+    log.debug(
+        "GraphQL: Retrieved {} chat messages for connection ID: {}",
+        messages.size(),
+        connectionIdLong);
+
+    return messages;
+  }
 
   @MutationMapping
   public ChatMessageResponseDTO sendMessage(

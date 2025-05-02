@@ -7,6 +7,8 @@ type Query {
   myProfile: Profile
   recommendations: [User]
   connections: [User]
+  chatPreviews: [ChatPreview]
+  chatMessages(connectionId: ID!, before: String, limit: Int): [ChatMessage]
   ping: Pong
 }
 
