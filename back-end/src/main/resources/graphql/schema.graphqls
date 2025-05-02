@@ -11,6 +11,7 @@ type Query {
   chatPreviews: [ChatPreview]
   chatMessages(connectionId: ID!, before: String, limit: Int): [ChatMessage]
   ping: Pong
+  usersBatch(userIds: [ID!]!): BatchUserResponse
 }
 
 type User {
@@ -68,6 +69,24 @@ type Settings {
   profilePicture: String
 }
 
+type BatchUserResponse {
+  users: [RecommendedUser]
+}
+
+type RecommendedUser {
+  id: ID!
+  firstName: String
+  lastName: String
+  age: Int
+  alias: String
+  profilePicture: String
+  aboutMe: String
+  city: String
+  distance: Int
+  matchScore: Float
+  connections: [ID]
+}
+
 type Hobby {
   id: ID!
   name: String
@@ -77,6 +96,57 @@ enum UserGenderEnum {
   MALE
   FEMALE
   OTHER
+}
+
+input UserParametersInput {
+  first_name: String!
+  last_name: String!
+  alias: String
+  aboutMe: String
+  hobbies: [ID]
+  gender_self: UserGenderEnum!
+  birth_date: String!
+  city: String!
+  longitude: Float
+  latitude: Float
+  gender_other: UserGenderEnum!
+  age_min: Int!
+  age_max: Int!
+  distance: Int!
+  probability_tolerance: Float!
+}
+
+input AccountSettingsInput {
+  email: String!
+  number: String!
+}
+
+input ProfileSettingsInput {
+  first_name: String!
+  last_name: String!
+  alias: String
+  aboutMe: String
+  hobbies: [ID]
+}
+
+input AttributesSettingsInput {
+  gender_self: UserGenderEnum!
+  birth_date: String!
+  city: String!
+  longitude: Float
+  latitude: Float
+}
+
+input PreferencesSettingsInput {
+  gender_other: UserGenderEnum!
+  age_min: Int!
+  age_max: Int!
+  distance: Int!
+  probability_tolerance: Float!
+}
+
+input ProfilePictureInput {
+  base64Image: String
 }
 
 type ConnectionUpdateEvent {
@@ -180,6 +250,13 @@ type Mutation {
   markMessagesAsRead(input: MarkReadInput!): ChatPreview
   sendMessage(input: MessagesSendInput!): ChatMessage
   typingStatus(input: TypingStatusInput!): Boolean
+
+  completeRegistration(input: UserParametersInput!): Boolean
+  updateAccountSettings(input: AccountSettingsInput!): Boolean
+  updateProfileSettings(input: ProfileSettingsInput!): Boolean
+  updateAttributesSettings(input: AttributesSettingsInput!): Boolean
+  updatePreferencesSettings(input: PreferencesSettingsInput!): Boolean
+  uploadProfilePicture(input: ProfilePictureInput): Boolean
 }
 
 type Subscription {

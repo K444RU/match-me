@@ -17,4 +17,9 @@ public class RecommendedUserDTO {
     @NotNull private Double probability;
     private String connectionStatus;
     private Long connectionId;
+
+    // Graphql fix
+    public String getId() {
+        return userId != null ? String.valueOf(userId) : null;
+    }
 }
