@@ -2,7 +2,9 @@ package com.matchme.srv.controller;
 
 import com.matchme.srv.dto.graphql.BioWrapper;
 import com.matchme.srv.dto.graphql.ProfileWrapper;
+import com.matchme.srv.dto.graphql.SettingsWrapper;
 import com.matchme.srv.dto.graphql.UserGraphqlDTO;
+import com.matchme.srv.dto.response.SettingsResponseDTO;
 import com.matchme.srv.model.user.User;
 import com.matchme.srv.security.jwt.SecurityUtils;
 import com.matchme.srv.service.user.UserQueryService;
@@ -115,6 +117,22 @@ public class UserGraphqlController {
       return new BioWrapper(user);
     } catch (Exception e) {
       log.error("Error fetching current user bio: {}", e.getMessage());
+      return null;
+    }
+  }
+
+  @QueryMapping
+  public SettingsWrapper mySettings(Authentication authentication) {
+    if (authentication == null) {
+      return null;
+    }
+    try {
+      Long currentUserId = securityUtils.getCurrentUserId(authentication);
+      SettingsResponseDTO settings =
+          userQueryService.getSettingsResponseDTO(currentUserId, currentUserId);
+      return new SettingsWrapper(settings);
+    } catch (Exception e) {
+      log.error("Error fetching current user settings: {}", e.getMessage());
       return null;
     }
   }

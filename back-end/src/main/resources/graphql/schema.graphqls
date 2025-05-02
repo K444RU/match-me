@@ -5,6 +5,7 @@ type Query {
   me: User
   myBio: Bio
   myProfile: Profile
+  mySettings: Settings
   recommendations: [User]
   connections: [User]
   chatPreviews: [ChatPreview]
@@ -44,6 +45,27 @@ type Bio {
   birthdate: String
   location: [Float]
   hobbies: [Hobby]
+}
+
+type Settings {
+  email: String
+  number: String
+  firstName: String
+  lastName: String
+  alias: String
+  aboutMe: String
+  hobbies: [ID]
+  genderSelf: UserGenderEnum
+  birthDate: String
+  city: String
+  longitude: Float
+  latitude: Float
+  genderOther: UserGenderEnum
+  ageMin: Int
+  ageMax: Int
+  distance: Int
+  probabilityTolerance: Float
+  profilePicture: String
 }
 
 type Hobby {
